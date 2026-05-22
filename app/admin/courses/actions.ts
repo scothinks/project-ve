@@ -11,6 +11,10 @@ function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function clampInteger(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function parseOptionalInteger(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
@@ -315,6 +319,10 @@ export async function saveQuizQuestion(formData: FormData) {
   const { supabase } = await requireAdmin();
   const options = parseOptions(formData);
 
+  if (options.length < 2 || options.length > 4) {
+    throw new Error("Provide between 2 and 4 answer options.");
+  }
+
   if (!options.some((option) => option.isCorrect)) {
     throw new Error("Mark at least one correct answer.");
   }
@@ -325,7 +333,7 @@ export async function saveQuizQuestion(formData: FormData) {
     p_prompt: sanitizePlainTextInput(String(formData.get("prompt") ?? ""), 1000),
     p_question_type: String(formData.get("questionType") ?? "single_choice"),
     p_explanation: sanitizePlainTextInput(String(formData.get("explanation") ?? ""), 1000),
-    p_xp: parseInteger(formData.get("xp"), 1),
+    p_xp: clampInteger(parseInteger(formData.get("xp"), 1), 1, 20),
     p_question_order: parseInteger(formData.get("questionOrder"), 1),
     p_options: options,
   });

@@ -241,9 +241,14 @@ export function CourseForm({
                 <span className={labelClasses()}>Status</span>
                 <select className={fieldClasses()} name="status" defaultValue={course?.status ?? "draft"}>
                   <option value="draft">Draft</option>
-                  <option value="published">Published</option>
+                  <option disabled={Boolean(course?.ai_generated && course.status !== "published")} value="published">Published</option>
                   <option value="archived">Archived</option>
                 </select>
+                {course?.ai_generated ? (
+                  <p className={helperTextClasses()}>
+                    AI-generated courses publish through the workflow panel after text and media approval.
+                  </p>
+                ) : null}
               </label>
               <div className="rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3">
                 <span className={labelClasses()}>Minutes</span>
@@ -301,9 +306,14 @@ export function LessonForm({
             <span className={labelClasses()}>Status</span>
             <select className={fieldClasses()} name="status" defaultValue={lesson?.status ?? "draft"}>
               <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              <option disabled={Boolean(lesson?.ai_generated && lesson.status !== "published")} value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
+            {lesson?.ai_generated ? (
+              <p className={helperTextClasses()}>
+                AI-generated lessons publish from the parent course workflow after text and media approval.
+              </p>
+            ) : null}
           </label>
         </div>
         <label className="mt-4 block">
@@ -772,7 +782,7 @@ export function QuizSettingsForm({
             <span className={labelClasses()}>Quiz status</span>
             <select className={fieldClasses()} name="quizStatus" defaultValue={quiz.status}>
               <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              <option disabled={Boolean(quiz.ai_generated && quiz.status !== "published")} value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
           </label>

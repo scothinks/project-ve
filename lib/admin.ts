@@ -205,6 +205,17 @@ export type AdminCourseRow = {
   status: string;
   sort_order: number;
   estimated_minutes: number;
+  ai_text_status: string;
+  ai_media_status: string;
+  ai_publish_status: string;
+  ai_generated: boolean;
+  ai_generation_notes: Record<string, unknown>;
+  text_approved_at: string | null;
+  text_approved_by: string | null;
+  text_approved_by_name?: string | null;
+  media_approved_at: string | null;
+  media_approved_by: string | null;
+  media_approved_by_name?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -224,6 +235,17 @@ export type AdminLessonRow = {
   retry_requires_reread: boolean;
   quiz_requires_lesson_completion: boolean;
   max_earning_attempts: number | null;
+  ai_text_status: string;
+  ai_media_status: string;
+  ai_publish_status: string;
+  ai_generated: boolean;
+  ai_generation_notes: Record<string, unknown>;
+  text_approved_at: string | null;
+  text_approved_by: string | null;
+  text_approved_by_name?: string | null;
+  media_approved_at: string | null;
+  media_approved_by: string | null;
+  media_approved_by_name?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -254,6 +276,32 @@ export type AdminQuizRow = {
   title: string;
   version: number;
   status: string;
+  ai_text_status: string;
+  ai_generated: boolean;
+  ai_generation_notes: Record<string, unknown>;
+  text_approved_at: string | null;
+  text_approved_by: string | null;
+  text_approved_by_name?: string | null;
+};
+
+export type AdminLearningMediaAssetRow = {
+  id: string;
+  course_id: string | null;
+  lesson_id: string | null;
+  asset_type: string;
+  placement: string;
+  source: string;
+  prompt: string | null;
+  script: string | null;
+  url: string | null;
+  alt_text: string | null;
+  caption: string | null;
+  metadata: Record<string, unknown>;
+  review_status: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  lesson?: Pick<AdminLessonRow, "id" | "title"> | null;
 };
 
 export type AdminQuizQuestionRow = {
@@ -590,8 +638,13 @@ async function getExactCount(supabase: SupabaseClient, table: CountableTable) {
   return count ?? 0;
 }
 
-async function getProfilesByIds(supabase: SupabaseClient, userIds: string[]) {
-  const uniqueIds = Array.from(new Set(userIds)).filter(Boolean);
+async function getProfilesByIds(
+  supabase: SupabaseClient,
+  userIds: Array<string | null | undefined>,
+) {
+  const uniqueIds = Array.from(new Set(userIds)).filter(
+    (userId): userId is string => typeof userId === "string" && userId.length > 0,
+  );
 
   if (uniqueIds.length === 0) {
     return new Map<string, AdminProfileRow>();
@@ -610,6 +663,26 @@ async function getProfilesByIds(supabase: SupabaseClient, userIds: string[]) {
   }
 
   return new Map((data ?? []).map((profile) => [profile.id, profile]));
+}
+
+function attachApprovalNames<
+  T extends {
+    text_approved_by: string | null;
+    media_approved_by?: string | null;
+  },
+>(
+  rows: T[],
+  profilesById: Map<string, AdminProfileRow>,
+) {
+  return rows.map((row) => ({
+    ...row,
+    text_approved_by_name: row.text_approved_by
+      ? profilesById.get(row.text_approved_by)?.display_name ?? null
+      : null,
+    media_approved_by_name: row.media_approved_by
+      ? profilesById.get(row.media_approved_by)?.display_name ?? null
+      : null,
+  }));
 }
 
 export async function getAdminOverview(supabase: SupabaseClient) {
@@ -733,7 +806,7 @@ export async function getAdminCampaign(supabase: SupabaseClient, campaignId: str
 export async function getAdminCourses(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, created_at, updated_at")
+    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .order("sort_order", { ascending: true })
     .returns<AdminCourseRow[]>();
 
@@ -743,6 +816,10 @@ export async function getAdminCourses(supabase: SupabaseClient) {
 
   const courses = data ?? [];
   const courseIds = courses.map((course) => course.id);
+  const approvalUserIds = courses.flatMap((course) => [
+    course.text_approved_by,
+    course.media_approved_by,
+  ]);
 
   if (courseIds.length === 0) {
     return [];
@@ -758,6 +835,8 @@ export async function getAdminCourses(supabase: SupabaseClient) {
     throw lessonsError;
   }
 
+  const profilesById = await getProfilesByIds(supabase, approvalUserIds);
+
   const minutesByCourseId = new Map<string, number>();
   for (const lesson of lessons ?? []) {
     minutesByCourseId.set(
@@ -766,7 +845,7 @@ export async function getAdminCourses(supabase: SupabaseClient) {
     );
   }
 
-  return courses.map((course) => ({
+  return attachApprovalNames(courses, profilesById).map((course) => ({
     ...course,
     estimated_minutes: minutesByCourseId.get(course.id) ?? 0,
   }));
@@ -794,7 +873,7 @@ export async function getAdminCourseCategories(supabase: SupabaseClient) {
 export async function getAdminCourse(supabase: SupabaseClient, courseId: string) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, created_at, updated_at")
+    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", courseId)
     .maybeSingle<AdminCourseRow>();
 
@@ -802,7 +881,14 @@ export async function getAdminCourse(supabase: SupabaseClient, courseId: string)
     throw error;
   }
 
-  return data;
+  if (!data) return data;
+
+  const profilesById = await getProfilesByIds(supabase, [
+    data.text_approved_by,
+    data.media_approved_by,
+  ]);
+
+  return attachApprovalNames([data], profilesById)[0] ?? data;
 }
 
 export async function getAdminLessons(
@@ -811,7 +897,7 @@ export async function getAdminLessons(
 ) {
   let query = supabase
     .from("lessons")
-    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, created_at, updated_at")
+    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .order("sort_order", { ascending: true });
 
   if (filters.courseId) {
@@ -824,13 +910,19 @@ export async function getAdminLessons(
     throw error;
   }
 
-  return data ?? [];
+  const lessons = data ?? [];
+  const profilesById = await getProfilesByIds(
+    supabase,
+    lessons.flatMap((lesson) => [lesson.text_approved_by, lesson.media_approved_by]),
+  );
+
+  return attachApprovalNames(lessons, profilesById);
 }
 
 export async function getAdminLesson(supabase: SupabaseClient, lessonId: string) {
   const { data: lesson, error } = await supabase
     .from("lessons")
-    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, created_at, updated_at")
+    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", lessonId)
     .maybeSingle<AdminLessonRow>();
 
@@ -856,7 +948,7 @@ export async function getAdminLesson(supabase: SupabaseClient, lessonId: string)
       .returns<AdminLessonBlockRow[]>(),
     supabase
       .from("quizzes")
-      .select("id, lesson_id, title, version, status")
+      .select("id, lesson_id, title, version, status, ai_text_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by")
       .eq("lesson_id", lessonId)
       .maybeSingle<AdminQuizRow>(),
   ]);
@@ -903,13 +995,78 @@ export async function getAdminLesson(supabase: SupabaseClient, lessonId: string)
     }));
   }
 
+  const profilesById = await getProfilesByIds(supabase, [
+    lesson.text_approved_by,
+    lesson.media_approved_by,
+    quizResult.data?.text_approved_by ?? null,
+  ]);
+
+  const [lessonWithNames] = attachApprovalNames([lesson], profilesById);
+  const quizWithNames = quizResult.data
+    ? {
+        ...quizResult.data,
+        text_approved_by_name: quizResult.data.text_approved_by
+          ? profilesById.get(quizResult.data.text_approved_by)?.display_name ?? null
+          : null,
+      }
+    : null;
+
   return {
-    lesson,
+    lesson: lessonWithNames,
     pages,
     blocks,
-    quiz: quizResult.data,
+    quiz: quizWithNames,
     questions,
   };
+}
+
+export async function getAdminLearningMediaAssets(
+  supabase: SupabaseClient,
+  filters: { courseId?: string; lessonId?: string } = {},
+) {
+  let query = supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, alt_text, caption, metadata, review_status, sort_order, created_at, updated_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (filters.courseId) {
+    query = query.eq("course_id", filters.courseId);
+  }
+
+  if (filters.lessonId) {
+    query = query.eq("lesson_id", filters.lessonId);
+  }
+
+  const { data, error } = await query.returns<AdminLearningMediaAssetRow[]>();
+
+  if (error) {
+    throw error;
+  }
+
+  const assets = data ?? [];
+  const lessonIds = Array.from(new Set(assets.map((asset) => asset.lesson_id).filter(Boolean))) as string[];
+
+  if (lessonIds.length === 0) {
+    return assets;
+  }
+
+  const { data: lessons, error: lessonsError } = await supabase
+    .from("lessons")
+    .select("id, title")
+    .in("id", lessonIds)
+    .returns<Array<Pick<AdminLessonRow, "id" | "title">>>();
+
+  if (lessonsError) {
+    throw lessonsError;
+  }
+
+  const lessonsById = new Map((lessons ?? []).map((lesson) => [lesson.id, lesson]));
+
+  return assets.map((asset) => ({
+    ...asset,
+    lesson: asset.lesson_id ? lessonsById.get(asset.lesson_id) ?? null : null,
+  }));
 }
 
 export async function getAdminRewards(

@@ -11,10 +11,20 @@ import {
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
 import { saveLesson, setLessonStatus } from "@/app/admin/courses/actions";
+import {
+  approveCourseMedia,
+  approveCourseText,
+  generateCourseMediaDrafts,
+  publishApprovedCourse,
+  requestCourseMediaChanges,
+  requestCourseTextChanges,
+  saveLearningMediaAsset,
+} from "@/app/admin/courses/ai-actions";
 import { CourseForm } from "@/components/admin/LearningForms";
 import {
   getAdminCourse,
   getAdminCourseCategories,
+  getAdminLearningMediaAssets,
   getAdminLessons,
   requireAdmin,
 } from "@/lib/admin";
@@ -32,6 +42,34 @@ function statusLabel(status: string) {
   return status;
 }
 
+function workflowTone(status: string) {
+  if (status === "approved" || status === "ready" || status === "published") return "good" as const;
+  if (status === "changes_requested") return "danger" as const;
+  if (status === "draft" || status === "generation_ready" || status === "in_review") return "warning" as const;
+  return "neutral" as const;
+}
+
+function formatApproval(value: string | null, byName?: string | null) {
+  if (!value) return "Not approved yet";
+  const formatted = new Date(value).toLocaleString("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return byName ? `${formatted} by ${byName}` : formatted;
+}
+
+function workflowButtonClasses(tone: "primary" | "danger" | "neutral" = "primary") {
+  if (tone === "danger") {
+    return "rounded-[12px] bg-[#fff0f0] px-4 py-3 text-sm font-black text-[#c00000]";
+  }
+
+  if (tone === "neutral") {
+    return "rounded-[12px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]";
+  }
+
+  return "rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white";
+}
+
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ lessonsPage?: string; notice?: string }>;
@@ -41,10 +79,11 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const { id } = await params;
   const { lessonsPage, notice } = (await searchParams) ?? {};
   const { supabase } = await requireAdmin();
-  const [course, lessons, categories] = await Promise.all([
+  const [course, lessons, categories, mediaAssets] = await Promise.all([
     getAdminCourse(supabase, id),
     getAdminLessons(supabase, { courseId: id }),
     getAdminCourseCategories(supabase),
+    getAdminLearningMediaAssets(supabase, { courseId: id }),
   ]);
 
   if (!course) {
@@ -80,6 +119,194 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
           <Link className="mt-3 text-sm font-black text-[#087f5b]" href={`/courses/${course.id}`}>
             Open learner course
           </Link>
+        </AdminCard>
+      </section>
+      <section className="mb-6 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
+        <AdminCard>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">AI workflow</p>
+              <h2 className="mt-2 text-lg font-black">Approval gates for AI-generated content</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                Text approval unlocks media. Media approval unlocks publishing. Learners still only see published content.
+              </p>
+            </div>
+            {course.ai_generated ? (
+              <AdminStatusBadge tone="good">AI generated</AdminStatusBadge>
+            ) : (
+              <AdminStatusBadge tone="neutral">Manual course</AdminStatusBadge>
+            )}
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Text status</p>
+              <div className="mt-3">
+                <AdminStatusBadge tone={workflowTone(course.ai_text_status)}>{course.ai_text_status.replaceAll("_", " ")}</AdminStatusBadge>
+              </div>
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                {formatApproval(course.text_approved_at, course.text_approved_by_name)}
+              </p>
+            </div>
+            <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Media status</p>
+              <div className="mt-3">
+                <AdminStatusBadge tone={workflowTone(course.ai_media_status)}>{course.ai_media_status.replaceAll("_", " ")}</AdminStatusBadge>
+              </div>
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                {formatApproval(course.media_approved_at, course.media_approved_by_name)}
+              </p>
+            </div>
+            <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Publish readiness</p>
+              <div className="mt-3">
+                <AdminStatusBadge tone={workflowTone(course.ai_publish_status)}>{course.ai_publish_status.replaceAll("_", " ")}</AdminStatusBadge>
+              </div>
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                Current learner visibility stays on <span className="font-black">{course.status}</span>.
+              </p>
+            </div>
+          </div>
+
+          {course.ai_generated ? (
+            <div className="mt-5 flex flex-wrap gap-3">
+              {["draft", "in_review", "changes_requested"].includes(course.ai_text_status) ? (
+                <>
+                  <form action={approveCourseText}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses()} type="submit">Approve Text</button>
+                  </form>
+                  <form action={requestCourseTextChanges}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses("danger")} type="submit">Request Text Changes</button>
+                  </form>
+                </>
+              ) : null}
+
+              {course.ai_text_status === "approved" && course.ai_media_status === "generation_ready" ? (
+                <form action={generateCourseMediaDrafts}>
+                  <input name="courseId" type="hidden" value={course.id} />
+                  <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                  <button className={workflowButtonClasses()} type="submit">Generate Media</button>
+                </form>
+              ) : null}
+
+              {["draft", "in_review", "changes_requested"].includes(course.ai_media_status) ? (
+                <>
+                  <form action={approveCourseMedia}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses()} type="submit">Approve Media</button>
+                  </form>
+                  <form action={requestCourseMediaChanges}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses("danger")} type="submit">Request Media Changes</button>
+                  </form>
+                </>
+              ) : null}
+
+              {course.ai_text_status === "approved"
+                && course.ai_media_status === "approved"
+                && course.ai_publish_status === "ready" ? (
+                  <form action={publishApprovedCourse}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses()} type="submit">Publish Approved Course</button>
+                  </form>
+                ) : null}
+            </div>
+          ) : (
+            <p className="mt-5 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+              This course was created manually, so the AI workflow states are informational only.
+            </p>
+          )}
+        </AdminCard>
+
+        <AdminCard>
+          <h2 className="text-lg font-black">Media briefs and assets</h2>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+            Edit prompts, scripts, and URLs here. Saving approved media resets publishing readiness until media is approved again.
+          </p>
+          {mediaAssets.length === 0 ? (
+            <div className="mt-4">
+              <EmptyAdminState>No media briefs yet.</EmptyAdminState>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {mediaAssets.map((asset) => (
+                <form action={saveLearningMediaAsset} className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={asset.id}>
+                  <input name="assetId" type="hidden" value={asset.id} />
+                  <input name="courseId" type="hidden" value={course.id} />
+                  <input name="lessonId" type="hidden" value={asset.lesson_id ?? ""} />
+                  <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                        {asset.lesson?.title ? `${asset.lesson.title} · ` : ""}{asset.placement}
+                      </p>
+                      <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
+                    </div>
+                    <AdminStatusBadge tone={workflowTone(asset.review_status)}>{asset.review_status.replaceAll("_", " ")}</AdminStatusBadge>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-3">
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Asset type</span>
+                      <select className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.asset_type} name="assetType">
+                        <option value="image">Image</option>
+                        <option value="audio">Audio</option>
+                        <option value="video">Video</option>
+                        <option value="infographic">Infographic</option>
+                        <option value="thumbnail">Thumbnail</option>
+                        <option value="cover">Cover</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Placement</span>
+                      <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.placement} name="placement" />
+                    </label>
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Review status</span>
+                      <select className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.review_status} name="reviewStatus">
+                        <option value="draft">Draft</option>
+                        <option value="in_review">In review</option>
+                        <option value="changes_requested">Changes requested</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label className="mt-3 block">
+                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Prompt</span>
+                    <textarea className="mt-2 min-h-24 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.prompt ?? ""} name="prompt" />
+                  </label>
+                  <label className="mt-3 block">
+                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Script</span>
+                    <textarea className="mt-2 min-h-24 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.script ?? ""} name="script" />
+                  </label>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">URL</span>
+                      <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.url ?? ""} name="url" />
+                    </label>
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Alt text</span>
+                      <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.alt_text ?? ""} name="altText" />
+                    </label>
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Caption</span>
+                      <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.caption ?? ""} name="caption" />
+                    </label>
+                  </div>
+                  <button className="mt-4 rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black" type="submit">
+                    Save media asset
+                  </button>
+                </form>
+              ))}
+            </div>
+          )}
         </AdminCard>
       </section>
       <AdminCard>
@@ -127,9 +354,18 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                               ? "rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
                               : "rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
                           }
+                          disabled={
+                            lesson.ai_generated
+                            && lesson.status !== "published"
+                            && lesson.ai_publish_status !== "ready"
+                          }
                           type="submit"
                         >
-                          {lesson.status === "published" ? "Disable" : "Enable"}
+                          {lesson.status === "published"
+                            ? "Disable"
+                            : lesson.ai_generated && lesson.ai_publish_status !== "ready"
+                              ? "AI gates pending"
+                              : "Enable"}
                         </button>
                       </form>
                     </td>

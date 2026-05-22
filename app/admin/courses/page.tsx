@@ -44,7 +44,13 @@ export default async function AdminCoursesPage({
         subtitle="Manage the values education catalog, lessons, pages, and quizzes."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap justify-end gap-3">
+        <Link
+          className="rounded-[14px] border border-[#cfe5db] bg-[#edf8f1] px-4 py-3 text-sm font-black text-[#087f5b]"
+          href="/admin/courses/ai/new"
+        >
+          AI Course Creator
+        </Link>
         <Link
           className="rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white"
           href="/admin/courses/new"
@@ -87,9 +93,18 @@ export default async function AdminCoursesPage({
                         ? "rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
                         : "rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
                     }
+                    disabled={
+                      course.ai_generated
+                      && course.status !== "published"
+                      && course.ai_publish_status !== "ready"
+                    }
                     type="submit"
                   >
-                    {course.status === "published" ? "Disable" : "Enable"}
+                    {course.status === "published"
+                      ? "Disable"
+                      : course.ai_generated && course.ai_publish_status !== "ready"
+                        ? "AI gates pending"
+                        : "Enable"}
                   </button>
                 </form>
               </td>
