@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f4ee;
+  --foreground: #141414;
+  --ve-shell: #fffdfa;
+  --ve-panel: #f7f4ee;
+  --ve-panel-soft: #f8f8f8;
+  --ve-card: #ffffff;
+  --ve-card-muted: #f6f8f7;
+  --ve-card-subtle: #fafafa;
+  --ve-green: #087f5b;
+  --ve-green-soft: #e4f4ed;
+  --ve-mission: #ff7a59;
+  --ve-mission-soft: #fff0e8;
+  --ve-store: #f6c453;
+  --ve-store-soft: #fff8df;
+  --ve-sky: #6fa8ff;
+  --ve-ink: #101010;
+  --ve-muted: #8d8d8d;
+  --ve-muted-strong: #5f5f5a;
+  --ve-muted-soft: #c2c2c2;
+  --ve-line: #d2d2d2;
+  --ve-line-soft: #e6e1d8;
+  --ve-shadow-rgb: 17, 17, 17;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111513;
+    --foreground: #f2f1eb;
+    --ve-shell: #171c19;
+    --ve-panel: #1d2320;
+    --ve-panel-soft: #202723;
+    --ve-card: #181d1b;
+    --ve-card-muted: #202622;
+    --ve-card-subtle: #252c28;
+    --ve-green: #44c08e;
+    --ve-green-soft: #153126;
+    --ve-mission: #ff8f73;
+    --ve-mission-soft: #36231d;
+    --ve-store: #f3cb67;
+    --ve-store-soft: #372d12;
+    --ve-sky: #86b8ff;
+    --ve-ink: #f2f1eb;
+    --ve-muted: #aab1ac;
+    --ve-muted-strong: #d4d8d3;
+    --ve-muted-soft: #6f7671;
+    --ve-line: #39413c;
+    --ve-line-soft: #2b322e;
+    --ve-shadow-rgb: 0, 0, 0;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(180deg, var(--ve-shell) 0%, var(--background) 100%);
+  color: var(--foreground);
+  font-family: var(--font-geist), Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.mobile-shell {
+  width: min(100%, 430px);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--ve-shell);
+  box-shadow: 0 20px 60px rgba(var(--ve-shadow-rgb), 0.16);
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
