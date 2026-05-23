@@ -6,6 +6,11 @@ import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 
+type AiPublishGuardRow = {
+  ai_generated: boolean;
+  ai_publish_status: string | null;
+};
+
 function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -87,16 +92,162 @@ function parseOptions(formData: FormData) {
     .filter((option) => option.label.trim());
 }
 
+function normalizeRequestedPublishStatus(
+  rawStatus: FormDataEntryValue | null,
+  allowedStatuses: readonly string[],
+  fallback: string,
+) {
+  const nextStatus = String(rawStatus ?? fallback);
+  return allowedStatuses.includes(nextStatus) ? nextStatus : fallback;
+}
+
+function aiPublishReady(status: string | null | undefined) {
+  return status === "ready" || status === "published";
+}
+
+async function assertCoursePublishAllowed(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+) {
+  if (!courseId) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("courses")
+    .select("ai_generated, ai_publish_status")
+    .eq("id", courseId)
+    .maybeSingle<AiPublishGuardRow>();
+
+  if (error) throw error;
+  if (!data || !data.ai_generated) {
+    return;
+  }
+
+  if (!aiPublishReady(data.ai_publish_status)) {
+    throw new Error("AI-generated courses can only be published after approved text and media.");
+  }
+}
+
+async function assertLessonPublishAllowed(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  lessonId: string,
+) {
+  if (!lessonId) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("lessons")
+    .select(`
+      ai_generated,
+      ai_publish_status,
+      course:courses!lessons_course_id_fkey(
+        ai_generated,
+        ai_publish_status
+      )
+    `)
+    .eq("id", lessonId)
+    .maybeSingle<
+      AiPublishGuardRow & {
+        course:
+          | {
+              ai_generated: boolean;
+              ai_publish_status: string | null;
+            }
+          | null;
+      }
+    >();
+
+  if (error) throw error;
+  if (!data || !data.ai_generated) {
+    return;
+  }
+
+  const courseBlocked = Boolean(
+    data.course?.ai_generated && !aiPublishReady(data.course.ai_publish_status),
+  );
+
+  if (!aiPublishReady(data.ai_publish_status) || courseBlocked) {
+    throw new Error("AI-generated lessons can only be published after approved text and media.");
+  }
+}
+
+async function assertQuizPublishAllowed(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  quizId: string,
+) {
+  if (!quizId) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("quizzes")
+    .select(`
+      ai_generated,
+      lesson:lessons!quizzes_lesson_id_fkey(
+        ai_generated,
+        ai_publish_status,
+        course:courses!lessons_course_id_fkey(
+          ai_generated,
+          ai_publish_status
+        )
+      )
+    `)
+    .eq("id", quizId)
+    .maybeSingle<{
+      ai_generated: boolean;
+      lesson:
+        | {
+            ai_generated: boolean;
+            ai_publish_status: string | null;
+            course:
+              | {
+                  ai_generated: boolean;
+                  ai_publish_status: string | null;
+                }
+              | null;
+          }
+        | null;
+    }>();
+
+  if (error) throw error;
+  if (!data || !data.ai_generated) {
+    return;
+  }
+
+  const lessonBlocked = Boolean(
+    data.lesson?.ai_generated && !aiPublishReady(data.lesson.ai_publish_status),
+  );
+  const courseBlocked = Boolean(
+    data.lesson?.course?.ai_generated && !aiPublishReady(data.lesson.course.ai_publish_status),
+  );
+
+  if (lessonBlocked || courseBlocked) {
+    throw new Error("AI-generated quizzes can only be published after approved text and media.");
+  }
+}
+
 export async function saveCourse(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const { supabase } = await requireAdmin();
+  const requestedStatus = normalizeRequestedPublishStatus(
+    formData.get("status"),
+    ["draft", "published", "archived"],
+    "draft",
+  );
+
+  if (requestedStatus === "published") {
+    await assertCoursePublishAllowed(supabase, courseId);
+  }
+
   const { data, error } = await supabase.rpc("admin_upsert_course", {
     p_course_id: courseId,
     p_title: sanitizePlainTextInput(String(formData.get("title") ?? ""), 160),
     p_description: sanitizePlainTextInput(String(formData.get("description") ?? ""), 1000),
     p_category: sanitizePlainTextInput(String(formData.get("category") ?? ""), 120),
     p_level: String(formData.get("level") ?? "beginner"),
-    p_status: String(formData.get("status") ?? "draft"),
+    p_status: requestedStatus,
     p_thumbnail: imagePayload(formData.get("thumbnailUrl"), formData.get("thumbnailAlt")),
     p_sort_order: parseInteger(formData.get("sortOrder")),
     p_estimated_minutes: parseInteger(formData.get("estimatedMinutes")),
@@ -118,13 +269,23 @@ export async function saveLesson(formData: FormData) {
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const { supabase } = await requireAdmin();
+  const requestedStatus = normalizeRequestedPublishStatus(
+    formData.get("status"),
+    ["draft", "published", "archived"],
+    "draft",
+  );
+
+  if (requestedStatus === "published") {
+    await assertLessonPublishAllowed(supabase, lessonId);
+  }
+
   const { data, error } = await supabase.rpc("admin_upsert_lesson", {
     p_lesson_id: lessonId,
     p_course_id: courseId,
     p_title: sanitizePlainTextInput(String(formData.get("title") ?? ""), 160),
     p_description: sanitizePlainTextInput(String(formData.get("description") ?? ""), 1000),
     p_cover_image: imagePayload(formData.get("coverImageUrl"), formData.get("coverImageAlt")),
-    p_status: String(formData.get("status") ?? "draft"),
+    p_status: requestedStatus,
     p_sort_order: parseInteger(formData.get("sortOrder")),
     p_estimated_minutes: parseInteger(formData.get("estimatedMinutes")),
     p_retry_mode: String(formData.get("retryMode") ?? "anytime"),
@@ -164,6 +325,11 @@ export async function setCourseStatus(formData: FormData) {
     400,
   );
   const { supabase } = await requireAdmin();
+
+  if (status === "published") {
+    await assertCoursePublishAllowed(supabase, courseId);
+  }
+
   const { error } = await supabase.rpc("admin_set_course_status", {
     p_course_id: courseId,
     p_status: status,
@@ -193,6 +359,11 @@ export async function setLessonStatus(formData: FormData) {
     400,
   );
   const { supabase } = await requireAdmin();
+
+  if (status === "published") {
+    await assertLessonPublishAllowed(supabase, lessonId);
+  }
+
   const { error } = await supabase.rpc("admin_set_lesson_status", {
     p_lesson_id: lessonId,
     p_status: status,
@@ -302,10 +473,21 @@ export async function reorderLessonBlock(formData: FormData) {
 export async function saveQuizSettings(formData: FormData) {
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const { supabase } = await requireAdmin();
+  const quizId = sanitizePlainTextInput(String(formData.get("quizId") ?? ""), 120);
+  const requestedStatus = normalizeRequestedPublishStatus(
+    formData.get("quizStatus"),
+    ["draft", "published", "archived"],
+    "draft",
+  );
+
+  if (requestedStatus === "published") {
+    await assertQuizPublishAllowed(supabase, quizId);
+  }
+
   const { error } = await supabase.rpc("admin_update_quiz", {
-    p_quiz_id: sanitizePlainTextInput(String(formData.get("quizId") ?? ""), 120),
+    p_quiz_id: quizId,
     p_title: sanitizePlainTextInput(String(formData.get("quizTitle") ?? ""), 180),
-    p_status: String(formData.get("quizStatus") ?? "draft"),
+    p_status: requestedStatus,
   });
 
   if (error) throw error;

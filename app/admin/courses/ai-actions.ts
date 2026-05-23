@@ -23,6 +23,7 @@ import {
 import {
   isImageMediaAsset,
   isRequiredMediaAsset,
+  isStaleMediaAsset,
   validateMediaApproval,
   type MediaApprovalValidation,
 } from "@/lib/ai-media-workflow";
@@ -695,6 +696,33 @@ async function applyAssetTarget(
 
 function getContinuityInstruction(formData: FormData) {
   return sanitizePlainTextInput(String(formData.get("continuityInstruction") ?? ""), 1000);
+}
+
+function assetHasUsablePreview(asset: WorkflowMediaAssetRow) {
+  return typeof asset.url === "string" && asset.url.trim().length > 0;
+}
+
+function assetEligibleForApproval(asset: WorkflowMediaAssetRow) {
+  return assetHasUsablePreview(asset)
+    && asset.generation_status !== "failed"
+    && asset.generation_status !== "skipped"
+    && !isStaleMediaAsset(asset);
+}
+
+function getApprovedReviewStatus(asset: WorkflowMediaAssetRow) {
+  if (!assetEligibleForApproval(asset)) {
+    return asset.review_status;
+  }
+
+  if (isRequiredMediaAsset(asset)) {
+    return "approved";
+  }
+
+  if (asset.review_status === "draft" || asset.review_status === "in_review") {
+    return "approved";
+  }
+
+  return asset.review_status;
 }
 
 function buildCourseExtensionContext(
@@ -1568,12 +1596,19 @@ export async function approveCourseMedia(formData: FormData) {
     );
   }
 
-  const { error: assetsError } = await supabase
-    .from("learning_media_assets")
-    .update({ review_status: "approved" })
-    .eq("course_id", courseId);
+  for (const asset of assets ?? []) {
+    const nextReviewStatus = getApprovedReviewStatus(asset);
+    if (nextReviewStatus === asset.review_status) {
+      continue;
+    }
 
-  if (assetsError) throw assetsError;
+    const { error: assetReviewError } = await supabase
+      .from("learning_media_assets")
+      .update({ review_status: nextReviewStatus })
+      .eq("id", asset.id);
+
+    if (assetReviewError) throw assetReviewError;
+  }
 
   const { error: courseError } = await supabase
     .from("courses")

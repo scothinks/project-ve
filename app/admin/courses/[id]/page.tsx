@@ -357,7 +357,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                       </select>
                     </label>
                     <label>
-                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Placement</span>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Placement key</span>
                       <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.placement} name="placement" />
                     </label>
                     <label>
