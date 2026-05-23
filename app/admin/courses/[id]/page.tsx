@@ -22,6 +22,11 @@ import {
 } from "@/app/admin/courses/ai-actions";
 import { CourseForm } from "@/components/admin/LearningForms";
 import {
+  isRequiredMediaAsset,
+  isStaleMediaAsset,
+  validateMediaApproval,
+} from "@/lib/ai-media-workflow";
+import {
   getAdminCourse,
   getAdminCourseCategories,
   getAdminLearningMediaAssets,
@@ -70,14 +75,6 @@ function workflowButtonClasses(tone: "primary" | "danger" | "neutral" = "primary
   return "rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white";
 }
 
-function isImageAssetType(assetType: string) {
-  return ["image", "thumbnail", "cover", "infographic"].includes(assetType);
-}
-
-function getMetadataBoolean(metadata: Record<string, unknown>, key: string) {
-  return metadata[key] === true;
-}
-
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ lessonsPage?: string; notice?: string }>;
@@ -99,18 +96,32 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   }
 
   const paginatedLessons = paginateItems(lessons, parsePageParam(lessonsPage), 12);
-  const imageAssets = mediaAssets.filter((asset) => isImageAssetType(asset.asset_type));
-  const missingImageAssets = imageAssets.filter((asset) => !asset.url);
-  const failedImageAssets = imageAssets.filter((asset) => asset.generation_status === "failed");
-  const staleImageAssets = imageAssets.filter((asset) => getMetadataBoolean(asset.metadata, "stale"));
+  const mediaValidation = validateMediaApproval(mediaAssets);
+  const hasRequiredImageAssets = mediaAssets.some(isRequiredMediaAsset);
+  const optionalWarningCounts = mediaValidation.optionalWarnings.reduce(
+    (counts, warning) => {
+      for (const reason of warning.reasons) {
+        counts[reason] += 1;
+      }
+      return counts;
+    },
+    {
+      missing_preview: 0,
+      failed_generation: 0,
+      stale_asset: 0,
+    },
+  );
+  const optionalWarningByAssetId = new Map(
+    mediaValidation.optionalWarnings.map((warning) => [warning.asset.id, warning.reasons]),
+  );
   const mediaApprovalBlocked =
     course.ai_generated
     && course.ai_text_status === "approved"
     && (
-      imageAssets.length === 0
-      || missingImageAssets.length > 0
-      || failedImageAssets.length > 0
-      || staleImageAssets.length > 0
+      !hasRequiredImageAssets
+      || mediaValidation.missingRequiredAssets.length > 0
+      || mediaValidation.failedRequiredAssets.length > 0
+      || mediaValidation.staleRequiredAssets.length > 0
     );
 
   return (
@@ -239,7 +250,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   </form>
                   {mediaApprovalBlocked ? (
                     <p className="basis-full text-xs font-semibold leading-5 text-[#c00000]">
-                      Media approval is blocked until every required image asset has a usable preview and no stale or failed generation state remains.
+                      {!hasRequiredImageAssets
+                        ? "Media approval is blocked because the required image assets have not been seeded yet. Generate Media first."
+                        : `Media approval is blocked by required assets: ${mediaValidation.missingRequiredAssets.length} missing preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"}, ${mediaValidation.failedRequiredAssets.length} failed, ${mediaValidation.staleRequiredAssets.length} stale.`}
+                    </p>
+                  ) : null}
+                  {!mediaApprovalBlocked && mediaValidation.optionalWarnings.length > 0 ? (
+                    <p className="basis-full text-xs font-semibold leading-5 text-[#8a5a13]">
+                      Optional media warnings do not block approval: {optionalWarningCounts.missing_preview} missing preview{optionalWarningCounts.missing_preview === 1 ? "" : "s"}, {optionalWarningCounts.failed_generation} failed, {optionalWarningCounts.stale_asset} stale.
                     </p>
                   ) : null}
                 </>
@@ -269,7 +287,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
           </p>
           {mediaApprovalBlocked ? (
             <div className="mt-4 rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4 text-sm font-semibold leading-6 text-[#8a1f1f]">
-              Missing image previews: {missingImageAssets.length}. Failed generations: {failedImageAssets.length}. Stale assets: {staleImageAssets.length}.
+              {!hasRequiredImageAssets
+                ? "Blocker: required image assets have not been created yet. Generate Media before approving."
+                : `Blockers: ${mediaValidation.missingRequiredAssets.length} required preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"} missing, ${mediaValidation.failedRequiredAssets.length} required asset${mediaValidation.failedRequiredAssets.length === 1 ? "" : "s"} failed, ${mediaValidation.staleRequiredAssets.length} required asset${mediaValidation.staleRequiredAssets.length === 1 ? "" : "s"} stale.`}
+            </div>
+          ) : null}
+          {mediaValidation.optionalWarnings.length > 0 ? (
+            <div className="mt-4 rounded-[16px] border border-[#f3dfb2] bg-[#fff9ea] p-4 text-sm font-semibold leading-6 text-[#8a5a13]">
+              Optional warnings: {optionalWarningCounts.missing_preview} optional preview{optionalWarningCounts.missing_preview === 1 ? "" : "s"} missing, {optionalWarningCounts.failed_generation} optional asset{optionalWarningCounts.failed_generation === 1 ? "" : "s"} failed, {optionalWarningCounts.stale_asset} optional asset{optionalWarningCounts.stale_asset === 1 ? "" : "s"} stale. These do not block media approval.
             </div>
           ) : null}
           {mediaAssets.length === 0 ? (
@@ -292,12 +317,18 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                       <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <AdminStatusBadge tone={isRequiredMediaAsset(asset) ? "warning" : "neutral"}>
+                        {isRequiredMediaAsset(asset) ? "required" : "optional"}
+                      </AdminStatusBadge>
                       <AdminStatusBadge tone={workflowTone(asset.review_status)}>{asset.review_status.replaceAll("_", " ")}</AdminStatusBadge>
                       <AdminStatusBadge tone={asset.generation_status === "failed" ? "danger" : asset.generation_status === "completed" ? "good" : "warning"}>
                         {asset.generation_status.replaceAll("_", " ")}
                       </AdminStatusBadge>
-                      {getMetadataBoolean(asset.metadata, "stale") ? (
+                      {isStaleMediaAsset(asset) ? (
                         <AdminStatusBadge tone="danger">stale</AdminStatusBadge>
+                      ) : null}
+                      {optionalWarningByAssetId.has(asset.id) ? (
+                        <AdminStatusBadge tone="warning">optional warning</AdminStatusBadge>
                       ) : null}
                     </div>
                   </div>

@@ -20,6 +20,12 @@ import {
   type LearningMediaAssetForGeneration,
   type LearningMediaGenerationContext,
 } from "@/lib/ai-media-generator";
+import {
+  isImageMediaAsset,
+  isRequiredMediaAsset,
+  validateMediaApproval,
+  type MediaApprovalValidation,
+} from "@/lib/ai-media-workflow";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 
 type WorkflowCourseRow = {
@@ -92,18 +98,6 @@ type MediaTarget =
   | { kind: "lesson_thumbnail"; key: string; pageId?: undefined }
   | { kind: "page_cover"; key: string; pageId: string };
 
-type WorkflowMediaValidation = {
-  missingRequiredAssets: WorkflowMediaAssetRow[];
-  failedAssets: WorkflowMediaAssetRow[];
-  staleAssets: WorkflowMediaAssetRow[];
-};
-
-const IMAGE_ASSET_TYPES = new Set(["image", "thumbnail", "cover", "infographic"]);
-
-function isImageAssetType(assetType: string) {
-  return IMAGE_ASSET_TYPES.has(assetType);
-}
-
 function asRecord(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -113,10 +107,6 @@ function asRecord(value: unknown) {
 function getMetadataString(metadata: Record<string, unknown>, key: string) {
   const value = metadata[key];
   return typeof value === "string" ? value : "";
-}
-
-function getMetadataBoolean(metadata: Record<string, unknown>, key: string) {
-  return metadata[key] === true;
 }
 
 function buildCourseCoverPrompt(course: Pick<WorkflowCourseRow, "title" | "description" | "category">) {
@@ -424,7 +414,7 @@ function createCourseMediaSeedRows(
       caption: course.title,
       metadata: {
         jobId,
-        required: true,
+        required: false,
         targetKind: "course_cover",
       },
       review_status: "draft",
@@ -522,7 +512,7 @@ function createCourseMediaSeedRows(
       caption: firstPage.title,
       metadata: {
         jobId,
-        required: true,
+        required: false,
         targetKind: "page_cover",
         targetPageId: firstPage.id,
       },
@@ -701,18 +691,6 @@ async function applyAssetTarget(
       throw error;
     }
   }
-}
-
-function validateMediaApproval(assets: WorkflowMediaAssetRow[]) {
-  const imageAssets = assets.filter((asset) => isImageAssetType(asset.asset_type));
-  return {
-    missingRequiredAssets:
-      imageAssets.length === 0
-        ? []
-        : imageAssets.filter((asset) => !asset.url),
-    failedAssets: imageAssets.filter((asset) => asset.generation_status === "failed"),
-    staleAssets: imageAssets.filter((asset) => getMetadataBoolean(asRecord(asset.metadata), "stale")),
-  } satisfies WorkflowMediaValidation;
 }
 
 function getContinuityInstruction(formData: FormData) {
@@ -1055,7 +1033,7 @@ export async function generateAiCourseDraft(formData: FormData) {
         caption: draft.course.title,
         metadata: {
           jobId,
-          required: true,
+          required: false,
           targetKind: "course_cover",
         },
         review_status: "draft",
@@ -1376,7 +1354,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
       pagesByLessonId.set(page.lesson_id, current);
     }
 
-    const imageAssets = (assets ?? []).filter((asset) => isImageAssetType(asset.asset_type));
+    const imageAssets = (assets ?? []).filter(isImageMediaAsset);
     const usedTargetKeys = new Set<string>();
     const usedPageIds = new Set<string>();
     let generatedCount = 0;
@@ -1576,17 +1554,17 @@ export async function approveCourseMedia(formData: FormData) {
 
   if (assetQueryError) throw assetQueryError;
 
-  const validation = validateMediaApproval(assets ?? []);
-  const imageAssetCount = (assets ?? []).filter((asset) => isImageAssetType(asset.asset_type)).length;
+  const validation: MediaApprovalValidation<WorkflowMediaAssetRow> = validateMediaApproval(assets ?? []);
+  const hasRequiredImageAssets = (assets ?? []).some(isRequiredMediaAsset);
   if (
-    imageAssetCount === 0
-    || 
+    !hasRequiredImageAssets
+    ||
     validation.missingRequiredAssets.length > 0
-    || validation.failedAssets.length > 0
-    || validation.staleAssets.length > 0
+    || validation.failedRequiredAssets.length > 0
+    || validation.staleRequiredAssets.length > 0
   ) {
     throw new Error(
-      "Required image assets are still missing, stale, or failed. Regenerate media and confirm the previews before approval.",
+      "Required media assets are still missing, stale, failed, or not seeded yet. Regenerate media and confirm the required previews before approval.",
     );
   }
 

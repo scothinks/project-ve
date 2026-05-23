@@ -548,12 +548,12 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
 
             return (
               <Card
-                className={cn("overflow-hidden p-6", theme.card)}
+                className={cn("overflow-hidden p-5 sm:p-6", theme.card)}
                 key={mission.id}
                 variant="quiet"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0">
                     <div
                       className={cn(
                         "inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em]",
@@ -562,31 +562,34 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
                     >
                       {mission.category}
                     </div>
-                    <h3 className="mt-2 text-[1.24rem] font-semibold tracking-[-0.025em] text-[var(--foreground)]">
-                      {mission.title}
-                    </h3>
-                    <p className="mt-3 max-w-[34ch] text-[0.98rem] font-medium leading-7 text-[var(--ve-muted-strong)]">
-                      {mission.description}
-                    </p>
                   </div>
 
                   <div
                     className={cn(
-                      "max-w-[12rem] shrink-0 rounded-[18px] px-4 py-3 text-right",
+                      "ml-auto max-w-[72%] rounded-[18px] px-4 py-2.5 text-right sm:max-w-[18rem]",
                       theme.pill,
                     )}
                     title={rewardLabel}
                   >
-                    <span className="block truncate text-base font-black tracking-[-0.02em]">
+                    <span className="block text-[0.95rem] font-black tracking-[-0.02em] sm:text-base">
                       {rewardLabel}
                     </span>
                   </div>
                 </div>
 
+                <div className="mt-5 min-w-0">
+                  <h3 className="text-[1.24rem] font-semibold tracking-[-0.025em] text-[var(--foreground)]">
+                    {mission.title}
+                  </h3>
+                  <p className="mt-3 max-w-none text-[0.98rem] font-medium leading-[1.7] text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
+                    {mission.description}
+                  </p>
+                </div>
+
                 {hasStructuredProgress ? (
                   <div className="mt-5">
-                    <div className="flex items-center justify-between text-[0.9rem] font-semibold tracking-[-0.01em] text-[#757575]">
-                      <span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[#757575]">
+                      <span className="min-w-0 flex-1">
                         {mission.completionLabel
                           ? mission.availableAgainAt
                             ? `${mission.completionLabel} · Available again ${formatAvailableAgain(mission.availableAgainAt)}`
@@ -595,7 +598,7 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
                             ? proofRequirementSummary
                           : statusCopy[mission.status]}
                       </span>
-                      <span>
+                      <span className="shrink-0">
                         {mission.progressCount}/{mission.targetCount}
                       </span>
                     </div>
@@ -608,18 +611,18 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
                   </div>
                 ) : null}
 
-                <div className="mt-5 flex flex-wrap items-center gap-3">
+                <div className={cn("mt-5 flex flex-wrap items-center gap-3", mission.referral && "items-stretch")}>
                   {action.type === "share" && mission.referral ? (
                     <>
                       <MissionActionButton
-                        className=""
+                        className="w-full sm:w-auto"
                         onClick={() => void shareReferralLink(mission.id, mission.referral!.shareUrl)}
                         style={primaryActionStyle}
                       >
                         Share invite
                       </MissionActionButton>
                       <MissionActionButton
-                        className="min-w-[124px] px-5"
+                        className="w-full min-w-0 px-5 sm:w-auto sm:min-w-[124px]"
                         onClick={() => void copyReferralLink(mission.id, mission.referral!.shareUrl)}
                         style={secondaryActionStyle}
                       >
@@ -647,26 +650,29 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
                 </div>
 
                 {mission.referral ? (
-                  <div className="mt-5 rounded-[18px] border border-white/80 bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-4 py-4">
-                    <div className="rounded-[16px] bg-[var(--ve-card)] px-4 py-3">
-                      <p className="truncate text-[12px] font-bold text-[var(--ve-muted-strong)]">
+                  <div className="mt-4 rounded-[20px] border border-white/80 bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-4 py-4">
+                    <div className="rounded-[16px] bg-[var(--ve-card)] px-4 py-3 text-left">
+                      <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                        Invite link
+                      </p>
+                      <p className="mt-2 truncate text-[12px] font-bold text-[var(--ve-muted-strong)]">
                         {mission.referral.shareUrl}
                       </p>
                     </div>
-                    <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                      <div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded-[14px] bg-[var(--ve-card)] px-2 py-3">
                         <p className="text-base font-black text-[var(--foreground)]">
                           {mission.referral.invitedCount}
                         </p>
                         <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">Invited</p>
                       </div>
-                      <div>
+                      <div className="rounded-[14px] bg-[var(--ve-card)] px-2 py-3">
                         <p className="text-base font-black text-[var(--foreground)]">
                           {mission.referral.qualifiedCount}
                         </p>
                         <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">Qualified</p>
                       </div>
-                      <div>
+                      <div className="rounded-[14px] bg-[var(--ve-card)] px-2 py-3">
                         <p className="text-base font-black text-[var(--foreground)]">
                           {mission.referral.awardedCount}
                         </p>

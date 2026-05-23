@@ -409,11 +409,11 @@ export function LoginForm() {
   if (confirmationEmail) {
     return (
       <section className="mt-8">
-        <div className="rounded-[26px] border border-[#dff2e9] bg-[#f4fbf7] p-6 text-center">
+        <div className="rounded-[26px] border border-[color:color-mix(in_srgb,var(--ve-green)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_68%,var(--ve-card))] p-6 text-center shadow-[0_18px_40px_rgba(var(--ve-shadow-rgb),0.12)]">
           <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-2xl font-black text-white">
             ✓
           </div>
-          <h2 className="mt-5 text-2xl font-black leading-8">Check your email</h2>
+          <h2 className="mt-5 text-2xl font-black leading-8 text-[var(--ve-ink)]">Check your email</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
             We sent a confirmation link to {confirmationEmail}. Confirm your account, then log in
             to continue.
@@ -439,11 +439,11 @@ export function LoginForm() {
   if (emailConfirmed) {
     return (
       <section className="mt-8">
-        <div className="rounded-[26px] border border-[#dff2e9] bg-[#f4fbf7] p-6 text-center">
+        <div className="rounded-[26px] border border-[color:color-mix(in_srgb,var(--ve-green)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_68%,var(--ve-card))] p-6 text-center shadow-[0_18px_40px_rgba(var(--ve-shadow-rgb),0.12)]">
           <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-2xl font-black text-white">
             ✓
           </div>
-          <h2 className="mt-5 text-2xl font-black leading-8">Email confirmed</h2>
+          <h2 className="mt-5 text-2xl font-black leading-8 text-[var(--ve-ink)]">Email confirmed</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
             Your account is ready. Log in to continue learning.
           </p>
