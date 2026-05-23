@@ -14,7 +14,7 @@ import { saveLesson, setLessonStatus } from "@/app/admin/courses/actions";
 import {
   approveCourseMedia,
   approveCourseText,
-  generateCourseMediaDrafts,
+  generateCourseMediaAssets,
   publishApprovedCourse,
   requestCourseMediaChanges,
   requestCourseTextChanges,
@@ -70,6 +70,14 @@ function workflowButtonClasses(tone: "primary" | "danger" | "neutral" = "primary
   return "rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white";
 }
 
+function isImageAssetType(assetType: string) {
+  return ["image", "thumbnail", "cover", "infographic"].includes(assetType);
+}
+
+function getMetadataBoolean(metadata: Record<string, unknown>, key: string) {
+  return metadata[key] === true;
+}
+
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ lessonsPage?: string; notice?: string }>;
@@ -91,6 +99,19 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   }
 
   const paginatedLessons = paginateItems(lessons, parsePageParam(lessonsPage), 12);
+  const imageAssets = mediaAssets.filter((asset) => isImageAssetType(asset.asset_type));
+  const missingImageAssets = imageAssets.filter((asset) => !asset.url);
+  const failedImageAssets = imageAssets.filter((asset) => asset.generation_status === "failed");
+  const staleImageAssets = imageAssets.filter((asset) => getMetadataBoolean(asset.metadata, "stale"));
+  const mediaApprovalBlocked =
+    course.ai_generated
+    && course.ai_text_status === "approved"
+    && (
+      imageAssets.length === 0
+      || missingImageAssets.length > 0
+      || failedImageAssets.length > 0
+      || staleImageAssets.length > 0
+    );
 
   return (
     <>
@@ -185,12 +206,23 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 </>
               ) : null}
 
-              {course.ai_text_status === "approved" && course.ai_media_status === "generation_ready" ? (
-                <form action={generateCourseMediaDrafts}>
-                  <input name="courseId" type="hidden" value={course.id} />
-                  <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
-                  <button className={workflowButtonClasses()} type="submit">Generate Media</button>
-                </form>
+              {course.ai_text_status === "approved" ? (
+                <>
+                  <form action={generateCourseMediaAssets}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <button className={workflowButtonClasses()} type="submit">Generate Media</button>
+                  </form>
+                  <form action={generateCourseMediaAssets}>
+                    <input name="courseId" type="hidden" value={course.id} />
+                    <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                    <input name="replaceExisting" type="hidden" value="true" />
+                    <button className={workflowButtonClasses("neutral")} type="submit">Regenerate Existing Images</button>
+                  </form>
+                  <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                    Generates image assets from approved lesson text and media prompts. Audio/video can be added later.
+                  </p>
+                </>
               ) : null}
 
               {["draft", "in_review", "changes_requested"].includes(course.ai_media_status) ? (
@@ -198,13 +230,18 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   <form action={approveCourseMedia}>
                     <input name="courseId" type="hidden" value={course.id} />
                     <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
-                    <button className={workflowButtonClasses()} type="submit">Approve Media</button>
+                    <button className={workflowButtonClasses()} disabled={mediaApprovalBlocked} type="submit">Approve Media</button>
                   </form>
                   <form action={requestCourseMediaChanges}>
                     <input name="courseId" type="hidden" value={course.id} />
                     <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
                     <button className={workflowButtonClasses("danger")} type="submit">Request Media Changes</button>
                   </form>
+                  {mediaApprovalBlocked ? (
+                    <p className="basis-full text-xs font-semibold leading-5 text-[#c00000]">
+                      Media approval is blocked until every required image asset has a usable preview and no stale or failed generation state remains.
+                    </p>
+                  ) : null}
                 </>
               ) : null}
 
@@ -228,8 +265,13 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         <AdminCard>
           <h2 className="text-lg font-black">Media briefs and assets</h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-            Edit prompts, scripts, and URLs here. Saving approved media resets publishing readiness until media is approved again.
+            Edit prompts, scripts, and URLs here. Saving or regenerating approved media resets publishing readiness until media is approved again.
           </p>
+          {mediaApprovalBlocked ? (
+            <div className="mt-4 rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4 text-sm font-semibold leading-6 text-[#8a1f1f]">
+              Missing image previews: {missingImageAssets.length}. Failed generations: {failedImageAssets.length}. Stale assets: {staleImageAssets.length}.
+            </div>
+          ) : null}
           {mediaAssets.length === 0 ? (
             <div className="mt-4">
               <EmptyAdminState>No media briefs yet.</EmptyAdminState>
@@ -249,7 +291,27 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                       </p>
                       <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
                     </div>
-                    <AdminStatusBadge tone={workflowTone(asset.review_status)}>{asset.review_status.replaceAll("_", " ")}</AdminStatusBadge>
+                    <div className="flex flex-wrap gap-2">
+                      <AdminStatusBadge tone={workflowTone(asset.review_status)}>{asset.review_status.replaceAll("_", " ")}</AdminStatusBadge>
+                      <AdminStatusBadge tone={asset.generation_status === "failed" ? "danger" : asset.generation_status === "completed" ? "good" : "warning"}>
+                        {asset.generation_status.replaceAll("_", " ")}
+                      </AdminStatusBadge>
+                      {getMetadataBoolean(asset.metadata, "stale") ? (
+                        <AdminStatusBadge tone="danger">stale</AdminStatusBadge>
+                      ) : null}
+                    </div>
+                  </div>
+                  {asset.url ? (
+                    <div className="mt-4 overflow-hidden rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img alt={asset.alt_text ?? asset.caption ?? asset.placement} className="h-48 w-full object-cover" src={asset.url} />
+                    </div>
+                  ) : null}
+                  <div className="mt-3 grid gap-3 text-xs font-semibold leading-5 text-[var(--ve-muted)] md:grid-cols-2">
+                    <p>Generation status: <span className="font-black text-[var(--foreground)]">{asset.generation_status.replaceAll("_", " ")}</span></p>
+                    <p>Provider/model: <span className="font-black text-[var(--foreground)]">{asset.provider ?? "pending"}{asset.model ? ` / ${asset.model}` : ""}</span></p>
+                    <p>Storage path: <span className="font-black text-[var(--foreground)]">{asset.storage_path ?? "Not uploaded yet"}</span></p>
+                    <p>Error: <span className="font-black text-[var(--foreground)]">{asset.generation_error ?? "None"}</span></p>
                   </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-3">
                     <label>

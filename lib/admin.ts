@@ -294,10 +294,15 @@ export type AdminLearningMediaAssetRow = {
   prompt: string | null;
   script: string | null;
   url: string | null;
+  storage_path: string | null;
+  provider: string | null;
+  model: string | null;
   alt_text: string | null;
   caption: string | null;
   metadata: Record<string, unknown>;
   review_status: string;
+  generation_status: string;
+  generation_error: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -1026,7 +1031,7 @@ export async function getAdminLearningMediaAssets(
 ) {
   let query = supabase
     .from("learning_media_assets")
-    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, alt_text, caption, metadata, review_status, sort_order, created_at, updated_at")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order, created_at, updated_at")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 

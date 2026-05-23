@@ -77,6 +77,21 @@ export type AiGeneratedCourseDraft = {
   lessons: AiGeneratedLesson[];
 };
 
+export type AiCourseExtensionContext = {
+  course: {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    level: AiGeneratorLevel;
+  };
+  lessons: Array<{
+    title: string;
+    description: string;
+  }>;
+  continuityInstruction?: string;
+};
+
 const DEFAULT_TEXT_MODEL = process.env.OPENAI_TEXT_MODEL || "gpt-5.4-mini";
 const DEFAULT_REVIEW_MODEL = process.env.OPENAI_REVIEW_MODEL || "gpt-5.4-mini";
 
@@ -270,6 +285,43 @@ function buildPrompt(input: AiCourseGenerationInput) {
     "- Each lesson must have at least 2 pages and at least 1 media brief.",
     "- Each quiz question must be single_choice with 2 to 4 options and exactly 1 correct answer.",
     "- Keep table payloads simple: columns as short labels and rows as arrays of short strings.",
+  ].join("\n");
+}
+
+function buildExtensionPrompt(input: AiCourseGenerationInput, context: AiCourseExtensionContext) {
+  const existingLessonLines = context.lessons.length > 0
+    ? context.lessons.map((lesson, index) => `${index + 1}. ${lesson.title}: ${lesson.description}`).join("\n")
+    : "No existing lessons.";
+
+  return [
+    "Extend an existing safe, plain-language values education course as strict JSON.",
+    `Existing course title: ${context.course.title}`,
+    `Existing course description: ${context.course.description}`,
+    `Existing course category: ${context.course.category}`,
+    `Existing course level: ${context.course.level}`,
+    `Extension topic: ${input.topic}`,
+    `Target audience: ${input.audience}`,
+    `Country or region: ${input.region}`,
+    `Difficulty: ${input.difficulty}`,
+    `Tone: ${input.tone}`,
+    `Number of NEW lessons to add: ${input.lessonCount}`,
+    `Questions per NEW lesson: ${input.questionsPerLesson}`,
+    `Continuity instruction: ${context.continuityInstruction || "Append the new lessons after the current sequence."}`,
+    `Notes and source guidance: ${input.notes || "None provided."}`,
+    "Existing lessons to avoid duplicating:",
+    existingLessonLines,
+    "Requirements:",
+    "- Return only NEW lessons that extend the existing course.",
+    "- Do not repeat, lightly rename, or paraphrase the existing lessons.",
+    "- Keep the tone, difficulty, and category aligned with the current course.",
+    "- Use simple language suitable for semi-literate to secondary-school learners.",
+    "- Avoid party propaganda, hate, sexual content, medical advice, legal advice, financial advice, or unsafe instructions.",
+    "- Use culturally neutral, regionally relevant everyday examples and avoid fake facts or precise claims you cannot support.",
+    "- Keep page blocks mostly text, callout, and table. Put visual or audio ideas in mediaBriefs instead of depending on real URLs.",
+    "- Each lesson must have at least 2 pages and at least 1 media brief.",
+    "- Each quiz question must be single_choice with 2 to 4 options and exactly 1 correct answer.",
+    "- Keep table payloads simple: columns as short labels and rows as arrays of short strings.",
+    "- The course object should echo the current course metadata so the output still matches the schema.",
   ].join("\n");
 }
 
@@ -540,9 +592,7 @@ export function getAiLearningConfig() {
   };
 }
 
-export async function generateAiCourseDraft(
-  rawInput: AiCourseGenerationInput,
-): Promise<AiGeneratedCourseDraft> {
+async function requestAiCourseDraft(rawInput: AiCourseGenerationInput, prompt: string): Promise<AiGeneratedCourseDraft> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is missing. Add it to the server environment before generating AI drafts.");
@@ -577,7 +627,7 @@ export async function generateAiCourseDraft(
           content: [
             {
               type: "input_text",
-              text: buildPrompt(input),
+              text: prompt,
             },
           ],
         },
@@ -614,4 +664,18 @@ export async function generateAiCourseDraft(
   }
 
   return normalizeDraftShape(parsed, input);
+}
+
+export async function generateAiCourseDraft(
+  rawInput: AiCourseGenerationInput,
+): Promise<AiGeneratedCourseDraft> {
+  return requestAiCourseDraft(rawInput, buildPrompt(clampAiGenerationRequest(rawInput)));
+}
+
+export async function generateAiLessonExtension(
+  rawInput: AiCourseGenerationInput,
+  context: AiCourseExtensionContext,
+): Promise<AiGeneratedCourseDraft> {
+  const input = clampAiGenerationRequest(rawInput);
+  return requestAiCourseDraft(input, buildExtensionPrompt(input, context));
 }
