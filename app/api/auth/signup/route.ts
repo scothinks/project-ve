@@ -1,6 +1,6 @@
-import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
+import { getRiskContext, verifyTurnstileToken } from "@/lib/auth-risk";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createPlainSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -10,50 +10,6 @@ type SignupBody = {
   fullName?: string;
   captchaToken?: string | null;
 };
-
-function getIpAddress(request: NextRequest) {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
-}
-
-function hashRiskValue(value: string | null | undefined) {
-  if (!value || value === "unknown") {
-    return null;
-  }
-
-  const salt = process.env.FRAUD_HASH_SALT ?? "project-ve-local-risk-salt";
-  return createHash("sha256").update(`${salt}:${value}`).digest("hex");
-}
-
-async function verifyCaptcha(token: string | null | undefined, ipAddress: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-
-  if (!secret) {
-    return true;
-  }
-
-  if (!token) {
-    return false;
-  }
-
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      secret,
-      response: token,
-      remoteip: ipAddress,
-    }),
-  });
-  const data = (await response.json()) as { success?: boolean };
-
-  return Boolean(data.success);
-}
 
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as SignupBody;
@@ -80,12 +36,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ email, sessionExists: true });
   }
 
-  const ipAddress = getIpAddress(request);
-  const deviceId = request.cookies.get("project-ve-device-id")?.value ?? null;
-  const ipHash = hashRiskValue(ipAddress);
-  const deviceHash = hashRiskValue(deviceId);
+  const { ipAddress, ipHash, deviceHash } = getRiskContext(request);
   const emailDomain = email.split("@")[1] ?? "";
-  const captchaPassed = await verifyCaptcha(body.captchaToken, ipAddress);
+  const captchaPassed = await verifyTurnstileToken(body.captchaToken, ipAddress);
 
   if (!captchaPassed) {
     return NextResponse.json(
