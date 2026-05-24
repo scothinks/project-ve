@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import { BottomPromptCard } from "@/components/pwa/BottomPromptCard";
 import { Button } from "@/components/ui/Button";
 
 type BeforeInstallPromptEvent = Event & {
@@ -109,51 +110,34 @@ export function AppInstallPrompt() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
-      <div className="pointer-events-auto w-full max-w-[420px] rounded-[22px] border border-[#efe7da] bg-[var(--ve-shell)] p-4 shadow-[0_18px_40px_rgba(16,16,16,0.14)]">
-        <div className="flex items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#087f5b]">
-              Install
-            </p>
-            <p className="mt-1 text-sm font-black text-[var(--foreground)]">
-              Save Project VE to your home screen.
-            </p>
-          </div>
-
-          {deferredPrompt ? (
-            <Button className="h-10 shrink-0 px-5 text-sm" onClick={installApp} type="button">
-              Install
-            </Button>
-          ) : (
-            <button
-              className="shrink-0 rounded-full border border-[var(--ve-line)] px-4 py-2 text-sm font-black text-[var(--foreground)]"
-              onClick={() => setShowIosHelp((current) => !current)}
-              type="button"
-            >
-              How
-            </button>
-          )}
-
-          <button
-            aria-label="Dismiss install prompt"
-            className="h-9 w-9 shrink-0 rounded-full bg-[var(--ve-panel)] text-lg font-black text-[var(--ve-muted-strong)]"
-            onClick={dismissPrompt}
-            type="button"
-          >
-            ×
-          </button>
+    <BottomPromptCard
+      action={deferredPrompt ? (
+        <Button className="h-10 shrink-0 px-5 text-sm" onClick={installApp} type="button">
+          Install
+        </Button>
+      ) : undefined}
+      dismissAriaLabel="Dismiss install prompt"
+      eyebrow="Install"
+      onDismiss={dismissPrompt}
+      title="Save Project VE to your home screen."
+      trailing={!deferredPrompt ? (
+        <button
+          className="shrink-0 rounded-full border border-[var(--ve-line)] px-4 py-2 text-sm font-black text-[var(--foreground)]"
+          onClick={() => setShowIosHelp((current) => !current)}
+          type="button"
+        >
+          How
+        </button>
+      ) : undefined}
+    >
+      {showIosPrompt && showIosHelp ? (
+        <div className="rounded-[18px] border border-[#efe7da] bg-[var(--ve-panel)] px-4 py-3">
+          <p className="text-sm font-semibold leading-6 text-[#575757]">
+            In Safari, tap <span className="font-black text-[var(--foreground)]">Share</span>, then choose{" "}
+            <span className="font-black text-[var(--foreground)]">Add to Home Screen</span>.
+          </p>
         </div>
-
-        {showIosPrompt && showIosHelp ? (
-          <div className="mt-3 rounded-[18px] border border-[#efe7da] bg-[var(--ve-panel)] px-4 py-3">
-            <p className="text-sm font-semibold leading-6 text-[#575757]">
-              In Safari, tap <span className="font-black text-[var(--foreground)]">Share</span>, then choose{" "}
-              <span className="font-black text-[var(--foreground)]">Add to Home Screen</span>.
-            </p>
-          </div>
-        ) : null}
-      </div>
-    </div>
+      ) : null}
+    </BottomPromptCard>
   );
 }
