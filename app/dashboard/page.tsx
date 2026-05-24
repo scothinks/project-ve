@@ -19,6 +19,7 @@ import {
   getLessonProgress,
 } from "@/lib/progress";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 import { getLearningCatalog } from "@/lib/supabase-learning";
 import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
@@ -121,6 +122,10 @@ export default async function DashboardPage() {
     isSupabaseConfigured && user && supabase
       ? await getRewardStoreSnapshot(supabase, user.id, xpBalance).catch(() => null)
       : demoRewardStoreSnapshot;
+  const unreadNotificationCount =
+    isSupabaseConfigured && user && supabase
+      ? await getUnreadNotificationCount(supabase, user.id).catch(() => 0)
+      : 0;
   const featuredRewards = (rewardSnapshot?.rewards ?? []).slice(0, 2);
   const continueLearningItem =
     isSupabaseConfigured && user && supabase
@@ -144,10 +149,17 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Link
-            aria-label="Open profile"
-            className="rounded-full border-[5px] border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+            aria-label={
+              unreadNotificationCount > 0
+                ? `Open profile with ${unreadNotificationCount} unread notifications`
+                : "Open profile"
+            }
+            className="relative rounded-full border-[5px] border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
             href="/profile"
           >
+            {unreadNotificationCount > 0 ? (
+              <span className="absolute right-1 top-1 z-10 size-3 rounded-full border-2 border-[#123c35] bg-[#ff7a59]" />
+            ) : null}
             <Avatar
               avatarUrl={profile?.avatar_url}
               className="size-[54px] text-[1.02rem]"

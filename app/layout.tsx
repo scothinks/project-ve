@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppInstallPrompt } from "@/components/pwa/AppInstallPrompt";
 import { PwaBootstrap } from "@/components/pwa/PwaBootstrap";
+import { PushEnablePrompt } from "@/components/pwa/PushEnablePrompt";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
       <body>
         <PwaBootstrap />
         {children}
+        <PushEnablePrompt />
         <AppInstallPrompt />
       </body>
     </html>
