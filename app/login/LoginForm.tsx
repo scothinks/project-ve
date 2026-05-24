@@ -282,8 +282,36 @@ export function LoginForm() {
     setSuccessMessage(null);
 
     if (authMode === "signup" && !acceptedTerms) {
+      setIsLoading(false);
       setMessage("Accept the Terms before creating an account.");
       return;
+    }
+
+    if (authMode === "signup" && turnstileSiteKey) {
+      if (!captchaToken) {
+        setIsLoading(false);
+        setMessage("Complete the signup check and try again.");
+        return;
+      }
+
+      const response = await fetch("/api/auth/oauth-signup/prepare", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          captchaToken,
+        }),
+      });
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setIsLoading(false);
+        window.turnstile?.reset(turnstileWidgetId ?? undefined);
+        setCaptchaToken(null);
+        setMessage(data.error ?? "Could not start Google signup.");
+        return;
+      }
     }
 
     const { error } = await supabase.auth.signInWithOAuth({
