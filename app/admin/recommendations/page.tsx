@@ -241,7 +241,8 @@ export default async function AdminRecommendationsPage({
                     </p>
                     <h2 className="mt-1 text-xl font-black">Browse Courses</h2>
                     <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                      Surface full courses learners can explore at their own pace.
+                      Keep this empty until a tutor deliberately curates the courses that belong
+                      in focus.
                     </p>
                   </div>
                   <AdminStatusBadge tone="good">Default</AdminStatusBadge>
@@ -251,25 +252,11 @@ export default async function AdminRecommendationsPage({
                     Assigned courses
                   </p>
                   <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
-                    {previewCountLabel(courses.length)}
+                    0 items
                   </p>
-                  {courses.length > 0 ? (
-                    <div className="mt-3 space-y-2">
-                      {courses.map((course) => (
-                        <div
-                          className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-4 py-3"
-                          key={course.id}
-                        >
-                          <p className="text-sm font-black">{course.title}</p>
-                          <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
-                            Course - {course.status}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-xs font-bold text-[var(--ve-muted)]">No courses available yet.</p>
-                  )}
+                  <p className="mt-3 text-xs font-bold text-[var(--ve-muted)]">
+                    No courses are assigned by default. Add them manually after review.
+                  </p>
                 </div>
               </AdminCard>
             </>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Lesson } from "@/lib/lessons";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getLessonXP } from "@/lib/lessons";
 import { Card } from "@/components/ui/Card";
 import { ChevronRightIcon } from "@/components/ui/Icons";
@@ -17,8 +18,9 @@ export function LessonModuleCard({ lesson, completed = false }: LessonModuleCard
         <div className="h-24 bg-[#dff2e9]">
           <img
             alt={lesson.coverImage.alt}
-            className="h-full w-full object-cover"
+            className={`h-full w-full ${getImageFitClass(lesson.coverImage)}`}
             src={lesson.coverImage.src}
+            style={getImagePresentationStyle(lesson.coverImage)}
           />
         </div>
         <div className="p-5">

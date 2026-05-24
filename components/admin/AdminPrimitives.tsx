@@ -21,7 +21,7 @@ export function AdminPageHeader({
     <header className="mb-6">
       {backHref ? (
         <Link
-          className="mb-4 inline-flex items-center gap-2 rounded-full bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[#4f4f4f] shadow-sm ring-1 ring-[#e6e1d8] transition hover:text-[#087f5b]"
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)] shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] hover:text-[var(--ve-green)]"
           href={backHref}
         >
           <ArrowLeftIcon className="h-4 w-4" />
@@ -29,7 +29,7 @@ export function AdminPageHeader({
         </Link>
       ) : null}
       {eyebrow ? (
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
           {eyebrow}
         </p>
       ) : null}
@@ -59,10 +59,14 @@ export function AdminNoticeBanner({
   tone?: "success" | "warning" | "danger" | "info";
 }) {
   const tones = {
-    success: "border-[#d6efe4] bg-[#edf8f1] text-[#087f5b]",
-    warning: "border-[#f5e6a8] bg-[#fff8df] text-[#a66d00]",
-    danger: "border-[#f1d2d2] bg-[#fff0f0] text-[#c00000]",
-    info: "border-[#d8d8ef] bg-[#f2f1fb] text-[#5a4fcf]",
+    success:
+      "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]",
+    warning:
+      "border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_78%,var(--ve-card))] text-[#b17a05]",
+    danger:
+      "border-[color:color-mix(in_srgb,#d45a5a_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] text-[#d45a5a]",
+    info:
+      "border-[color:color-mix(in_srgb,#7f6ac0_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#f2f1fb_72%,var(--ve-card))] text-[#8f7ce0]",
   };
 
   return (
@@ -90,7 +94,7 @@ export function AdminStatCard({
     default: "text-[#087f5b]",
     mission: "text-[#c94f2e]",
     store: "text-[#a66d00]",
-    risk: "text-[#c00000]",
+    risk: "text-[#d45a5a]",
     warning: "text-[#a66d00]",
   };
 
@@ -110,11 +114,15 @@ export function AdminStatusBadge({
   tone?: "neutral" | "good" | "warning" | "danger" | "store";
 }) {
   const tones = {
-    neutral: "bg-[var(--ve-card-muted)] text-[#5f5f5a]",
-    good: "bg-[#e4f4ed] text-[#087f5b]",
-    warning: "bg-[#fff8df] text-[#a66d00]",
-    danger: "bg-[#fff0f0] text-[#c00000]",
-    store: "bg-[#fff8df] text-[#a66d00]",
+    neutral: "bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]",
+    good:
+      "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
+    warning:
+      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[#b17a05]",
+    danger:
+      "bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] text-[#d45a5a]",
+    store:
+      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[#b17a05]",
   };
 
   return (
@@ -149,7 +157,7 @@ export function AdminTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#efebe3]">{children}</tbody>
+          <tbody className="divide-y divide-[var(--ve-line-soft)]">{children}</tbody>
         </table>
       </div>
     </div>
@@ -224,8 +232,8 @@ export function AdminPagination({
               className={cn(
                 "rounded-[12px] border px-3 py-2 text-xs font-black",
                 page === currentPage
-                  ? "border-[#087f5b] bg-[#e4f4ed] text-[#087f5b]"
-                  : "border-[var(--ve-line)] text-[#5f5f5a]",
+                  ? "border-[color:color-mix(in_srgb,var(--ve-green)_30%,var(--ve-line))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]"
+                  : "border-[var(--ve-line)] text-[var(--ve-muted-strong)]",
               )}
               href={buildHref(page)}
               key={page}

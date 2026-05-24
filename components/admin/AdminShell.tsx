@@ -188,7 +188,7 @@ export function AdminShell({
       <div className="flex min-h-screen w-full">
         <aside
           className={cn(
-            "sticky top-0 hidden h-screen shrink-0 border-r border-[#e3ded5] bg-[var(--ve-shell)] px-4 py-6 transition-[width] duration-200 md:flex md:flex-col",
+            "sticky top-0 hidden h-screen shrink-0 border-r border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-6 transition-[width] duration-200 md:flex md:flex-col",
             collapsed ? "w-20" : "w-72",
           )}
         >
@@ -196,7 +196,7 @@ export function AdminShell({
             <div className={cn(collapsed && "sr-only")}>
               <Link
                 href="/dashboard"
-                className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]"
+                className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]"
               >
                 Project VE
               </Link>
@@ -205,7 +205,7 @@ export function AdminShell({
             {collapsed ? (
               <Link
                 aria-label="Project VE admin"
-                className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#e4f4ed] text-sm font-black text-[#087f5b]"
+                className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-sm font-black text-[var(--ve-green)]"
                 href="/admin"
               >
                 VE
@@ -213,7 +213,7 @@ export function AdminShell({
             ) : null}
             <button
               aria-label={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[#e8e1d7]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[var(--ve-panel-soft)]"
               onClick={() => setCollapsed((value) => !value)}
               type="button"
             >
@@ -229,9 +229,10 @@ export function AdminShell({
                   <Link
                     aria-label={collapsed ? link.label : undefined}
                     className={cn(
-                      "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[#5f5f5a] hover:bg-[var(--ve-panel)] hover:text-[var(--foreground)]",
+                      "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[var(--ve-muted-strong)] hover:bg-[var(--ve-panel)] hover:text-[var(--foreground)]",
                       collapsed ? "justify-center px-2" : "gap-3 px-3 py-2",
-                      isActivePath(pathname, link.href) && "bg-[#e4f4ed] text-[#087f5b]",
+                      isActivePath(pathname, link.href) &&
+                        "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
                     )}
                     href={link.href}
                     key={link.href}
@@ -253,16 +254,16 @@ export function AdminShell({
               <p className="mt-1 truncate text-sm font-black">
                 {profile.display_name ?? "Admin"}
               </p>
-              <p className="mt-1 text-xs font-bold capitalize text-[#087f5b]">{profile.role}</p>
+              <p className="mt-1 text-xs font-bold capitalize text-[var(--ve-green)]">{profile.role}</p>
             </div>
           )}
         </aside>
 
         <section className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-[#e3ded5] bg-[var(--ve-shell)]/95 px-5 py-4 backdrop-blur md:hidden">
+          <header className="sticky top-0 z-20 border-b border-[var(--ve-line-soft)] bg-[var(--ve-shell)]/95 px-5 py-4 backdrop-blur md:hidden">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                   Project VE
                 </p>
                 <h1 className="text-xl font-black">Admin</h1>
@@ -274,7 +275,11 @@ export function AdminShell({
             <nav className="hide-scrollbar mt-4 flex gap-2 overflow-x-auto">
               {adminLinks.map((link) => (
                 <Link
-                  className="shrink-0 rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black"
+                  className={cn(
+                    "shrink-0 rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)]",
+                    isActivePath(pathname, link.href) &&
+                      "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
+                  )}
                   href={link.href}
                   key={link.href}
                 >

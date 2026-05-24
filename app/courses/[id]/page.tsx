@@ -5,6 +5,7 @@ import { LessonModuleCard } from "@/components/lesson/LessonModuleCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getCourseXP, getLessonXP } from "@/lib/lessons";
 import {
   getCompletedLessonIds,
@@ -40,6 +41,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   const completedLessonIds = getCompletedLessonIds(lessonProgress, course.lessons);
   const { progressPercent } = getCourseProgress(course, completedLessonIds);
   const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds);
+  const heroImage = course.coverImage ?? course.thumbnail;
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
@@ -47,9 +49,10 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
       <section className="px-6 py-8 pb-28">
         <Card className="overflow-hidden">
           <img
-            alt={course.thumbnail.alt}
-            className="h-40 w-full object-cover"
-            src={course.thumbnail.src}
+            alt={heroImage.alt}
+            className={`h-40 w-full ${getImageFitClass(heroImage)}`}
+            src={heroImage.src}
+            style={getImagePresentationStyle(heroImage)}
           />
           <div className="p-6">
             <div className="flex items-start justify-between gap-4">
@@ -94,19 +97,28 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
         <section className="mt-8">
           <h2 className="text-[17px] font-bold">Lessons</h2>
-          <div className="mt-3 space-y-4">
-            {course.lessons.map((lesson) => (
-              <div key={lesson.id}>
-                <LessonModuleCard completed={completedLessonIds.has(lesson.id)} lesson={lesson} />
-                <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">
-                  {lesson.pages.length} pages ·{" "}
-                  {completedLessonIds.has(lesson.id)
-                    ? "Lesson complete"
-                    : `${formatXpLabel(getLessonXP(lesson))} total`}
-                </p>
-              </div>
-            ))}
-          </div>
+          {course.lessons.length === 0 ? (
+            <Card className="mt-3 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-5">
+              <p className="text-sm font-black">No lessons currently.</p>
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                This course is live, but the lessons are still being reviewed. Check back soon.
+              </p>
+            </Card>
+          ) : (
+            <div className="mt-3 space-y-4">
+              {course.lessons.map((lesson) => (
+                <div key={lesson.id}>
+                  <LessonModuleCard completed={completedLessonIds.has(lesson.id)} lesson={lesson} />
+                  <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">
+                    {lesson.pages.length} pages ·{" "}
+                    {completedLessonIds.has(lesson.id)
+                      ? "Lesson complete"
+                      : `${formatXpLabel(getLessonXP(lesson))} total`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </section>
       <BottomNav active="Lesson" />

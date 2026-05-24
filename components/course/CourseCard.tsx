@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { Course } from "@/lib/lessons";
 import { getCourseXP } from "@/lib/lessons";
 import { getCourseProgress } from "@/lib/progress";
@@ -27,8 +28,9 @@ export function CourseCard({
         <div className="relative h-32">
           <img
             alt={course.thumbnail.alt}
-            className="h-full w-full object-cover"
+            className={`h-full w-full ${getImageFitClass(course.thumbnail)}`}
             src={course.thumbnail.src}
+            style={getImagePresentationStyle(course.thumbnail)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/5" />
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">

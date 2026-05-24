@@ -24,6 +24,18 @@ function statusLabel(status: string) {
   return status;
 }
 
+function actionButtonClasses(kind: "success" | "danger" | "secondary") {
+  if (kind === "success") {
+    return "rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]";
+  }
+
+  if (kind === "danger") {
+    return "rounded-[12px] border border-[color:color-mix(in_srgb,#d45a5a_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[#d45a5a]";
+  }
+
+  return "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]";
+}
+
 export default async function AdminCoursesPage({
   searchParams,
 }: {
@@ -46,10 +58,10 @@ export default async function AdminCoursesPage({
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-4 flex flex-wrap justify-end gap-3">
         <Link
-          className="rounded-[14px] border border-[#cfe5db] bg-[#edf8f1] px-4 py-3 text-sm font-black text-[#087f5b]"
-          href="/admin/courses/ai/new"
+          className={actionButtonClasses("secondary")}
+          href="/admin/courses/ai/planner"
         >
-          AI Course Creator
+          AI Course Planner
         </Link>
         <Link
           className="rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white"
@@ -88,23 +100,12 @@ export default async function AdminCoursesPage({
                     value={course.status === "published" ? "draft" : "published"}
                   />
                   <button
-                    className={
-                      course.status === "published"
-                        ? "rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
-                        : "rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
-                    }
-                    disabled={
-                      course.ai_generated
-                      && course.status !== "published"
-                      && course.ai_publish_status !== "ready"
-                    }
+                    className={actionButtonClasses(course.status === "published" ? "danger" : "success")}
                     type="submit"
                   >
                     {course.status === "published"
                       ? "Disable"
-                      : course.ai_generated && course.ai_publish_status !== "ready"
-                        ? "AI gates pending"
-                        : "Enable"}
+                      : "Enable"}
                   </button>
                 </form>
               </td>

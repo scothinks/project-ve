@@ -17,9 +17,11 @@ import {
 } from "@/lib/ai-learning-generator";
 import {
   generateLearningMediaImage,
+  getAiMediaConfig,
   type LearningMediaAssetForGeneration,
   type LearningMediaGenerationContext,
 } from "@/lib/ai-media-generator";
+import { normalizeImageFit, normalizeImagePosition } from "@/lib/image-presentation";
 import {
   isImageMediaAsset,
   isRequiredMediaAsset,
@@ -31,6 +33,7 @@ import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 
 type WorkflowCourseRow = {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   category: string;
@@ -40,6 +43,11 @@ type WorkflowCourseRow = {
   ai_text_status: string;
   ai_media_status: string;
   ai_publish_status: string;
+  ai_generation_notes: Record<string, unknown>;
+  text_approved_at?: string | null;
+  text_approved_by?: string | null;
+  media_approved_at?: string | null;
+  media_approved_by?: string | null;
 };
 
 type WorkflowLessonRow = {
@@ -52,6 +60,7 @@ type WorkflowLessonRow = {
   ai_text_status: string;
   ai_media_status: string;
   ai_publish_status: string;
+  ai_generation_notes: Record<string, unknown>;
 };
 
 type WorkflowLessonPageRow = {
@@ -70,6 +79,21 @@ type WorkflowQuizRow = {
   ai_generated: boolean;
   ai_text_status: string;
   status: string;
+};
+
+type WorkflowLessonBlockRow = {
+  page_id: string;
+  block_type: string;
+  sort_order: number;
+  payload: Record<string, unknown>;
+};
+
+type WorkflowQuizQuestionRow = {
+  quiz_id: string;
+  question_order: number;
+  prompt: string;
+  explanation: string | null;
+  xp: number;
 };
 
 type WorkflowMediaAssetRow = {
@@ -125,11 +149,17 @@ function buildLessonThumbnailPrompt(
   return `Lesson thumbnail for "${lesson.title}" in the course "${course.title}". ${lesson.description ?? `Topic area: ${course.category}.`}`;
 }
 
-function buildInlinePrompt(
+function buildPageVisualPrompt(
+  course: Pick<WorkflowCourseRow, "title" | "category">,
   lesson: Pick<WorkflowLessonRow, "title" | "description">,
   page: Pick<WorkflowLessonPageRow, "title" | "subtitle" | "page_type">,
+  assetType: "image" | "infographic",
 ) {
-  return `Inline illustration for the lesson "${lesson.title}" and page "${page.title}" (${page.page_type}). ${page.subtitle ?? lesson.description ?? ""}`;
+  if (assetType === "infographic") {
+    return `Wide visual infographic for the lesson "${lesson.title}" in the course "${course.title}", focused on the page "${page.title}" (${page.page_type}). Summarize the idea simply with icons, symbols, or scene cues. ${page.subtitle ?? lesson.description ?? `Topic area: ${course.category}.`}`;
+  }
+
+  return `Wide in-page illustration for the lesson "${lesson.title}" in the course "${course.title}", focused on the page "${page.title}" (${page.page_type}). ${page.subtitle ?? lesson.description ?? `Topic area: ${course.category}.`}`;
 }
 
 function slugify(value: string) {
@@ -164,7 +194,7 @@ function parseAiGenerationInput(formData: FormData): AiCourseGenerationInput {
           : "beginner",
     tone: sanitizePlainTextInput(String(formData.get("tone") ?? ""), 120),
     lessonCount: parseInteger(formData.get("lessonCount"), 4),
-    questionsPerLesson: parseInteger(formData.get("questionsPerLesson"), 3),
+    questionsPerLesson: parseInteger(formData.get("questionsPerLesson"), 7),
     notes: sanitizePlainTextInput(String(formData.get("notes") ?? ""), 4000),
   });
 }
@@ -251,7 +281,7 @@ function buildCourseNotes(
   input: AiCourseGenerationInput,
   jobId: string | null,
   draft: AiGeneratedCourseDraft,
-  mode: "create_course" | "extend_course" = "create_course",
+  mode: "create_course" | "extend_course" | "revise_course" = "create_course",
 ) {
   const config = getAiLearningConfig();
   return {
@@ -305,7 +335,7 @@ async function getCourseWorkflowData(
 ) {
   const { data: course, error: courseError } = await supabase
     .from("courses")
-    .select("id, title, description, category, level, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status")
+    .select("id, slug, title, description, category, level, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by")
     .eq("id", courseId)
     .maybeSingle<WorkflowCourseRow>();
 
@@ -316,7 +346,7 @@ async function getCourseWorkflowData(
 
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
-    .select("id, course_id, title, description, sort_order, ai_generated, ai_text_status, ai_media_status, ai_publish_status")
+    .select("id, course_id, title, description, sort_order, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes")
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true })
     .returns<WorkflowLessonRow[]>();
@@ -351,10 +381,277 @@ async function getCourseWorkflowData(
   return { course, lessons: lessons ?? [], quizzes, pages };
 }
 
+async function getCourseRevisionData(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+) {
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const lessonIds = workflow.lessons.map((lesson) => lesson.id);
+  const quizIds = workflow.quizzes.map((quiz) => quiz.id);
+  const pageIds = workflow.pages.map((page) => page.id);
+
+  let blocks: WorkflowLessonBlockRow[] = [];
+  let questions: WorkflowQuizQuestionRow[] = [];
+
+  if (pageIds.length > 0) {
+    const { data, error } = await supabase
+      .from("lesson_content_blocks")
+      .select("page_id, block_type, sort_order, payload")
+      .in("page_id", pageIds)
+      .order("sort_order", { ascending: true })
+      .returns<WorkflowLessonBlockRow[]>();
+
+    if (error) throw error;
+    blocks = data ?? [];
+  }
+
+  if (quizIds.length > 0) {
+    const { data, error } = await supabase
+      .from("quiz_questions")
+      .select("quiz_id, question_order, prompt, explanation, xp")
+      .in("quiz_id", quizIds)
+      .order("question_order", { ascending: true })
+      .returns<WorkflowQuizQuestionRow[]>();
+
+    if (error) throw error;
+    questions = data ?? [];
+  }
+
+  return {
+    ...workflow,
+    lessonIds,
+    quizIds,
+    pageIds,
+    blocks,
+    questions,
+  };
+}
+
 function ensureAiCourse(course: WorkflowCourseRow) {
   if (!course.ai_generated) {
     throw new Error("This workflow only applies to AI-generated courses.");
   }
+}
+
+function ensureAiLesson(lesson: WorkflowLessonRow) {
+  if (!lesson.ai_generated) {
+    throw new Error("This workflow only applies to AI-generated lessons.");
+  }
+}
+
+async function getLessonWorkflowData(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  lessonId: string,
+) {
+  const { data: lessonLookup, error: lessonLookupError } = await supabase
+    .from("lessons")
+    .select("course_id")
+    .eq("id", lessonId)
+    .maybeSingle<{ course_id: string }>();
+
+  if (lessonLookupError) throw lessonLookupError;
+  if (!lessonLookup) {
+    throw new Error("Lesson not found.");
+  }
+
+  const workflow = await getCourseWorkflowData(supabase, lessonLookup.course_id);
+  const lesson = workflow.lessons.find((row) => row.id === lessonId);
+
+  if (!lesson) {
+    throw new Error("Lesson not found.");
+  }
+
+  const quiz = workflow.quizzes.find((row) => row.lesson_id === lessonId) ?? null;
+  const lessonPages = workflow.pages.filter((page) => page.lesson_id === lessonId);
+
+  return {
+    ...workflow,
+    lesson,
+    quiz,
+    lessonPages,
+  };
+}
+
+async function getCourseMediaAssets(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+) {
+  const { data, error } = await supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true })
+    .returns<WorkflowMediaAssetRow[]>();
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+function assetHasStartedGenerationOrReview(asset: WorkflowMediaAssetRow) {
+  return assetHasUsablePreview(asset)
+    || asset.generation_status !== "pending"
+    || asset.review_status !== "draft";
+}
+
+function deriveCourseTextStatus(
+  course: WorkflowCourseRow,
+  lessons: WorkflowLessonRow[],
+) {
+  const aiLessons = lessons.filter((lesson) => lesson.ai_generated);
+
+  if (aiLessons.length === 0) {
+    return course.ai_text_status;
+  }
+
+  if (aiLessons.every((lesson) => lesson.ai_text_status === "approved")) {
+    return "approved";
+  }
+
+  if (aiLessons.some((lesson) => lesson.ai_text_status === "changes_requested")) {
+    return "changes_requested";
+  }
+
+  if (aiLessons.some((lesson) => lesson.ai_text_status === "approved")) {
+    return "in_review";
+  }
+
+  return "draft";
+}
+
+function deriveCourseMediaStatus(
+  course: WorkflowCourseRow,
+  lessons: WorkflowLessonRow[],
+  assets: WorkflowMediaAssetRow[],
+) {
+  const aiLessons = lessons.filter((lesson) => lesson.ai_generated);
+
+  if (aiLessons.length === 0) {
+    return course.ai_media_status;
+  }
+
+  const lessonStatuses = aiLessons.map((lesson) => lesson.ai_media_status);
+  const courseAssets = assets.filter((asset) => asset.lesson_id === null);
+  const requiredCourseAssets = courseAssets.filter(isRequiredMediaAsset);
+  const courseAssetValidation = validateMediaApproval(courseAssets);
+  const courseRequiredAssetsApproved =
+    requiredCourseAssets.length > 0
+    && courseAssetValidation.missingRequiredAssets.length === 0
+    && courseAssetValidation.failedRequiredAssets.length === 0
+    && courseAssetValidation.staleRequiredAssets.length === 0
+    && requiredCourseAssets.every((asset) => asset.review_status === "approved");
+
+  if (lessonStatuses.every((status) => status === "approved") && courseRequiredAssetsApproved) {
+    return "approved";
+  }
+
+  if (
+    lessonStatuses.some((status) => status === "changes_requested")
+    || courseAssets.some((asset) => asset.review_status === "changes_requested")
+  ) {
+    return "changes_requested";
+  }
+
+  if (
+    lessonStatuses.some((status) => status === "draft" || status === "in_review" || status === "approved")
+    || courseAssets.some(assetHasStartedGenerationOrReview)
+  ) {
+    return "in_review";
+  }
+
+  if (lessonStatuses.some((status) => status === "generation_ready")) {
+    return "generation_ready";
+  }
+
+  return "not_started";
+}
+
+function aiPublishReady(status: string) {
+  return status === "ready" || status === "published";
+}
+
+function deriveCoursePublishStatus(
+  course: WorkflowCourseRow,
+  lessons: WorkflowLessonRow[],
+  courseTextStatus: string,
+  courseMediaStatus: string,
+) {
+  const aiLessons = lessons.filter((lesson) => lesson.ai_generated);
+  const allLessonsReady = aiLessons.every((lesson) => aiPublishReady(lesson.ai_publish_status));
+
+  if (courseTextStatus !== "approved" || courseMediaStatus !== "approved" || !allLessonsReady) {
+    return "not_ready";
+  }
+
+  return course.status === "published" ? "published" : "ready";
+}
+
+async function recomputeCourseAiStatuses(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+  actorUserId: string,
+) {
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const { course, lessons } = workflow;
+  ensureAiCourse(course);
+
+  const assets = await getCourseMediaAssets(supabase, courseId);
+  const nextTextStatus = deriveCourseTextStatus(course, lessons);
+  const nextMediaStatus = deriveCourseMediaStatus(course, lessons, assets);
+  const nextPublishStatus = deriveCoursePublishStatus(course, lessons, nextTextStatus, nextMediaStatus);
+  const patch: Record<string, unknown> = {
+    ai_text_status: nextTextStatus,
+    ai_media_status: nextMediaStatus,
+    ai_publish_status: nextPublishStatus,
+  };
+
+  if (nextTextStatus === "approved") {
+    patch.text_approved_at = course.text_approved_at ?? new Date().toISOString();
+    patch.text_approved_by = course.text_approved_by ?? actorUserId;
+  } else {
+    patch.text_approved_at = null;
+    patch.text_approved_by = null;
+  }
+
+  if (nextMediaStatus === "approved") {
+    patch.media_approved_at = course.media_approved_at ?? new Date().toISOString();
+    patch.media_approved_by = course.media_approved_by ?? actorUserId;
+  } else {
+    patch.media_approved_at = null;
+    patch.media_approved_by = null;
+  }
+
+  const { error } = await supabase
+    .from("courses")
+    .update(patch)
+    .eq("id", courseId);
+
+  if (error) throw error;
+
+  return {
+    course,
+    lessons,
+    nextTextStatus,
+    nextMediaStatus,
+    nextPublishStatus,
+  };
+}
+
+function getGeneratedFromInput(course: Pick<WorkflowCourseRow, "ai_generation_notes" | "level" | "title">) {
+  const notes = asRecord(course.ai_generation_notes);
+  const generatedFrom = asRecord(notes.generatedFrom);
+  return {
+    audience: sanitizePlainTextInput(String(generatedFrom.audience ?? "Current course learners"), 160) || "Current course learners",
+    region: sanitizePlainTextInput(String(generatedFrom.region ?? "Current course region"), 120) || "Current course region",
+    tone: sanitizePlainTextInput(String(generatedFrom.tone ?? "clear and practical"), 120) || "clear and practical",
+    difficulty:
+      String(generatedFrom.difficulty ?? course.level) === "advanced"
+        ? "advanced"
+        : String(generatedFrom.difficulty ?? course.level) === "intermediate"
+          ? "intermediate"
+          : "beginner",
+    topic: sanitizePlainTextInput(String(generatedFrom.topic ?? course.title), 160) || course.title,
+  } satisfies Pick<AiCourseGenerationInput, "audience" | "region" | "tone" | "difficulty" | "topic">;
 }
 
 function getRedirectTarget(formData: FormData, fallback: string) {
@@ -367,8 +664,347 @@ function parseBooleanFlag(value: FormDataEntryValue | null) {
   return normalized === "1" || normalized === "true" || normalized === "on" || normalized === "yes";
 }
 
+function parseImagePresentationInput(formData: FormData) {
+  return {
+    fit: normalizeImageFit(String(formData.get("imageFit") ?? "cover")),
+    positionX: normalizeImagePosition(Number.parseInt(String(formData.get("imagePositionX") ?? "50"), 10), 50),
+    positionY: normalizeImagePosition(Number.parseInt(String(formData.get("imagePositionY") ?? "50"), 10), 50),
+  };
+}
+
+function parseRequiredChangeRequest(formData: FormData, fieldName: string) {
+  const feedback = sanitizePlainTextInput(String(formData.get(fieldName) ?? ""), 3000).trim();
+  if (!feedback) {
+    throw new Error("Add the specific changes you want before submitting.");
+  }
+  return feedback;
+}
+
+function getLatestTextRevisionFeedback(notes: Record<string, unknown>) {
+  const history = Array.isArray(notes.textRevisionFeedbackHistory)
+    ? notes.textRevisionFeedbackHistory
+    : [];
+
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const entry = asRecord(history[index]);
+    const kind = sanitizePlainTextInput(String(entry.kind ?? ""), 40);
+    const feedback = sanitizePlainTextInput(String(entry.feedback ?? ""), 3000).trim();
+    if (kind === "request" && feedback) {
+      return {
+        feedback,
+        requestedAt: sanitizePlainTextInput(String(entry.requestedAt ?? ""), 80),
+        requestedBy: sanitizePlainTextInput(String(entry.requestedBy ?? ""), 80),
+      };
+    }
+  }
+
+  return null;
+}
+
+function appendTextRevisionFeedback(
+  notes: Record<string, unknown>,
+  entry: Record<string, unknown>,
+) {
+  const history = Array.isArray(notes.textRevisionFeedbackHistory)
+    ? notes.textRevisionFeedbackHistory.slice(-9)
+    : [];
+
+  return {
+    ...notes,
+    textRevisionFeedbackHistory: [...history, entry],
+  };
+}
+
+function getLatestMediaRevisionFeedback(notes: Record<string, unknown>) {
+  const history = Array.isArray(notes.mediaRevisionFeedbackHistory)
+    ? notes.mediaRevisionFeedbackHistory
+    : [];
+
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const entry = asRecord(history[index]);
+    const kind = sanitizePlainTextInput(String(entry.kind ?? ""), 40);
+    const feedback = sanitizePlainTextInput(String(entry.feedback ?? ""), 3000).trim();
+    if (kind === "request" && feedback) {
+      return {
+        feedback,
+        requestedAt: sanitizePlainTextInput(String(entry.requestedAt ?? ""), 80),
+        requestedBy: sanitizePlainTextInput(String(entry.requestedBy ?? ""), 80),
+      };
+    }
+  }
+
+  return null;
+}
+
+function appendMediaRevisionFeedback(
+  notes: Record<string, unknown>,
+  entry: Record<string, unknown>,
+) {
+  const history = Array.isArray(notes.mediaRevisionFeedbackHistory)
+    ? notes.mediaRevisionFeedbackHistory.slice(-9)
+    : [];
+
+  return {
+    ...notes,
+    mediaRevisionFeedbackHistory: [...history, entry],
+  };
+}
+
+function summarizeBlockForRevision(block: WorkflowLessonBlockRow) {
+  const payload = asRecord(block.payload);
+  const candidates = [
+    payload.heading,
+    payload.title,
+    payload.body,
+    payload.caption,
+    payload.transcript,
+    payload.alt,
+  ];
+
+  return candidates
+    .map((value) => sanitizePlainTextInput(String(value ?? ""), 180).trim())
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 240);
+}
+
+function getRecommendedQuestionCountForRevision(level: AiGeneratorLevel) {
+  if (level === "advanced") return 9;
+  if (level === "intermediate") return 8;
+  return 7;
+}
+
+function buildCourseRevisionNotes({
+  course,
+  lessons,
+  pages,
+  blocks,
+  quizzes,
+  questions,
+  feedback,
+}: {
+  course: WorkflowCourseRow;
+  lessons: WorkflowLessonRow[];
+  pages: WorkflowLessonPageRow[];
+  blocks: WorkflowLessonBlockRow[];
+  quizzes: WorkflowQuizRow[];
+  questions: WorkflowQuizQuestionRow[];
+  feedback: string;
+}) {
+  const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>();
+  for (const page of pages) {
+    const current = pagesByLessonId.get(page.lesson_id) ?? [];
+    current.push(page);
+    pagesByLessonId.set(page.lesson_id, current);
+  }
+
+  const blocksByPageId = new Map<string, WorkflowLessonBlockRow[]>();
+  for (const block of blocks) {
+    const current = blocksByPageId.get(block.page_id) ?? [];
+    current.push(block);
+    blocksByPageId.set(block.page_id, current);
+  }
+
+  const quizByLessonId = new Map<string, WorkflowQuizRow>();
+  for (const quiz of quizzes) {
+    quizByLessonId.set(quiz.lesson_id, quiz);
+  }
+
+  const questionsByQuizId = new Map<string, WorkflowQuizQuestionRow[]>();
+  for (const question of questions) {
+    const current = questionsByQuizId.get(question.quiz_id) ?? [];
+    current.push(question);
+    questionsByQuizId.set(question.quiz_id, current);
+  }
+
+  const lessonSummaries = lessons.map((lesson, lessonIndex) => {
+    const lessonPages = pagesByLessonId.get(lesson.id) ?? [];
+    const quiz = quizByLessonId.get(lesson.id);
+    const quizQuestions = quiz ? questionsByQuizId.get(quiz.id) ?? [] : [];
+    const pageLines = lessonPages.map((page) => {
+      const blockSummary = (blocksByPageId.get(page.id) ?? [])
+        .slice(0, 3)
+        .map(summarizeBlockForRevision)
+        .filter(Boolean)
+        .join(" ");
+      return `- Page ${page.page_number}: ${page.title} (${page.page_type}) ${page.subtitle ?? ""} ${blockSummary}`.trim();
+    });
+    const quizLines = quizQuestions
+      .slice(0, 7)
+      .map((question) => `- Q${question.question_order}: ${question.prompt} [xp ${question.xp}]`);
+
+    return [
+      `${lessonIndex + 1}. ${lesson.title}`,
+      `Lesson description: ${lesson.description ?? "No description."}`,
+      "Pages:",
+      ...pageLines,
+      `Quiz title: ${quiz?.title ?? "No quiz."}`,
+      ...quizLines,
+    ].join("\n");
+  });
+
+  return [
+    `Current course title: ${course.title}`,
+    `Current course description: ${course.description}`,
+    `Current course category: ${course.category}`,
+    `Current course level: ${course.level}`,
+    `Editor requested changes: ${feedback}`,
+    "Revise the existing course draft instead of creating a different course.",
+    "Address the requested changes directly and improve the weak areas named by the editor.",
+    "Keep the course coherent, practical, safe, and suitable for semi-literate to secondary-school learners.",
+    "Keep or improve the overall course structure while making the revisions meaningful.",
+    "Current lesson/page/quiz structure:",
+    ...lessonSummaries,
+  ].join("\n\n");
+}
+
 function buildAssetKey(asset: Pick<WorkflowMediaAssetRow, "course_id" | "lesson_id" | "asset_type" | "placement">) {
   return `${asset.course_id ?? "course"}:${asset.lesson_id ?? "none"}:${asset.asset_type}:${asset.placement}`;
+}
+
+function parsePageNumberFromPlacement(placement: string) {
+  const match = placement.toLowerCase().match(/page[_ -]?(\d+)/i);
+  if (!match) {
+    return null;
+  }
+
+  const pageNumber = Number.parseInt(match[1] ?? "", 10);
+  return Number.isFinite(pageNumber) ? pageNumber : null;
+}
+
+function getAssetTargetPageId(
+  asset: Pick<WorkflowMediaAssetRow, "metadata" | "placement">,
+  pages: WorkflowLessonPageRow[],
+) {
+  const metadata = asRecord(asset.metadata);
+  const targetPageId = getMetadataString(metadata, "targetPageId");
+  if (targetPageId) {
+    return targetPageId;
+  }
+
+  const pageNumber = parsePageNumberFromPlacement(asset.placement);
+  if (pageNumber === null) {
+    return null;
+  }
+
+  return pages.find((page) => page.page_number === pageNumber)?.id ?? null;
+}
+
+function hasPageLevelVisualAsset(
+  assets: WorkflowMediaAssetRow[],
+  pages: WorkflowLessonPageRow[],
+  pageId: string,
+) {
+  return assets.some((asset) => (
+    (asset.asset_type === "image" || asset.asset_type === "infographic")
+    && getAssetTargetPageId(asset, pages) === pageId
+  ));
+}
+
+function selectImageSeedPage(pages: WorkflowLessonPageRow[]) {
+  return pages.find((page) => page.page_type === "concept")
+    ?? pages.find((page) => page.page_type === "example")
+    ?? pages[0]
+    ?? null;
+}
+
+function selectInfographicSeedPage(pages: WorkflowLessonPageRow[], excludedPageId: string | null) {
+  return pages.find((page) => page.page_type === "summary" && page.id !== excludedPageId)
+    ?? pages.find((page) => page.page_type === "reflection" && page.id !== excludedPageId)
+    ?? pages.find((page) => page.id !== excludedPageId)
+    ?? null;
+}
+
+function createPageVisualSeedRows(
+  course: WorkflowCourseRow,
+  lesson: WorkflowLessonRow,
+  pages: WorkflowLessonPageRow[],
+  existingAssets: WorkflowMediaAssetRow[],
+  jobId: string,
+  pushRow: (row: Record<string, unknown>) => void,
+) {
+  const imagePage = selectImageSeedPage(pages);
+  const infographicPage = selectInfographicSeedPage(pages, imagePage?.id ?? null);
+
+  if (imagePage && !hasPageLevelVisualAsset(existingAssets, pages, imagePage.id)) {
+    pushRow({
+      course_id: course.id,
+      lesson_id: lesson.id,
+      asset_type: "image",
+      placement: `page_${imagePage.page_number}_image`,
+      source: "ai_generated",
+      prompt: buildPageVisualPrompt(course, lesson, imagePage, "image"),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${imagePage.title} illustration`,
+      caption: imagePage.title,
+      metadata: {
+        jobId,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        required: false,
+        targetKind: "page_cover",
+        targetPageId: imagePage.id,
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: 0,
+    });
+  }
+
+  if (infographicPage && !hasPageLevelVisualAsset(existingAssets, pages, infographicPage.id)) {
+    pushRow({
+      course_id: course.id,
+      lesson_id: lesson.id,
+      asset_type: "infographic",
+      placement: `page_${infographicPage.page_number}_infographic`,
+      source: "ai_generated",
+      prompt: buildPageVisualPrompt(course, lesson, infographicPage, "infographic"),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${infographicPage.title} visual summary`,
+      caption: infographicPage.title,
+      metadata: {
+        jobId,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        required: false,
+        targetKind: "page_cover",
+        targetPageId: infographicPage.id,
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: 0,
+    });
+  }
+}
+
+function getAssetPresentation(asset: Pick<WorkflowMediaAssetRow, "metadata">) {
+  const metadata = asRecord(asset.metadata);
+  return {
+    fit: normalizeImageFit(String(metadata.fit ?? "cover")),
+    positionX: normalizeImagePosition(metadata.positionX, 50),
+    positionY: normalizeImagePosition(metadata.positionY, 50),
+  };
+}
+
+function buildImagePayloadFromAsset(asset: WorkflowMediaAssetRow) {
+  const presentation = getAssetPresentation(asset);
+  return {
+    src: asset.url,
+    alt: asset.alt_text || asset.caption || asset.placement,
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
+  };
 }
 
 function createCourseMediaSeedRows(
@@ -394,7 +1030,10 @@ function createCourseMediaSeedRows(
     }
 
     existingKeys.add(key);
-    rows.push(row);
+    rows.push({
+      ...row,
+      sort_order: sortOrderCursor,
+    });
     sortOrderCursor += 1;
   };
 
@@ -458,6 +1097,8 @@ function createCourseMediaSeedRows(
   }
 
   for (const lesson of aiLessons) {
+    const lessonPages = pagesByLessonId.get(lesson.id) ?? [];
+
     pushRow({
       course_id: course.id,
       lesson_id: lesson.id,
@@ -480,49 +1121,80 @@ function createCourseMediaSeedRows(
       review_status: "draft",
       generation_status: "pending",
       generation_error: null,
-      sort_order: sortOrderCursor,
     });
 
-    const hasInlineAsset = existingAssets.some((asset) => (
-      asset.lesson_id === lesson.id
-      && (asset.asset_type === "image" || asset.asset_type === "infographic")
-    ));
-
-    if (hasInlineAsset) {
-      continue;
-    }
-
-    const [firstPage] = pagesByLessonId.get(lesson.id) ?? [];
-    if (!firstPage) {
-      continue;
-    }
-
-    pushRow({
-      course_id: course.id,
-      lesson_id: lesson.id,
-      asset_type: "image",
-      placement: `page_${firstPage.page_number}_inline`,
-      source: "ai_generated",
-      prompt: buildInlinePrompt(lesson, firstPage),
-      script: "",
-      url: null,
-      storage_path: null,
-      provider: null,
-      model: null,
-      alt_text: `${firstPage.title} illustration`,
-      caption: firstPage.title,
-      metadata: {
-        jobId,
-        required: false,
-        targetKind: "page_cover",
-        targetPageId: firstPage.id,
-      },
-      review_status: "draft",
-      generation_status: "pending",
-      generation_error: null,
-      sort_order: sortOrderCursor,
-    });
+    createPageVisualSeedRows(
+      course,
+      lesson,
+      lessonPages,
+      existingAssets.filter((asset) => asset.lesson_id === lesson.id),
+      jobId,
+      pushRow,
+    );
   }
+
+  return rows;
+}
+
+function createLessonMediaSeedRows(
+  course: WorkflowCourseRow,
+  lesson: WorkflowLessonRow,
+  pages: WorkflowLessonPageRow[],
+  existingAssets: WorkflowMediaAssetRow[],
+  jobId: string,
+) {
+  const existingKeys = new Set(existingAssets.map(buildAssetKey));
+  const rows: Array<Record<string, unknown>> = [];
+  let sortOrderCursor = existingAssets.reduce((max, asset) => Math.max(max, asset.sort_order), -1) + 1;
+
+  const pushRow = (row: Record<string, unknown>) => {
+    const key = buildAssetKey(row as Pick<WorkflowMediaAssetRow, "course_id" | "lesson_id" | "asset_type" | "placement">);
+    if (existingKeys.has(key)) {
+      return;
+    }
+
+    existingKeys.add(key);
+    rows.push({
+      ...row,
+      sort_order: sortOrderCursor,
+    });
+    sortOrderCursor += 1;
+  };
+
+  pushRow({
+    course_id: course.id,
+    lesson_id: lesson.id,
+    asset_type: "thumbnail",
+    placement: "lesson_thumbnail",
+    source: "ai_generated",
+    prompt: buildLessonThumbnailPrompt(course, lesson),
+    script: "",
+    url: null,
+    storage_path: null,
+    provider: null,
+    model: null,
+    alt_text: `${lesson.title} lesson thumbnail`,
+    caption: lesson.title,
+    metadata: {
+      jobId,
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      required: true,
+      targetKind: "lesson_thumbnail",
+    },
+    review_status: "draft",
+    generation_status: "pending",
+    generation_error: null,
+  });
+
+  createPageVisualSeedRows(
+    course,
+    lesson,
+    pages,
+    existingAssets,
+    jobId,
+    pushRow,
+  );
 
   return rows;
 }
@@ -651,10 +1323,7 @@ async function applyAssetTarget(
     return;
   }
 
-  const imagePayload = {
-    src: asset.url,
-    alt: asset.alt_text || asset.caption || asset.placement,
-  };
+  const imagePayload = buildImagePayloadFromAsset(asset);
 
   if (target.kind === "course_thumbnail" && asset.course_id) {
     const { error } = await supabase
@@ -794,6 +1463,7 @@ function buildGeneratedLessonTreeRows({
   for (const [lessonIndex, lesson] of lessons.entries()) {
     const lessonId = createTextId("lesson", lesson.title);
     const quizId = `quiz-${lessonId.replace(/^lesson-/, "")}`;
+    const generatedPages: Array<{ id: string; page_number: number; page_type: string }> = [];
     lessonIds.push(lessonId);
     lessonRows.push({
       id: lessonId,
@@ -838,13 +1508,19 @@ function buildGeneratedLessonTreeRows({
 
     for (const [pageIndex, page] of lesson.pages.entries()) {
       const pageId = createTextId("page", `${lesson.title}-${page.title}`);
+      const pageType = mapAiPageTypeToDb(page.pageType);
+      generatedPages.push({
+        id: pageId,
+        page_number: pageIndex + 1,
+        page_type: pageType,
+      });
       pageRows.push({
         id: pageId,
         lesson_id: lessonId,
         page_number: pageIndex + 1,
         title: page.title,
         subtitle: page.subtitle,
-        page_type: mapAiPageTypeToDb(page.pageType),
+        page_type: pageType,
         cover_image: {},
       });
 
@@ -883,7 +1559,32 @@ function buildGeneratedLessonTreeRows({
       }
     }
 
+    const resolveGeneratedPageIdForPlacement = (placement: string) => {
+      const explicitPageNumber = parsePageNumberFromPlacement(placement);
+      if (explicitPageNumber !== null) {
+        return generatedPages.find((page) => page.page_number === explicitPageNumber)?.id ?? null;
+      }
+
+      const normalizedPlacement = placement.toLowerCase();
+      const preferredType =
+        normalizedPlacement.includes("summary") ? "summary"
+          : normalizedPlacement.includes("reflection") ? "reflection"
+            : normalizedPlacement.includes("example") || normalizedPlacement.includes("scenario") ? "example"
+              : normalizedPlacement.includes("concept") || normalizedPlacement.includes("intro") || normalizedPlacement.includes("primer") ? "concept"
+                : "";
+
+      if (!preferredType) {
+        return null;
+      }
+
+      return generatedPages.find((page) => page.page_type === preferredType)?.id ?? null;
+    };
+
     for (const [mediaIndex, mediaBrief] of lesson.mediaBriefs.entries()) {
+      const targetPageId = mediaBrief.assetType === "image" || mediaBrief.assetType === "infographic"
+        ? resolveGeneratedPageIdForPlacement(mediaBrief.placement)
+        : null;
+
       mediaRows.push({
         course_id: courseId,
         lesson_id: lessonId,
@@ -902,6 +1603,11 @@ function buildGeneratedLessonTreeRows({
           jobId,
           lessonId,
           lessonTitle: lesson.title,
+          targetKind:
+            mediaBrief.assetType === "thumbnail" ? "lesson_thumbnail"
+              : mediaBrief.assetType === "image" || mediaBrief.assetType === "infographic" ? "page_cover"
+                : undefined,
+          targetPageId,
         },
         review_status: "draft",
         generation_status: "pending",
@@ -1009,6 +1715,7 @@ export async function generateAiCourseDraft(formData: FormData) {
 
   let jobId: string | null = null;
   let courseId: string | null = null;
+  let successRedirectTo: string | null = null;
 
   try {
     jobId = await createJob(supabase, profile.id, "course_text", {
@@ -1121,8 +1828,9 @@ export async function generateAiCourseDraft(formData: FormData) {
     });
 
     revalidateLearningPaths(courseId, generatedTree.lessonIds);
-    redirect(
-      appendAdminNotice(`/admin/courses/${courseId}`, "AI course draft created. Review the text before media generation."),
+    successRedirectTo = appendAdminNotice(
+      `/admin/courses/${courseId}`,
+      "AI course draft created. Review the text before media generation.",
     );
   } catch (error) {
     if (courseId) {
@@ -1139,6 +1847,12 @@ export async function generateAiCourseDraft(formData: FormData) {
 
     throw error;
   }
+
+  if (!successRedirectTo) {
+    throw new Error("AI course draft generation completed without a redirect target.");
+  }
+
+  redirect(successRedirectTo);
 }
 
 export async function extendCourseWithAiLessons(formData: FormData) {
@@ -1157,6 +1871,7 @@ export async function extendCourseWithAiLessons(formData: FormData) {
 
   let jobId: string | null = null;
   let insertedLessonIds: string[] = [];
+  let successRedirectTo: string | null = null;
 
   try {
     const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
@@ -1225,11 +1940,9 @@ export async function extendCourseWithAiLessons(formData: FormData) {
     });
 
     revalidateLearningPaths(courseId, generatedTree.lessonIds);
-    redirect(
-      appendAdminNotice(
-        `/admin/courses/${courseId}`,
-        `${draft.lessons.length} AI lesson${draft.lessons.length === 1 ? "" : "s"} added. Review the new text before media generation.`,
-      ),
+    successRedirectTo = appendAdminNotice(
+      `/admin/courses/${courseId}`,
+      `${draft.lessons.length} AI lesson${draft.lessons.length === 1 ? "" : "s"} added. Review the new text before media generation.`,
     );
   } catch (error) {
     if (insertedLessonIds.length > 0) {
@@ -1250,6 +1963,12 @@ export async function extendCourseWithAiLessons(formData: FormData) {
 
     throw error;
   }
+
+  if (!successRedirectTo) {
+    throw new Error("AI course extension completed without a redirect target.");
+  }
+
+  redirect(successRedirectTo);
 }
 
 export async function approveCourseText(formData: FormData) {
@@ -1315,6 +2034,13 @@ export async function requestCourseTextChanges(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
   const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
   ensureAiCourse(course);
+  const feedback = parseRequiredChangeRequest(formData, "changeRequest");
+  const nextNotes = appendTextRevisionFeedback(asRecord(course.ai_generation_notes), {
+    kind: "request",
+    feedback,
+    requestedAt: new Date().toISOString(),
+    requestedBy: profile.id,
+  });
 
   const { error } = await supabase.rpc("admin_reset_ai_course_tree", {
     p_course_id: courseId,
@@ -1323,10 +2049,350 @@ export async function requestCourseTextChanges(formData: FormData) {
 
   if (error) throw error;
 
-  await insertAuditEvent(supabase, profile.id, "ai_course_text_changes_requested", "course", courseId, {});
+  const { error: notesError } = await supabase
+    .from("courses")
+    .update({
+      ai_generation_notes: nextNotes,
+    })
+    .eq("id", courseId);
+
+  if (notesError) throw notesError;
+
+  await insertAuditEvent(supabase, profile.id, "ai_course_text_changes_requested", "course", courseId, {
+    feedback,
+  });
 
   revalidateLearningPaths(courseId, lessons.map((lesson) => lesson.id));
   redirect(appendAdminNotice(redirectTo, "Text changes requested. Media generation has been locked again."));
+}
+
+export async function approveLessonText(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, quiz, lessons } = workflow;
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+
+  const approvedAt = new Date().toISOString();
+
+  const { error: lessonError } = await supabase
+    .from("lessons")
+    .update({
+      ai_text_status: "approved",
+      ai_media_status: "generation_ready",
+      ai_publish_status: "not_ready",
+      text_approved_at: approvedAt,
+      text_approved_by: profile.id,
+      media_approved_at: null,
+      media_approved_by: null,
+    })
+    .eq("id", lessonId);
+
+  if (lessonError) throw lessonError;
+
+  if (quiz) {
+    const { error: quizError } = await supabase
+      .from("quizzes")
+      .update({
+        ai_text_status: "approved",
+        text_approved_at: approvedAt,
+        text_approved_by: profile.id,
+      })
+      .eq("id", quiz.id);
+
+    if (quizError) throw quizError;
+  }
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_lesson_text_approved", "lesson", lessonId, {
+    courseId: course.id,
+    approvedAt,
+    courseTextStatus: aggregate.nextTextStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessons.map((item) => item.id));
+  redirect(appendAdminNotice(redirectTo, "Lesson text approved."));
+}
+
+export async function requestLessonTextChanges(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, quiz, lessons } = workflow;
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  const feedback = parseRequiredChangeRequest(formData, "changeRequest");
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+
+  const nextNotes = appendTextRevisionFeedback(asRecord(lesson.ai_generation_notes), {
+    kind: "request",
+    feedback,
+    requestedAt: new Date().toISOString(),
+    requestedBy: profile.id,
+  });
+
+  const { error: lessonError } = await supabase
+    .from("lessons")
+    .update({
+      ai_text_status: "changes_requested",
+      ai_media_status: "not_started",
+      ai_publish_status: "not_ready",
+      text_approved_at: null,
+      text_approved_by: null,
+      media_approved_at: null,
+      media_approved_by: null,
+      ai_generation_notes: nextNotes,
+    })
+    .eq("id", lessonId);
+
+  if (lessonError) throw lessonError;
+
+  if (quiz) {
+    const { error: quizError } = await supabase
+      .from("quizzes")
+      .update({
+        ai_text_status: "changes_requested",
+        text_approved_at: null,
+        text_approved_by: null,
+      })
+      .eq("id", quiz.id);
+
+    if (quizError) throw quizError;
+  }
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_lesson_text_changes_requested", "lesson", lessonId, {
+    courseId: course.id,
+    feedback,
+    courseTextStatus: aggregate.nextTextStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessons.map((item) => item.id));
+  redirect(appendAdminNotice(redirectTo, "Lesson text changes requested. Lesson media has been locked again."));
+}
+
+export async function reviseCourseTextWithAi(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  const revisionData = await getCourseRevisionData(supabase, courseId);
+  const { course, lessons, pages, quizzes, blocks, questions } = revisionData;
+  ensureAiCourse(course);
+
+  if (course.status === "published") {
+    throw new Error("Disable the course before revising AI text because published courses do not have a separate draft version yet.");
+  }
+
+  const storedFeedback = getLatestTextRevisionFeedback(asRecord(course.ai_generation_notes));
+  const requestedFeedback = sanitizePlainTextInput(String(formData.get("revisionRequest") ?? ""), 3000).trim();
+  const feedback = requestedFeedback || storedFeedback?.feedback || "";
+  if (!feedback) {
+    throw new Error("Add the requested text changes before revising with AI.");
+  }
+
+  const generatedFrom = getGeneratedFromInput(course);
+  const questionsPerLesson = Math.max(
+    getRecommendedQuestionCountForRevision(course.level),
+    questions.reduce((max, question) => Math.max(max, question.question_order), 0),
+  );
+
+  const input = clampAiGenerationRequest({
+    topic: course.title,
+    audience: generatedFrom.audience,
+    region: generatedFrom.region,
+    difficulty: course.level,
+    tone: generatedFrom.tone,
+    lessonCount: lessons.length,
+    questionsPerLesson,
+    notes: buildCourseRevisionNotes({
+      course,
+      lessons,
+      pages,
+      blocks,
+      quizzes,
+      questions,
+      feedback,
+    }),
+  });
+
+  let jobId: string | null = null;
+  let successRedirectTo: string | null = null;
+
+  try {
+    jobId = await createJob(supabase, profile.id, "course_text", {
+      mode: "revise_course",
+      courseId,
+      feedback,
+      lessonCount: lessons.length,
+      questionsPerLesson,
+    });
+
+    const draft = await generateAiCourseDraftFromModel(input);
+    ensureNoDuplicateLessonTitles([], draft.lessons);
+
+    const generatedTree = buildGeneratedLessonTreeRows({
+      courseId,
+      lessons: draft.lessons,
+      jobId,
+      startingSortOrder: 1,
+    });
+
+    generatedTree.mediaRows.push(
+      {
+        course_id: courseId,
+        lesson_id: null,
+        asset_type: "cover",
+        placement: "course_cover",
+        source: "ai_generated",
+        prompt: buildCourseCoverPrompt(draft.course),
+        script: "",
+        url: null,
+        storage_path: null,
+        provider: null,
+        model: null,
+        alt_text: `${draft.course.title} course cover illustration`,
+        caption: draft.course.title,
+        metadata: {
+          jobId,
+          required: false,
+          targetKind: "course_cover",
+        },
+        review_status: "draft",
+        generation_status: "pending",
+        generation_error: null,
+        sort_order: generatedTree.mediaRows.length,
+      },
+      {
+        course_id: courseId,
+        lesson_id: null,
+        asset_type: "thumbnail",
+        placement: "course_thumbnail",
+        source: "ai_generated",
+        prompt: buildCourseThumbnailPrompt(draft.course),
+        script: "",
+        url: null,
+        storage_path: null,
+        provider: null,
+        model: null,
+        alt_text: `${draft.course.title} course thumbnail`,
+        caption: draft.course.title,
+        metadata: {
+          jobId,
+          required: true,
+          targetKind: "course_thumbnail",
+        },
+        review_status: "draft",
+        generation_status: "pending",
+        generation_error: null,
+        sort_order: generatedTree.mediaRows.length + 1,
+      },
+    );
+
+    const revisionNotesBase = appendTextRevisionFeedback(asRecord(course.ai_generation_notes), {
+      kind: "applied",
+      feedback,
+      requestedAt: storedFeedback?.requestedAt ?? new Date().toISOString(),
+      requestedBy: storedFeedback?.requestedBy ?? profile.id,
+      revisedAt: new Date().toISOString(),
+      revisedBy: profile.id,
+      jobId,
+    });
+
+    const nextCourseNotes = {
+      ...revisionNotesBase,
+      ...buildCourseNotes(input, jobId, draft, "revise_course"),
+      sourceCourseId: courseId,
+      revisedFromTitle: course.title,
+      latestTextRevisionFeedback: feedback,
+      latestTextRevisionAt: new Date().toISOString(),
+    };
+
+    const { error: mediaDeleteError } = await supabase
+      .from("learning_media_assets")
+      .delete()
+      .eq("course_id", courseId);
+
+    if (mediaDeleteError) throw mediaDeleteError;
+
+    const existingLessonIds = lessons.map((lesson) => lesson.id);
+    if (existingLessonIds.length > 0) {
+      const { error: deleteLessonsError } = await supabase
+        .from("lessons")
+        .delete()
+        .in("id", existingLessonIds);
+
+      if (deleteLessonsError) throw deleteLessonsError;
+    }
+
+    const { error: courseUpdateError } = await supabase
+      .from("courses")
+      .update({
+        title: draft.course.title,
+        description: draft.course.description,
+        category: draft.course.category,
+        level: draft.course.level,
+        estimated_minutes: draft.lessons.reduce((sum, lesson) => sum + lesson.estimatedMinutes, 0),
+        ai_text_status: "draft",
+        ai_media_status: "not_started",
+        ai_publish_status: "not_ready",
+        text_approved_at: null,
+        text_approved_by: null,
+        media_approved_at: null,
+        media_approved_by: null,
+        ai_generation_notes: nextCourseNotes,
+      })
+      .eq("id", courseId);
+
+    if (courseUpdateError) throw courseUpdateError;
+
+    await insertGeneratedLessonTree(supabase, generatedTree);
+
+    await updateJob(supabase, jobId, {
+      entity_id: courseId,
+      status: "completed",
+      result: {
+        mode: "revise_course",
+        courseId,
+        title: draft.course.title,
+        lessonCount: draft.lessons.length,
+        mediaAssetCount: generatedTree.mediaRows.length,
+      },
+      error: null,
+    });
+
+    await insertAuditEvent(supabase, profile.id, "ai_course_text_revised", "course", courseId, {
+      jobId,
+      feedback,
+      revisedTitle: draft.course.title,
+      lessonCount: draft.lessons.length,
+    });
+
+    revalidateLearningPaths(courseId, generatedTree.lessonIds);
+    successRedirectTo = appendAdminNotice(
+      redirectTo,
+      "AI revision complete. Review the updated text before media generation.",
+    );
+  } catch (error) {
+    if (jobId) {
+      await updateJob(supabase, jobId, {
+        entity_id: courseId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "AI text revision failed.",
+      }).catch(() => undefined);
+    }
+
+    throw error;
+  }
+
+  if (!successRedirectTo) {
+    throw new Error("AI course revision completed without a redirect target.");
+  }
+
+  redirect(successRedirectTo);
 }
 
 export async function generateCourseMediaAssets(formData: FormData) {
@@ -1334,11 +2400,30 @@ export async function generateCourseMediaAssets(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
   const replaceExisting = parseBooleanFlag(formData.get("replaceExisting"));
+  const applyMediaFeedback = parseBooleanFlag(formData.get("applyMediaFeedback"));
+  const mediaConfig = getAiMediaConfig();
+
+  if (!mediaConfig.canGenerate) {
+    redirect(
+      appendAdminNotice(
+        redirectTo,
+        `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+      ),
+    );
+  }
+
   const { course, lessons, pages } = await getCourseWorkflowData(supabase, courseId);
   ensureAiCourse(course);
+  const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(course.ai_generation_notes));
+  const requestedMediaFeedback = sanitizePlainTextInput(String(formData.get("mediaRevisionRequest") ?? ""), 3000).trim();
+  const mediaFeedback = requestedMediaFeedback || storedMediaFeedback?.feedback || "";
 
   if (course.ai_text_status !== "approved") {
     throw new Error("Approve the course text before generating media.");
+  }
+
+  if (applyMediaFeedback && !mediaFeedback) {
+    throw new Error("Add the requested media changes before regenerating with AI.");
   }
 
   const lessonIds = lessons.map((lesson) => lesson.id);
@@ -1357,6 +2442,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
     jobId = await createJob(supabase, profile.id, "media_assets", {
       courseId,
       replaceExisting,
+      mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
     });
 
     const seedRows = createCourseMediaSeedRows(course, lessons, pages, existingAssets ?? [], jobId);
@@ -1436,6 +2522,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
         pageTitle: page?.title ?? null,
         pageSubtitle: page?.subtitle ?? null,
         placementLabel: asset.placement,
+        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
         targetKind: target.kind,
       };
 
@@ -1504,6 +2591,25 @@ export async function generateCourseMediaAssets(formData: FormData) {
 
     if (mediaStatusError) throw mediaStatusError;
 
+    if (applyMediaFeedback && mediaFeedback) {
+      const nextNotes = appendMediaRevisionFeedback(asRecord(course.ai_generation_notes), {
+        kind: "applied",
+        feedback: mediaFeedback,
+        requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
+        requestedBy: storedMediaFeedback?.requestedBy ?? profile.id,
+        revisedAt: new Date().toISOString(),
+        revisedBy: profile.id,
+        jobId,
+      });
+
+      const { error: notesError } = await supabase
+        .from("courses")
+        .update({ ai_generation_notes: nextNotes })
+        .eq("id", courseId);
+
+      if (notesError) throw notesError;
+    }
+
     const jobStatus = generatedCount > 0 || reusedCount > 0 || skippedCount > 0
       ? "completed"
       : "failed";
@@ -1521,6 +2627,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
           failedCount,
           skippedCount,
           replaceExisting,
+          mediaFeedbackApplied: applyMediaFeedback,
         },
         error: jobStatus === "failed"
           ? "No media images were generated successfully."
@@ -1535,13 +2642,16 @@ export async function generateCourseMediaAssets(formData: FormData) {
       failedCount,
       skippedCount,
       replaceExisting,
+      mediaFeedbackApplied: applyMediaFeedback,
     });
 
     revalidateLearningPaths(courseId, lessonIds);
     redirect(
       appendAdminNotice(
         redirectTo,
-        `Media generation finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`,
+        applyMediaFeedback
+          ? `Media regeneration with feedback finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`
+          : `Media generation finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`,
       ),
     );
   } catch (error) {
@@ -1649,7 +2759,14 @@ export async function requestCourseMediaChanges(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
   const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
+  const feedback = parseRequiredChangeRequest(formData, "mediaChangeRequest");
   ensureAiCourse(course);
+  const nextNotes = appendMediaRevisionFeedback(asRecord(course.ai_generation_notes), {
+    kind: "request",
+    feedback,
+    requestedAt: new Date().toISOString(),
+    requestedBy: profile.id,
+  });
 
   const lessonIds = lessons.map((lesson) => lesson.id);
 
@@ -1667,6 +2784,7 @@ export async function requestCourseMediaChanges(formData: FormData) {
       ai_publish_status: "not_ready",
       media_approved_at: null,
       media_approved_by: null,
+      ai_generation_notes: nextNotes,
     })
     .eq("id", courseId);
 
@@ -1686,10 +2804,496 @@ export async function requestCourseMediaChanges(formData: FormData) {
     if (lessonsError) throw lessonsError;
   }
 
-  await insertAuditEvent(supabase, profile.id, "ai_course_media_changes_requested", "course", courseId, {});
+  await insertAuditEvent(supabase, profile.id, "ai_course_media_changes_requested", "course", courseId, {
+    feedback,
+  });
 
   revalidateLearningPaths(courseId, lessonIds);
   redirect(appendAdminNotice(redirectTo, "Media changes requested. Publishing has been locked again."));
+}
+
+export async function generateLessonMediaAssets(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  const replaceExisting = parseBooleanFlag(formData.get("replaceExisting"));
+  const applyMediaFeedback = parseBooleanFlag(formData.get("applyMediaFeedback"));
+  const mediaConfig = getAiMediaConfig();
+
+  if (!mediaConfig.canGenerate) {
+    redirect(
+      appendAdminNotice(
+        redirectTo,
+        `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+      ),
+    );
+  }
+
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, lessonPages, lessons } = workflow;
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+  const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(lesson.ai_generation_notes));
+  const requestedMediaFeedback = sanitizePlainTextInput(String(formData.get("mediaRevisionRequest") ?? ""), 3000).trim();
+  const mediaFeedback = requestedMediaFeedback || storedMediaFeedback?.feedback || "";
+
+  if (lesson.ai_text_status !== "approved") {
+    throw new Error("Approve this lesson's text before generating lesson media.");
+  }
+
+  if (applyMediaFeedback && !mediaFeedback) {
+    throw new Error("Add the requested media changes before regenerating with AI.");
+  }
+
+  let jobId: string | null = null;
+  const lessonIds = lessons.map((item) => item.id);
+
+  try {
+    jobId = await createJob(supabase, profile.id, "media_assets", {
+      courseId: course.id,
+      lessonId,
+      replaceExisting,
+      mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
+    });
+
+    const courseAssets = await getCourseMediaAssets(supabase, course.id);
+    const existingLessonAssets = courseAssets.filter((asset) => asset.lesson_id === lessonId);
+    const seedRows = createLessonMediaSeedRows(course, lesson, lessonPages, existingLessonAssets, jobId);
+
+    if (seedRows.length > 0) {
+      const { error: insertError } = await supabase.from("learning_media_assets").insert(seedRows);
+      if (insertError) throw insertError;
+    }
+
+    const lessonAssets = (await getCourseMediaAssets(supabase, course.id))
+      .filter((asset) => asset.lesson_id === lessonId);
+
+    const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>([[lessonId, lessonPages]]);
+    const imageAssets = lessonAssets.filter(isImageMediaAsset);
+    const usedTargetKeys = new Set<string>();
+    const usedPageIds = new Set<string>();
+    let generatedCount = 0;
+    let reusedCount = 0;
+    let failedCount = 0;
+    let skippedCount = 0;
+
+    for (const asset of imageAssets) {
+      const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
+      if (!target) {
+        skippedCount += 1;
+        await updateAssetForSkip(
+          supabase,
+          asset.id,
+          "skipped",
+          "Skipped because no supported lesson page target could be resolved for this asset.",
+        );
+        continue;
+      }
+
+      if (usedTargetKeys.has(target.key)) {
+        skippedCount += 1;
+        await updateAssetForSkip(
+          supabase,
+          asset.id,
+          "skipped",
+          "Skipped because this run only generates one image for each supported lesson target.",
+        );
+        continue;
+      }
+
+      usedTargetKeys.add(target.key);
+      if (target.kind === "page_cover") {
+        usedPageIds.add(target.pageId);
+      }
+
+      const page = target.kind === "page_cover"
+        ? lessonPages.find((row) => row.id === target.pageId) ?? null
+        : null;
+
+      const context: LearningMediaGenerationContext = {
+        courseId: course.id,
+        courseTitle: course.title,
+        courseDescription: course.description,
+        courseCategory: course.category,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        lessonDescription: lesson.description,
+        pageId: page?.id ?? null,
+        pageTitle: page?.title ?? null,
+        pageSubtitle: page?.subtitle ?? null,
+        placementLabel: asset.placement,
+        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
+        targetKind: target.kind,
+      };
+
+      try {
+        const result = await generateLearningMediaImage({
+          asset: asset as LearningMediaAssetForGeneration,
+          context,
+          replaceExisting,
+        });
+
+        const updatedAsset: WorkflowMediaAssetRow = {
+          ...asset,
+          url: result.url,
+          storage_path: result.storagePath,
+          provider: result.provider,
+          model: result.model,
+          generation_status: "completed",
+          generation_error: null,
+          metadata: {
+            ...asRecord(asset.metadata),
+            generatedAt: result.generatedAt,
+            revisedPrompt: result.revisedPrompt,
+            stale: false,
+            targetKind: target.kind,
+            targetPageId: target.kind === "page_cover" ? target.pageId : null,
+          },
+        };
+
+        if (result.status === "skipped") {
+          const { error: reusedAssetError } = await supabase
+            .from("learning_media_assets")
+            .update({
+              generation_status: "completed",
+              generation_error: null,
+              metadata: updatedAsset.metadata,
+            })
+            .eq("id", asset.id);
+
+          if (reusedAssetError) {
+            throw reusedAssetError;
+          }
+        }
+
+        await applyAssetTarget(supabase, updatedAsset, target);
+        if (result.status === "generated") {
+          generatedCount += 1;
+        } else {
+          reusedCount += 1;
+        }
+      } catch (error) {
+        failedCount += 1;
+        await updateAssetForSkip(
+          supabase,
+          asset.id,
+          "failed",
+          error instanceof Error ? error.message : "Image generation failed.",
+        ).catch(() => undefined);
+      }
+    }
+
+    const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
+      p_course_id: course.id,
+      p_lesson_id: lessonId,
+      p_media_status: "draft",
+    });
+
+    if (mediaStatusError) throw mediaStatusError;
+
+    if (applyMediaFeedback && mediaFeedback) {
+      const nextNotes = appendMediaRevisionFeedback(asRecord(lesson.ai_generation_notes), {
+        kind: "applied",
+        feedback: mediaFeedback,
+        requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
+        requestedBy: storedMediaFeedback?.requestedBy ?? profile.id,
+        revisedAt: new Date().toISOString(),
+        revisedBy: profile.id,
+        jobId,
+      });
+
+      const { error: notesError } = await supabase
+        .from("lessons")
+        .update({ ai_generation_notes: nextNotes })
+        .eq("id", lessonId);
+
+      if (notesError) throw notesError;
+    }
+
+    if (jobId) {
+      await updateJob(supabase, jobId, {
+        entity_id: course.id,
+        status: generatedCount > 0 || reusedCount > 0 || skippedCount > 0 ? "completed" : "failed",
+        result: {
+          courseId: course.id,
+          lessonId,
+          imageAssetCount: imageAssets.length,
+          generatedCount,
+          reusedCount,
+          failedCount,
+          skippedCount,
+          replaceExisting,
+          mediaFeedbackApplied: applyMediaFeedback,
+        },
+        error: generatedCount > 0 || reusedCount > 0 || skippedCount > 0
+          ? null
+          : "No lesson media images were generated successfully.",
+      });
+    }
+
+    const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+    await insertAuditEvent(supabase, profile.id, "ai_lesson_media_assets_generated", "lesson", lessonId, {
+      courseId: course.id,
+      jobId,
+      generatedCount,
+      reusedCount,
+      failedCount,
+      skippedCount,
+      replaceExisting,
+      mediaFeedbackApplied: applyMediaFeedback,
+      courseMediaStatus: aggregate.nextMediaStatus,
+    });
+
+    revalidateLearningPaths(course.id, lessonIds);
+    redirect(
+      appendAdminNotice(
+        redirectTo,
+        applyMediaFeedback
+          ? `Lesson media regeneration with feedback finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`
+          : `Lesson media generation finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`,
+      ),
+    );
+  } catch (error) {
+    if (jobId) {
+      await updateJob(supabase, jobId, {
+        entity_id: course.id,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Lesson media generation failed.",
+      }).catch(() => undefined);
+    }
+
+    throw error;
+  }
+}
+
+export async function approveLessonMedia(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, lessons } = workflow;
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+
+  if (lesson.ai_text_status !== "approved") {
+    throw new Error("Approve this lesson's text before approving lesson media.");
+  }
+
+  const lessonAssets = (await getCourseMediaAssets(supabase, course.id))
+    .filter((asset) => asset.lesson_id === lessonId);
+  const validation: MediaApprovalValidation<WorkflowMediaAssetRow> = validateMediaApproval(lessonAssets);
+  const hasRequiredImageAssets = lessonAssets.some(isRequiredMediaAsset);
+
+  if (
+    !hasRequiredImageAssets
+    || validation.missingRequiredAssets.length > 0
+    || validation.failedRequiredAssets.length > 0
+    || validation.staleRequiredAssets.length > 0
+  ) {
+    throw new Error(
+      "Required lesson media assets are still missing, stale, failed, or not seeded yet. Generate lesson media and confirm the required previews before approval.",
+    );
+  }
+
+  for (const asset of lessonAssets) {
+    const nextReviewStatus = getApprovedReviewStatus(asset);
+    if (nextReviewStatus === asset.review_status) {
+      continue;
+    }
+
+    const { error: assetReviewError } = await supabase
+      .from("learning_media_assets")
+      .update({ review_status: nextReviewStatus })
+      .eq("id", asset.id);
+
+    if (assetReviewError) throw assetReviewError;
+  }
+
+  const approvedAt = new Date().toISOString();
+  const { error: lessonError } = await supabase
+    .from("lessons")
+    .update({
+      ai_media_status: "approved",
+      ai_publish_status: "ready",
+      media_approved_at: approvedAt,
+      media_approved_by: profile.id,
+    })
+    .eq("id", lessonId);
+
+  if (lessonError) throw lessonError;
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_lesson_media_approved", "lesson", lessonId, {
+    courseId: course.id,
+    approvedAt,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessons.map((item) => item.id));
+  redirect(appendAdminNotice(redirectTo, "Lesson media approved."));
+}
+
+export async function requestLessonMediaChanges(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, lessons } = workflow;
+  const feedback = parseRequiredChangeRequest(formData, "mediaChangeRequest");
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+  const nextNotes = appendMediaRevisionFeedback(asRecord(lesson.ai_generation_notes), {
+    kind: "request",
+    feedback,
+    requestedAt: new Date().toISOString(),
+    requestedBy: profile.id,
+  });
+
+  const { error: assetsError } = await supabase
+    .from("learning_media_assets")
+    .update({ review_status: "changes_requested" })
+    .eq("course_id", course.id)
+    .eq("lesson_id", lessonId);
+
+  if (assetsError) throw assetsError;
+
+  const { error: lessonError } = await supabase
+    .from("lessons")
+    .update({
+      ai_media_status: "changes_requested",
+      ai_publish_status: "not_ready",
+      media_approved_at: null,
+      media_approved_by: null,
+      ai_generation_notes: nextNotes,
+    })
+    .eq("id", lessonId);
+
+  if (lessonError) throw lessonError;
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_lesson_media_changes_requested", "lesson", lessonId, {
+    courseId: course.id,
+    feedback,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessons.map((item) => item.id));
+  redirect(appendAdminNotice(redirectTo, "Lesson media changes requested. Publishing has been locked again."));
+}
+
+function normalizeLegacyAssetType(
+  asset: Pick<WorkflowMediaAssetRow, "asset_type" | "placement" | "lesson_id" | "metadata" | "prompt" | "script">,
+) {
+  if (isImageMediaAsset(asset as Pick<WorkflowMediaAssetRow, "asset_type">)) {
+    return asset.asset_type;
+  }
+
+  const metadata = asRecord(asset.metadata);
+  const targetKind = getMetadataString(metadata, "targetKind");
+  const placement = asset.placement.toLowerCase();
+  const prompt = sanitizePlainTextInput(String(asset.prompt ?? ""), 500).toLowerCase();
+  const script = sanitizePlainTextInput(String(asset.script ?? ""), 500).toLowerCase();
+  const combined = `${placement} ${prompt} ${script}`;
+
+  if (targetKind === "course_cover" || placement === "course_cover") {
+    return "cover";
+  }
+
+  if (
+    targetKind === "course_thumbnail"
+    || targetKind === "lesson_thumbnail"
+    || placement.includes("thumbnail")
+  ) {
+    return "thumbnail";
+  }
+
+  if (combined.includes("infographic") || combined.includes("diagram") || combined.includes("visual summary")) {
+    return "infographic";
+  }
+
+  return "image";
+}
+
+export async function normalizeCourseLegacyMediaAssets(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  const regenerateNormalized = parseBooleanFlag(formData.get("regenerateNormalized"));
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const { course, lessons } = workflow;
+
+  ensureAiCourse(course);
+
+  const assets = await getCourseMediaAssets(supabase, courseId);
+  const legacyAssets = assets.filter((asset) => !isImageMediaAsset(asset));
+
+  if (legacyAssets.length === 0) {
+    redirect(appendAdminNotice(redirectTo, "No legacy unsupported media briefs were found for this course."));
+  }
+
+  for (const asset of legacyAssets) {
+    const nextAssetType = normalizeLegacyAssetType(asset);
+    const nextMetadata = {
+      ...asRecord(asset.metadata),
+      normalizedFromAssetType: asset.asset_type,
+      normalizedAt: new Date().toISOString(),
+      normalizedBy: profile.id,
+      stale: false,
+      staleAt: null,
+      staleReason: null,
+      previousUrl: asset.url,
+    };
+
+    const { error } = await supabase
+      .from("learning_media_assets")
+      .update({
+        asset_type: nextAssetType,
+        url: null,
+        storage_path: null,
+        provider: null,
+        model: null,
+        review_status: "draft",
+        generation_status: "pending",
+        generation_error: null,
+        metadata: nextMetadata,
+      })
+      .eq("id", asset.id);
+
+    if (error) throw error;
+  }
+
+  const { error: resetError } = await supabase.rpc("admin_reset_ai_course_media", {
+    p_course_id: courseId,
+    p_lesson_id: null,
+    p_media_status: "draft",
+  });
+
+  if (resetError) throw resetError;
+
+  await recomputeCourseAiStatuses(supabase, courseId, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_course_legacy_media_normalized", "course", courseId, {
+    normalizedAssetCount: legacyAssets.length,
+    regenerateNormalized,
+  });
+
+  if (regenerateNormalized) {
+    const nextFormData = new FormData();
+    nextFormData.set("courseId", courseId);
+    nextFormData.set("redirectTo", redirectTo);
+    return generateCourseMediaAssets(nextFormData);
+  }
+
+  revalidateLearningPaths(courseId, lessons.map((lesson) => lesson.id));
+  redirect(
+    appendAdminNotice(
+      redirectTo,
+      `${legacyAssets.length} legacy media brief${legacyAssets.length === 1 ? "" : "s"} converted to supported visual types.`,
+    ),
+  );
 }
 
 export async function publishApprovedCourse(formData: FormData) {
@@ -1753,6 +3357,7 @@ export async function saveLearningMediaAsset(formData: FormData) {
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
   const nextUrl = sanitizeUrlInput(String(formData.get("url") ?? ""), 1000) || null;
+  const presentation = parseImagePresentationInput(formData);
   const { data: existingAsset, error: assetError } = await supabase
     .from("learning_media_assets")
     .select("url, metadata")
@@ -1768,6 +3373,9 @@ export async function saveLearningMediaAsset(formData: FormData) {
     staleReason: null,
     previousUrl: existingAsset?.url ?? null,
     manuallyEditedAt: new Date().toISOString(),
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
   };
 
   const { error } = await supabase
@@ -1813,7 +3421,11 @@ export async function saveLearningMediaAsset(formData: FormData) {
     }
   }
 
-  if (course.ai_media_status === "approved") {
+  const targetLesson = lessonId
+    ? workflow.lessons.find((item) => item.id === lessonId) ?? null
+    : null;
+
+  if (course.ai_media_status === "approved" || targetLesson?.ai_media_status === "approved") {
     const { error: resetError } = await supabase.rpc("admin_reset_ai_course_media", {
       p_course_id: courseId,
       p_lesson_id: lessonId || null,
@@ -1821,6 +3433,8 @@ export async function saveLearningMediaAsset(formData: FormData) {
     });
 
     if (resetError) throw resetError;
+
+    await recomputeCourseAiStatuses(supabase, courseId, profile.id);
   }
 
   await insertAuditEvent(supabase, profile.id, "learning_media_asset_updated", "media_asset", assetId, {

@@ -1,10 +1,28 @@
 import type { LessonContentBlock } from "@/lib/lessons";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 
 type LessonContentProps = {
   blocks: LessonContentBlock[];
 };
 
 export function LessonContent({ blocks }: LessonContentProps) {
+  const calloutToneClasses: Record<string, string> = {
+    tip: "border-[color:color-mix(in_srgb,var(--ve-green)_20%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))]",
+    key_point:
+      "border-[color:color-mix(in_srgb,var(--ve-green)_20%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))]",
+    warning:
+      "border-[color:color-mix(in_srgb,var(--ve-store)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_72%,var(--ve-card))]",
+    example:
+      "border-[color:color-mix(in_srgb,var(--ve-mission)_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_72%,var(--ve-card))]",
+  };
+
+  const calloutLabelClasses: Record<string, string> = {
+    tip: "text-[var(--ve-green)]",
+    key_point: "text-[var(--ve-green)]",
+    warning: "text-[#b17a05]",
+    example: "text-[#d66d50]",
+  };
+
   return (
     <div className="space-y-4 text-left">
       {blocks.map((block) => {
@@ -22,12 +40,15 @@ export function LessonContent({ blocks }: LessonContentProps) {
         }
 
         if (block.type === "callout") {
+          const toneClasses = calloutToneClasses[block.variant] ?? calloutToneClasses.tip;
+          const labelClasses = calloutLabelClasses[block.variant] ?? calloutLabelClasses.tip;
+
           return (
             <section
-              className="rounded-[18px] border border-[#dff2e9] bg-[#f8fcfa] p-4"
+              className={`rounded-[18px] border p-4 ${toneClasses}`}
               key={block.id}
             >
-              <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[#008751]">
+              <p className={`text-[11px] font-black uppercase tracking-[0.12em] ${labelClasses}`}>
                 {block.variant.replace("_", " ")}
               </p>
               <h3 className="mt-2 text-sm font-bold text-[var(--foreground)]">{block.title}</h3>
@@ -39,7 +60,12 @@ export function LessonContent({ blocks }: LessonContentProps) {
         if (block.type === "image") {
           return (
             <figure key={block.id}>
-              <img alt={block.alt} className="w-full rounded-[18px] object-cover" src={block.src} />
+              <img
+                alt={block.alt}
+                className={`w-full rounded-[18px] ${getImageFitClass(block)}`}
+                src={block.src}
+                style={getImagePresentationStyle(block)}
+              />
               {block.caption ? (
                 <figcaption className="mt-2 text-center text-[11px] font-semibold text-[var(--ve-muted)]">
                   {block.caption}

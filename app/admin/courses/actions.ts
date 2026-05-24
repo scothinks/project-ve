@@ -11,6 +11,8 @@ type AiPublishGuardRow = {
   ai_publish_status: string | null;
 };
 
+type StoredImagePayload = Record<string, unknown> | null;
+
 function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -31,6 +33,29 @@ function imagePayload(url: FormDataEntryValue | null, alt: FormDataEntryValue | 
   return {
     src: sanitizeUrlInput(String(url ?? ""), 1000) || undefined,
     alt: sanitizePlainTextInput(String(alt ?? ""), 240).trim() || undefined,
+  };
+}
+
+function asRecord(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function mergeImagePayload(
+  url: FormDataEntryValue | null,
+  alt: FormDataEntryValue | null,
+  existing?: StoredImagePayload,
+) {
+  const next = imagePayload(url, alt);
+  const current = asRecord(existing);
+
+  return {
+    ...("fit" in current ? { fit: current.fit } : {}),
+    ...("positionX" in current ? { positionX: current.positionX } : {}),
+    ...("positionY" in current ? { positionY: current.positionY } : {}),
+    ...("caption" in current ? { caption: current.caption } : {}),
+    ...next,
   };
 }
 
@@ -105,30 +130,6 @@ function aiPublishReady(status: string | null | undefined) {
   return status === "ready" || status === "published";
 }
 
-async function assertCoursePublishAllowed(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
-  courseId: string,
-) {
-  if (!courseId) {
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from("courses")
-    .select("ai_generated, ai_publish_status")
-    .eq("id", courseId)
-    .maybeSingle<AiPublishGuardRow>();
-
-  if (error) throw error;
-  if (!data || !data.ai_generated) {
-    return;
-  }
-
-  if (!aiPublishReady(data.ai_publish_status)) {
-    throw new Error("AI-generated courses can only be published after approved text and media.");
-  }
-}
-
 async function assertLessonPublishAllowed(
   supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
   lessonId: string,
@@ -164,12 +165,8 @@ async function assertLessonPublishAllowed(
     return;
   }
 
-  const courseBlocked = Boolean(
-    data.course?.ai_generated && !aiPublishReady(data.course.ai_publish_status),
-  );
-
-  if (!aiPublishReady(data.ai_publish_status) || courseBlocked) {
-    throw new Error("AI-generated lessons can only be published after approved text and media.");
+  if (!aiPublishReady(data.ai_publish_status)) {
+    throw new Error("AI-generated lessons can only be published after that lesson's text and media are approved.");
   }
 }
 
@@ -219,36 +216,46 @@ async function assertQuizPublishAllowed(
   const lessonBlocked = Boolean(
     data.lesson?.ai_generated && !aiPublishReady(data.lesson.ai_publish_status),
   );
-  const courseBlocked = Boolean(
-    data.lesson?.course?.ai_generated && !aiPublishReady(data.lesson.course.ai_publish_status),
-  );
 
-  if (lessonBlocked || courseBlocked) {
-    throw new Error("AI-generated quizzes can only be published after approved text and media.");
+  if (lessonBlocked) {
+    throw new Error("AI-generated quizzes can only be published after that lesson's text and media are approved.");
   }
 }
 
 export async function saveCourse(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const { supabase } = await requireAdmin();
+  const customCategory = sanitizePlainTextInput(String(formData.get("categoryCustom") ?? ""), 120);
+  const selectedCategory = sanitizePlainTextInput(String(formData.get("category") ?? ""), 120);
+  const resolvedCategory = customCategory.trim() || selectedCategory.trim();
   const requestedStatus = normalizeRequestedPublishStatus(
     formData.get("status"),
     ["draft", "published", "archived"],
     "draft",
   );
 
-  if (requestedStatus === "published") {
-    await assertCoursePublishAllowed(supabase, courseId);
-  }
+  const existingCourse = courseId
+    ? await supabase
+      .from("courses")
+      .select("thumbnail")
+      .eq("id", courseId)
+      .maybeSingle<{ thumbnail: StoredImagePayload }>()
+    : { data: null, error: null };
+
+  if (existingCourse.error) throw existingCourse.error;
 
   const { data, error } = await supabase.rpc("admin_upsert_course", {
     p_course_id: courseId,
     p_title: sanitizePlainTextInput(String(formData.get("title") ?? ""), 160),
     p_description: sanitizePlainTextInput(String(formData.get("description") ?? ""), 1000),
-    p_category: sanitizePlainTextInput(String(formData.get("category") ?? ""), 120),
+    p_category: resolvedCategory,
     p_level: String(formData.get("level") ?? "beginner"),
     p_status: requestedStatus,
-    p_thumbnail: imagePayload(formData.get("thumbnailUrl"), formData.get("thumbnailAlt")),
+    p_thumbnail: mergeImagePayload(
+      formData.get("thumbnailUrl"),
+      formData.get("thumbnailAlt"),
+      existingCourse.data?.thumbnail ?? null,
+    ),
     p_sort_order: parseInteger(formData.get("sortOrder")),
     p_estimated_minutes: parseInteger(formData.get("estimatedMinutes")),
   });
@@ -325,10 +332,6 @@ export async function setCourseStatus(formData: FormData) {
     400,
   );
   const { supabase } = await requireAdmin();
-
-  if (status === "published") {
-    await assertCoursePublishAllowed(supabase, courseId);
-  }
 
   const { error } = await supabase.rpc("admin_set_course_status", {
     p_course_id: courseId,
