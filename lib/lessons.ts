@@ -1,6 +1,11 @@
+import type { ImageFit } from "@/lib/image-presentation";
+
 export type ImageAsset = {
   src: string;
   alt: string;
+  fit?: ImageFit;
+  positionX?: number;
+  positionY?: number;
 };
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
@@ -16,6 +21,7 @@ export type Course = {
   level: CourseLevel;
   status: CourseStatus;
   thumbnail: ImageAsset;
+  coverImage?: ImageAsset;
   estimatedMinutes: number;
   progressPercent: number;
   lessons: Lesson[];
@@ -81,6 +87,9 @@ export type ImageBlock = {
   src: string;
   alt: string;
   caption?: string;
+  fit?: ImageFit;
+  positionX?: number;
+  positionY?: number;
 };
 
 export type VideoBlock = {

@@ -11,13 +11,14 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import {
   getCompletedLessonIds,
   getContinueLearningItem,
   getCourseProgress,
   getLessonProgress,
 } from "@/lib/progress";
-import { demoRewardStoreSnapshot, type StoreReward } from "@/lib/rewards";
+import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getLearningCatalog } from "@/lib/supabase-learning";
 import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
@@ -35,8 +36,9 @@ function ContinueLearningCard({
       <div className="h-28">
         <img
           alt={item.lesson.coverImage.alt}
-          className="h-full w-full object-cover"
+          className={`h-full w-full ${getImageFitClass(item.lesson.coverImage)}`}
           src={item.lesson.coverImage.src}
+          style={getImagePresentationStyle(item.lesson.coverImage)}
         />
       </div>
       <div className="p-5">
@@ -101,6 +103,7 @@ export default async function DashboardPage() {
   }).length;
   const totalCourses = catalog.length;
   const recommendationSections = await getDashboardRecommendationSections(supabase, catalog);
+  const hasPublishedRecommendationSections = recommendationSections.length > 0;
   const activeRecommendationSections = recommendationSections
     .map((section) => ({
       ...section,
@@ -114,7 +117,6 @@ export default async function DashboardPage() {
   const starterLessons = (currentCourse?.lessons ?? []).filter(
     (lesson) => !isLessonCompleted(lesson.id),
   );
-  const focusCourses = catalog.filter((course) => !isCourseCompleted(course));
   const rewardSnapshot =
     isSupabaseConfigured && user && supabase
       ? await getRewardStoreSnapshot(supabase, user.id, xpBalance).catch(() => null)
@@ -230,7 +232,7 @@ export default async function DashboardPage() {
               </div>
             </div>
           ))
-        ) : catalog.length > 0 && (starterLessons.length > 0 || focusCourses.length > 0) ? (
+        ) : catalog.length > 0 && !hasPublishedRecommendationSections ? (
           <>
             {starterLessons.length ? (
               <div id="lessons">
@@ -250,23 +252,18 @@ export default async function DashboardPage() {
               </div>
             ) : null}
 
-            {focusCourses.length ? (
-              <div>
-                <SectionHeader
-                  eyebrow="Focus area"
-                  subtitle="Browse full courses when you want to go deeper."
-                />
-                <div className="mt-3 space-y-4">
-                  {focusCourses.map((course) => (
-                    <CourseCard
-                      completedLessonIds={completedLessonIds}
-                      course={course}
-                      key={course.id}
-                    />
-                  ))}
-                </div>
+            <Card className="p-5">
+              <h2 className="text-base font-black">Browse the course library</h2>
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                Focus area recommendations stay empty until a tutor curates them. You can still
+                browse all published courses any time.
+              </p>
+              <div className="mt-4">
+                <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
+                  Browse courses
+                </Button>
               </div>
-            ) : null}
+            </Card>
           </>
         ) : catalog.length > 0 ? (
           <Card className="p-5">

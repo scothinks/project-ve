@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeftIcon, MenuIcon } from "@/components/ui/Icons";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { parseImagePresentation } from "@/lib/image-presentation";
 import {
   saveLessonBlock,
   saveLessonPage,
@@ -130,10 +131,14 @@ function toPreviewImageAsset(
 ): ImageAsset | null {
   const src = getImageValue(image, "src");
   if (!src) return null;
+  const presentation = parseImagePresentation(image);
 
   return {
     src,
     alt: getImageValue(image, "alt") || fallbackAlt,
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
   };
 }
 

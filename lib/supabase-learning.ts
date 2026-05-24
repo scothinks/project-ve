@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { parseImagePresentation } from "@/lib/image-presentation";
 import {
   courses as seedCourses,
   lessons as seedLessons,
@@ -27,6 +28,18 @@ type CourseRow = {
   thumbnail: Record<string, unknown> | null;
   sort_order: number;
   estimated_minutes: number;
+};
+
+type CourseCoverAssetRow = {
+  id: string;
+  course_id: string | null;
+  lesson_id: string | null;
+  placement: string;
+  url: string | null;
+  alt_text: string | null;
+  caption: string | null;
+  metadata: Record<string, unknown> | null;
+  sort_order: number;
 };
 
 type LessonRow = {
@@ -140,10 +153,14 @@ function toImageAsset(
 ): ImageAsset {
   const src = getString(image, "src");
   const alt = getString(image, "alt");
+  const presentation = parseImagePresentation(image);
 
   return {
     src: src || fallbackImage.src,
     alt: alt || fallbackAlt || fallbackImage.alt,
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
   };
 }
 
@@ -152,10 +169,30 @@ function toOptionalImageAsset(
 ): ImageAsset | undefined {
   const src = getString(image, "src");
   if (!src) return undefined;
+  const presentation = parseImagePresentation(image);
 
   return {
     src,
     alt: getString(image, "alt") || "Lesson page image",
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
+  };
+}
+
+function toOptionalMediaAssetImage(
+  asset: CourseCoverAssetRow | null | undefined,
+): ImageAsset | undefined {
+  const src = asset?.url?.trim() ?? "";
+  if (!src) return undefined;
+  const presentation = parseImagePresentation(asset?.metadata);
+
+  return {
+    src,
+    alt: asset?.alt_text?.trim() || asset?.caption?.trim() || "Course cover image",
+    fit: presentation.fit,
+    positionX: presentation.positionX,
+    positionY: presentation.positionY,
   };
 }
 
@@ -179,12 +216,16 @@ function mapContentBlock(block: BlockRow): LessonContentBlock {
   }
 
   if (type === "image") {
+    const presentation = parseImagePresentation(payload);
     return {
       id: block.id,
       type: "image",
       src: getString(payload, "src"),
       alt: getString(payload, "alt") || "Lesson image",
       caption: getString(payload, "caption") || undefined,
+      fit: presentation.fit,
+      positionX: presentation.positionX,
+      positionY: presentation.positionY,
     };
   }
 
@@ -236,6 +277,7 @@ function mapCatalog({
   quizzes,
   questions,
   options,
+  courseCoverByCourseId,
 }: {
   courses: CourseRow[];
   lessons: LessonRow[];
@@ -244,6 +286,7 @@ function mapCatalog({
   quizzes: QuizRow[];
   questions: QuestionRow[];
   options: OptionRow[];
+  courseCoverByCourseId: Map<string, CourseCoverAssetRow>;
 }): Course[] {
   const blocksByPageId = new Map<string, BlockRow[]>();
   const pagesByLessonId = new Map<string, PageRow[]>();
@@ -365,6 +408,7 @@ function mapCatalog({
       level: isCourseLevel(course.level) ? course.level : "beginner",
       status: "available",
       thumbnail: toImageAsset(course.thumbnail, course.title),
+      coverImage: toOptionalMediaAssetImage(courseCoverByCourseId.get(course.id)),
       estimatedMinutes: derivedCourseMinutes,
       progressPercent: 0,
       lessons: mappedLessons,
@@ -412,6 +456,27 @@ export async function getLearningCatalog(supabase: SupabaseClient | null): Promi
     if (!courses || courses.length === 0) return [];
 
     const courseIds = courses.map((course) => course.id);
+    const courseCoverAssetsResult = courseIds.length > 0
+      ? await supabase
+        .from("learning_media_assets")
+        .select("id, course_id, lesson_id, placement, url, alt_text, caption, metadata, sort_order")
+        .in("course_id", courseIds)
+        .is("lesson_id", null)
+        .order("sort_order", { ascending: true })
+        .returns<CourseCoverAssetRow[]>()
+      : { data: [], error: null };
+
+    if (courseCoverAssetsResult.error) throw courseCoverAssetsResult.error;
+
+    const courseCoverByCourseId = new Map<string, CourseCoverAssetRow>();
+    for (const asset of courseCoverAssetsResult.data ?? []) {
+      const metadataTargetKind = getString(asset.metadata ?? {}, "targetKind");
+      const isCourseCover = asset.placement === "course_cover" || metadataTargetKind === "course_cover";
+      if (asset.course_id && asset.url && isCourseCover && !courseCoverByCourseId.has(asset.course_id)) {
+        courseCoverByCourseId.set(asset.course_id, asset);
+      }
+    }
+
     const { data: lessons, error: lessonsError } = await supabase
       .from("lessons")
       .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion")
@@ -432,6 +497,7 @@ export async function getLearningCatalog(supabase: SupabaseClient | null): Promi
         quizzes: [],
         questions: [],
         options: [],
+        courseCoverByCourseId,
       });
     }
 
@@ -499,6 +565,7 @@ export async function getLearningCatalog(supabase: SupabaseClient | null): Promi
       quizzes: quizzesResult.data ?? [],
       questions: questionsResult.data ?? [],
       options: optionsResult.data ?? [],
+      courseCoverByCourseId,
     });
   } catch {
     return [];

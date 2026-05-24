@@ -7,8 +7,6 @@ export type AiGeneratorPageType = "concept" | "scenario" | "reflection" | "summa
 export type AiGeneratorBlockType = "text" | "callout" | "image" | "video" | "audio" | "table";
 export type AiGeneratorAssetType =
   | "image"
-  | "audio"
-  | "video"
   | "infographic"
   | "thumbnail"
   | "cover";
@@ -97,8 +95,136 @@ const DEFAULT_REVIEW_MODEL = process.env.OPENAI_REVIEW_MODEL || "gpt-5.4-mini";
 
 const MIN_LESSONS = 1;
 const MAX_LESSONS = 8;
-const MIN_QUESTIONS = 1;
-const MAX_QUESTIONS = 6;
+const MIN_PAGES = 6;
+const MAX_PAGES = 8;
+const MIN_QUESTIONS = 7;
+const MAX_QUESTIONS = 10;
+const MIN_QUESTION_XP = 5;
+const MAX_QUESTION_XP = 20;
+const MAX_COURSE_TITLE_LENGTH = 60;
+const MAX_COURSE_DESCRIPTION_LENGTH = 120;
+
+const TEXT_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["text"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["heading", "body"],
+      properties: {
+        heading: { type: "string" },
+        body: { type: "string" },
+      },
+    },
+  },
+} as const;
+
+const CALLOUT_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["callout"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["variant", "title", "body"],
+      properties: {
+        variant: { type: "string" },
+        title: { type: "string" },
+        body: { type: "string" },
+      },
+    },
+  },
+} as const;
+
+const IMAGE_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["image"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["alt", "caption"],
+      properties: {
+        alt: { type: "string" },
+        caption: { type: "string" },
+      },
+    },
+  },
+} as const;
+
+const VIDEO_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["video"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["title", "caption", "transcript"],
+      properties: {
+        title: { type: "string" },
+        caption: { type: "string" },
+        transcript: { type: "string" },
+      },
+    },
+  },
+} as const;
+
+const AUDIO_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["audio"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["title", "caption", "transcript"],
+      properties: {
+        title: { type: "string" },
+        caption: { type: "string" },
+        transcript: { type: "string" },
+      },
+    },
+  },
+} as const;
+
+const TABLE_BLOCK_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["blockType", "payload"],
+  properties: {
+    blockType: { type: "string", enum: ["table"] },
+    payload: {
+      type: "object",
+      additionalProperties: false,
+      required: ["title", "columns", "rows", "caption"],
+      properties: {
+        title: { type: "string" },
+        columns: {
+          type: "array",
+          items: { type: "string" },
+        },
+        rows: {
+          type: "array",
+          items: {
+            type: "array",
+            items: { type: "string" },
+          },
+        },
+        caption: { type: "string" },
+      },
+    },
+  },
+} as const;
 
 const RESPONSE_SCHEMA = {
   type: "object",
@@ -110,8 +236,8 @@ const RESPONSE_SCHEMA = {
       additionalProperties: false,
       required: ["title", "description", "category", "level", "estimatedMinutes"],
       properties: {
-        title: { type: "string" },
-        description: { type: "string" },
+        title: { type: "string", maxLength: MAX_COURSE_TITLE_LENGTH },
+        description: { type: "string", maxLength: MAX_COURSE_DESCRIPTION_LENGTH },
         category: { type: "string" },
         level: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
         estimatedMinutes: { type: "number" },
@@ -129,6 +255,8 @@ const RESPONSE_SCHEMA = {
           estimatedMinutes: { type: "number" },
           pages: {
             type: "array",
+            minItems: MIN_PAGES,
+            maxItems: MAX_PAGES,
             items: {
               type: "object",
               additionalProperties: false,
@@ -143,16 +271,14 @@ const RESPONSE_SCHEMA = {
                 blocks: {
                   type: "array",
                   items: {
-                    type: "object",
-                    additionalProperties: false,
-                    required: ["blockType", "payload"],
-                    properties: {
-                      blockType: {
-                        type: "string",
-                        enum: ["text", "callout", "image", "video", "audio", "table"],
-                      },
-                      payload: { type: "object" },
-                    },
+                    anyOf: [
+                      TEXT_BLOCK_SCHEMA,
+                      CALLOUT_BLOCK_SCHEMA,
+                      IMAGE_BLOCK_SCHEMA,
+                      VIDEO_BLOCK_SCHEMA,
+                      AUDIO_BLOCK_SCHEMA,
+                      TABLE_BLOCK_SCHEMA,
+                    ],
                   },
                 },
               },
@@ -166,6 +292,8 @@ const RESPONSE_SCHEMA = {
               title: { type: "string" },
               questions: {
                 type: "array",
+                minItems: MIN_QUESTIONS,
+                maxItems: MAX_QUESTIONS,
                 items: {
                   type: "object",
                   additionalProperties: false,
@@ -201,7 +329,7 @@ const RESPONSE_SCHEMA = {
               properties: {
                 assetType: {
                   type: "string",
-                  enum: ["image", "audio", "video", "infographic", "thumbnail", "cover"],
+                  enum: ["image", "infographic", "thumbnail", "cover"],
                 },
                 placement: { type: "string" },
                 prompt: { type: "string" },
@@ -278,12 +406,22 @@ function buildPrompt(input: AiCourseGenerationInput) {
     `Questions per lesson: ${input.questionsPerLesson}`,
     `Notes and source guidance: ${input.notes || "None provided."}`,
     "Requirements:",
+    `- Keep the course title concise and card-friendly: no more than ${MAX_COURSE_TITLE_LENGTH} characters and usually 2 to 6 words.`,
+    `- Keep the course description to one short learner-facing sentence, no more than ${MAX_COURSE_DESCRIPTION_LENGTH} characters.`,
     "- Use simple language suitable for semi-literate to secondary-school learners.",
     "- Avoid party propaganda, hate, sexual content, medical advice, legal advice, financial advice, or unsafe instructions.",
     "- Use culturally neutral, regionally relevant everyday examples and avoid fake facts or precise claims you cannot support.",
-    "- Keep page blocks mostly text, callout, and table. Put visual or audio ideas in mediaBriefs instead of depending on real URLs.",
-    "- Each lesson must have at least 2 pages and at least 1 media brief.",
+    "- Keep page blocks mostly text, callout, and table. Put still-image ideas in mediaBriefs instead of depending on real URLs.",
+    "- For now, mediaBriefs must only use image, infographic, thumbnail, or cover asset types.",
+    "- Do not suggest audio or video assets in mediaBriefs.",
+    "- Each lesson must have 6 to 8 pages and at least 1 media brief.",
+    "- Lesson pages should feel substantial, with a logical mix of concept, scenario, reflection, and summary instead of repeating the same format.",
+    "- Each quiz must have at least 7 strong questions that test understanding of the lesson, not basic recall.",
+    "- Quiz questions should require the learner to pause, compare options, and apply the lesson to a realistic situation.",
+    "- Include scenario-based and judgment-based questions, not only definition or fact-recall questions.",
     "- Each quiz question must be single_choice with 2 to 4 options and exactly 1 correct answer.",
+    "- Do not make every question worth the same XP. Assign more XP to more difficult or more important questions.",
+    `- Keep question XP between ${MIN_QUESTION_XP} and ${MAX_QUESTION_XP}.`,
     "- Keep table payloads simple: columns as short labels and rows as arrays of short strings.",
   ].join("\n");
 }
@@ -311,15 +449,25 @@ function buildExtensionPrompt(input: AiCourseGenerationInput, context: AiCourseE
     "Existing lessons to avoid duplicating:",
     existingLessonLines,
     "Requirements:",
+    `- Keep the course title concise and card-friendly: no more than ${MAX_COURSE_TITLE_LENGTH} characters and usually 2 to 6 words.`,
+    `- Keep the course description to one short learner-facing sentence, no more than ${MAX_COURSE_DESCRIPTION_LENGTH} characters.`,
     "- Return only NEW lessons that extend the existing course.",
     "- Do not repeat, lightly rename, or paraphrase the existing lessons.",
     "- Keep the tone, difficulty, and category aligned with the current course.",
     "- Use simple language suitable for semi-literate to secondary-school learners.",
     "- Avoid party propaganda, hate, sexual content, medical advice, legal advice, financial advice, or unsafe instructions.",
     "- Use culturally neutral, regionally relevant everyday examples and avoid fake facts or precise claims you cannot support.",
-    "- Keep page blocks mostly text, callout, and table. Put visual or audio ideas in mediaBriefs instead of depending on real URLs.",
-    "- Each lesson must have at least 2 pages and at least 1 media brief.",
+    "- Keep page blocks mostly text, callout, and table. Put still-image ideas in mediaBriefs instead of depending on real URLs.",
+    "- For now, mediaBriefs must only use image, infographic, thumbnail, or cover asset types.",
+    "- Do not suggest audio or video assets in mediaBriefs.",
+    "- Each NEW lesson must have 6 to 8 pages and at least 1 media brief.",
+    "- Lesson pages should feel substantial, with a logical mix of concept, scenario, reflection, and summary instead of repeating the same format.",
+    "- Each quiz must have at least 7 strong questions that test understanding of the lesson, not basic recall.",
+    "- Quiz questions should require the learner to pause, compare options, and apply the lesson to a realistic situation.",
+    "- Include scenario-based and judgment-based questions, not only definition or fact-recall questions.",
     "- Each quiz question must be single_choice with 2 to 4 options and exactly 1 correct answer.",
+    "- Do not make every question worth the same XP. Assign more XP to more difficult or more important questions.",
+    `- Keep question XP between ${MIN_QUESTION_XP} and ${MAX_QUESTION_XP}.`,
     "- Keep table payloads simple: columns as short labels and rows as arrays of short strings.",
     "- The course object should echo the current course metadata so the output still matches the schema.",
   ].join("\n");
@@ -426,11 +574,11 @@ function normalizeDraftShape(raw: unknown, input: AiCourseGenerationInput): AiGe
     }
 
     const rawPages = Array.isArray(lessonRecord.pages) ? lessonRecord.pages : [];
-    if (rawPages.length === 0) {
-      throw new Error(`Lesson ${lessonIndex + 1} is missing pages.`);
+    if (rawPages.length < MIN_PAGES) {
+      throw new Error(`Lesson ${lessonIndex + 1} must contain at least ${MIN_PAGES} pages.`);
     }
 
-    const pages = rawPages.slice(0, 6).map((pageValue, pageIndex) => {
+    const pages = rawPages.slice(0, MAX_PAGES).map((pageValue, pageIndex) => {
       const pageRecord = asObject(pageValue);
       if (!pageRecord) {
         throw new Error(`Lesson ${lessonIndex + 1}, page ${pageIndex + 1} is malformed.`);
@@ -481,8 +629,8 @@ function normalizeDraftShape(raw: unknown, input: AiCourseGenerationInput): AiGe
 
     const rawQuiz = asObject(lessonRecord.quiz);
     const rawQuestions = Array.isArray(rawQuiz?.questions) ? rawQuiz.questions : [];
-    if (!rawQuiz || rawQuestions.length === 0) {
-      throw new Error(`Lesson ${lessonIndex + 1} is missing quiz questions.`);
+    if (!rawQuiz || rawQuestions.length < MIN_QUESTIONS) {
+      throw new Error(`Lesson ${lessonIndex + 1} must contain at least ${MIN_QUESTIONS} quiz questions.`);
     }
 
     const questions = rawQuestions.slice(0, input.questionsPerLesson).map((questionValue, questionIndex) => {
@@ -495,7 +643,7 @@ function normalizeDraftShape(raw: unknown, input: AiCourseGenerationInput): AiGe
         prompt: asString(questionRecord.prompt, 1000),
         questionType: "single_choice" as const,
         explanation: asString(questionRecord.explanation, 1000),
-        xp: clampInteger(Number(questionRecord.xp ?? 5), 1, 20),
+        xp: clampInteger(Number(questionRecord.xp ?? MIN_QUESTION_XP), MIN_QUESTION_XP, MAX_QUESTION_XP),
         options: normalizeQuestionOptions(questionRecord.options),
       };
     });
@@ -505,7 +653,7 @@ function normalizeDraftShape(raw: unknown, input: AiCourseGenerationInput): AiGe
       const briefRecord = asObject(briefValue) ?? {};
       const assetType = asString(briefRecord.assetType, 40) as AiGeneratorAssetType;
       return {
-        assetType: ["image", "audio", "video", "infographic", "thumbnail", "cover"].includes(assetType)
+        assetType: ["image", "infographic", "thumbnail", "cover"].includes(assetType)
           ? assetType
           : "image",
         placement: asString(briefRecord.placement, 180),
@@ -548,8 +696,8 @@ function normalizeDraftShape(raw: unknown, input: AiCourseGenerationInput): AiGe
   });
 
   const course = {
-    title: asString(rawCourse.title, 160),
-    description: asString(rawCourse.description, 1000),
+    title: asString(rawCourse.title, MAX_COURSE_TITLE_LENGTH),
+    description: asString(rawCourse.description, MAX_COURSE_DESCRIPTION_LENGTH),
     category: asString(rawCourse.category, 120) || "Values Education",
     level: (["beginner", "intermediate", "advanced"].includes(asString(rawCourse.level, 40))
       ? asString(rawCourse.level, 40)

@@ -309,6 +309,20 @@ export type AdminLearningMediaAssetRow = {
   lesson?: Pick<AdminLessonRow, "id" | "title"> | null;
 };
 
+export type AdminAiCoursePlanRow = {
+  id: string;
+  mode: string;
+  course_id: string | null;
+  status: string;
+  input_prompt: string;
+  generated_plan: Record<string, unknown>;
+  selected_items: unknown[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  course?: Pick<AdminCourseRow, "id" | "title" | "status"> | null;
+};
+
 export type AdminQuizQuestionRow = {
   id: string;
   quiz_id: string;
@@ -1072,6 +1086,67 @@ export async function getAdminLearningMediaAssets(
     ...asset,
     lesson: asset.lesson_id ? lessonsById.get(asset.lesson_id) ?? null : null,
   }));
+}
+
+export async function getAdminAiCoursePlans(
+  supabase: SupabaseClient,
+  filters: {
+    courseId?: string;
+    mode?: string;
+    limit?: number;
+    planId?: string;
+    orderBy?: "created_at" | "updated_at";
+    excludeStatuses?: string[];
+  } = {},
+) {
+  const orderBy = filters.orderBy ?? "created_at";
+  let query = supabase
+    .from("ai_course_plans")
+    .select(`
+      id,
+      mode,
+      course_id,
+      status,
+      input_prompt,
+      generated_plan,
+      selected_items,
+      created_by,
+      created_at,
+      updated_at,
+      course:courses(id, title, status)
+    `)
+    .order(orderBy, { ascending: false });
+
+  if (filters.planId) {
+    query = query.eq("id", filters.planId);
+  }
+
+  if (filters.courseId) {
+    query = query.eq("course_id", filters.courseId);
+  }
+
+  if (filters.mode) {
+    query = query.eq("mode", filters.mode);
+  }
+
+  if (filters.limit) {
+    query = query.limit(filters.limit);
+  }
+
+  const { data, error } = await query.returns<AdminAiCoursePlanRow[]>();
+
+  if (error) {
+    throw error;
+  }
+
+  const excludeStatuses = new Set(filters.excludeStatuses ?? []);
+
+  return (data ?? [])
+    .map((plan) => ({
+      ...plan,
+      selected_items: Array.isArray(plan.selected_items) ? plan.selected_items : [],
+    }))
+    .filter((plan) => !excludeStatuses.has(plan.status));
 }
 
 export async function getAdminRewards(

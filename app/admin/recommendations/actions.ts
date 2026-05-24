@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getAdminCourses, getAdminLessons, requireAdmin } from "@/lib/admin";
+import {
+  getAdminCourses,
+  getAdminLessons,
+  getAdminRecommendationSections,
+  requireAdmin,
+} from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 
@@ -65,6 +70,19 @@ async function addSectionItem(
     p_item_type: input.itemType,
     p_item_id: input.itemId,
     p_sort_order: input.sortOrder,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function deleteSectionItem(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  itemId: string,
+) {
+  const { error } = await supabase.rpc("admin_delete_recommendation_item", {
+    p_item_id: itemId,
   });
 
   if (error) {
@@ -151,7 +169,11 @@ export async function deleteRecommendationItem(formData: FormData) {
 
 export async function createDefaultRecommendationSections() {
   const { supabase } = await requireAdmin();
-  const [courses, lessons] = await Promise.all([getAdminCourses(supabase), getAdminLessons(supabase)]);
+  const [courses, lessons, sections] = await Promise.all([
+    getAdminCourses(supabase),
+    getAdminLessons(supabase),
+    getAdminRecommendationSections(supabase),
+  ]);
   const firstCourse = courses[0];
 
   await upsertSection(supabase, {
@@ -166,11 +188,20 @@ export async function createDefaultRecommendationSections() {
   await upsertSection(supabase, {
     sectionId: "rec-focus-area",
     title: "Browse Courses",
-    subtitle: "Surface full courses learners can explore at their own pace.",
+    subtitle: "Tutor-curated courses can be added here when you want a focused set.",
     eyebrow: "Focus Area",
     status: "published",
     sortOrder: 20,
   });
+
+  const defaultSectionIds = new Set(["rec-starter-pack", "rec-focus-area"]);
+  const existingDefaultItems = sections
+    .filter((section) => defaultSectionIds.has(section.id))
+    .flatMap((section) => section.items);
+
+  for (const item of existingDefaultItems) {
+    await deleteSectionItem(supabase, item.id);
+  }
 
   if (firstCourse) {
     const starterLessons = lessons
@@ -187,15 +218,11 @@ export async function createDefaultRecommendationSections() {
     }
   }
 
-  for (const [index, course] of courses.entries()) {
-    await addSectionItem(supabase, {
-      sectionId: "rec-focus-area",
-      itemType: "course",
-      itemId: course.id,
-      sortOrder: index + 1,
-    });
-  }
-
   revalidateRecommendationPaths();
-  redirect(appendAdminNotice("/admin/recommendations", "Default sections created."));
+  redirect(
+    appendAdminNotice(
+      "/admin/recommendations",
+      "Default sections created. Focus Area starts empty until you add courses.",
+    ),
+  );
 }

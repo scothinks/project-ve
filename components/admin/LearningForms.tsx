@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { CourseCategoryField } from "@/components/admin/CourseCategoryField";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type {
   AdminCourseRow,
   AdminLessonBlockRow,
@@ -17,11 +19,11 @@ import {
 } from "@/app/admin/courses/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
 }
 
 function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
 }
 
 function labelClasses() {
@@ -135,8 +137,9 @@ function CoursePreview({
           {getImageValue(course?.thumbnail, "src") ? (
             <img
               alt=""
-              className="h-full w-full object-cover"
+              className={`h-full w-full ${getImageFitClass(course?.thumbnail ?? null)}`}
               src={getImageValue(course?.thumbnail, "src")}
+              style={getImagePresentationStyle(course?.thumbnail ?? null)}
             />
           ) : null}
         </div>
@@ -172,13 +175,7 @@ export function CourseForm({
 }) {
   const estimatedMinutes = derivedMinutes ?? course?.estimated_minutes ?? 0;
   const sortOrder = course?.sort_order ?? nextSortOrder;
-  const categoryOptions = Array.from(
-    new Set([
-      course?.category,
-      "Values Education",
-      ...categories,
-    ].filter(Boolean) as string[]),
-  );
+  const currentCategory = (course?.category ?? "Values Education").trim() || "Values Education";
 
   return (
     <form action={saveCourse} className="space-y-5">
@@ -191,44 +188,28 @@ export function CourseForm({
             collapsible
             defaultOpen={!course?.id}
             title="Course identity"
-            subtitle="Set the promise of the course in language a tutor and learner can quickly understand."
+            subtitle="Title, category, and card summary."
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-2">
               <label>
                 <span className={labelClasses()}>Title</span>
                 <input className={fieldClasses()} name="title" required defaultValue={course?.title ?? ""} />
               </label>
-              <label>
-                <span className={labelClasses()}>Category</span>
-                <input
-                  className={fieldClasses()}
-                  defaultValue={course?.category ?? "Values Education"}
-                  list="course-category-options"
-                  name="category"
-                  required
-                />
-                <datalist id="course-category-options">
-                  {categoryOptions.map((category) => (
-                    <option key={category} value={category} />
-                  ))}
-                </datalist>
-                <p className={helperTextClasses()}>
-                  Select an existing category or type a new one.
-                </p>
-              </label>
             </div>
+            <CourseCategoryField categories={categories} currentCategory={currentCategory} />
             <label className="mt-4 block">
               <span className={labelClasses()}>Description</span>
               <textarea className={`${fieldClasses()} min-h-28 resize-none`} name="description" required defaultValue={course?.description ?? ""} />
-              <p className={helperTextClasses()}>Keep this direct. It appears on course cards and discovery surfaces.</p>
             </label>
           </FormSection>
 
           <FormSection
+            collapsible
+            defaultOpen={!course?.id}
             title="Publishing and pacing"
-            subtitle="Course duration is derived from the lesson estimates in this course."
+            subtitle="Minutes come from lesson estimates."
           >
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 xl:grid-cols-3">
               <label>
                 <span className={labelClasses()}>Level</span>
                 <select className={fieldClasses()} name="level" defaultValue={course?.level ?? "beginner"}>
@@ -241,28 +222,30 @@ export function CourseForm({
                 <span className={labelClasses()}>Status</span>
                 <select className={fieldClasses()} name="status" defaultValue={course?.status ?? "draft"}>
                   <option value="draft">Draft</option>
-                  <option disabled={Boolean(course?.ai_generated && course.status !== "published")} value="published">Published</option>
+                  <option value="published">Published</option>
                   <option value="archived">Archived</option>
                 </select>
                 {course?.ai_generated ? (
-                  <p className={helperTextClasses()}>
-                    AI-generated courses publish through the workflow panel after text and media approval.
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]" title="Learners can see the course shell before all lessons are published.">
+                    Shell can go live before lessons.
                   </p>
                 ) : null}
               </label>
               <div className="rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3">
                 <span className={labelClasses()}>Minutes</span>
                 <p className="mt-2 text-sm font-black tabular-nums">{estimatedMinutes}</p>
-                <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">From lesson estimates</p>
+                <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">From lessons</p>
               </div>
             </div>
           </FormSection>
 
           <FormSection
+            collapsible
+            defaultOpen={!course?.id}
             title="Course thumbnail"
-            subtitle="Use a warm, real image that tells the learner what kind of values practice this course contains."
+            subtitle="Learner card image."
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-2">
               <label>
                 <span className={labelClasses()}>Thumbnail URL</span>
                 <input className={fieldClasses()} name="thumbnailUrl" defaultValue={getImageValue(course?.thumbnail, "src")} />
@@ -306,12 +289,12 @@ export function LessonForm({
             <span className={labelClasses()}>Status</span>
             <select className={fieldClasses()} name="status" defaultValue={lesson?.status ?? "draft"}>
               <option value="draft">Draft</option>
-              <option disabled={Boolean(lesson?.ai_generated && lesson.status !== "published")} value="published">Published</option>
+              <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
             {lesson?.ai_generated ? (
               <p className={helperTextClasses()}>
-                AI-generated lessons publish from the parent course workflow after text and media approval.
+                AI-generated lessons can publish one by one after that lesson&apos;s text and media are approved.
               </p>
             ) : null}
           </label>

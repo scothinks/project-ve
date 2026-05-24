@@ -1,4 +1,5 @@
 import { LessonContent } from "@/components/lesson/LessonContent";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { ImageAsset, LessonContentBlock, LessonPageType } from "@/lib/lessons";
 
 type LessonPageLayoutProps = {
@@ -108,14 +109,24 @@ export function LessonPageLayout({
         </div>
 
         {coverImage && isImageBeforeTitle ? (
-          <img alt={coverImage.alt} className={config.image} src={coverImage.src} />
+          <img
+            alt={coverImage.alt}
+            className={`${config.image} ${getImageFitClass(coverImage)}`}
+            src={coverImage.src}
+            style={getImagePresentationStyle(coverImage)}
+          />
         ) : null}
 
         <h1 className={config.title}>{title}</h1>
         {subtitle ? <p className={config.subtitle}>{subtitle}</p> : null}
 
         {coverImage && !isImageBeforeTitle ? (
-          <img alt={coverImage.alt} className={config.image} src={coverImage.src} />
+          <img
+            alt={coverImage.alt}
+            className={`${config.image} ${getImageFitClass(coverImage)}`}
+            src={coverImage.src}
+            style={getImagePresentationStyle(coverImage)}
+          />
         ) : null}
       </div>
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { Buffer } from "node:buffer";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
-import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -39,8 +39,11 @@ export type LearningMediaGenerationContext = {
   pageTitle?: string | null;
   pageSubtitle?: string | null;
   placementLabel?: string | null;
+  revisionFeedback?: string | null;
   targetKind: "course_cover" | "course_thumbnail" | "lesson_thumbnail" | "page_cover" | "asset_only";
 };
+
+type OpenAiImageSize = "1024x1024" | "1024x1536" | "1536x1024";
 
 export type GenerateLearningMediaImageInput = {
   asset: LearningMediaAssetForGeneration;
@@ -93,6 +96,29 @@ function getMediaBucket() {
   return sanitizeText(process.env.LEARNING_MEDIA_BUCKET ?? "learning-media", 120, "learning-media") || "learning-media";
 }
 
+export function getAiMediaConfig() {
+  const adminConfig = getSupabaseAdminConfig();
+  const hasApiKey = Boolean(process.env.OPENAI_API_KEY);
+  const bucket = getMediaBucket();
+  const hasBucket = Boolean(bucket);
+  const missingRequirements: string[] = [];
+
+  if (!hasApiKey) missingRequirements.push("OPENAI_API_KEY");
+  if (!adminConfig.hasSupabaseUrl) missingRequirements.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!adminConfig.hasServiceRoleKey) missingRequirements.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (!hasBucket) missingRequirements.push("LEARNING_MEDIA_BUCKET");
+
+  return {
+    hasApiKey,
+    hasSupabaseUrl: adminConfig.hasSupabaseUrl,
+    hasServiceRoleKey: adminConfig.hasServiceRoleKey,
+    hasBucket,
+    bucket,
+    canGenerate: missingRequirements.length === 0,
+    missingRequirements,
+  };
+}
+
 function getBooleanMetadata(metadata: JsonRecord, key: string) {
   return metadata[key] === true;
 }
@@ -115,9 +141,78 @@ function buildStoragePath(asset: LearningMediaAssetForGeneration, context: Learn
   return `courses/${context.courseId}/thumbnail/${assetId}.png`;
 }
 
+function getTargetSize(
+  asset: Pick<LearningMediaAssetForGeneration, "asset_type">,
+  context: Pick<LearningMediaGenerationContext, "targetKind">,
+): OpenAiImageSize {
+  if (
+    context.targetKind === "course_cover"
+    || context.targetKind === "course_thumbnail"
+    || context.targetKind === "lesson_thumbnail"
+    || context.targetKind === "page_cover"
+    || asset.asset_type === "infographic"
+    || asset.asset_type === "thumbnail"
+    || asset.asset_type === "cover"
+  ) {
+    return "1536x1024";
+  }
+
+  return "1024x1024";
+}
+
+function getCompositionRules(
+  asset: Pick<LearningMediaAssetForGeneration, "asset_type">,
+  context: Pick<LearningMediaGenerationContext, "targetKind">,
+) {
+  const rules = [
+    "- keep the composition clean and easy to understand on a mobile screen",
+    "- do not render the course title, lesson title, page title, or headline text inside the image",
+    "- treat all titles in this prompt as context for the scene, not as words to place on the artwork",
+    "- avoid visible text unless it is naturally part of the scene or essential to the concept",
+    "- if text is relevant to the image, keep it minimal and secondary",
+    "- do not make the image text-heavy",
+  ];
+
+  if (
+    context.targetKind === "course_cover"
+    || context.targetKind === "course_thumbnail"
+    || context.targetKind === "lesson_thumbnail"
+  ) {
+    rules.push(
+      "- compose for a wide horizontal card crop, not a square crop",
+      "- keep faces, hands, books, and other key details inside the center safe area",
+      "- leave clear breathing room around subjects so nothing important sits on the edges",
+      "- avoid close-up portraits or tightly cropped group shots",
+    );
+  } else if (context.targetKind === "page_cover") {
+    rules.push(
+      "- compose for a wide in-page banner image",
+      "- keep the main subject centered with room around it",
+      "- prefer a medium-wide scene instead of a tight crop",
+    );
+  }
+
+  if (asset.asset_type === "infographic") {
+    rules.push(
+      "- this should feel like a visual educational infographic, not a photo collage",
+      "- use simple shapes, icons, symbols, and scene cues that explain the idea visually",
+      "- avoid dense labels, charts, or paragraphs of text",
+      "- never place the course title or lesson title as a headline inside the infographic",
+    );
+  } else {
+    rules.push(
+      "- focus on one clear scene or idea",
+      "- avoid clutter and unnecessary background distractions",
+    );
+  }
+
+  return rules;
+}
+
 function buildImagePrompt(asset: LearningMediaAssetForGeneration, context: LearningMediaGenerationContext) {
   const lines = [
     "Create one safe educational image.",
+    `Asset type: ${asset.asset_type}`,
     `Course title: ${context.courseTitle}`,
     `Course category: ${context.courseCategory}`,
     `Course description: ${context.courseDescription || "Values education course."}`,
@@ -128,6 +223,7 @@ function buildImagePrompt(asset: LearningMediaAssetForGeneration, context: Learn
     context.placementLabel ? `Placement: ${context.placementLabel}` : "",
     `Target usage: ${context.targetKind.replaceAll("_", " ")}`,
     `Asset brief: ${sanitizeText(asset.prompt, 2000, "Create a warm educational illustration.")}`,
+    context.revisionFeedback ? `Reviewer requested media changes: ${sanitizeText(context.revisionFeedback, 2000)}` : "",
     asset.alt_text ? `Accessibility guidance: ${sanitizeText(asset.alt_text, 240)}` : "",
     asset.caption ? `Caption guidance: ${sanitizeText(asset.caption, 500)}` : "",
     "Required style and safety rules:",
@@ -138,9 +234,7 @@ function buildImagePrompt(asset: LearningMediaAssetForGeneration, context: Learn
     "- realistic or clean illustrated style",
     "- warm, modern educational illustration",
     "- African youth or community context where appropriate",
-    "- simple composition, mobile-friendly framing",
-    "- avoid visible text unless absolutely necessary",
-    "- do not make the image text-heavy",
+    ...getCompositionRules(asset, context),
   ];
 
   return lines.filter(Boolean).join("\n");
@@ -174,7 +268,7 @@ async function extractImageBytes(data: OpenAiImageResponse) {
   throw new Error("The image provider returned an unsupported image payload.");
 }
 
-async function requestGeneratedImage(prompt: string, model: string) {
+async function requestGeneratedImage(prompt: string, model: string, size: OpenAiImageSize) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is missing. Add it to the server environment before generating media.");
@@ -189,7 +283,7 @@ async function requestGeneratedImage(prompt: string, model: string) {
     body: JSON.stringify({
       model,
       prompt,
-      size: "1024x1024",
+      size,
       output_format: "png",
     }),
   });
@@ -234,6 +328,7 @@ export async function generateLearningMediaImage(
   const provider = "openai";
   const generatedAt = new Date().toISOString();
   const originalPrompt = buildImagePrompt(asset, context);
+  const size = getTargetSize(asset, context);
   const previousUrl = asset.url;
   const storagePath = buildStoragePath(asset, context);
 
@@ -250,7 +345,7 @@ export async function generateLearningMediaImage(
   }
 
   try {
-    const generated = await requestGeneratedImage(originalPrompt, model);
+    const generated = await requestGeneratedImage(originalPrompt, model, size);
     const uploadResult = await adminSupabase.storage.from(bucket).upload(storagePath, generated.bytes, {
       contentType: "image/png",
       upsert: true,
@@ -277,6 +372,7 @@ export async function generateLearningMediaImage(
       generatedAt,
       originalPrompt,
       revisedPrompt: generated.revisedPrompt,
+      size,
       stale: false,
       staleAt: null,
       staleReason: null,
@@ -329,6 +425,7 @@ export async function generateLearningMediaImage(
           provider,
           model,
           originalPrompt,
+          size,
           lastFailedAt: generatedAt,
           stale: false,
           targetKind: context.targetKind,
