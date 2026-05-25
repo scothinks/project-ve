@@ -19,13 +19,13 @@ type WelcomeSlide = {
   description: string;
   accent: string;
   softAccent: string;
-  shadow: string;
+  glowRgb: string;
   art: ReactNode;
   artClassName?: string;
   contentClassName?: string;
 };
 
-function LessonArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "softAccent" | "shadow">) {
+function LessonArt({ accent, softAccent, glowRgb }: Pick<WelcomeSlide, "accent" | "softAccent" | "glowRgb">) {
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[320px]">
       <div
@@ -34,11 +34,11 @@ function LessonArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" |
       />
       <div
         className="absolute left-[13%] top-[16%] h-[72%] w-[72%] rounded-[30%]"
-        style={{ backgroundColor: softAccent, boxShadow: shadow }}
+        style={{ backgroundColor: softAccent, boxShadow: `0 32px 72px rgba(${glowRgb},0.12)` }}
       />
       <div
         className="absolute left-[24%] top-[28%] h-[46%] w-[46%] rounded-[24%] bg-[var(--ve-card)] p-5"
-        style={{ boxShadow: "0 22px 44px rgba(16,16,16,0.12)" }}
+        style={{ boxShadow: "0 22px 44px rgba(var(--ve-shadow-rgb),0.12)" }}
       >
         <div className="flex items-center gap-3">
           <div
@@ -57,9 +57,9 @@ function LessonArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" |
           <div className="h-11 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)]" />
           <div
             className="flex h-11 items-center justify-between rounded-[16px] border px-4"
-            style={{ borderColor: accent, backgroundColor: "rgba(8,127,91,0.07)" }}
+            style={{ borderColor: accent, backgroundColor: `color-mix(in srgb, ${accent} 8%, var(--ve-shell))` }}
           >
-            <div className="h-2.5 w-20 rounded-full bg-white/90" />
+            <div className="h-2.5 w-20 rounded-full bg-[var(--ve-card)]" />
             <div
               className="grid h-6 w-6 place-items-center rounded-full text-[0.8rem] font-black text-white"
               style={{ backgroundColor: accent }}
@@ -71,28 +71,28 @@ function LessonArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" |
       </div>
       <div
         className="absolute left-[6%] top-[57%] h-[15%] w-[15%] rounded-full"
-        style={{ backgroundColor: "#f1c84b", boxShadow: "0 14px 28px rgba(241,200,75,0.24)" }}
+        style={{ backgroundColor: "var(--ve-store)", boxShadow: "0 14px 28px rgba(var(--ve-store-rgb),0.24)" }}
       />
       <div
         className="absolute right-[8%] top-[28%] h-[18%] w-[18%] rounded-[34%]"
-        style={{ backgroundColor: accent, boxShadow: "0 16px 30px rgba(8,127,91,0.22)" }}
+        style={{ backgroundColor: accent, boxShadow: `0 16px 30px rgba(${glowRgb},0.22)` }}
       />
     </div>
   );
 }
 
-function QuizArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "softAccent" | "shadow">) {
+function QuizArt({ accent, softAccent, glowRgb }: Pick<WelcomeSlide, "accent" | "softAccent" | "glowRgb">) {
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[320px]">
       <div
         className="absolute inset-[12%] rounded-[32%]"
-        style={{ backgroundColor: softAccent, boxShadow: shadow }}
+        style={{ backgroundColor: softAccent, boxShadow: `0 32px 72px rgba(${glowRgb},0.12)` }}
       />
-      <div className="absolute left-[16%] top-[21%] rounded-[24px] bg-[var(--ve-card)] px-5 py-4 shadow-[0_22px_44px_rgba(16,16,16,0.10)]">
+      <div className="absolute left-[16%] top-[21%] rounded-[24px] bg-[var(--ve-card)] px-5 py-4 shadow-[0_22px_44px_rgba(var(--ve-shadow-rgb),0.10)]">
         <div className="flex gap-2">
           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accent }} />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#f1c84b]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#d8ddd9]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[var(--ve-store)]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[var(--ve-line)]" />
         </div>
         <div className="mt-4 space-y-3">
           <div className="h-3 w-28 rounded-full bg-[var(--ve-panel)]" />
@@ -100,7 +100,7 @@ function QuizArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "
             <div className="h-10 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)]" />
             <div
               className="h-10 rounded-[16px] border"
-              style={{ borderColor: accent, backgroundColor: "rgba(8,127,91,0.08)" }}
+              style={{ borderColor: accent, backgroundColor: `color-mix(in srgb, ${accent} 10%, var(--ve-shell))` }}
             />
             <div className="h-10 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)]" />
           </div>
@@ -108,13 +108,17 @@ function QuizArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "
       </div>
       <div
         className="absolute right-[13%] top-[24%] grid h-[18%] w-[18%] place-items-center rounded-[30%] text-[1.45rem] font-black text-white"
-        style={{ backgroundColor: accent, boxShadow: "0 14px 28px rgba(8,127,91,0.22)" }}
+        style={{ backgroundColor: accent, boxShadow: `0 14px 28px rgba(${glowRgb},0.22)` }}
       >
         XP
       </div>
       <div
         className="absolute bottom-[16%] right-[17%] rounded-full px-4 py-2 text-sm font-black"
-        style={{ backgroundColor: "#fff4c4", color: "#8b6300", boxShadow: "0 14px 28px rgba(241,200,75,0.18)" }}
+        style={{
+          backgroundColor: "var(--ve-store-soft)",
+          color: "color-mix(in srgb, var(--ve-store) 80%, var(--foreground))",
+          boxShadow: "0 14px 28px rgba(var(--ve-store-rgb),0.18)",
+        }}
       >
         +25 XP
       </div>
@@ -122,15 +126,18 @@ function QuizArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "
   );
 }
 
-function RewardsArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" | "softAccent" | "shadow">) {
+function RewardsArt({ accent, softAccent, glowRgb }: Pick<WelcomeSlide, "accent" | "softAccent" | "glowRgb">) {
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[320px]">
       <div
         className="absolute inset-[14%] rounded-[32%]"
-        style={{ backgroundColor: softAccent, boxShadow: shadow }}
+        style={{ backgroundColor: softAccent, boxShadow: `0 32px 72px rgba(${glowRgb},0.14)` }}
       />
-      <div className="absolute left-[14%] top-[24%] h-[44%] w-[34%] rounded-[26px] bg-[var(--ve-card)] p-4 shadow-[0_22px_44px_rgba(16,16,16,0.10)]">
-        <div className="rounded-[18px] px-3 py-2 text-center text-xs font-black uppercase tracking-[0.14em]" style={{ backgroundColor: "rgba(8,127,91,0.10)", color: accent }}>
+      <div className="absolute left-[14%] top-[24%] h-[44%] w-[34%] rounded-[26px] bg-[var(--ve-card)] p-4 shadow-[0_22px_44px_rgba(var(--ve-shadow-rgb),0.10)]">
+        <div
+          className="rounded-[18px] px-3 py-2 text-center text-xs font-black uppercase tracking-[0.14em]"
+          style={{ backgroundColor: softAccent, color: accent }}
+        >
           Mission
         </div>
         <div className="mt-4 h-3 w-14 rounded-full bg-[var(--ve-panel)]" />
@@ -139,7 +146,7 @@ function RewardsArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" 
           <div className="h-full w-[68%] rounded-full" style={{ backgroundColor: accent }} />
         </div>
       </div>
-      <div className="absolute right-[14%] top-[20%] h-[48%] w-[28%] rounded-[24px] bg-[var(--ve-card)] px-4 py-5 shadow-[0_22px_44px_rgba(16,16,16,0.10)]">
+      <div className="absolute right-[14%] top-[20%] h-[48%] w-[28%] rounded-[24px] bg-[var(--ve-card)] px-4 py-5 shadow-[0_22px_44px_rgba(var(--ve-shadow-rgb),0.10)]">
         <div className="text-center text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
           Reward
         </div>
@@ -156,7 +163,7 @@ function RewardsArt({ accent, softAccent, shadow }: Pick<WelcomeSlide, "accent" 
       </div>
       <div
         className="absolute bottom-[15%] left-[28%] rounded-full px-4 py-2 text-sm font-black text-white"
-        style={{ backgroundColor: accent, boxShadow: "0 18px 36px rgba(8,127,91,0.24)" }}
+        style={{ backgroundColor: accent, boxShadow: `0 18px 36px rgba(${glowRgb},0.24)` }}
       >
         Keep going
       </div>
@@ -176,10 +183,10 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
         anchor: "Learn",
         title: "Practical civic values",
         description: "Short lessons for everyday choices and civic action.",
-        accent: "#0b8f64",
-        softAccent: "#dcf4e8",
-        shadow: "0 32px 72px rgba(8,127,91,0.12)",
-        art: <LessonArt accent="#0b8f64" shadow="0 32px 72px rgba(8,127,91,0.12)" softAccent="#dcf4e8" />,
+        accent: "var(--ve-green)",
+        softAccent: "var(--ve-green-soft)",
+        glowRgb: "var(--ve-green-rgb)",
+        art: <LessonArt accent="var(--ve-green)" glowRgb="var(--ve-green-rgb)" softAccent="var(--ve-green-soft)" />,
         artClassName: "max-w-[300px]",
         contentClassName: "mt-10",
       },
@@ -188,10 +195,10 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
         anchor: "Earn",
         title: "XP as you progress",
         description: "Finish a lesson, answer a quick quiz, and build momentum.",
-        accent: "#0c7dc2",
-        softAccent: "#e3f1ff",
-        shadow: "0 32px 72px rgba(12,125,194,0.12)",
-        art: <QuizArt accent="#0c7dc2" shadow="0 32px 72px rgba(12,125,194,0.12)" softAccent="#e3f1ff" />,
+        accent: "var(--ve-sky)",
+        softAccent: "var(--ve-sky-soft)",
+        glowRgb: "var(--ve-sky-rgb)",
+        art: <QuizArt accent="var(--ve-sky)" glowRgb="var(--ve-sky-rgb)" softAccent="var(--ve-sky-soft)" />,
         artClassName: "max-w-[330px]",
         contentClassName: "mt-12",
       },
@@ -200,10 +207,10 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
         anchor: "Unlock",
         title: "Rewards and missions",
         description: "Use XP, unlock rewards, and open up more missions as you go.",
-        accent: "#8d68f2",
-        softAccent: "#eee7ff",
-        shadow: "0 32px 72px rgba(141,104,242,0.14)",
-        art: <RewardsArt accent="#8d68f2" shadow="0 32px 72px rgba(141,104,242,0.14)" softAccent="#eee7ff" />,
+        accent: "var(--ve-violet)",
+        softAccent: "var(--ve-violet-soft)",
+        glowRgb: "var(--ve-violet-rgb)",
+        art: <RewardsArt accent="var(--ve-violet)" glowRgb="var(--ve-violet-rgb)" softAccent="var(--ve-violet-soft)" />,
         artClassName: "max-w-[330px]",
         contentClassName: "mt-12",
       },
@@ -311,9 +318,12 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
 
         <div className="relative z-10 pt-6 pb-4">
           <Button
-            className="h-16 w-full text-[1.4rem] font-black shadow-[0_22px_40px_rgba(8,127,91,0.20)]"
+            className="h-16 w-full text-[1.4rem] font-black"
             onClick={advance}
-            style={{ backgroundColor: slide.accent }}
+            style={{
+              backgroundColor: slide.accent,
+              boxShadow: `0 22px 40px rgba(${slide.glowRgb},0.20)`,
+            }}
           >
             {activeIndex === slides.length - 1 ? "Get started" : "Next"}
           </Button>
