@@ -2,7 +2,7 @@ import type { AdminCampaignRow } from "@/lib/admin";
 import { saveCampaign } from "@/app/admin/campaigns/actions";
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 function labelClasses() {
@@ -69,7 +69,7 @@ export function CampaignForm({ campaign }: { campaign?: AdminCampaignRow | null 
         Saving keeps the campaign configured. Use Enable from the campaign list when it should become eligible for the XP Store.
       </p>
 
-      <button className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white" type="submit">
+      <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
         Save campaign
       </button>
     </form>

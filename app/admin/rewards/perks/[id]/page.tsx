@@ -15,6 +15,7 @@ import {
 } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminRewardDetail, requireAdmin } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
+import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
 import { setPerkPrizeEnabled, updateReward } from "../../[id]/actions";
@@ -182,7 +183,7 @@ function CollapsibleSection({
               <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">{description}</p>
             ) : null}
           </div>
-          <span className="rounded-full bg-[#f3ecff] px-3 py-1 text-xs font-black text-[#6c3cc2]">
+          <span className="rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-3 py-1 text-xs font-black text-[var(--ve-violet)]">
             Open
           </span>
         </div>
@@ -219,6 +220,13 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
     perkDistribution,
   } = detail;
   const thumbnail = reward.thumbnail ?? {};
+  const thumbnailEditor = getRewardThumbnailEditorState({
+    url: getString(thumbnail, "url") || undefined,
+    icon: getString(thumbnail, "icon") || undefined,
+    iconSet: getString(thumbnail, "iconSet") === "tabler" ? "tabler" : undefined,
+    iconName: getString(thumbnail, "iconName") || undefined,
+    color: getString(thumbnail, "color") || undefined,
+  });
   const claimSteps = getClaimSteps(reward.claim_steps);
   const fallback = getFallbackConfig(reward.fulfillment_config ?? {});
   const storefrontState = getStorefrontState(reward, {
@@ -263,7 +271,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
               sortOrder: reward.sort_order,
               offerExpiresAt: toDateInputValue(reward.offer_expires_at),
               thumbnailUrl: getString(thumbnail, "url"),
-              thumbnailIcon: getString(thumbnail, "icon"),
+              thumbnailIconName: thumbnailEditor.iconName,
+              thumbnailLegacyIcon: thumbnailEditor.legacyIcon,
               thumbnailColor: getString(thumbnail, "color"),
               terms: reward.terms ?? "",
               claimSteps,
@@ -318,7 +327,7 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
               Open the dedicated draw view when you need to inspect winners, fallback behavior, and award timing in detail.
             </p>
             <Link
-              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[#f3ecff] px-4 py-3 text-sm font-black text-[#6c3cc2]"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-violet)]"
               href={`/admin/rewards/perks/${encodeURIComponent(reward.id)}/draws`}
             >
               Open draw log
@@ -335,8 +344,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
       </section>
 
       {noticeCopy ? (
-        <AdminCard className="mt-6 border-[#d9efe5] bg-[#f3fbf7]">
-          <p className="text-sm font-black text-[#087f5b]">{noticeCopy}</p>
+        <AdminCard className="mt-6 border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))]">
+          <p className="text-sm font-black text-[var(--ve-green)]">{noticeCopy}</p>
         </AdminCard>
       ) : null}
 
@@ -402,8 +411,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                       <button
                         className={`rounded-full px-3 py-2 text-xs font-black ${
                           prize.is_enabled
-                            ? "bg-[#fff0f0] text-[#c00000]"
-                            : "bg-[#eefaf4] text-[#087f5b]"
+                            ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+                            : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
                         }`}
                         type="submit"
                       >

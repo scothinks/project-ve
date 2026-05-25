@@ -7,7 +7,7 @@ import type { FaqItem, StaticContentPage } from "@/lib/static-content";
 import { saveStaticContentPage } from "@/app/admin/content/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -52,7 +52,7 @@ export function StaticContentEditor({
       <AdminCard>
         <details>
           <summary className="cursor-pointer list-none">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]">FAQ</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">FAQ</p>
             <h2 className="mt-2 text-2xl font-black">Frequently asked questions</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
               Keep this fast to scan. Each answer should be direct and easy to understand on mobile.
@@ -81,7 +81,7 @@ export function StaticContentEditor({
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-black">Question {index + 1}</p>
                     <button
-                      className="rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
+                      className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
                       onClick={() => removeFaqItem(index)}
                       type="button"
                     >
@@ -121,7 +121,7 @@ export function StaticContentEditor({
       <AdminCard>
         <details>
           <summary className="cursor-pointer list-none">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]">Terms</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">Terms</p>
             <h2 className="mt-2 text-2xl font-black">Terms page</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
               Use short paragraphs. Keep legal language clear enough for ordinary users to follow.
@@ -161,7 +161,7 @@ export function StaticContentEditor({
       <AdminCard>
         <details>
           <summary className="cursor-pointer list-none">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]">Privacy</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">Privacy</p>
             <h2 className="mt-2 text-2xl font-black">Privacy page</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
               Keep this clear and practical. Tell learners what data is used, why it is used, and

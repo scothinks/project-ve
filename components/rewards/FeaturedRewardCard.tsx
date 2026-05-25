@@ -1,34 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { RewardThumbnailVisual } from "@/components/rewards/RewardThumbnailVisual";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StoreReward } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
 
 function RewardThumbnail({ reward }: { reward: StoreReward }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const fallbackIcon = reward.thumbnail.icon ?? reward.title.slice(0, 4).toUpperCase();
-
-  if (reward.thumbnail.url && !imageFailed) {
-    return (
-      <img
-        alt=""
-        className="h-full w-full object-cover"
-        onError={() => setImageFailed(true)}
-        src={reward.thumbnail.url}
-      />
-    );
-  }
-
   return (
-    <div
-      className="grid h-full w-full place-items-center text-[1.1rem] font-semibold tracking-[-0.02em] text-[#a66d00]"
-      style={{ backgroundColor: reward.thumbnail.color ?? "#fff8df" }}
-    >
-      {fallbackIcon}
-    </div>
+    <RewardThumbnailVisual
+      defaultColor="#fff8df"
+      iconClassName="h-[42%] w-[42%] text-[#a66d00]"
+      textClassName="text-[1.1rem] font-semibold tracking-[-0.02em] text-[#a66d00]"
+      thumbnail={reward.thumbnail}
+      title={reward.title}
+    />
   );
 }
 
@@ -41,7 +28,7 @@ export function FeaturedRewardCard({ reward }: { reward: StoreReward }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-end">
             <StatusBadge
-              className="shrink-0 bg-[var(--ve-card)] text-[#a66d00] px-3 py-1 text-[clamp(0.68rem,2.4vw,0.75rem)]"
+              className="shrink-0 px-3 py-1 text-[clamp(0.68rem,2.4vw,0.75rem)]"
               tone="store"
             >
               {formatXpLabel(reward.costXp)}

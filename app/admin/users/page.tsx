@@ -51,7 +51,7 @@ export default async function AdminUsersPage({
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
             Manual XP granted today
           </p>
-          <p className="mt-3 text-3xl font-black tabular-nums text-[#a66d00]">
+          <p className="mt-3 text-3xl font-black tabular-nums text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
             {formatXpLabel(grantedToday)}
           </p>
         </AdminCard>
@@ -59,7 +59,7 @@ export default async function AdminUsersPage({
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
             Remaining grant quota
           </p>
-          <p className="mt-3 text-3xl font-black tabular-nums text-[#087f5b]">
+          <p className="mt-3 text-3xl font-black tabular-nums text-[var(--ve-green)]">
             {formatXpLabel(remainingGrant)}
           </p>
         </AdminCard>
@@ -112,7 +112,7 @@ export default async function AdminUsersPage({
                   />
                   <div className="grid gap-2 sm:grid-cols-[96px_minmax(0,1fr)_auto]">
                     <input
-                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10"
+                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
                       defaultValue=""
                       min={1}
                       name="amount"
@@ -121,7 +121,7 @@ export default async function AdminUsersPage({
                       type="number"
                     />
                     <input
-                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10"
+                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
                       defaultValue=""
                       maxLength={200}
                       name="reason"
@@ -129,7 +129,7 @@ export default async function AdminUsersPage({
                       type="text"
                     />
                     <button
-                      className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={!canGrantXp}
                       type="submit"
                     >

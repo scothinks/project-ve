@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+import { isRewardIconName } from "@/lib/reward-icons";
 
 export type RewardActionState = {
   ok: boolean;
@@ -64,6 +65,54 @@ function parseOptionalText(value: FormDataEntryValue | null, maxLength = 120) {
   return parsed || null;
 }
 
+function parseThumbnailFields(formData: FormData) {
+  const url = sanitizeUrlInput(String(formData.get("thumbnailUrl") ?? ""), 1000) || undefined;
+  const color = sanitizePlainTextInput(String(formData.get("thumbnailColor") ?? ""), 32).trim() || undefined;
+  const iconSetRaw = sanitizePlainTextInput(String(formData.get("thumbnailIconSet") ?? ""), 24).trim();
+  const iconNameRaw = sanitizePlainTextInput(String(formData.get("thumbnailIconName") ?? ""), 40).trim();
+  const legacyIcon = sanitizePlainTextInput(String(formData.get("thumbnailLegacyIcon") ?? ""), 24).trim() || undefined;
+  const useLegacyIcon = formData.get("thumbnailUseLegacyIcon") === "true";
+  const iconName = isRewardIconName(iconNameRaw) ? iconNameRaw : undefined;
+
+  return {
+    url,
+    icon: useLegacyIcon ? legacyIcon : undefined,
+    iconSet: iconSetRaw === "tabler" && iconName ? "tabler" : undefined,
+    iconName: iconSetRaw === "tabler" ? iconName : undefined,
+    color,
+  };
+}
+
+function getStoredThumbnail(thumbnail: unknown) {
+  if (!thumbnail || typeof thumbnail !== "object" || Array.isArray(thumbnail)) {
+    return {
+      url: undefined,
+      icon: undefined,
+      iconSet: undefined,
+      iconName: undefined,
+      color: undefined,
+    };
+  }
+
+  const record = thumbnail as {
+    url?: unknown;
+    icon?: unknown;
+    iconSet?: unknown;
+    iconName?: unknown;
+    color?: unknown;
+  };
+
+  return {
+    url: typeof record.url === "string" ? record.url : undefined,
+    icon: typeof record.icon === "string" ? record.icon : undefined,
+    iconSet: record.iconSet === "tabler" ? "tabler" : undefined,
+    iconName: typeof record.iconName === "string" && isRewardIconName(record.iconName)
+      ? record.iconName
+      : undefined,
+    color: typeof record.color === "string" ? record.color : undefined,
+  };
+}
+
 function slugifyRewardTitle(title: string) {
   const slug = title
     .toLowerCase()
@@ -105,11 +154,7 @@ function parseRewardPayload(formData: FormData) {
   const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
   const distributionMode = String(formData.get("distributionMode") ?? "direct");
   const limitPeriod = String(formData.get("limitPeriod") ?? "lifetime");
-  const thumbnail = {
-    url: sanitizeUrlInput(String(formData.get("thumbnailUrl") ?? ""), 1000) || undefined,
-    icon: sanitizePlainTextInput(String(formData.get("thumbnailIcon") ?? ""), 24).trim() || undefined,
-    color: sanitizePlainTextInput(String(formData.get("thumbnailColor") ?? ""), 32).trim() || undefined,
-  };
+  const thumbnail = parseThumbnailFields(formData);
 
   return {
     rewardId,
@@ -316,20 +361,7 @@ export async function setRewardStatus(formData: FormData) {
     costXp: reward.cost_xp,
     status,
     isEnabled,
-    thumbnail:
-      reward.thumbnail && typeof reward.thumbnail === "object" && !Array.isArray(reward.thumbnail)
-        ? {
-            url: typeof (reward.thumbnail as { url?: unknown }).url === "string"
-              ? (reward.thumbnail as { url?: string }).url
-              : undefined,
-            icon: typeof (reward.thumbnail as { icon?: unknown }).icon === "string"
-              ? (reward.thumbnail as { icon?: string }).icon
-              : undefined,
-            color: typeof (reward.thumbnail as { color?: unknown }).color === "string"
-              ? (reward.thumbnail as { color?: string }).color
-              : undefined,
-          }
-        : { url: undefined, icon: undefined, color: undefined },
+    thumbnail: getStoredThumbnail(reward.thumbnail),
     offerExpiresAt: reward.offer_expires_at,
     terms: reward.terms ?? "",
     claimSteps: Array.isArray(reward.claim_steps)
@@ -407,8 +439,7 @@ export async function savePerkPrize(formData: FormData) {
   const prizeType = sanitizePlainTextInput(String(formData.get("prizeType") ?? "native_xp"), 32);
   let sourceRewardId = parseOptionalText(formData.get("sourceRewardId"), 120);
   const title = parseOptionalText(formData.get("title"), 140);
-  const icon = parseOptionalText(formData.get("thumbnailIcon"), 24);
-  const color = parseOptionalText(formData.get("thumbnailColor"), 32);
+  const thumbnail = parseThumbnailFields(formData);
   const weight = parsePositiveInteger(formData.get("weight"));
   const parsedTotalWinCap = parseOptionalPositiveInteger(formData.get("totalWinCap"));
   const dailyWinCap = parseOptionalPositiveInteger(formData.get("dailyWinCap"));
@@ -476,7 +507,7 @@ export async function savePerkPrize(formData: FormData) {
     p_prize_type: prizeType,
     p_source_reward_id: prizeType === "reward" ? sourceRewardId : null,
     p_title: title,
-    p_thumbnail: { icon: icon ?? undefined, color: color ?? undefined },
+    p_thumbnail: thumbnail,
     p_config: config,
     p_weight: weight,
     p_total_win_cap: totalWinCap,

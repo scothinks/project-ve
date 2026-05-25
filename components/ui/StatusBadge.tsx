@@ -12,7 +12,7 @@ type StatusBadgeProps = {
 const tones: Record<Tone, string> = {
   trust: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
   mission: "bg-[var(--ve-mission-soft)] text-[#c94f2e]",
-  store: "bg-[var(--ve-store-soft)] text-[#a66d00]",
+  store: "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_84%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_72%,var(--foreground))]",
   neutral: "bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]",
 };
 

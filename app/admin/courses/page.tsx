@@ -30,7 +30,7 @@ function actionButtonClasses(kind: "success" | "danger" | "secondary") {
   }
 
   if (kind === "danger") {
-    return "rounded-[12px] border border-[color:color-mix(in_srgb,#d45a5a_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[#d45a5a]";
+    return "rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]";
   }
 
   return "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]";
@@ -64,7 +64,7 @@ export default async function AdminCoursesPage({
           AI Course Planner
         </Link>
         <Link
-          className="rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white"
+          className="rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
           href="/admin/courses/new"
         >
           Add Course
@@ -78,7 +78,7 @@ export default async function AdminCoursesPage({
           {paginatedCourses.items.map((course) => (
             <tr key={course.id}>
               <td className="min-w-[260px] px-4 py-4">
-                <Link className="font-black hover:text-[#087f5b]" href={`/admin/courses/${course.id}`}>
+                <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/courses/${course.id}`}>
                   {course.title}
                 </Link>
                 <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{course.slug}</p>

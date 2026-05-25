@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { RewardThumbnailFields } from "@/components/admin/RewardThumbnailFields";
 import type { RewardActionState } from "@/app/admin/rewards/[id]/actions";
 import type { AdminCampaignRow } from "@/lib/admin";
 
@@ -17,7 +18,8 @@ type PerkEditorValue = {
   sortOrder: number;
   offerExpiresAt: string;
   thumbnailUrl: string;
-  thumbnailIcon: string;
+  thumbnailIconName: string;
+  thumbnailLegacyIcon: string;
   thumbnailColor: string;
   terms: string;
   claimSteps: string[];
@@ -44,7 +46,7 @@ type PerkEditorFormProps = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#6c3cc2]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-violet)]";
 }
 
 function labelClasses() {
@@ -59,7 +61,7 @@ function SectionChevron({ open }: { open: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#f3effa] text-[#6c3cc2] transition-transform ${
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] text-[var(--ve-violet)] transition-transform ${
         open ? "rotate-90" : ""
       }`}
     >
@@ -97,7 +99,7 @@ function CollapsibleSection({
     <section
       className={`rounded-[16px] border p-4 ${
         tone === "perk"
-          ? "border-[var(--ve-line-soft)] bg-[#faf8ff]"
+          ? "border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_62%,var(--ve-card))]"
           : "border-[var(--ve-line-soft)] bg-[var(--ve-shell)]"
       }`}
     >
@@ -108,7 +110,7 @@ function CollapsibleSection({
       >
         <div>
           {eyebrow ? (
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6c3cc2]">{eyebrow}</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-violet)]">{eyebrow}</p>
           ) : null}
           <h2 className="mt-2 text-sm font-black text-[var(--foreground)]">{title}</h2>
           {description ? (
@@ -127,7 +129,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[#6c3cc2] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ve-violet)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -333,20 +335,13 @@ export function PerkEditorForm({
 
       <CollapsibleSection defaultOpen={false} title="Learner card">
         <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <label>
-              <span className={labelClasses()}>Thumbnail icon</span>
-              <input className={fieldClasses()} defaultValue={perk.thumbnailIcon} maxLength={24} name="thumbnailIcon" />
-            </label>
-            <label>
-              <span className={labelClasses()}>Thumbnail color</span>
-              <input className={fieldClasses()} defaultValue={perk.thumbnailColor} maxLength={32} name="thumbnailColor" />
-            </label>
-            <label className="md:col-span-1">
-              <span className={labelClasses()}>Thumbnail URL</span>
-              <input className={fieldClasses()} defaultValue={perk.thumbnailUrl} maxLength={1000} name="thumbnailUrl" />
-            </label>
-          </div>
+          <RewardThumbnailFields
+            color={perk.thumbnailColor}
+            iconName={perk.thumbnailIconName}
+            legacyIcon={perk.thumbnailLegacyIcon}
+            title={perk.title || "Perk"}
+            url={perk.thumbnailUrl}
+          />
           <label className="block">
             <span className={labelClasses()}>Terms</span>
             <textarea
@@ -439,7 +434,7 @@ export function PerkEditorForm({
                   value={step}
                 />
                 <button
-                  className="mt-1 rounded-[12px] bg-[#fff0f0] px-3 text-xs font-black text-[#c00000]"
+                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
                   onClick={() => setClaimSteps((current) => current.filter((_, stepIndex) => stepIndex !== index))}
                   type="button"
                 >
@@ -454,7 +449,9 @@ export function PerkEditorForm({
       {state.message ? (
         <p
           className={`rounded-[14px] px-4 py-3 text-sm font-black ${
-            state.ok ? "bg-[#ede7ff] text-[#6c3cc2]" : "bg-[#fff0f0] text-[#c00000]"
+            state.ok
+              ? "bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_72%,var(--ve-card))] text-[var(--ve-violet)]"
+              : "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
           }`}
         >
           {state.message}

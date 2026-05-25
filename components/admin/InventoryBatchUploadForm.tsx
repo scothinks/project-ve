@@ -25,7 +25,7 @@ const initialInventoryBatchDryRunState: InventoryBatchDryRunState = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 function labelClasses() {
@@ -55,7 +55,7 @@ function BatchActionButtons({
         {pending ? "Checking..." : "Dry run"}
       </button>
       <button
-        className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
         disabled={pending || !canImport}
         type="submit"
       >
@@ -223,8 +223,8 @@ export function InventoryBatchUploadForm({
         <div
           className={`rounded-[16px] border p-4 text-sm font-bold ${
             state.ok
-              ? "border-[#ccebdc] bg-[#f4fbf7] text-[#087f5b]"
-              : "border-[#ffe0e0] bg-[#fff7f7] text-[#c00000]"
+              ? "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+              : "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
           }`}
         >
           <p>{state.message}</p>
@@ -238,9 +238,9 @@ export function InventoryBatchUploadForm({
       ) : null}
 
       {state.errors.length > 0 ? (
-        <div className="rounded-[16px] bg-[#fff0f0] p-4">
-          <p className="text-sm font-black text-[#c00000]">Issues to fix</p>
-          <ul className="mt-2 space-y-1 text-sm font-semibold text-[#7a1d1d]">
+        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4">
+          <p className="text-sm font-black text-[var(--ve-danger)]">Issues to fix</p>
+          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ve-muted-strong)]">
             {state.errors.slice(0, 12).map((error) => (
               <li key={error}>{error}</li>
             ))}
@@ -254,9 +254,9 @@ export function InventoryBatchUploadForm({
       ) : null}
 
       {state.warnings.length > 0 ? (
-        <div className="rounded-[16px] bg-[#fff8df] p-4">
-          <p className="text-sm font-black text-[#a66d00]">Warnings</p>
-          <ul className="mt-2 space-y-1 text-sm font-semibold text-[#755100]">
+        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] p-4">
+          <p className="text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">Warnings</p>
+          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ve-muted-strong)]">
             {state.warnings.slice(0, 8).map((warning) => (
               <li key={warning}>{warning}</li>
             ))}

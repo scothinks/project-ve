@@ -95,13 +95,13 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
         <CampaignFilterSelect campaigns={campaigns} value={campaign} />
         <div className="flex flex-wrap gap-2 md:justify-end">
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[#fff8df] px-5 text-sm font-black text-[#a66d00]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
             href="/admin/inventory/new"
           >
             Add Inventory
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[#6c3cc2] px-5 text-sm font-black text-white"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-violet)] px-5 text-sm font-black text-white"
             href="/admin/rewards/perks/new"
           >
             Add Perk
@@ -125,7 +125,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        className="text-2xl font-black hover:text-[#6c3cc2]"
+                        className="text-2xl font-black hover:text-[var(--ve-violet)]"
                         href={`/admin/rewards/perks/${program.reward.id}`}
                       >
                         {program.reward.title}
@@ -164,7 +164,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
 
                   <div className="flex flex-wrap gap-2 lg:justify-end">
                     <Link
-                      className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[#f3ecff] px-4 text-sm font-black text-[#6c3cc2]"
+                      className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-violet)]"
                       href={`/admin/rewards/perks/${program.reward.id}`}
                     >
                       Manage pool
@@ -179,7 +179,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                           value={campaign ? `/admin/rewards/perks?campaign=${encodeURIComponent(campaign)}` : "/admin/rewards/perks"}
                         />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[#e4f4ed] px-4 text-sm font-black text-[#087f5b]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-green)]"
                           type="submit"
                         >
                           Publish perk
@@ -196,7 +196,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                         />
                         <input name="isEnabled" type="hidden" value="false" />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[#fff0f0] px-4 text-sm font-black text-[#c00000]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-danger)]"
                           type="submit"
                         >
                           Pause perk
@@ -213,7 +213,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                         />
                         <input name="isEnabled" type="hidden" value="true" />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[#e4f4ed] px-4 text-sm font-black text-[#087f5b]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-green)]"
                           type="submit"
                         >
                           Resume perk
@@ -230,7 +230,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                           value={campaign ? `/admin/rewards/perks?campaign=${encodeURIComponent(campaign)}` : "/admin/rewards/perks"}
                         />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[var(--ve-panel)] px-4 text-sm font-black text-[#5a5447]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[var(--ve-panel)] px-4 text-sm font-black text-[var(--ve-muted-strong)]"
                           type="submit"
                         >
                           Move to draft

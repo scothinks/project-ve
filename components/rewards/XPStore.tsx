@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import { RewardThumbnailVisual } from "@/components/rewards/RewardThumbnailVisual";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { XPBadge } from "@/components/ui/XPBadge";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
@@ -102,28 +103,14 @@ function RewardThumb({
   thumbnail: StoreReward["thumbnail"] | RewardRedemption["rewardThumbnail"];
   title: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const fallbackIcon = thumbnail.icon
-    ?? (title.toLowerCase().includes("xp") ? "XP" : title.slice(0, 4).toUpperCase());
-
-  if (thumbnail.url && !imageFailed) {
-    return (
-      <img
-        alt=""
-        className="h-full w-full object-cover"
-        onError={() => setImageFailed(true)}
-        src={thumbnail.url}
-      />
-    );
-  }
-
   return (
-    <div
-      className="grid h-full w-full place-items-center text-[11px] font-black text-[#008751]"
-      style={{ backgroundColor: thumbnail.color ?? "#f4fbf7" }}
-    >
-      {fallbackIcon}
-    </div>
+    <RewardThumbnailVisual
+      defaultColor="#f4fbf7"
+      iconClassName="h-[58%] w-[58%] text-[var(--ve-green)]"
+      textClassName="text-[11px] font-black text-[var(--ve-green)]"
+      thumbnail={thumbnail}
+      title={title}
+    />
   );
 }
 

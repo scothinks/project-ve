@@ -11,6 +11,7 @@ import {
 } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminRewardDetail, requireAdmin } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
+import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
 import { updateReward } from "./actions";
@@ -74,6 +75,13 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
       ? "items"
       : "quantity";
   const thumbnail = reward.thumbnail ?? {};
+  const thumbnailEditor = getRewardThumbnailEditorState({
+    url: getString(thumbnail, "url") || undefined,
+    icon: getString(thumbnail, "icon") || undefined,
+    iconSet: getString(thumbnail, "iconSet") === "tabler" ? "tabler" : undefined,
+    iconName: getString(thumbnail, "iconName") || undefined,
+    color: getString(thumbnail, "color") || undefined,
+  });
   const claimSteps = getClaimSteps(reward.claim_steps);
   const paginatedInventoryItems = paginateItems(inventoryItems, parsePageParam(inventoryPage), 10);
   const paginatedAdjustments = paginateItems(adjustments, parsePageParam(adjustmentsPage), 10);
@@ -112,7 +120,8 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
               sortOrder: reward.sort_order,
               offerExpiresAt: toDateInputValue(reward.offer_expires_at),
               thumbnailUrl: getString(thumbnail, "url"),
-              thumbnailIcon: getString(thumbnail, "icon"),
+              thumbnailIconName: thumbnailEditor.iconName,
+              thumbnailLegacyIcon: thumbnailEditor.legacyIcon,
               thumbnailColor: getString(thumbnail, "color"),
               terms: reward.terms ?? "",
               claimSteps,
@@ -170,7 +179,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
               Add stock, assign batches, and track partner uploads from the central inventory page.
             </p>
             <Link
-              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[#fff8df] px-4 py-3 text-sm font-black text-[#a66d00]"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
               href={`/admin/inventory/new?rewardId=${encodeURIComponent(reward.id)}&mode=${inventoryMode}`}
             >
               Manage inventory
@@ -260,7 +269,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
           weights, release timing, and assigned rewards.
         </p>
         <Link
-          className="mt-4 inline-flex rounded-[14px] bg-[#f3ecff] px-4 py-3 text-sm font-black text-[#6c3cc2]"
+          className="mt-4 inline-flex rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-violet)]"
           href="/admin/rewards/perks"
         >
           Open perks

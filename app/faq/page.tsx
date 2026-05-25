@@ -6,11 +6,11 @@ export default async function FaqPage() {
   const page = await getStaticContentPage("faq");
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
       <AppHeader title="FAQ" backHref="/profile" />
       <section className="space-y-5 px-6 py-8 pb-28">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">Help</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-green)]">Help</p>
           <h1 className="mt-2 text-3xl font-black leading-9">{page.title}</h1>
           {page.subtitle ? (
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">{page.subtitle}</p>
@@ -23,7 +23,7 @@ export default async function FaqPage() {
               <summary className="cursor-pointer list-none pr-6 text-base font-black text-[var(--foreground)]">
                 {item.question}
               </summary>
-              <p className="mt-3 text-sm font-semibold leading-7 text-[#5f5f5a]">{item.answer}</p>
+              <p className="mt-3 text-sm font-semibold leading-7 text-[var(--ve-muted-strong)]">{item.answer}</p>
             </details>
           ))}
         </div>

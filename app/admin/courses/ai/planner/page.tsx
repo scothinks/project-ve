@@ -18,7 +18,7 @@ import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { getAdminAiCoursePlans, getAdminCourses, requireAdmin } from "@/lib/admin";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -108,7 +108,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
         <div className="space-y-6">
           <AdminCard>
             <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Start a new course</p>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Start a new course</p>
               <h2 className="mt-2 text-lg font-black">Generate 3 course brief options</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                 Start from a rough idea, problem, or theme. The planner suggests course titles, learning goals, and lesson structure before the normal AI draft flow begins.
@@ -162,7 +162,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
               </label>
 
               <PendingSubmitButton
-                className="inline-flex items-center justify-center rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white transition hover:bg-[#066f4f] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
                 label="Generate Brief Options"
                 pendingLabel="Generating Brief Options..."
                 type="submit"
@@ -172,7 +172,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
 
           <AdminCard>
             <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Expand an existing course</p>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Expand an existing course</p>
               <h2 className="mt-2 text-lg font-black">Suggest the next useful lessons</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                 The planner reviews current lessons, page structure, and quiz coverage, then suggests logical next lessons or improvement paths without publishing anything.
@@ -221,7 +221,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
               </label>
 
               <PendingSubmitButton
-                className="inline-flex items-center justify-center rounded-[14px] bg-[#0d5f85] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a4b69] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex items-center justify-center rounded-[14px] bg-[var(--ve-sky)] px-5 py-3 text-sm font-black text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
                 label="Generate Expansion Ideas"
                 pendingLabel="Generating Expansion Ideas..."
                 type="submit"
@@ -232,7 +232,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
 
         <AdminCard className="space-y-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Workflow</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Workflow</p>
             <h2 className="mt-2 text-lg font-black">Planning sits before generation</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               The planner helps editors decide what to generate. It never publishes, never skips text review, and never bypasses media approval.
@@ -273,7 +273,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
       <section className="mt-6 space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Planner results</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Planner results</p>
             <h2 className="mt-2 text-lg font-black">New course brief options</h2>
           </div>
         </div>
@@ -306,8 +306,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                     const selectedBrief = parseStoredNewCoursePlanSelection(planRow.selected_items[0]);
                     if (!planData) {
                       return (
-                        <div className="rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4" key={planRow.id}>
-                          <p className="text-sm font-semibold text-[#c00000]">This saved plan could not be read.</p>
+                        <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4" key={planRow.id}>
+                          <p className="text-sm font-semibold text-[var(--ve-danger)]">This saved plan could not be read.</p>
                         </div>
                       );
                     }
@@ -317,7 +317,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                         <summary className={disclosureSummaryClasses()}>
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                                 New course plan
                               </p>
                               <h3 className="mt-2 text-base font-black">{planData.input.roughIdea}</h3>
@@ -334,7 +334,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                             <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                                     Selected brief
                                   </p>
                                   <p className="mt-2 text-sm font-black">{selectedBrief.title}</p>
@@ -352,7 +352,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                 <div className="flex flex-wrap gap-2">
                                   {selectedBrief.generatedCourseId ? (
                                     <Link
-                                      className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[#087f5b]"
+                                      className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
                                       href={`/admin/courses/${selectedBrief.generatedCourseId}`}
                                     >
                                       Open Course Shell
@@ -362,7 +362,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                     <form action={generatePlannedLessonsFromSelectedPlan}>
                                       <input name="planId" type="hidden" value={planRow.id} />
                                       <PendingSubmitButton
-                                        className="rounded-[12px] bg-[#0d5f85] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                        className="rounded-[12px] bg-[var(--ve-sky)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
                                         label="Generate Planned Lessons"
                                         pendingLabel="Generating Planned Lessons..."
                                         type="submit"
@@ -379,7 +379,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                               <input name="planId" type="hidden" value={planRow.id} />
                               <input name="redirectTo" type="hidden" value={buildPlannerRedirect(courseId)} />
                               <PendingSubmitButton
-                                className="rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000] disabled:cursor-not-allowed disabled:opacity-70"
+                                className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)] disabled:cursor-not-allowed disabled:opacity-70"
                                 label="Dismiss"
                                 pendingLabel="Dismissing..."
                                 type="submit"
@@ -471,7 +471,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
 
                                   <div className="flex flex-wrap gap-3 pt-2">
                                     <PendingSubmitButton
-                                      className="rounded-[12px] bg-[#e4f4ed] px-4 py-3 text-sm font-black text-[#087f5b] disabled:cursor-not-allowed disabled:opacity-70"
+                                      className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)] disabled:cursor-not-allowed disabled:opacity-70"
                                       label="Use This Brief"
                                       name="submitIntent"
                                       pendingLabel="Saving Brief..."
@@ -480,7 +480,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                       value="use-brief"
                                     />
                                     <PendingSubmitButton
-                                      className="rounded-[12px] bg-[#dfeaf3] px-4 py-3 text-sm font-black text-[#0d5f85] disabled:cursor-not-allowed disabled:opacity-70"
+                                      className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-sky-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-sky)] disabled:cursor-not-allowed disabled:opacity-70"
                                       label="Generate Course Shell"
                                       name="submitIntent"
                                       pendingLabel="Generating Course Shell..."
@@ -489,7 +489,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                       value="generate-course-shell"
                                     />
                                     <PendingSubmitButton
-                                      className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
                                       label="Generate Course Draft"
                                       name="submitIntent"
                                       pendingLabel="Generating Course Draft..."
@@ -532,8 +532,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                     const planData = parseStoredNewCoursePlan(planRow.generated_plan);
                     if (!planData) {
                       return (
-                        <div className="rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4" key={planRow.id}>
-                          <p className="text-sm font-semibold text-[#c00000]">This saved plan could not be read.</p>
+                        <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4" key={planRow.id}>
+                          <p className="text-sm font-semibold text-[var(--ve-danger)]">This saved plan could not be read.</p>
                         </div>
                       );
                     }
@@ -543,7 +543,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                         <summary className={disclosureSummaryClasses()}>
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                                 New course plan
                               </p>
                               <h3 className="mt-2 text-base font-black">{planData.input.roughIdea}</h3>
@@ -579,12 +579,12 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
       <section className="mt-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Planner results</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Planner results</p>
             <h2 className="mt-2 text-lg font-black">Expansion plans and next lesson ideas</h2>
           </div>
           {selectedCourse ? (
             <Link
-              className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[#087f5b]"
+              className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
               href={`/admin/courses/${selectedCourse.id}`}
             >
               Open {selectedCourse.title}
@@ -623,8 +623,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                     const planData = parseStoredCourseExpansionPlan(planRow.generated_plan);
                     if (!planData) {
                       return (
-                        <div className="rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4" key={planRow.id}>
-                          <p className="text-sm font-semibold text-[#c00000]">This saved expansion plan could not be read.</p>
+                        <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4" key={planRow.id}>
+                          <p className="text-sm font-semibold text-[var(--ve-danger)]">This saved expansion plan could not be read.</p>
                         </div>
                       );
                     }
@@ -634,7 +634,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                         <summary className={disclosureSummaryClasses()}>
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                                 {planData.input.courseTitle}
                               </p>
                               <h3 className="mt-2 text-base font-black">{planData.input.expansionGoal}</h3>
@@ -652,7 +652,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                               <input name="planId" type="hidden" value={planRow.id} />
                               <input name="redirectTo" type="hidden" value={buildPlannerRedirect(planData.input.courseId)} />
                               <PendingSubmitButton
-                                className="rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000] disabled:cursor-not-allowed disabled:opacity-70"
+                                className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)] disabled:cursor-not-allowed disabled:opacity-70"
                                 label="Dismiss"
                                 pendingLabel="Dismissing..."
                                 type="submit"
@@ -742,7 +742,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                   <input name="planId" type="hidden" value={planRow.id} />
                                   <input name="suggestionIndex" type="hidden" value={suggestionIndex} />
                                   <PendingSubmitButton
-                                    className="rounded-[12px] bg-[#0d5f85] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                    className="rounded-[12px] bg-[var(--ve-sky)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
                                     label="Generate Lesson Draft"
                                     pendingLabel="Generating Lesson Draft..."
                                     type="submit"
@@ -780,8 +780,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                     const planData = parseStoredCourseExpansionPlan(planRow.generated_plan);
                     if (!planData) {
                       return (
-                        <div className="rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4" key={planRow.id}>
-                          <p className="text-sm font-semibold text-[#c00000]">This saved expansion plan could not be read.</p>
+                        <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4" key={planRow.id}>
+                          <p className="text-sm font-semibold text-[var(--ve-danger)]">This saved expansion plan could not be read.</p>
                         </div>
                       );
                     }
@@ -791,7 +791,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                         <summary className={disclosureSummaryClasses()}>
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                                 {planData.input.courseTitle}
                               </p>
                               <h3 className="mt-2 text-base font-black">{planData.input.expansionGoal}</h3>

@@ -24,7 +24,7 @@ export function CampaignFilterSelect({
         Campaign
       </span>
       <select
-        className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-3 text-sm font-semibold outline-none focus:border-[#087f5b]"
+        className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-3 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
         name="campaign"
         onChange={(event) => {
           setSelectedValue(event.target.value);

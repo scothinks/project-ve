@@ -35,7 +35,7 @@ const directionOptions = [
 ] as const;
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -122,11 +122,11 @@ export default async function AdminXpLedgerPage({
             </label>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white" type="submit">
+            <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
               Apply filters
             </button>
             <Link
-              className="rounded-[14px] bg-[#fff8df] px-5 py-3 text-sm font-black text-[var(--foreground)]"
+              className="rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
               href="/admin/xp-ledger"
             >
               Reset

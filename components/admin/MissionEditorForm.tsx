@@ -42,7 +42,7 @@ type MissionEditorFormProps = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#c94f2e]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-mission)]";
 }
 
 function labelClasses() {
@@ -58,7 +58,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[#c94f2e] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ve-mission)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -147,15 +147,18 @@ export function MissionEditorForm({
       {mode === "edit" ? <input name="missionId" type="hidden" value={mission.id} /> : null}
       <input name="status" type="hidden" value={mode === "create" ? "draft" : mission.status} />
 
-      <details className="rounded-[16px] border border-[#f1ddd7] bg-[#fff7f4] p-4" open>
+      <details
+        className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-mission)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_84%,var(--ve-card))] p-4"
+        open
+      >
         <summary className={sectionSummaryClasses()}>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#c94f2e]">Mission setup</p>
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-mission)]">Mission setup</p>
           <h2 className="mt-2 text-lg font-black">What learners do</h2>
           <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
             Define the task, choose whether the mission awards XP or a reward, and set the validation rule.
           </p>
         </summary>
-        <div className="mt-4 space-y-5 border-t border-[#f1ddd7] pt-4">
+        <div className="mt-4 space-y-5 border-t border-[color:color-mix(in_srgb,var(--ve-mission)_18%,var(--ve-line-soft))] pt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Mission title</span>
@@ -391,7 +394,7 @@ export function MissionEditorForm({
 
           {validationType === "manual_review" ? (
             <div className="space-y-3">
-              <div className="rounded-[12px] border border-[#f5e6a8] bg-[#fff8df] px-4 py-3 text-sm font-bold text-[#a66d00]">
+              <div className="rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-bold text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
                 Manual review missions use the existing enum and table values, but there is no learner-facing submission path yet. Keep this in draft unless you are running an operational workflow around it.
               </div>
               <label className="block">
@@ -421,8 +424,8 @@ export function MissionEditorForm({
         <div
           className={`rounded-[14px] border px-4 py-3 text-sm font-black ${
             state.ok
-              ? "border-[#d6efe4] bg-[#edf8f1] text-[#087f5b]"
-              : "border-[#f1d2d2] bg-[#fff0f0] text-[#c00000]"
+              ? "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+              : "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
           }`}
         >
           {state.message}

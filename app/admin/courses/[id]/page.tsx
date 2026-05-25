@@ -204,14 +204,14 @@ function lessonPreviewFrames(
 
 function workflowButtonClasses(tone: "primary" | "danger" | "neutral" = "primary") {
   if (tone === "danger") {
-    return "rounded-[12px] bg-[#fff0f0] px-4 py-3 text-sm font-black text-[#c00000]";
+    return "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]";
   }
 
   if (tone === "neutral") {
     return "rounded-[12px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]";
   }
 
-  return "rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white";
+  return "rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white";
 }
 
 function lessonPublishActionLabel(lesson: { status: string; ai_generated: boolean; ai_publish_status: string }) {
@@ -382,7 +382,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         />
         <AdminCard className="flex flex-col justify-center">
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Preview</p>
-          <Link className="mt-3 text-sm font-black text-[#087f5b]" href={`/courses/${course.id}`}>
+          <Link className="mt-3 text-sm font-black text-[var(--ve-green)]" href={`/courses/${course.id}`}>
             Open learner course
           </Link>
         </AdminCard>
@@ -393,7 +393,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             <summary className={collapsibleSummaryClasses()}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">AI workflow</p>
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI workflow</p>
                   <h2 className="mt-2 text-lg font-black">Approval gates for AI-generated content</h2>
                   <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                     Text approval unlocks media. Media approval unlocks publishing. Learners still only see published content.
@@ -489,7 +489,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         Generates supported visual assets from approved lesson text and media prompts. AI briefs now stay limited to images and infographics.
                       </p>
                       {!mediaConfig.canGenerate ? (
-                        <p className="basis-full text-xs font-semibold leading-5 text-[#c00000]">
+                        <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                           Media generation is unavailable until these server settings are added: {mediaConfig.missingRequirements.join(", ")}.
                         </p>
                       ) : null}
@@ -504,14 +504,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         <button className={workflowButtonClasses()} disabled={mediaApprovalBlocked} type="submit">Approve Media</button>
                       </form>
                       {mediaApprovalBlocked ? (
-                        <p className="basis-full text-xs font-semibold leading-5 text-[#c00000]">
+                        <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                           {!hasRequiredImageAssets
                             ? "Media approval is blocked because the required image assets have not been seeded yet. Generate Media first."
                             : `Media approval is blocked by required assets: ${mediaValidation.missingRequiredAssets.length} missing preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"}, ${mediaValidation.failedRequiredAssets.length} failed, ${mediaValidation.staleRequiredAssets.length} stale.`}
                         </p>
                       ) : null}
                       {!mediaApprovalBlocked && mediaValidation.optionalWarnings.length > 0 ? (
-                        <p className="basis-full text-xs font-semibold leading-5 text-[#8a5a13]">
+                        <p className="basis-full text-xs font-semibold leading-5 text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
                           Optional media warnings do not block approval: {optionalWarningCounts.missing_preview} missing preview{optionalWarningCounts.missing_preview === 1 ? "" : "s"}, {optionalWarningCounts.failed_generation} failed, {optionalWarningCounts.stale_asset} stale.
                         </p>
                       ) : null}
@@ -538,7 +538,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 <div className="mt-5 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Next step</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Next step</p>
                       <h3 className="mt-2 text-base font-black">Generate the planned lessons for this course shell</h3>
                       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                         This course was created from the staged planner flow. The course shell is live, but the original lesson outline has not been generated yet.
@@ -554,14 +554,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     <form action={generatePlannedLessonsFromSelectedPlan}>
                       <input name="planId" type="hidden" value={plannerShellPlan.id} />
                       <PendingSubmitButton
-                        className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
+                        className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
                         label="Generate Planned Lessons"
                         pendingLabel="Generating Planned Lessons..."
                         type="submit"
                       />
                     </form>
                     <Link
-                      className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[#087f5b]"
+                      className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
                       href={`/admin/courses/ai/planner?plan=${plannerShellPlan.id}`}
                     >
                       Open Planner Brief
@@ -579,7 +579,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
 
                   {storedTextFeedback ? (
                     <div className="mt-4 rounded-[14px] bg-[var(--ve-panel)] p-4">
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Latest requested changes</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Latest requested changes</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">{storedTextFeedback.feedback}</p>
                       {storedTextFeedback.requestedAt ? (
                         <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
@@ -623,7 +623,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         />
                       </label>
                       {course.status === "published" ? (
-                        <p className="mt-3 text-xs font-semibold leading-5 text-[#8a5a13]">
+                        <p className="mt-3 text-xs font-semibold leading-5 text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
                           Disable the course before revising AI text. Published courses do not have a separate draft version yet.
                         </p>
                       ) : null}
@@ -648,7 +648,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
 
                   {storedMediaFeedback ? (
                     <div className="mt-4 rounded-[14px] bg-[var(--ve-panel)] p-4">
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Latest requested media changes</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Latest requested media changes</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">{storedMediaFeedback.feedback}</p>
                       {storedMediaFeedback.requestedAt ? (
                         <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
@@ -695,7 +695,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         />
                       </label>
                       {!mediaConfig.canGenerate ? (
-                        <p className="mt-3 text-xs font-semibold leading-5 text-[#c00000]">
+                        <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                           Media generation is unavailable until these server settings are added: {mediaConfig.missingRequirements.join(", ")}.
                         </p>
                       ) : null}
@@ -739,7 +739,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 <div className="mt-4 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Media tools</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Media tools</p>
                       <h3 className="mt-2 text-base font-black">Normalize legacy media briefs</h3>
                       <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                         This course still has {legacyMediaAssetCount} unsupported media brief{legacyMediaAssetCount === 1 ? "" : "s"} from the older workflow. Convert them into supported visual types before reviewing or regenerating the course media.
@@ -766,14 +766,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
               ) : null}
 
               {mediaApprovalBlocked ? (
-                <div className="mt-4 rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4 text-sm font-semibold leading-6 text-[#8a1f1f]">
+                <div className="mt-4 rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4 text-sm font-semibold leading-6 text-[var(--ve-danger)]">
                   {!hasRequiredImageAssets
                     ? "Blocker: required image assets have not been created yet. Generate Media before approving."
                     : `Blockers: ${mediaValidation.missingRequiredAssets.length} required preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"} missing, ${mediaValidation.failedRequiredAssets.length} required asset${mediaValidation.failedRequiredAssets.length === 1 ? "" : "s"} failed, ${mediaValidation.staleRequiredAssets.length} required asset${mediaValidation.staleRequiredAssets.length === 1 ? "" : "s"} stale.`}
                 </div>
               ) : null}
               {mediaValidation.optionalWarnings.length > 0 ? (
-                <div className="mt-4 rounded-[16px] border border-[#f3dfb2] bg-[#fff9ea] p-4 text-sm font-semibold leading-6 text-[#8a5a13]">
+                <div className="mt-4 rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] p-4 text-sm font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
                   Optional warnings: {optionalWarningCounts.missing_preview} optional preview{optionalWarningCounts.missing_preview === 1 ? "" : "s"} missing, {optionalWarningCounts.failed_generation} optional asset{optionalWarningCounts.failed_generation === 1 ? "" : "s"} failed, {optionalWarningCounts.stale_asset} optional asset{optionalWarningCounts.stale_asset === 1 ? "" : "s"} stale. These do not block media approval.
                 </div>
               ) : null}
@@ -794,7 +794,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                         {asset.lesson?.title ? `${asset.lesson.title} · ` : ""}{asset.placement}
                       </p>
                       <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
@@ -883,14 +883,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         <AdminCard>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">AI Expansion Assistant</p>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI Expansion Assistant</p>
               <h2 className="mt-2 text-lg font-black">Plan the next lesson before generating it</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                 Analyze the current course, suggest useful next lessons, and draft only the selected lesson idea into the existing text review, media review, and publish workflow.
               </p>
             </div>
             <Link
-              className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[#087f5b]"
+              className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
               href={`/admin/courses/ai/planner?courseId=${course.id}`}
             >
               Open Full Planner
@@ -928,7 +928,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             </label>
 
             <PendingSubmitButton
-              className="inline-flex items-center justify-center rounded-[14px] bg-[#0d5f85] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a4b69] disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center justify-center rounded-[14px] bg-[var(--ve-sky)] px-5 py-3 text-sm font-black text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
               label="Generate Expansion Ideas"
               pendingLabel="Generating Expansion Ideas..."
               type="submit"
@@ -952,7 +952,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 const planData = parseStoredCourseExpansionPlan(planRow.generated_plan);
                 if (!planData) {
                   return (
-                    <div className="rounded-[16px] border border-[#ffd7d7] bg-[#fff5f5] p-4 text-sm font-semibold text-[#8a1f1f]" key={planRow.id}>
+                    <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4 text-sm font-semibold text-[var(--ve-danger)]" key={planRow.id}>
                       This saved expansion plan could not be read.
                     </div>
                   );
@@ -962,7 +962,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={planRow.id}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                           {planData.input.expansionGoal}
                         </p>
                         <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
@@ -990,7 +990,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                               <input name="planId" type="hidden" value={planRow.id} />
                               <input name="suggestionIndex" type="hidden" value={suggestionIndex} />
                               <PendingSubmitButton
-                                className="rounded-[12px] bg-[#0d5f85] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                className="rounded-[12px] bg-[var(--ve-sky)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
                                 label="Generate Lesson Draft"
                                 pendingLabel="Generating Lesson Draft..."
                                 type="submit"
@@ -1026,7 +1026,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             <summary className={collapsibleSummaryClasses()}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Course shell media</p>
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Course shell media</p>
                   <h2 className="mt-2 text-lg font-black">Thumbnail and cover</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -1252,12 +1252,12 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                         </div>
 
                         {lesson.status !== "published" && lesson.ai_generated && lesson.ai_publish_status === "ready" ? (
-                          <p className="mt-4 text-sm font-black text-[#087f5b]">
+                          <p className="mt-4 text-sm font-black text-[var(--ve-green)]">
                             This lesson is ready to publish. Open the card to publish it now.
                           </p>
                         ) : null}
                         {lesson.status === "published" ? (
-                          <p className="mt-4 text-sm font-black text-[#087f5b]">
+                          <p className="mt-4 text-sm font-black text-[var(--ve-green)]">
                             This lesson is live to learners inside the published course.
                           </p>
                         ) : null}
@@ -1283,8 +1283,8 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                             <button
                               className={
                                 lesson.status === "published"
-                                  ? "rounded-[12px] bg-[#fff0f0] px-4 py-3 text-sm font-black text-[#c00000]"
-                                  : "rounded-[12px] bg-[#e4f4ed] px-4 py-3 text-sm font-black text-[#087f5b]"
+                                  ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]"
+                                  : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
                               }
                               disabled={
                                 lesson.ai_generated
@@ -1348,10 +1348,10 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                               <p>Media assets: <span className="font-black text-[var(--foreground)]">{lessonMediaAssets.length}</span></p>
                               <p>Required assets: <span className="font-black text-[var(--foreground)]">{lessonMediaAssets.filter((asset) => isRequiredMediaAsset(asset)).length}</span></p>
                               {lessonFailedAssets > 0 ? (
-                                <p className="text-[#c00000]">{lessonFailedAssets} asset{lessonFailedAssets === 1 ? "" : "s"} failed generation.</p>
+                                <p className="text-[var(--ve-danger)]">{lessonFailedAssets} asset{lessonFailedAssets === 1 ? "" : "s"} failed generation.</p>
                               ) : null}
                               {lessonLegacyAssets > 0 ? (
-                                <p className="text-[#8a5a13]">{lessonLegacyAssets} legacy unsupported brief{lessonLegacyAssets === 1 ? "" : "s"} still need cleanup.</p>
+                                <p className="text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">{lessonLegacyAssets} legacy unsupported brief{lessonLegacyAssets === 1 ? "" : "s"} still need cleanup.</p>
                               ) : null}
                             </div>
                           </div>
@@ -1392,7 +1392,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             <input name="maxEarningAttempts" type="hidden" value="" />
             <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
             <button
-              className="inline-flex w-full items-center justify-center rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white transition hover:bg-[#066f4f]"
+              className="inline-flex w-full items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white transition hover:brightness-95"
               type="submit"
             >
               + Add lesson

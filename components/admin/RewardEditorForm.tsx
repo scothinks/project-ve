@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { RewardThumbnailFields } from "@/components/admin/RewardThumbnailFields";
 import type { RewardActionState } from "@/app/admin/rewards/[id]/actions";
 import type { AdminCampaignRow } from "@/lib/admin";
 
@@ -29,7 +30,8 @@ type RewardEditorValue = {
   sortOrder: number;
   offerExpiresAt: string;
   thumbnailUrl: string;
-  thumbnailIcon: string;
+  thumbnailIconName: string;
+  thumbnailLegacyIcon: string;
   thumbnailColor: string;
   terms: string;
   claimSteps: string[];
@@ -51,7 +53,7 @@ type RewardEditorFormProps = {
 const fieldTypes = ["text", "tel", "email", "textarea"] as const;
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 function labelClasses() {
@@ -63,7 +65,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -471,7 +473,7 @@ export function RewardEditorForm({
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-1">
         <label>
           <span className={labelClasses()}>Offer expires</span>
           <input
@@ -481,20 +483,15 @@ export function RewardEditorForm({
             defaultValue={reward.offerExpiresAt}
           />
         </label>
-        <label>
-          <span className={labelClasses()}>Thumbnail icon</span>
-          <input className={fieldClasses()} maxLength={24} name="thumbnailIcon" defaultValue={reward.thumbnailIcon} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Thumbnail color</span>
-          <input className={fieldClasses()} maxLength={32} name="thumbnailColor" defaultValue={reward.thumbnailColor} />
-        </label>
       </div>
 
-      <label className="block">
-        <span className={labelClasses()}>Thumbnail URL</span>
-        <input className={fieldClasses()} maxLength={1000} name="thumbnailUrl" defaultValue={reward.thumbnailUrl} />
-      </label>
+      <RewardThumbnailFields
+        color={reward.thumbnailColor}
+        iconName={reward.thumbnailIconName}
+        legacyIcon={reward.thumbnailLegacyIcon}
+        title={reward.title || "Reward"}
+        url={reward.thumbnailUrl}
+      />
 
       <label className="block">
         <span className={labelClasses()}>Terms</span>
@@ -538,7 +535,7 @@ export function RewardEditorForm({
                 value={step}
               />
               <button
-                className="mt-1 rounded-[12px] bg-[#fff0f0] px-3 text-xs font-black text-[#c00000]"
+                className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
                 onClick={() =>
                   setClaimSteps((current) => current.filter((_, stepIndex) => stepIndex !== index))
                 }
@@ -593,7 +590,7 @@ export function RewardEditorForm({
                   Required
                 </label>
                 <button
-                  className="mt-1 rounded-[12px] bg-[#fff0f0] px-3 text-xs font-black text-[#c00000]"
+                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
                   onClick={() => setFields((current) => current.filter((_, fieldIndex) => fieldIndex !== index))}
                   type="button"
                 >
@@ -766,7 +763,9 @@ export function RewardEditorForm({
       {state.message ? (
         <p
           className={`rounded-[14px] px-4 py-3 text-sm font-black ${
-            state.ok ? "bg-[#e4f4ed] text-[#087f5b]" : "bg-[#fff0f0] text-[#c00000]"
+            state.ok
+              ? "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+              : "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
           }`}
         >
           {state.message}

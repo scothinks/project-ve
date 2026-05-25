@@ -277,7 +277,7 @@ function MissionActionButton({
 }: MissionActionButtonProps) {
   const classes = cn(
     "inline-flex h-11 min-w-[148px] items-center justify-center rounded-[30px] px-6 text-[0.95rem] font-semibold tracking-[-0.01em] transition",
-    disabled && "cursor-not-allowed opacity-60",
+    disabled && "cursor-not-allowed",
     className,
   );
 
@@ -588,7 +588,7 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
 
                 {hasStructuredProgress ? (
                   <div className="mt-5">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[#757575]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
                       <span className="min-w-0 flex-1">
                         {mission.completionLabel
                           ? mission.availableAgainAt

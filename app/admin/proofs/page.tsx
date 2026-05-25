@@ -79,7 +79,7 @@ export default async function AdminProofsPage({
                       <input name="awardScope" type="hidden" value={submission.awardScope} />
                       <input name="status" type="hidden" value="approved" />
                       <button
-                        className="h-10 w-full rounded-[12px] bg-[#e4f4ed] px-3 text-xs font-black text-[#087f5b]"
+                        className="h-10 w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-green)]"
                         type="submit"
                       >
                         Approve
@@ -91,13 +91,13 @@ export default async function AdminProofsPage({
                       <input name="awardScope" type="hidden" value={submission.awardScope} />
                       <input name="status" type="hidden" value="rejected" />
                       <input
-                        className="min-w-0 flex-1 rounded-[12px] border border-[#e1ddd5] px-3 text-xs font-semibold outline-none"
+                        className="min-w-0 flex-1 rounded-[12px] border border-[var(--ve-line-soft)] px-3 text-xs font-semibold outline-none"
                         maxLength={500}
                         name="rejectionReason"
                         placeholder="Reason"
                       />
                       <button
-                        className="h-10 rounded-[12px] bg-[#fff0f0] px-3 text-xs font-black text-[#c00000]"
+                        className="h-10 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
                         type="submit"
                       >
                         Reject

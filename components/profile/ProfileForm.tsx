@@ -53,11 +53,11 @@ function ToggleRow({
       <span className="text-sm font-black text-[var(--foreground)]">{label}</span>
       <span
         className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-[#008751]" : "bg-[var(--ve-line)]"
+          checked ? "bg-[var(--ve-green)]" : "bg-[var(--ve-line)]"
         }`}
       >
         <span
-          className={`absolute top-1 size-5 rounded-full bg-white transition ${
+          className={`absolute top-1 size-5 rounded-full bg-[var(--ve-card)] transition ${
             checked ? "left-6" : "left-1"
           }`}
         />
@@ -332,7 +332,7 @@ export function ProfileForm({
             <button
               className={`rounded-[18px] px-3 py-3 text-center text-[11px] font-black tracking-[-0.01em] transition ${
                 isActive
-                  ? "bg-white text-[var(--foreground)] shadow-[0_10px_24px_rgba(var(--ve-shadow-rgb),0.12)]"
+                  ? "bg-[var(--ve-card)] text-[var(--foreground)] shadow-[0_10px_24px_rgba(var(--ve-shadow-rgb),0.12)]"
                   : "text-[var(--ve-muted)]"
               }`}
               key={section.id}
@@ -360,7 +360,7 @@ export function ProfileForm({
             <label className="block">
               <span className="px-2 text-[11px] font-bold text-[var(--ve-muted)]">Full name</span>
               <input
-                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-5 text-sm font-semibold outline-none focus:border-[#008751]"
+                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
                 maxLength={120}
                 onBlur={() => setName((current) => sanitizePlainTextInput(current, 120).trim())}
                 onChange={(event) => setName(sanitizePlainTextInput(event.target.value, 120))}
@@ -372,7 +372,7 @@ export function ProfileForm({
             <label className="block">
               <span className="px-2 text-[11px] font-bold text-[var(--ve-muted)]">Avatar URL</span>
               <input
-                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-5 text-sm font-semibold outline-none focus:border-[#008751]"
+                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
                 maxLength={1000}
                 onBlur={() => setAvatar((current) => sanitizeUrlInput(current))}
                 onChange={(event) => setAvatar(event.target.value)}
@@ -390,7 +390,7 @@ export function ProfileForm({
             <h2 className="text-base font-black">Password</h2>
             <div className="relative mt-4">
               <input
-                className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-5 pr-20 text-sm font-semibold outline-none focus:border-[#008751]"
+                className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 pr-20 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
                 autoComplete="new-password"
                 maxLength={128}
                 minLength={8}
@@ -400,7 +400,7 @@ export function ProfileForm({
                 value={newPassword}
               />
               <button
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[#008751]"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[var(--ve-green)]"
                 onClick={() => setShowPassword((current) => !current)}
                 type="button"
               >
@@ -557,13 +557,13 @@ export function ProfileForm({
       ) : null}
 
       {message ? (
-        <p className="rounded-[18px] bg-[#f4fbf7] px-4 py-3 text-xs font-bold text-[#008751]">
+        <p className="rounded-[18px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[var(--ve-green)]">
           {message}
         </p>
       ) : null}
 
       {error ? (
-        <p className="rounded-[18px] bg-red-50 px-4 py-3 text-xs font-bold text-red-700">
+        <p className="rounded-[18px] bg-[color:color-mix(in_srgb,#b63a3a_16%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[#d96b6b]">
           {error}
         </p>
       ) : null}

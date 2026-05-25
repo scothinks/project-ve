@@ -62,11 +62,11 @@ export function AdminNoticeBanner({
     success:
       "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]",
     warning:
-      "border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_78%,var(--ve-card))] text-[#b17a05]",
+      "border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_78%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
     danger:
-      "border-[color:color-mix(in_srgb,#d45a5a_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] text-[#d45a5a]",
+      "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]",
     info:
-      "border-[color:color-mix(in_srgb,#7f6ac0_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#f2f1fb_72%,var(--ve-card))] text-[#8f7ce0]",
+      "border-[color:color-mix(in_srgb,var(--ve-violet)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_72%,var(--ve-card))] text-[var(--ve-violet)]",
   };
 
   return (
@@ -91,11 +91,11 @@ export function AdminStatCard({
   tone?: "default" | "mission" | "store" | "risk" | "warning";
 }) {
   const tones = {
-    default: "text-[#087f5b]",
-    mission: "text-[#c94f2e]",
-    store: "text-[#a66d00]",
-    risk: "text-[#d45a5a]",
-    warning: "text-[#a66d00]",
+    default: "text-[var(--ve-green)]",
+    mission: "text-[var(--ve-mission)]",
+    store: "text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
+    risk: "text-[var(--ve-danger)]",
+    warning: "text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
   };
 
   return (
@@ -118,11 +118,11 @@ export function AdminStatusBadge({
     good:
       "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
     warning:
-      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[#b17a05]",
+      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
     danger:
-      "bg-[color:color-mix(in_srgb,#fff0f0_74%,var(--ve-card))] text-[#d45a5a]",
+      "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]",
     store:
-      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[#b17a05]",
+      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
   };
 
   return (

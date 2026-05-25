@@ -92,7 +92,7 @@ export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibrar
         </div>
       </div>
 
-      <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden border-y border-[#f0f0f0] bg-[color:color-mix(in_srgb,var(--ve-card)_95%,transparent)] py-3 backdrop-blur">
+      <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden bg-[color:color-mix(in_srgb,var(--ve-card)_95%,transparent)] py-3 backdrop-blur">
         <div className="hide-scrollbar flex flex-nowrap gap-2 overflow-x-auto px-6">
           {categories.map((item) => (
             <button

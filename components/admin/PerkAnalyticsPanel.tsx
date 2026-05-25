@@ -33,11 +33,11 @@ export function PerkAnalyticsPanel({
 
                 return (
                   <div className="flex min-w-0 flex-1 flex-col items-center gap-2" key={point.date}>
-                    <div className="relative flex h-full w-full items-end rounded-[14px] bg-[#f4f0ea] px-1 pb-1">
-                      <div className="relative w-full rounded-[10px] bg-[#e8ddff]" style={{ height }}>
+                    <div className="relative flex h-full w-full items-end rounded-[14px] bg-[var(--ve-panel)] px-1 pb-1">
+                      <div className="relative w-full rounded-[10px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))]" style={{ height }}>
                         {point.fallbackDraws > 0 ? (
                           <div
-                            className="absolute bottom-0 left-0 w-full rounded-b-[10px] bg-[#ffcf9d]"
+                            className="absolute bottom-0 left-0 w-full rounded-b-[10px] bg-[color:color-mix(in_srgb,var(--ve-store)_54%,var(--ve-card))]"
                             style={{ height: fallbackHeight }}
                           />
                         ) : null}
@@ -53,11 +53,11 @@ export function PerkAnalyticsPanel({
             </div>
             <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-[#e8ddff]" />
+                <span className="h-3 w-3 rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))]" />
                 Total draws
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-[#ffcf9d]" />
+                <span className="h-3 w-3 rounded-full bg-[color:color-mix(in_srgb,var(--ve-store)_54%,var(--ve-card))]" />
                 Fallback draws
               </span>
             </div>
@@ -80,9 +80,9 @@ export function PerkAnalyticsPanel({
                     {row.draws} · {Math.round(row.share * 100)}%
                   </p>
                 </div>
-                <div className="mt-2 h-3 rounded-full bg-[#f4f0ea]">
+                <div className="mt-2 h-3 rounded-full bg-[var(--ve-panel)]">
                   <div
-                    className="h-3 rounded-full bg-[#6c3cc2]"
+                    className="h-3 rounded-full bg-[var(--ve-violet)]"
                     style={{ width: `${Math.max(6, Math.round(row.share * 100))}%` }}
                   />
                 </div>

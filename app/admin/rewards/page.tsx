@@ -134,25 +134,25 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
         <CampaignFilterSelect campaigns={campaigns} value={campaign} />
         <div className="flex flex-wrap gap-2 md:justify-end">
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[#f3ecff] px-5 text-sm font-black text-[#6c3cc2]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[var(--ve-violet)]"
             href="/admin/rewards/perks"
           >
             Manage Perks
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] px-5 text-sm font-black text-[#5f5f5a]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] px-5 text-sm font-black text-[var(--ve-muted-strong)]"
             href="/admin/inventory/reallocate"
           >
             Reallocate
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[#fff8df] px-5 text-sm font-black text-[#a66d00]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
             href="/admin/inventory/new"
           >
             Add Inventory
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[#087f5b] px-5 text-sm font-black text-white"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-5 text-sm font-black text-white"
             href="/admin/rewards/new"
           >
             Add Reward
@@ -174,7 +174,7 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
                 return (
                   <>
               <td className="min-w-[220px] px-4 py-4">
-                <Link className="font-black hover:text-[#087f5b]" href={`/admin/rewards/${reward.id}`}>
+                <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/rewards/${reward.id}`}>
                   {reward.title}
                 </Link>
                 <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
@@ -228,8 +228,8 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
                   <button
                     className={`rounded-[12px] px-3 py-2 text-xs font-black ${
                       reward.is_enabled
-                        ? "bg-[#fff0f0] text-[#c00000]"
-                        : "bg-[#e4f4ed] text-[#087f5b]"
+                        ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+                        : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
                     }`}
                     type="submit"
                   >

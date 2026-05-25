@@ -23,7 +23,7 @@ import {
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 function labelClasses() {
@@ -110,7 +110,7 @@ function SectionForm({
       </label>
       <div className="md:col-span-2">
         <button
-          className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white"
+          className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white"
           type="submit"
         >
           {section ? "Save section" : "Create section"}
@@ -183,7 +183,7 @@ export default async function AdminRecommendationsPage({
                 </p>
                 <form action={createDefaultRecommendationSections} className="mt-4">
                   <button
-                    className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white"
+                    className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white"
                     type="submit"
                   >
                     Create default sections
@@ -194,7 +194,7 @@ export default async function AdminRecommendationsPage({
               <AdminCard>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                       Starter Pack
                     </p>
                     <h2 className="mt-1 text-xl font-black">Start Learning</h2>
@@ -236,7 +236,7 @@ export default async function AdminRecommendationsPage({
               <AdminCard>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                       Focus Area
                     </p>
                     <h2 className="mt-1 text-xl font-black">Browse Courses</h2>
@@ -273,7 +273,7 @@ export default async function AdminRecommendationsPage({
                   </div>
                   <form action={createDefaultRecommendationSections}>
                     <button
-                      className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-xs font-black text-[#5f5f5a]"
+                      className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-xs font-black text-[var(--ve-muted-strong)]"
                       type="submit"
                     >
                       Reset defaults
@@ -289,7 +289,7 @@ export default async function AdminRecommendationsPage({
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                             {section.eyebrow ?? "Recommendation"}
                           </p>
                           <h3 className="mt-1 text-base font-black">{section.title}</h3>
@@ -316,7 +316,7 @@ export default async function AdminRecommendationsPage({
                 <AdminCard key={section.id}>
                   <div id={section.id} className="flex flex-wrap items-start justify-between gap-3 scroll-mt-24">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                         {section.eyebrow ?? "Recommendation"}
                       </p>
                       <h2 className="mt-1 text-xl font-black">{section.title}</h2>
@@ -340,8 +340,8 @@ export default async function AdminRecommendationsPage({
                         <button
                           className={
                             section.status === "published"
-                              ? "rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
-                              : "rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
+                              ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
+                              : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
                           }
                           type="submit"
                         >
@@ -380,7 +380,7 @@ export default async function AdminRecommendationsPage({
                             <form action={deleteRecommendationItem}>
                               <input name="itemId" type="hidden" value={item.id} />
                               <button
-                                className="rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
+                                className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
                                 type="submit"
                               >
                                 Remove
@@ -421,7 +421,7 @@ export default async function AdminRecommendationsPage({
                         </label>
                         <div className="flex items-end">
                           <button
-                            className="h-10 rounded-[12px] bg-[#087f5b] px-4 text-xs font-black text-white"
+                            className="h-10 rounded-[12px] bg-[var(--ve-green)] px-4 text-xs font-black text-white"
                             type="submit"
                           >
                             Add item

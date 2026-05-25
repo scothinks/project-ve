@@ -9,10 +9,14 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 const categoryTone = {
-  account: "bg-[#edf7ff] text-[#1e5a96]",
-  missions: "bg-[#fff1eb] text-[#b6532f]",
-  rewards: "bg-[#f4fbf7] text-[#087f5b]",
-  system: "bg-[#f7f5ff] text-[#5f4ca7]",
+  account:
+    "bg-[color:color-mix(in_srgb,var(--ve-sky-soft)_92%,var(--ve-card))] text-[var(--ve-sky)]",
+  missions:
+    "bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_92%,var(--ve-card))] text-[var(--ve-mission)]",
+  rewards:
+    "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_92%,var(--ve-card))] text-[var(--ve-green)]",
+  system:
+    "bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_92%,var(--ve-card))] text-[var(--ve-violet)]",
 } as const;
 
 function formatNotificationTime(value: string) {
@@ -36,7 +40,7 @@ export default async function NotificationsPage() {
     supabase && user ? await getUnreadNotificationCount(supabase, user.id).catch(() => 0) : 0;
 
   return (
-    <main className="mobile-shell flex min-h-screen flex-col bg-[#fffaf4]">
+    <main className="mobile-shell flex min-h-screen flex-col bg-[var(--ve-shell)]">
       <AppHeader title="Notifications" backHref="/profile" showMenu={false} />
       <section className="flex-1 space-y-5 px-6 py-6 pb-28">
         {unreadCount > 0 ? (
@@ -52,7 +56,11 @@ export default async function NotificationsPage() {
             const unread = !notification.readAt;
             return (
               <Card
-                className={unread ? "border border-[#d7efe4] bg-white p-4" : "bg-[#fffdf9] p-4"}
+                className={
+                  unread
+                    ? "border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[var(--ve-card)] p-4"
+                    : "bg-[var(--ve-card-muted)] p-4"
+                }
                 key={notification.id}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -75,7 +83,7 @@ export default async function NotificationsPage() {
                     </p>
                   </div>
                   {unread ? (
-                    <span className="mt-1 inline-flex size-2.5 rounded-full bg-[#008751]" />
+                    <span className="mt-1 inline-flex size-2.5 rounded-full bg-[var(--ve-green)]" />
                   ) : null}
                 </div>
                 <div className="mt-3 flex items-center justify-end gap-2">
