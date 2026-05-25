@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { formatXpAmount, formatXpLabel } from "@/lib/xp-format";
+import { formatXpLabel } from "@/lib/xp-format";
 
 type QuestionSummary = {
   id: string;
@@ -105,10 +105,15 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
       </div>
 
       <Card className="mt-5 overflow-hidden border border-[#dff2e9] bg-[#f4fbf7] p-6 text-center">
-        <div className="mx-auto grid size-16 place-items-center rounded-[24px] bg-[#008751] text-center text-sm font-black leading-4 text-white shadow-[0_14px_26px_rgba(0,135,81,0.24)]">
-          +{formatXpAmount(visibleResult.earnedXp)}
-          <br />
-          XP
+        <div aria-hidden="true" className="relative mx-auto mb-1 size-20">
+          <div className="absolute inset-[10px] rounded-full bg-[#e4f4ed] shadow-[0_18px_30px_rgba(0,135,81,0.12)]" />
+          <div className="absolute left-1 top-3 text-[0.9rem]">✦</div>
+          <div className="absolute right-0 top-1 text-[0.8rem]">•</div>
+          <div className="absolute bottom-2 left-0 text-[0.75rem]">•</div>
+          <div className="absolute bottom-1 right-2 text-[0.95rem]">✦</div>
+          <div className="absolute inset-0 grid place-items-center text-[1.9rem] leading-none">
+            🎉
+          </div>
         </div>
         <h1 className="mt-4 text-2xl font-black text-[var(--foreground)]">
           You earned {formatXpLabel(visibleResult.earnedXp)}!

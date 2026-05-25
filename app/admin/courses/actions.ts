@@ -222,6 +222,28 @@ async function assertQuizPublishAllowed(
   }
 }
 
+async function syncLessonQuizStatus(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  lessonId: string,
+  status: "draft" | "published" | "archived",
+) {
+  if (!lessonId) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("quizzes")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("lesson_id", lessonId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function saveCourse(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const { supabase } = await requireAdmin();
@@ -286,6 +308,8 @@ export async function saveLesson(formData: FormData) {
     await assertLessonPublishAllowed(supabase, lessonId);
   }
 
+  const syncedLessonStatus = requestedStatus as "draft" | "published" | "archived";
+
   const { data, error } = await supabase.rpc("admin_upsert_lesson", {
     p_lesson_id: lessonId,
     p_course_id: courseId,
@@ -311,6 +335,8 @@ export async function saveLesson(formData: FormData) {
 
   if (syncError) throw syncError;
 
+  await syncLessonQuizStatus(supabase, result?.lessonId ?? lessonId, syncedLessonStatus);
+
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");
@@ -326,7 +352,8 @@ export async function saveLesson(formData: FormData) {
 
 export async function setCourseStatus(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
-  const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
+  const status: "published" | "draft" =
+    String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
   const redirectTo = sanitizePlainTextInput(
     String(formData.get("redirectTo") ?? `/admin/courses/${courseId}`),
     400,
@@ -356,7 +383,8 @@ export async function setCourseStatus(formData: FormData) {
 export async function setLessonStatus(formData: FormData) {
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
-  const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
+  const status: "published" | "draft" =
+    String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
   const redirectTo = sanitizePlainTextInput(
     String(formData.get("redirectTo") ?? `/admin/courses/${courseId}`),
     400,
@@ -373,6 +401,8 @@ export async function setLessonStatus(formData: FormData) {
   });
 
   if (error) throw error;
+
+  await syncLessonQuizStatus(supabase, lessonId, status);
 
   revalidatePath("/admin/courses");
   if (courseId) revalidatePath(`/admin/courses/${courseId}`);
