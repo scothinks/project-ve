@@ -254,11 +254,11 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
   const slide = slides[activeIndex];
 
   if (!ready) {
-    return <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]" />;
+    return <main className="mobile-shell min-h-[100dvh] bg-[var(--ve-shell)]" />;
   }
 
   return (
-    <main className="mobile-shell relative min-h-screen overflow-hidden bg-[var(--ve-shell)] px-8 py-10">
+    <main className="mobile-shell relative min-h-[100dvh] overflow-hidden bg-[var(--ve-shell)] px-8 py-10">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[42vh] opacity-90"
         style={{
@@ -266,7 +266,7 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
         }}
       />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col">
         <div className="flex justify-end">
           <Button
             className="h-11 px-5 text-base font-black shadow-[0_16px_32px_rgba(16,16,16,0.06)]"
