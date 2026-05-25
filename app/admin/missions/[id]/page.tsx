@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
+import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
 import { MissionEditorForm } from "@/components/admin/MissionEditorForm";
 import { AdminNoticeBanner, AdminPageHeader } from "@/components/admin/AdminPrimitives";
 import { updateMission } from "@/app/admin/missions/actions";
 import {
+  getAdminContentValueTags,
   getAdminCourses,
   getAdminLessons,
   getAdminMission,
   getAdminMissionRewardCandidates,
+  getAdminValueDimensions,
   requireAdmin,
 } from "@/lib/admin";
 
@@ -28,11 +31,13 @@ export default async function AdminMissionDetailPage({
   const { id } = await params;
   const { notice } = (await searchParams) ?? {};
   const { supabase } = await requireAdmin();
-  const [mission, courses, lessons, rewardCandidates] = await Promise.all([
+  const [mission, courses, lessons, rewardCandidates, valueDimensions, valueTags] = await Promise.all([
     getAdminMission(supabase, id),
     getAdminCourses(supabase),
     getAdminLessons(supabase),
     getAdminMissionRewardCandidates(supabase),
+    getAdminValueDimensions(supabase),
+    getAdminContentValueTags(supabase, "mission", id),
   ]);
 
   if (!mission) {
@@ -49,6 +54,13 @@ export default async function AdminMissionDetailPage({
         subtitle="Edit the mission rule and payout settings. Publishing stays in the missions overview."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
+      <ContentValueTagEditor
+        contentId={mission.id}
+        contentType="mission"
+        dimensions={valueDimensions}
+        redirectTo={`/admin/missions/${mission.id}`}
+        tags={valueTags}
+      />
       <MissionEditorForm
         action={updateMission}
         courses={courses}

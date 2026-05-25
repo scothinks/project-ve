@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { CourseCard } from "@/components/course/CourseCard";
 import { BottomNav } from "@/components/navigation/BottomNav";
@@ -20,7 +21,9 @@ import {
 } from "@/lib/progress";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getLearningCatalog } from "@/lib/supabase-learning";
+import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
 import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
@@ -30,6 +33,12 @@ import {
   learnerNeedsValuesAssessment,
 } from "@/lib/values-assessment";
 import { formatXpLabel } from "@/lib/xp-format";
+
+function buildRequestOrigin(headerMap: Headers) {
+  const proto = headerMap.get("x-forwarded-proto") ?? "https";
+  const host = headerMap.get("x-forwarded-host") ?? headerMap.get("host");
+  return host ? `${proto}://${host}` : "http://localhost:3000";
+}
 
 function ContinueLearningCard({
   item,
@@ -77,6 +86,45 @@ function ContinueLearningCard({
   );
 }
 
+function PersonalizedRecommendationCard({
+  href,
+  title,
+  description,
+  reason,
+  dimensionLabel,
+  recommendedLevel,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  reason: string;
+  dimensionLabel: string | null;
+  recommendedLevel: string | null;
+}) {
+  return (
+    <Card className="p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        {dimensionLabel ? (
+          <StatusBadge tone="trust">{dimensionLabel}</StatusBadge>
+        ) : null}
+        {recommendedLevel ? (
+          <StatusBadge tone="neutral">{recommendedLevel}</StatusBadge>
+        ) : null}
+      </div>
+      <h3 className="mt-3 text-[1.18rem] font-black tracking-[-0.03em]">{title}</h3>
+      <p className="mt-2 text-[0.95rem] font-medium leading-6 text-[var(--ve-muted-strong)]">
+        {description}
+      </p>
+      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-green)]">{reason}</p>
+      <div className="mt-4">
+        <Button className="h-10 px-4 text-sm" href={href} variant="soft">
+          Open
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 export default async function DashboardPage() {
   const { user, profile } = await getCurrentUserProfile();
 
@@ -100,6 +148,8 @@ export default async function DashboardPage() {
   }
 
   const catalog = await getLearningCatalog(supabase);
+  const requestHeaders = await headers();
+  const origin = buildRequestOrigin(requestHeaders);
   const currentCourse = catalog[0];
   const rawDisplayName = profile?.display_name ?? "";
   const hasRealName = Boolean(rawDisplayName && !rawDisplayName.includes("@"));
@@ -154,6 +204,25 @@ export default async function DashboardPage() {
           lessonProgress,
         })
       : null;
+  const missionRecommendations =
+    isSupabaseConfigured && user && supabase
+      ? await getSupabaseMissionSummaries({
+          supabase,
+          userId: user.id,
+          referralCode: profile?.referral_code ?? null,
+          origin,
+        }).catch(() => [])
+      : [];
+  const personalizedRecommendations =
+    isSupabaseConfigured && user && supabase
+      ? await getPersonalizedDashboardRecommendations({
+          supabase,
+          userId: user.id,
+          catalog,
+          lessonProgress,
+          missions: missionRecommendations,
+        }).catch(() => ({ sections: [], userProfile: null, userScores: [] }))
+      : { sections: [], userProfile: null, userScores: [] };
 
   return (
     <main className="mobile-shell min-h-screen">
@@ -315,6 +384,28 @@ export default async function DashboardPage() {
             </p>
           </Card>
         )}
+
+        {personalizedRecommendations.sections.map((section) => (
+          <div key={section.id}>
+            <SectionHeader
+              subtitle={section.subtitle}
+              title={section.title}
+            />
+            <div className="mt-3 space-y-3">
+              {section.items.map((item) => (
+                <PersonalizedRecommendationCard
+                  description={item.description}
+                  dimensionLabel={item.dimension_label}
+                  href={item.href}
+                  key={`${section.id}:${item.id}`}
+                  reason={item.reason}
+                  recommendedLevel={item.recommended_level}
+                  title={item.title}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
 
         <MissionPanel maxItems={1} mode="featured" />
 

@@ -4,6 +4,46 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const VALUES_STARTER_CHECK_SLUG = "values-starter-check-v1";
 
+export type ValueDimension = {
+  id: string;
+  label: string;
+  description: string | null;
+  sortOrder: number;
+  status: "active" | "archived";
+};
+
+export type ContentValueTag = {
+  id: string;
+  contentType: "course" | "lesson" | "mission";
+  contentId: string;
+  dimensionId: string;
+  weight: number;
+  recommendedLevel: "beginner" | "intermediate" | "advanced" | null;
+  outcomeType: "awareness" | "reflection" | "practice" | "action" | "assessment" | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type UserValueProfile = {
+  userId: string;
+  latestAttemptId: string | null;
+  assessmentVersionId: string | null;
+  assessmentCompletedAt: string | null;
+  readinessLevel: "beginner" | "intermediate" | "advanced";
+  primaryDimensionId: string | null;
+  secondaryDimensionId: string | null;
+  profileSummary: Record<string, unknown>;
+  updatedAt: string;
+};
+
+export type UserValueDimensionScore = {
+  userId: string;
+  dimensionId: string;
+  score: number;
+  confidence: number;
+  updatedAt: string;
+};
+
 type AssessmentVersionRow = {
   id: string;
   slug: string;
@@ -29,6 +69,14 @@ type AssessmentQuestionRow = {
 
 type UserValueProfileStatusRow = {
   assessment_completed_at: string | null;
+};
+
+type ValueDimensionRow = {
+  id: string;
+  label: string;
+  description: string | null;
+  sort_order: number;
+  status: "active" | "archived";
 };
 
 export type ValuesAssessmentOption = {
@@ -130,6 +178,31 @@ export async function getUserAssessmentCompletionStatus(
   }
 
   return data;
+}
+
+export async function getActiveValueDimensions(supabase: SupabaseClient | null): Promise<ValueDimension[]> {
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("value_dimensions")
+    .select("id, label, description, sort_order, status")
+    .eq("status", "active")
+    .order("sort_order", { ascending: true })
+    .returns<ValueDimensionRow[]>();
+
+  if (error) {
+    return [];
+  }
+
+  return (data ?? []).map((dimension) => ({
+    id: dimension.id,
+    label: dimension.label,
+    description: dimension.description,
+    sortOrder: dimension.sort_order,
+    status: dimension.status,
+  }));
 }
 
 export function learnerNeedsValuesAssessment(input: {
