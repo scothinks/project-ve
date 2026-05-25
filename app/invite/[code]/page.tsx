@@ -26,11 +26,11 @@ export default async function InvitePage({ params }: InvitePageProps) {
       </div>
 
       <section className="pt-14">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-green)]">
           You are invited
         </p>
         <h1 className="mt-3 text-[30px] font-black leading-9">
-          Learn a practical skill before you sign up.
+          Complete your first lesson to activate the invite.
         </h1>
         <p className="mt-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
           Start with a short lesson, take the quiz, then create an account to save
@@ -39,13 +39,15 @@ export default async function InvitePage({ params }: InvitePageProps) {
       </section>
 
       <Card className="mt-8 p-5">
-        <div className="rounded-[20px] bg-[#dff2e9] px-4 py-5 text-center">
-          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#008751]">
+        <div className="rounded-[20px] bg-[var(--ve-green-soft)] px-4 py-5 text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
             First lesson
           </p>
-          <h2 className="mt-2 text-xl font-black">{starterLesson?.title ?? "Start learning"}</h2>
+          <h2 className="mt-2 text-xl font-black text-[var(--foreground)]">
+            {starterLesson?.title ?? "Start learning"}
+          </h2>
           <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
-            Read the lesson first. XP is saved when you create an account.
+            Read the lesson, take the quiz, then create an account to save your XP.
           </p>
         </div>
 
