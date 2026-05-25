@@ -8,6 +8,7 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
+import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
 import { MediaAssetPresentationEditor } from "@/components/admin/MediaAssetPresentationEditor";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import {
@@ -31,7 +32,13 @@ import {
   isStaleMediaAsset,
   validateMediaApproval,
 } from "@/lib/ai-media-workflow";
-import { getAdminLearningMediaAssets, getAdminLesson, requireAdmin } from "@/lib/admin";
+import {
+  getAdminContentValueTags,
+  getAdminLearningMediaAssets,
+  getAdminLesson,
+  getAdminValueDimensions,
+  requireAdmin,
+} from "@/lib/admin";
 import { formatXpLabel } from "@/lib/xp-format";
 
 type LessonDetailPageProps = {
@@ -121,7 +128,11 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
   const { id } = await params;
   const { page: selectedPageId, notice } = await searchParams;
   const { supabase } = await requireAdmin();
-  const detail = await getAdminLesson(supabase, id);
+  const [detail, valueDimensions, valueTags] = await Promise.all([
+    getAdminLesson(supabase, id),
+    getAdminValueDimensions(supabase),
+    getAdminContentValueTags(supabase, "lesson", id),
+  ]);
 
   if (!detail) {
     notFound();
@@ -158,6 +169,13 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         subtitle="Shape the lesson experience from reading flow to scored quiz questions."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
+      <ContentValueTagEditor
+        contentId={lesson.id}
+        contentType="lesson"
+        dimensions={valueDimensions}
+        redirectTo={`/admin/courses/lessons/${lesson.id}`}
+        tags={valueTags}
+      />
       <section className="mb-6 grid gap-4 md:grid-cols-5">
         <AdminStatCard label="Pages" value={pages.length} />
         <AdminStatCard label="Blocks" value={blocks.length} />

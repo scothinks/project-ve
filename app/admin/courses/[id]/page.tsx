@@ -9,6 +9,7 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
+import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
 import { MediaAssetPresentationEditor } from "@/components/admin/MediaAssetPresentationEditor";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import { saveLesson, setLessonStatus } from "@/app/admin/courses/actions";
@@ -45,8 +46,10 @@ import {
   getAdminAiCoursePlans,
   getAdminCourse,
   getAdminCourseCategories,
+  getAdminContentValueTags,
   getAdminLearningMediaAssets,
   getAdminLessons,
+  getAdminValueDimensions,
   requireAdmin,
 } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
@@ -243,12 +246,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const { id } = await params;
   const { lessonsPage, notice } = (await searchParams) ?? {};
   const { supabase } = await requireAdmin();
-  const [course, lessons, categories, mediaAssets, expansionPlans] = await Promise.all([
+  const [course, lessons, categories, mediaAssets, expansionPlans, valueDimensions, valueTags] = await Promise.all([
     getAdminCourse(supabase, id),
     getAdminLessons(supabase, { courseId: id }),
     getAdminCourseCategories(supabase),
     getAdminLearningMediaAssets(supabase, { courseId: id }),
     getAdminAiCoursePlans(supabase, { courseId: id, mode: "expand_course", limit: 3, excludeStatuses: ["dismissed", "used"] }),
+    getAdminValueDimensions(supabase),
+    getAdminContentValueTags(supabase, "course", id),
   ]);
 
   if (!course) {
@@ -368,6 +373,13 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         subtitle="Build the learner journey: course promise, lesson sequence, and publish readiness."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
+      <ContentValueTagEditor
+        contentId={course.id}
+        contentType="course"
+        dimensions={valueDimensions}
+        redirectTo={`/admin/courses/${course.id}`}
+        tags={valueTags}
+      />
       <section className="mb-6 grid gap-4 md:grid-cols-4">
         <AdminStatCard label="Lessons" value={lessons.length} />
         <AdminStatCard

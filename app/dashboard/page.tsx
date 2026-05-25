@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { CourseCard } from "@/components/course/CourseCard";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { FeaturedRewardCard } from "@/components/rewards/FeaturedRewardCard";
 import { LessonModuleCard } from "@/components/lesson/LessonModuleCard";
-import { MissionPanel } from "@/components/missions/MissionPanel";
 import { Avatar } from "@/components/profile/Avatar";
 import { ReferralAttributionCapture } from "@/components/referrals/ReferralAttributionCapture";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,11 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import {
+  getMissionRewardLabel,
+  type MissionCategory,
+  type UserMissionSummary,
+} from "@/lib/missions";
+import {
   getCompletedLessonIds,
   getContinueLearningItem,
   getCourseProgress,
@@ -20,12 +25,24 @@ import {
 } from "@/lib/progress";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getLearningCatalog } from "@/lib/supabase-learning";
+import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
 import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import {
+  getUserAssessmentCompletionStatus,
+  learnerNeedsValuesAssessment,
+} from "@/lib/values-assessment";
 import { formatXpLabel } from "@/lib/xp-format";
+
+function buildRequestOrigin(headerMap: Headers) {
+  const proto = headerMap.get("x-forwarded-proto") ?? "https";
+  const host = headerMap.get("x-forwarded-host") ?? headerMap.get("host");
+  return host ? `${proto}://${host}` : "http://localhost:3000";
+}
 
 function ContinueLearningCard({
   item,
@@ -73,6 +90,173 @@ function ContinueLearningCard({
   );
 }
 
+const missionStatusCopy: Record<UserMissionSummary["status"], string> = {
+  not_started: "Not started",
+  in_progress: "In progress",
+  submitted: "Submitted",
+  under_review: "Under review",
+  rejected: "Rejected",
+  completed: "Completed",
+};
+
+const recommendedMissionTheme: Record<
+  MissionCategory,
+  {
+    card: string;
+    pill: string;
+    label: string;
+    progress: string;
+  }
+> = {
+  course: {
+    card: "border-[#c7e6d8] bg-[#edf9f2] shadow-[0_16px_36px_rgba(8,127,91,0.12)]",
+    pill: "bg-[#def3e8] text-[#087f5b]",
+    label: "bg-[#daf1e4] text-[#087f5b]",
+    progress: "bg-[#109365]",
+  },
+  referral: {
+    card: "border-[#d9c7ff] bg-[#f3ebff] shadow-[0_16px_36px_rgba(107,67,204,0.16)]",
+    pill: "bg-[#ece3ff] text-[#6b43cc]",
+    label: "bg-[#e8ddff] text-[#6b43cc]",
+    progress: "bg-[#8d68f2]",
+  },
+  feedback: {
+    card: "border-[#ffcbb6] bg-[#fff0e8] shadow-[0_16px_36px_rgba(255,122,89,0.16)]",
+    pill: "bg-[#ffe7dc] text-[#c94f2e]",
+    label: "bg-[#ffe1d5] text-[#c94f2e]",
+    progress: "bg-[#ff7a59]",
+  },
+  campaign: {
+    card: "border-[#f1db8d] bg-[#fff5d9] shadow-[0_16px_36px_rgba(192,138,0,0.16)]",
+    pill: "bg-[#fff0c8] text-[#a36d00]",
+    label: "bg-[#ffefc2] text-[#a36d00]",
+    progress: "bg-[#d59a13]",
+  },
+  custom: {
+    card: "border-[#d6dde6] bg-[#f1f5f9] shadow-[0_16px_36px_rgba(16,16,16,0.09)]",
+    pill: "bg-[#e8edf5] text-[#475569]",
+    label: "bg-[#e5ebf3] text-[#475569]",
+    progress: "bg-[#64748b]",
+  },
+};
+
+function RecommendedMissionCard({
+  mission,
+  href,
+}: {
+  mission: UserMissionSummary;
+  href: string;
+}) {
+  const theme = recommendedMissionTheme[mission.category];
+  const rewardLabel = getMissionRewardLabel(mission);
+  const progressPercent =
+    mission.targetCount > 0 ? Math.min(100, (mission.progressCount / mission.targetCount) * 100) : 0;
+  const hasStructuredProgress =
+    !mission.referral &&
+    (mission.targetCount > 1 ||
+      mission.progressCount > 0 ||
+      mission.status === "completed" ||
+      mission.requiresProof ||
+      mission.status === "submitted" ||
+      mission.status === "under_review" ||
+      mission.status === "rejected");
+
+  return (
+    <Card className={`overflow-hidden p-5 sm:p-6 ${theme.card}`} variant="quiet">
+      <div className="flex items-start gap-3">
+        <div
+          className={`inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${theme.label}`}
+        >
+          {mission.category}
+        </div>
+
+        <div
+          className={`ml-auto max-w-[72%] rounded-[18px] px-4 py-2.5 text-right sm:max-w-[18rem] ${theme.pill}`}
+          title={rewardLabel}
+        >
+          <span className="block text-[0.95rem] font-black tracking-[-0.02em] sm:text-base">
+            {rewardLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 min-w-0">
+        <h3 className="text-[1.24rem] font-semibold tracking-[-0.025em] text-[var(--foreground)]">
+          {mission.title}
+        </h3>
+        <p className="mt-3 max-w-none text-[0.98rem] font-medium leading-[1.7] text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
+          {mission.description}
+        </p>
+      </div>
+
+      {hasStructuredProgress ? (
+        <div className="mt-5">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
+            <span className="min-w-0 flex-1">
+              {mission.completionLabel ?? missionStatusCopy[mission.status]}
+            </span>
+            <span className="shrink-0">
+              {mission.progressCount}/{mission.targetCount}
+            </span>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-[color:color-mix(in_srgb,var(--ve-card)_65%,transparent)]">
+            <div
+              className={`h-full rounded-full ${theme.progress}`}
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mt-5">
+        <Button className="h-10 px-5 text-[0.98rem]" href={href}>
+          Open mission
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function buildRecommendedMissionItems(params: {
+  personalizedSection:
+    | Awaited<ReturnType<typeof getPersonalizedDashboardRecommendations>>["sections"][number]
+    | undefined;
+  featuredMission: UserMissionSummary | null;
+}) {
+  const { personalizedSection, featuredMission } = params;
+  const items: Array<{
+    id: string;
+    href: string;
+    mission: UserMissionSummary;
+  }> = [];
+
+  const personalizedItem = personalizedSection?.items[0] ?? null;
+
+  if (personalizedItem && personalizedItem.content_type === "mission") {
+    const mission = personalizedItem.mission ?? featuredMission;
+
+    if (!mission) {
+      return items;
+    }
+
+    items.push({
+      id: personalizedItem.id,
+      href: personalizedItem.href,
+      mission,
+    });
+  }
+
+  if (featuredMission && featuredMission.id !== personalizedItem?.id) {
+    items.push({
+      id: featuredMission.id,
+      href: "/missions",
+      mission: featuredMission,
+    });
+  }
+
+  return items;
+}
+
 export default async function DashboardPage() {
   const { user, profile } = await getCurrentUserProfile();
 
@@ -81,7 +265,23 @@ export default async function DashboardPage() {
   }
 
   const supabase = await createSupabaseServerClient();
+
+  if (isSupabaseConfigured && user) {
+    const assessmentStatus = await getUserAssessmentCompletionStatus(supabase, user.id);
+
+    if (
+      learnerNeedsValuesAssessment({
+        role: profile?.role,
+        assessmentCompletedAt: assessmentStatus?.assessment_completed_at ?? null,
+      })
+    ) {
+      redirect("/onboarding/assessment");
+    }
+  }
+
   const catalog = await getLearningCatalog(supabase);
+  const requestHeaders = await headers();
+  const origin = buildRequestOrigin(requestHeaders);
   const currentCourse = catalog[0];
   const rawDisplayName = profile?.display_name ?? "";
   const hasRealName = Boolean(rawDisplayName && !rawDisplayName.includes("@"));
@@ -136,6 +336,36 @@ export default async function DashboardPage() {
           lessonProgress,
         })
       : null;
+  const missionRecommendations =
+    isSupabaseConfigured && user && supabase
+      ? await getSupabaseMissionSummaries({
+          supabase,
+          userId: user.id,
+          referralCode: profile?.referral_code ?? null,
+          origin,
+        }).catch(() => [])
+      : [];
+  const personalizedRecommendations =
+    isSupabaseConfigured && user && supabase
+      ? await getPersonalizedDashboardRecommendations({
+          supabase,
+          userId: user.id,
+          catalog,
+          lessonProgress,
+          missions: missionRecommendations,
+        }).catch(() => ({ sections: [], userProfile: null, userScores: [] }))
+      : { sections: [], userProfile: null, userScores: [] };
+  const featuredMission = missionRecommendations[0] ?? null;
+  const personalizedMissionSection = personalizedRecommendations.sections.find(
+    (section) => section.id === "mission",
+  );
+  const nonMissionPersonalizedSections = personalizedRecommendations.sections.filter(
+    (section) => section.id !== "mission",
+  );
+  const recommendedMissionItems = buildRecommendedMissionItems({
+    personalizedSection: personalizedMissionSection,
+    featuredMission,
+  });
 
   return (
     <main className="mobile-shell min-h-screen">
@@ -298,7 +528,53 @@ export default async function DashboardPage() {
           </Card>
         )}
 
-        <MissionPanel maxItems={1} mode="featured" />
+        {nonMissionPersonalizedSections.map((section) => (
+          <div key={section.id}>
+            <SectionHeader
+              subtitle={section.subtitle}
+              title={section.title}
+            />
+            <div className="mt-3 space-y-3">
+              {section.items.map((item) => (
+                item.lesson ? (
+                  <LessonModuleCard
+                    completed={isLessonCompleted(item.lesson.id)}
+                    key={`${section.id}:${item.id}`}
+                    lesson={item.lesson}
+                  />
+                ) : item.course ? (
+                  <CourseCard
+                    completedLessonIds={completedLessonIds}
+                    course={item.course}
+                    href={item.href}
+                    key={`${section.id}:${item.id}`}
+                  />
+                ) : null
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {recommendedMissionItems.length > 0 ? (
+          <div>
+            <SectionHeader
+              actionHref="/missions"
+              actionLabel="View all"
+              subtitle="Take the next challenge that fits your path."
+              title="Recommended missions"
+              tone="mission"
+            />
+            <div className="mt-3 space-y-3">
+              {recommendedMissionItems.map((item) => (
+                <RecommendedMissionCard
+                  href={item.href}
+                  key={`recommended-mission:${item.id}`}
+                  mission={item.mission}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {featuredRewards.length > 0 ? (
           <SectionHeader
