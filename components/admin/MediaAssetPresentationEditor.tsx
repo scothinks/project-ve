@@ -56,14 +56,14 @@ export function MediaAssetPresentationEditor({
     <>
       {hasPreview ? (
         previewVariant === "course-thumbnail" ? (
-          <div className="mt-4 rounded-[18px] border border-[#e3efe9] bg-[#f6fbf8] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#087f5b]">Actual learner card preview</p>
+          <div className="mt-4 rounded-[18px] border border-[color:color-mix(in_srgb,var(--ve-green)_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_70%,var(--ve-card))] p-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Actual learner card preview</p>
             <div className="mt-4 overflow-hidden rounded-[18px] bg-[var(--ve-card)] shadow-sm">
-              <div className="h-28 bg-[#dff2e9]">
+              <div className="h-28 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
                 {previewImage}
               </div>
               <div className="p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#087f5b]">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
                   {previewEyebrow || "Values Education"}
                 </p>
                 <h4 className="mt-2 text-lg font-black leading-6">
@@ -80,13 +80,13 @@ export function MediaAssetPresentationEditor({
           </div>
         ) : previewVariant === "course-cover" ? (
           <div className="mt-4 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#087f5b]">Live course hero preview</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Live course hero preview</p>
             <div className="mt-4 overflow-hidden rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)]">
-              <div className="h-40 bg-[#dff2e9]">
+              <div className="h-40 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
                 {previewImage}
               </div>
               <div className="p-4">
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087f5b]">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
                   {previewEyebrow || "Values Education"}
                 </p>
                 <h4 className="mt-2 text-xl font-black leading-7">

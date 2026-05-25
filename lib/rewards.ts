@@ -33,6 +33,8 @@ export type RewardVisibilityMode =
 export type RewardThumbnail = {
   url?: string;
   icon?: string;
+  iconSet?: "tabler";
+  iconName?: string;
   color?: string;
 };
 
@@ -118,7 +120,7 @@ export const demoRewardStoreSnapshot: RewardStoreSnapshot = {
       title: "N500 Meal Ticket",
       description: "Redeem XP for a partner-managed meal ticket.",
       costXp: 20,
-      thumbnail: { icon: "MEAL", color: "#f4fbf7" },
+      thumbnail: { iconSet: "tabler", iconName: "utensils", color: "#f4fbf7" },
       offerExpiresAt: "2026-06-30T23:59:59.000Z",
       terms: "One ticket per learner while the offer is available.",
       claimSteps: [

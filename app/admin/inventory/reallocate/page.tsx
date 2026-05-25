@@ -7,7 +7,7 @@ import { getAdminCampaigns, getAdminRewards, requireAdmin } from "@/lib/admin";
 import { reallocateInventory } from "../actions";
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 function labelClasses() {
@@ -102,7 +102,7 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
             />
           </label>
 
-          <button className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white" type="submit">
+          <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
             Reallocate inventory
           </button>
         </form>

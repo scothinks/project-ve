@@ -13,6 +13,16 @@ import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabas
 
 const referralStorageKey = "project-ve-referral-code";
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const isGoogleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+
+type AuthView = {
+  title: string;
+  subtitle: string;
+};
+
+type LoginFormProps = {
+  onViewChange?: (view: AuthView) => void;
+};
 
 declare global {
   interface Window {
@@ -31,7 +41,7 @@ declare global {
   }
 }
 
-export function LoginForm() {
+export function LoginForm({ onViewChange }: LoginFormProps) {
   const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
@@ -127,6 +137,49 @@ export function LoginForm() {
 
     renderTurnstile();
   }, [authMode, turnstileWidgetId]);
+
+  useEffect(() => {
+    if (!onViewChange) {
+      return;
+    }
+
+    if (confirmationEmail) {
+      onViewChange({
+        title: "Check your email",
+        subtitle: "Confirm your account, then come back to continue.",
+      });
+      return;
+    }
+
+    if (emailConfirmed) {
+      onViewChange({
+        title: "Email confirmed",
+        subtitle: "Your account is ready.",
+      });
+      return;
+    }
+
+    if (isPasswordRecovery) {
+      onViewChange({
+        title: "Reset password",
+        subtitle: "Enter your new password below.",
+      });
+      return;
+    }
+
+    if (authMode === "signup") {
+      onViewChange({
+        title: "Create account",
+        subtitle: "Enter your details to create your account.",
+      });
+      return;
+    }
+
+    onViewChange({
+      title: "Login",
+      subtitle: "Enter your email address to login.",
+    });
+  }, [authMode, confirmationEmail, emailConfirmed, isPasswordRecovery, onViewChange]);
 
   async function applyReferralIfNeeded() {
     const code = normalizeReferralCodeInput(
@@ -272,6 +325,11 @@ export function LoginForm() {
   }
 
   async function handleGoogleLogin() {
+    if (!isGoogleAuthEnabled) {
+      setMessage("Google login is not available right now.");
+      return;
+    }
+
     if (!supabase) {
       router.push("/dashboard");
       return;
@@ -493,7 +551,8 @@ export function LoginForm() {
   return (
     <form className="mt-7 space-y-3" onSubmit={handleLogin}>
       {referralCode && authMode === "signup" ? (
-        <p className="rounded-[18px] bg-[#f4fbf7] px-4 py-3 text-xs font-bold text-[#008751]">
+        <p className="px-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          <span className="font-black text-[var(--ve-green)]">Invite active.</span>{" "}
           Create an account to continue.
         </p>
       ) : null}
@@ -657,22 +716,24 @@ export function LoginForm() {
         </button>
       </p>
 
-      <div className="flex items-center gap-4 py-5">
-        <span className="h-px flex-1 bg-[#d2d2d2]" />
-        <span className="text-sm font-bold text-[var(--ve-muted-soft)]">or</span>
-        <span className="h-px flex-1 bg-[#d2d2d2]" />
-      </div>
+      {!isPasswordRecovery && isGoogleAuthEnabled ? (
+        <>
+          <div className="flex items-center gap-4 py-5">
+            <span className="h-px flex-1 bg-[#d2d2d2]" />
+            <span className="text-sm font-bold text-[var(--ve-muted-soft)]">or</span>
+            <span className="h-px flex-1 bg-[#d2d2d2]" />
+          </div>
 
-      {!isPasswordRecovery ? (
-        <Button
-          className="w-full rounded-[10px]"
-          onClick={handleGoogleLogin}
-          type="button"
-          variant="outline"
-        >
-          <span className="mr-3 text-lg font-black text-[#ea4335]">G</span>
-          {authMode === "signup" ? "Sign up with Google" : "Sign in with Google"}
-        </Button>
+          <Button
+            className="w-full rounded-[10px]"
+            onClick={handleGoogleLogin}
+            type="button"
+            variant="outline"
+          >
+            <span className="mr-3 text-lg font-black text-[#ea4335]">G</span>
+            {authMode === "signup" ? "Sign up with Google" : "Sign in with Google"}
+          </Button>
+        </>
       ) : null}
 
       <div className="flex items-center justify-center gap-4 pt-4 text-xs font-bold text-[var(--ve-muted)]">

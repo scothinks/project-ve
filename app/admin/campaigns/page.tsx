@@ -65,7 +65,7 @@ export default async function AdminCampaignsPage({
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-4 flex justify-end">
         <Link
-          className="rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white"
+          className="rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
           href="/admin/campaigns/new"
         >
           Add Campaign
@@ -84,7 +84,7 @@ export default async function AdminCampaignsPage({
             return (
               <tr key={campaign.id}>
                 <td className="min-w-[260px] px-4 py-4">
-                  <Link className="font-black hover:text-[#087f5b]" href={`/admin/campaigns/${campaign.id}`}>
+                  <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/campaigns/${campaign.id}`}>
                     {campaign.name}
                   </Link>
                   <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{campaign.slug}</p>
@@ -107,8 +107,8 @@ export default async function AdminCampaignsPage({
                     <button
                       className={`rounded-[12px] px-3 py-2 text-xs font-black ${
                         isEnabled
-                          ? "bg-[#fff0f0] text-[#c00000]"
-                          : "bg-[#e4f4ed] text-[#087f5b]"
+                          ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+                          : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
                       }`}
                       type="submit"
                     >

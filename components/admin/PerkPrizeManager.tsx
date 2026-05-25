@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { AdminPerkPrizeRow, AdminRewardCandidateRow } from "@/lib/admin";
 import { AdminCard, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
+import { RewardThumbnailFields } from "@/components/admin/RewardThumbnailFields";
 import {
   assignPerkPrizeInventory,
   deletePerkPrize,
@@ -12,11 +13,12 @@ import {
   savePerkPrize,
   savePerkReleaseBucket,
 } from "@/app/admin/rewards/[id]/actions";
+import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 
 type PrizeType = "reward" | "native_xp" | "xp_boost";
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[#6c3cc2]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-violet)]";
 }
 
 function labelClasses() {
@@ -24,13 +26,13 @@ function labelClasses() {
 }
 
 function detailSummaryClasses() {
-  return "cursor-pointer text-sm font-black text-[#6c3cc2]";
+  return "cursor-pointer text-sm font-black text-[var(--ve-violet)]";
 }
 
 function typeButtonClasses(active: boolean) {
   return active
-    ? "rounded-full bg-[#6c3cc2] px-3 py-2 text-xs font-black text-white"
-    : "rounded-full bg-[#f3effa] px-3 py-2 text-xs font-black text-[#6c3cc2]";
+    ? "rounded-full bg-[var(--ve-violet)] px-3 py-2 text-xs font-black text-white"
+    : "rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-violet)]";
 }
 
 function toDateInputValue(iso: string | null) {
@@ -137,35 +139,6 @@ function PrizeSummaryBadges({ prize }: { prize: AdminPerkPrizeRow }) {
   );
 }
 
-function LinkedRewardField({
-  rewardCandidates,
-  value,
-  onChange,
-}: {
-  rewardCandidates: AdminRewardCandidateRow[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="md:col-span-2">
-      <span className={labelClasses()}>Linked reward</span>
-      <select
-        className={fieldClasses()}
-        name="sourceRewardId"
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        <option value="">Select reward</option>
-        {rewardCandidates.map((candidate) => (
-          <option key={candidate.id} value={candidate.id}>
-            {candidate.title} ({candidate.direct_available ?? 0} free)
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 function RewardCandidateChecklist({
   rewardCandidates,
   selectedRewardIds,
@@ -185,7 +158,9 @@ function RewardCandidateChecklist({
           return (
             <label
               className={`flex cursor-pointer items-start gap-3 rounded-[12px] border px-3 py-3 ${
-                checked ? "border-[#6c3cc2] bg-[#faf8ff]" : "border-[var(--ve-line-soft)] bg-[var(--ve-card)]"
+                checked
+                  ? "border-[var(--ve-violet)] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_62%,var(--ve-card))]"
+                  : "border-[var(--ve-line-soft)] bg-[var(--ve-card)]"
               }`}
               key={candidate.id}
             >
@@ -208,76 +183,6 @@ function RewardCandidateChecklist({
         })}
       </div>
     </div>
-  );
-}
-
-function RewardPrizeFields({
-  rewardCandidates,
-  defaultValue,
-  defaultTitle = "",
-  defaultIcon = "",
-  defaultColor = "",
-}: {
-  rewardCandidates: AdminRewardCandidateRow[];
-  defaultValue?: string;
-  defaultTitle?: string;
-  defaultIcon?: string;
-  defaultColor?: string;
-}) {
-  const [selectedRewardId, setSelectedRewardId] = useState(defaultValue ?? "");
-  const selectedReward = rewardCandidates.find((candidate) => candidate.id === selectedRewardId);
-
-  return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2">
-        <LinkedRewardField
-          onChange={setSelectedRewardId}
-          rewardCandidates={rewardCandidates}
-          value={selectedRewardId}
-        />
-      </div>
-      {selectedReward ? (
-        <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
-            Reward stock guide
-          </p>
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Total live</p>
-              <p className="mt-1 text-lg font-black">{selectedReward.total_available ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Free for direct store</p>
-              <p className="mt-1 text-lg font-black">{selectedReward.direct_available ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Already assigned to perks</p>
-              <p className="mt-1 text-lg font-black">{selectedReward.assigned_available ?? 0}</p>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      <details className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
-        <summary className={detailSummaryClasses()}>Optional learner card override</summary>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-          Leave this untouched unless the perk should present the reward with a different label or tile.
-        </p>
-        <div className="mt-3 grid gap-4 md:grid-cols-4">
-          <label className="md:col-span-2">
-            <span className={labelClasses()}>Override title</span>
-            <input className={fieldClasses()} defaultValue={defaultTitle} name="title" />
-          </label>
-          <label>
-            <span className={labelClasses()}>Override icon</span>
-            <input className={fieldClasses()} defaultValue={defaultIcon} name="thumbnailIcon" />
-          </label>
-          <label>
-            <span className={labelClasses()}>Override color</span>
-            <input className={fieldClasses()} defaultValue={defaultColor} name="thumbnailColor" />
-          </label>
-        </div>
-      </details>
-    </>
   );
 }
 
@@ -342,7 +247,7 @@ function PrizeAllocationPanel({
               <input className={fieldClasses()} name="reason" placeholder="Reserve stock for this perk prize" />
             </label>
           </div>
-          <button className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white" type="submit">
+          <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white" type="submit">
             Assign stock
           </button>
         </form>
@@ -361,7 +266,7 @@ function PrizeAllocationPanel({
               <input className={fieldClasses()} name="reason" placeholder="Return unused stock to the reward" />
             </label>
           </div>
-          <button className="rounded-[12px] bg-[#fff8df] px-4 py-3 text-sm font-black text-[#a66d00]" type="submit">
+          <button className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]" type="submit">
             Release stock
           </button>
         </form>
@@ -372,12 +277,14 @@ function PrizeAllocationPanel({
 
 function NativeXpPrizeFields({
   defaultTitle,
-  defaultIcon,
+  defaultIconName,
+  defaultLegacyIcon,
   defaultColor,
   defaultAmount,
 }: {
   defaultTitle: string;
-  defaultIcon: string;
+  defaultIconName: string;
+  defaultLegacyIcon: string;
   defaultColor: string;
   defaultAmount: number;
 }) {
@@ -404,15 +311,14 @@ function NativeXpPrizeFields({
         <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
           Only change this if the learner card should use a different icon or color.
         </p>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Icon</span>
-            <input className={fieldClasses()} defaultValue={defaultIcon} name="thumbnailIcon" />
-          </label>
-          <label>
-            <span className={labelClasses()}>Tile color</span>
-            <input className={fieldClasses()} defaultValue={defaultColor} name="thumbnailColor" />
-          </label>
+        <div className="mt-3">
+          <RewardThumbnailFields
+            color={defaultColor}
+            iconName={defaultIconName}
+            legacyIcon={defaultLegacyIcon}
+            showUrl={false}
+            title={defaultTitle}
+          />
         </div>
       </details>
     </>
@@ -421,14 +327,16 @@ function NativeXpPrizeFields({
 
 function XpBoostPrizeFields({
   defaultTitle,
-  defaultIcon,
+  defaultIconName,
+  defaultLegacyIcon,
   defaultColor,
   defaultMultiplier,
   defaultDurationHours,
   defaultUses,
 }: {
   defaultTitle: string;
-  defaultIcon: string;
+  defaultIconName: string;
+  defaultLegacyIcon: string;
   defaultColor: string;
   defaultMultiplier: number;
   defaultDurationHours: number;
@@ -465,15 +373,14 @@ function XpBoostPrizeFields({
         <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
           Only change this if the learner card should use a different icon or color.
         </p>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Icon</span>
-            <input className={fieldClasses()} defaultValue={defaultIcon} name="thumbnailIcon" />
-          </label>
-          <label>
-            <span className={labelClasses()}>Tile color</span>
-            <input className={fieldClasses()} defaultValue={defaultColor} name="thumbnailColor" />
-          </label>
+        <div className="mt-3">
+          <RewardThumbnailFields
+            color={defaultColor}
+            iconName={defaultIconName}
+            legacyIcon={defaultLegacyIcon}
+            showUrl={false}
+            title={defaultTitle}
+          />
         </div>
       </details>
     </>
@@ -658,11 +565,11 @@ function ReleaseBucketsSection({
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-[12px] bg-[#6c3cc2] px-3 py-2 text-xs font-black text-white" type="submit">
+                <button className="rounded-[12px] bg-[var(--ve-violet)] px-3 py-2 text-xs font-black text-white" type="submit">
                   Save bucket
                 </button>
                 <button
-                  className="rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
+                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
                   formAction={deletePerkReleaseBucket}
                   type="submit"
                 >
@@ -706,7 +613,7 @@ function ReleaseBucketsSection({
             Enabled
           </label>
         </div>
-        <button className="rounded-[12px] bg-[#6c3cc2] px-4 py-3 text-sm font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-violet)] px-4 py-3 text-sm font-black text-white" type="submit">
           Add bucket
         </button>
       </form>
@@ -728,8 +635,13 @@ function PrizeEditorCard({
   rewardCandidates: AdminRewardCandidateRow[];
 }) {
   const prizeType: PrizeType = prize.prize_type;
-  const icon = typeof prize.thumbnail?.icon === "string" ? prize.thumbnail.icon : "";
   const color = typeof prize.thumbnail?.color === "string" ? prize.thumbnail.color : "";
+  const { iconName, legacyIcon } = getRewardThumbnailEditorState({
+    icon: typeof prize.thumbnail?.icon === "string" ? prize.thumbnail.icon : undefined,
+    iconSet: prize.thumbnail?.iconSet === "tabler" ? "tabler" : undefined,
+    iconName: typeof prize.thumbnail?.iconName === "string" ? prize.thumbnail.iconName : undefined,
+    color,
+  });
   const hasAssignedPool = (prize.assigned_available ?? 0) > 0;
   const canSaveDetails = prizeType !== "reward" || hasAssignedPool;
   const canRemovePrize = true;
@@ -754,13 +666,13 @@ function PrizeEditorCard({
           <p className="text-base font-black">{describePrize(prize)}</p>
           <PrizeSummaryBadges prize={prize} />
         </div>
-        <span className="rounded-full bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[#6c3cc2]">
+        <span className="rounded-full bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-violet)]">
           Edit
         </span>
       </summary>
 
       {inlineNotice ? (
-        <div className="mt-4 rounded-[12px] border border-[#cde8db] bg-[#eefaf4] px-4 py-3 text-sm font-black text-[#087f5b]">
+        <div className="mt-4 rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]">
           {inlineNotice}
         </div>
       ) : null}
@@ -802,7 +714,8 @@ function PrizeEditorCard({
             <NativeXpPrizeFields
               defaultAmount={Number(prize.config.amount ?? 5)}
               defaultColor={color || "#f4fbf7"}
-              defaultIcon={icon || "XP"}
+              defaultIconName={iconName || "coins"}
+              defaultLegacyIcon={legacyIcon}
               defaultTitle={prize.title ?? getNativeXpDefaultTitle(Number(prize.config.amount ?? 5))}
             />
           ) : null}
@@ -811,7 +724,8 @@ function PrizeEditorCard({
             <XpBoostPrizeFields
               defaultColor={color || "#fff6ed"}
               defaultDurationHours={Number(prize.config.durationHours ?? 24)}
-              defaultIcon={icon || "BOOST"}
+              defaultIconName={iconName || "bolt"}
+              defaultLegacyIcon={legacyIcon}
               defaultMultiplier={Number(prize.config.multiplier ?? 2)}
               defaultTitle={prize.title ?? getXpBoostDefaultTitle(Number(prize.config.multiplier ?? 2))}
               defaultUses={Number(prize.config.uses ?? 1)}
@@ -848,19 +762,18 @@ function PrizeEditorCard({
             <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
               Leave this untouched unless the perk should present the linked reward with a different label or tile.
             </p>
-            <div className="mt-3 grid gap-4 md:grid-cols-4">
+            <div className="mt-3 space-y-4">
               <label className="md:col-span-2">
                 <span className={labelClasses()}>Override title</span>
                 <input className={fieldClasses()} defaultValue={prize.title ?? ""} name="title" />
               </label>
-              <label>
-                <span className={labelClasses()}>Override icon</span>
-                <input className={fieldClasses()} defaultValue={icon} name="thumbnailIcon" />
-              </label>
-              <label>
-                <span className={labelClasses()}>Override color</span>
-                <input className={fieldClasses()} defaultValue={color} name="thumbnailColor" />
-              </label>
+              <RewardThumbnailFields
+                color={color}
+                iconName={iconName}
+                legacyIcon={legacyIcon}
+                showUrl={false}
+                title={prize.title ?? linkedRewardLabel}
+              />
             </div>
           </details>
 
@@ -893,7 +806,7 @@ function PrizeEditorCard({
           <div className="mt-3 flex flex-wrap gap-2">
             {canSaveDetails ? (
               <button
-                className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white"
+                className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
                 form={saveFormId}
                 type="submit"
               >
@@ -905,7 +818,7 @@ function PrizeEditorCard({
                 <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
                 <input name="prizeId" type="hidden" value={prize.id} />
                 <button
-                  className="rounded-[12px] bg-[#fff0f0] px-4 py-3 text-sm font-black text-[#c00000]"
+                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]"
                   type="submit"
                 >
                   Remove prize
@@ -962,7 +875,7 @@ function AddPrizeCard({
         </div>
         <span
           aria-hidden="true"
-          className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#f3effa] text-[#6c3cc2] transition-transform ${
+          className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] text-[var(--ve-violet)] transition-transform ${
             open ? "rotate-90" : ""
           }`}
         >
@@ -999,7 +912,8 @@ function AddPrizeCard({
             <NativeXpPrizeFields
               defaultAmount={5}
               defaultColor="#f4fbf7"
-              defaultIcon="XP"
+              defaultIconName="coins"
+              defaultLegacyIcon=""
               defaultTitle="Bonus XP"
             />
           ) : null}
@@ -1008,7 +922,8 @@ function AddPrizeCard({
             <XpBoostPrizeFields
               defaultColor="#fff6ed"
               defaultDurationHours={24}
-              defaultIcon="BOOST"
+              defaultIconName="bolt"
+              defaultLegacyIcon=""
               defaultMultiplier={2}
               defaultTitle="XP Boost"
               defaultUses={1}
@@ -1031,7 +946,7 @@ function AddPrizeCard({
           )}
 
           {prizeType !== "reward" ? (
-            <button className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white" type="submit">
+            <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white" type="submit">
               Add prize
             </button>
           ) : null}
@@ -1056,7 +971,7 @@ function AddPrizeCard({
               </AdminStatusBadge>
             </div>
             <button
-              className="rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+              className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
               disabled={selectedRewardIds.length === 0}
               type="submit"
             >
@@ -1098,7 +1013,7 @@ export function PerkPrizeManager({
       </div>
 
       {notice ? (
-        <div className="mt-4 rounded-[16px] border border-[#cde8db] bg-[#eefaf4] px-4 py-3 text-sm font-black text-[#087f5b]">
+        <div className="mt-4 rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]">
           {notice}
         </div>
       ) : null}

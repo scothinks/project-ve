@@ -19,11 +19,11 @@ import {
 } from "@/app/admin/courses/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -63,7 +63,7 @@ function FormSection({
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
               ) : null}
             </div>
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[#5f5f5a] transition group-open:rotate-180">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] transition group-open:rotate-180">
               ˅
             </span>
           </div>
@@ -88,7 +88,7 @@ function FormSection({
 
 function TutorNote({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[16px] bg-[#f1f7f4] px-4 py-3 text-xs font-bold leading-5 text-[#315447]">
+    <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] px-4 py-3 text-xs font-bold leading-5 text-[var(--ve-muted-strong)]">
       {children}
     </div>
   );
@@ -96,7 +96,7 @@ function TutorNote({ children }: { children: ReactNode }) {
 
 function SubmitButton({ children }: { children: ReactNode }) {
   return (
-    <button className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white" type="submit">
+    <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
       {children}
     </button>
   );
@@ -128,12 +128,12 @@ function CoursePreview({
   estimatedMinutes: number;
 }) {
   return (
-    <aside className="rounded-[22px] border border-[#e3efe9] bg-[#f6fbf8] p-5">
-      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#087f5b]">
+    <aside className="rounded-[22px] border border-[color:color-mix(in_srgb,var(--ve-green)_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_70%,var(--ve-card))] p-5">
+      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
         Learner card preview
       </p>
       <div className="mt-4 overflow-hidden rounded-[18px] bg-[var(--ve-card)] shadow-sm">
-        <div className="h-28 bg-[#dff2e9]">
+        <div className="h-28 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
           {getImageValue(course?.thumbnail, "src") ? (
             <img
               alt=""
@@ -144,7 +144,7 @@ function CoursePreview({
           ) : null}
         </div>
         <div className="p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#087f5b]">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
             {course?.category ?? "Values Education"}
           </p>
           <h4 className="mt-2 text-lg font-black leading-6">
@@ -426,7 +426,7 @@ export function LessonPageForm({
           <input className={compactFieldClasses()} name="coverImageAlt" defaultValue={getImageValue(page?.cover_image, "alt")} />
         </label>
       </div>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save page
       </button>
     </form>
@@ -518,7 +518,7 @@ export function LessonBlockForm({
           defaultValue={Array.isArray(block?.payload.rows) ? block.payload.rows.map((row) => Array.isArray(row) ? row.join(", ") : String(row)).join("\n") : ""}
         />
       </label>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save block
       </button>
     </form>
@@ -561,7 +561,7 @@ export function AddBlockToolbar({
           <input name="columns" type="hidden" value="" />
           <input name="rows" type="hidden" value="" />
           <button
-            className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[#e9f4ef] hover:text-[#087f5b]"
+            className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
             type="submit"
           >
             + {item.label}
@@ -605,7 +605,7 @@ export function ContentBlockEditor({
             <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
           </label>
         </div>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save image
         </button>
       </form>
@@ -640,7 +640,7 @@ export function ContentBlockEditor({
           <span className={labelClasses()}>Caption</span>
           <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save {mediaLabel.toLowerCase()}
         </button>
       </form>
@@ -678,7 +678,7 @@ export function ContentBlockEditor({
           <span className={labelClasses()}>Caption</span>
           <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save table
         </button>
       </form>
@@ -712,7 +712,7 @@ export function ContentBlockEditor({
           <span className={labelClasses()}>Body</span>
           <textarea className={`${compactFieldClasses()} min-h-24 resize-none`} name="body" defaultValue={body} />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save callout
         </button>
       </form>
@@ -734,7 +734,7 @@ export function ContentBlockEditor({
         <span className={labelClasses()}>Text</span>
         <textarea className={`${compactFieldClasses()} min-h-36 resize-none text-base leading-7`} name="body" defaultValue={body} />
       </label>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save text
       </button>
     </form>
@@ -834,7 +834,7 @@ export function QuizQuestionForm({
           </label>
         ))}
       </div>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save question
       </button>
     </form>

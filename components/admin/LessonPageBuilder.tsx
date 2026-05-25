@@ -83,14 +83,14 @@ function TrashIcon() {
 function actionButtonClasses(tone: "neutral" | "danger" = "neutral") {
   const toneClasses =
     tone === "danger"
-      ? "bg-[#fff3f1] text-[#b42318] hover:bg-[#ffe4df]"
-      : "bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[#e9f4ef] hover:text-[#087f5b]";
+      ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_82%,var(--ve-card))] text-[var(--ve-danger)] hover:bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_92%,var(--ve-card))]"
+      : "bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]";
 
   return `inline-flex h-8 w-8 items-center justify-center rounded-full ${toneClasses} transition disabled:cursor-not-allowed disabled:opacity-35`;
 }
 
 function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -444,7 +444,7 @@ function AddPageForm({ lessonId, pageNumber }: { lessonId: string; pageNumber: n
       <input name="coverImageUrl" type="hidden" value="" />
       <input name="coverImageAlt" type="hidden" value="" />
       <button
-        className="inline-flex w-full items-center justify-center rounded-[14px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white transition hover:bg-[#066f4f]"
+        className="inline-flex w-full items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white transition hover:brightness-95"
         type="submit"
       >
         + Add page
@@ -547,7 +547,7 @@ function PageSettingsEditor({
           />
         </label>
       </div>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save page
       </button>
     </form>
@@ -641,7 +641,7 @@ function BlockEditor({
             />
           </label>
         </div>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save image
         </button>
       </form>
@@ -693,7 +693,7 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("caption", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save {mediaLabel.toLowerCase()}
         </button>
       </form>
@@ -765,7 +765,7 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("caption", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save table
         </button>
       </form>
@@ -811,7 +811,7 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("body", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save callout
         </button>
       </form>
@@ -840,7 +840,7 @@ function BlockEditor({
           onChange={(event) => onPayloadChange("body", event.target.value)}
         />
       </label>
-      <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save text
       </button>
     </form>
@@ -968,14 +968,14 @@ export function LessonPageBuilder({
               <div
                 className={`rounded-[16px] border p-3 transition ${
                   selectedPage?.id === page.id
-                    ? "border-[#087f5b] bg-[#f0fbf6]"
+                    ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))]"
                     : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] hover:bg-[var(--ve-shell)]"
                 }`}
                 key={page.id}
               >
                 <div className="flex items-start justify-between gap-2">
                   <button
-                    className="text-left text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]"
+                    className="text-left text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]"
                     onClick={() => setSelectedPageId(page.id)}
                     type="button"
                   >
@@ -1018,7 +1018,7 @@ export function LessonPageBuilder({
           <>
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                   Page builder
                 </p>
                 <h2 className="mt-1 text-xl font-black">{selectedPage.title}</h2>
@@ -1046,7 +1046,7 @@ export function LessonPageBuilder({
               <div className="flex flex-wrap gap-2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-2">
                 {blockToolbarItems.map((item) => (
                   <button
-                    className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[#e9f4ef] hover:text-[#087f5b]"
+                    className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
                     key={item.type}
                     onClick={() => addDraftBlock(item.type)}
                     type="button"
@@ -1084,13 +1084,13 @@ export function LessonPageBuilder({
       <div className="h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm xl:sticky xl:top-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
               Live preview
             </p>
             <h2 className="mt-1 text-lg font-black">Learner page</h2>
           </div>
           {selectedPage ? (
-            <Link className="text-xs font-black text-[#087f5b]" href={`/lessons/${lesson.id}?page=${selectedPage.page_number}`}>
+            <Link className="text-xs font-black text-[var(--ve-green)]" href={`/lessons/${lesson.id}?page=${selectedPage.page_number}`}>
               Open
             </Link>
           ) : null}

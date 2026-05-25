@@ -12,7 +12,7 @@ type AdminXpSettingsPageProps = {
 };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
 
 function labelClasses() {
@@ -76,7 +76,7 @@ export default async function AdminXpSettingsPage({
               This caps how much free XP one admin can grant across all users in one Lagos day. If no CMS setting is saved, the app falls back to {fallbackAdminManualGrantDailyLimit} XP.
             </p>
           </div>
-          <div className="rounded-[16px] bg-[var(--ve-panel)] px-4 py-3 text-xs font-semibold text-[#5f5f5a]">
+          <div className="rounded-[16px] bg-[var(--ve-panel)] px-4 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
             <p>Current effective default: {currentLimit} XP</p>
             <p className="mt-1">Current admin manual grant cap: {currentManualGrantLimit} XP</p>
             <p className="mt-1">
@@ -86,11 +86,11 @@ export default async function AdminXpSettingsPage({
             </p>
           </div>
           {saved ? (
-            <div className="rounded-[16px] bg-[#e4f4ed] px-4 py-3 text-sm font-bold text-[#087f5b]">
+            <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-bold text-[var(--ve-green)]">
               XP settings saved.
             </div>
           ) : null}
-          <button className="rounded-[14px] bg-[#087f5b] px-5 py-3 text-sm font-black text-white" type="submit">
+          <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
             Save settings
           </button>
         </form>

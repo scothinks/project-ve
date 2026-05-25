@@ -51,7 +51,7 @@ export function CourseCategoryField({
       />
       <div className="relative mt-2">
         <button
-          className="flex min-h-[52px] w-full items-center justify-between rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-left text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10"
+          className="flex min-h-[52px] w-full items-center justify-between rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-left text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
           onClick={() => setIsOpen((current) => !current)}
           type="button"
         >
@@ -65,7 +65,7 @@ export function CourseCategoryField({
                 <button
                   className={`flex w-full items-center justify-between rounded-[12px] px-3 py-3 text-left text-sm font-bold transition ${
                     selectedValue === category
-                      ? "bg-[#e4f4ed] text-[#087f5b]"
+                      ? "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
                       : "text-[var(--foreground)] hover:bg-[var(--ve-panel)]"
                   }`}
                   key={category}
@@ -82,7 +82,7 @@ export function CourseCategoryField({
               <button
                 className={`flex w-full items-center justify-between rounded-[12px] px-3 py-3 text-left text-sm font-bold transition ${
                   selectedValue === CREATE_CATEGORY_VALUE
-                    ? "bg-[#e4f4ed] text-[#087f5b]"
+                    ? "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
                     : "text-[var(--foreground)] hover:bg-[var(--ve-panel)]"
                 }`}
                 onClick={() => {
@@ -104,7 +104,7 @@ export function CourseCategoryField({
             New category name
           </span>
           <input
-            className="mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[#087f5b] focus:ring-4 focus:ring-[#087f5b]/10"
+            className="mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
             name="categoryCustom"
             onChange={(event) => setCustomValue(event.target.value)}
             placeholder="Type the new category name"

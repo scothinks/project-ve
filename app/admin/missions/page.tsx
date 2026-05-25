@@ -59,7 +59,7 @@ export default async function AdminMissionsPage({
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-4 flex justify-end">
         <Link
-          className="rounded-[14px] bg-[#c94f2e] px-4 py-3 text-sm font-black text-white"
+          className="rounded-[14px] bg-[var(--ve-mission)] px-4 py-3 text-sm font-black text-white"
           href="/admin/missions/new"
         >
           Add Mission
@@ -73,7 +73,7 @@ export default async function AdminMissionsPage({
           {paginatedMissions.items.map((mission) => (
             <tr key={mission.id}>
               <td className="min-w-[240px] px-4 py-4">
-                <Link className="font-black hover:text-[#c94f2e]" href={`/admin/missions/${mission.id}`}>
+                <Link className="font-black hover:text-[var(--ve-mission)]" href={`/admin/missions/${mission.id}`}>
                   {mission.title}
                 </Link>
                 <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
@@ -100,7 +100,7 @@ export default async function AdminMissionsPage({
               <td className="whitespace-nowrap px-4 py-4">
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[#4f4f4f]"
+                    className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)]"
                     href={`/admin/missions/${mission.id}`}
                   >
                     Edit
@@ -116,8 +116,8 @@ export default async function AdminMissionsPage({
                     <button
                       className={
                         mission.status === "published"
-                          ? "rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
-                          : "rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
+                          ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
+                          : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
                       }
                       type="submit"
                     >

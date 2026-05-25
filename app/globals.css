@@ -23,6 +23,8 @@
   --ve-violet: #8d68f2;
   --ve-violet-rgb: 141, 104, 242;
   --ve-violet-soft: #eee7ff;
+  --ve-danger: #d45a5a;
+  --ve-danger-soft: #fff0f0;
   --ve-ink: #101010;
   --ve-muted: #8d8d8d;
   --ve-muted-strong: #5f5f5a;
@@ -57,6 +59,8 @@
     --ve-violet: #b297ff;
     --ve-violet-rgb: 178, 151, 255;
     --ve-violet-soft: #2a2142;
+    --ve-danger: #f08a8a;
+    --ve-danger-soft: #3a2020;
     --ve-ink: #f2f1eb;
     --ve-muted: #aab1ac;
     --ve-muted-strong: #d4d8d3;

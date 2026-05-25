@@ -93,6 +93,8 @@ function mapThumbnail(value: unknown): RewardThumbnail {
   return {
     url: typeof record.url === "string" ? record.url : undefined,
     icon: typeof record.icon === "string" ? record.icon : undefined,
+    iconSet: record.iconSet === "tabler" ? "tabler" : undefined,
+    iconName: typeof record.iconName === "string" ? record.iconName : undefined,
     color: typeof record.color === "string" ? record.color : undefined,
   };
 }

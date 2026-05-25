@@ -48,14 +48,14 @@ function workflowTone(status: string) {
 
 function workflowButtonClasses(tone: "primary" | "danger" | "neutral" = "primary") {
   if (tone === "danger") {
-    return "rounded-[12px] bg-[#fff0f0] px-4 py-3 text-sm font-black text-[#c00000]";
+    return "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]";
   }
 
   if (tone === "neutral") {
     return "rounded-[12px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]";
   }
 
-  return "rounded-[12px] bg-[#087f5b] px-4 py-3 text-sm font-black text-white";
+  return "rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white";
 }
 
 function formatApproval(value: string | null, byName?: string | null) {
@@ -165,7 +165,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         <AdminStatCard label="Quiz XP" value={formatXpLabel(totalXp)} tone="store" />
         <AdminCard className="flex flex-col justify-center">
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Preview</p>
-          <div className="mt-3 flex flex-wrap gap-3 text-sm font-black text-[#087f5b]">
+          <div className="mt-3 flex flex-wrap gap-3 text-sm font-black text-[var(--ve-green)]">
             <Link href={`/lessons/${lesson.id}`}>Lesson</Link>
             {quiz ? <Link href={`/quiz/${lesson.id}`}>Quiz</Link> : null}
           </div>
@@ -175,7 +175,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
       {lesson.ai_generated ? (
         <section className="mb-6 grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">AI workflow</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI workflow</p>
             <h2 className="mt-2 text-lg font-black">Review this lesson independently</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               Approve text, generate media, and approve media for this lesson without waiting for the rest of the course.
@@ -251,7 +251,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                     />
                   </form>
                   {!mediaConfig.canGenerate ? (
-                    <p className="basis-full text-xs font-semibold leading-5 text-[#c00000]">
+                    <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                       Media generation is unavailable until these server settings are added: {mediaConfig.missingRequirements.join(", ")}.
                     </p>
                   ) : (
@@ -280,7 +280,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
             </div>
 
             {mediaApprovalBlocked ? (
-              <p className="mt-4 text-xs font-semibold leading-5 text-[#c00000]">
+              <p className="mt-4 text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                 {!hasRequiredImageAssets
                   ? "Lesson media approval is blocked because the required lesson image assets have not been seeded yet. Generate lesson media first."
                   : `Lesson media approval is blocked by required assets: ${mediaValidation.missingRequiredAssets.length} missing preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"}, ${mediaValidation.failedRequiredAssets.length} failed, ${mediaValidation.staleRequiredAssets.length} stale.`}
@@ -318,7 +318,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
               </p>
               {storedMediaFeedback ? (
                 <div className="mt-4 rounded-[14px] bg-[var(--ve-panel)] p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">Latest requested media changes</p>
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Latest requested media changes</p>
                   <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">{storedMediaFeedback.feedback}</p>
                   {storedMediaFeedback.requestedAt ? (
                     <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
@@ -358,7 +358,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                     placeholder="Use the latest requested media changes or add a tighter visual revision brief here."
                   />
                   {!mediaConfig.canGenerate ? (
-                    <p className="mt-3 text-xs font-semibold leading-5 text-[#c00000]">
+                    <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                       Media generation is unavailable until these server settings are added: {mediaConfig.missingRequirements.join(", ")}.
                     </p>
                   ) : null}
@@ -396,7 +396,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                     <input name="redirectTo" type="hidden" value={`/admin/courses/lessons/${lesson.id}`} />
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">{asset.placement}</p>
+                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">{asset.placement}</p>
                         <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -533,7 +533,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                   <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={question.id}>
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#087f5b]">
+                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
                           Question {question.question_order} · {question.question_type.replaceAll("_", " ")}
                         </p>
                         <h3 className="mt-1 font-black">{question.prompt}</h3>

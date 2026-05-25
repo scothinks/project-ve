@@ -61,7 +61,7 @@ type AdminRedemptionsPageProps = {
 };
 
 function fieldClasses() {
-  return "h-11 rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-semibold outline-none focus:border-[#087f5b]";
+  return "h-11 rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
 }
 
 export default async function AdminRedemptionsPage({ searchParams }: AdminRedemptionsPageProps) {
@@ -121,10 +121,10 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
         <input className={fieldClasses()} name="dateFrom" type="date" defaultValue={params.dateFrom ?? ""} />
         <input className={fieldClasses()} name="dateTo" type="date" defaultValue={params.dateTo ?? ""} />
         <div className="flex gap-2 md:col-span-3 xl:col-span-6">
-          <button className="rounded-[12px] bg-[#087f5b] px-4 py-2 text-xs font-black text-white" type="submit">
+          <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
             Apply filters
           </button>
-          <Link className="rounded-[12px] bg-[#fff8df] px-4 py-2 text-xs font-black text-[#a66d00]" href={exportHref}>
+          <Link className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-2 text-xs font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]" href={exportHref}>
             Export CSV
           </Link>
         </div>
@@ -170,7 +170,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                       <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
                         View details
                       </span>
-                      <span className="grid size-10 place-items-center rounded-full bg-[var(--ve-panel)] text-lg font-black text-[#5f5f5a] transition group-open:rotate-180">
+                      <span className="grid size-10 place-items-center rounded-full bg-[var(--ve-panel)] text-lg font-black text-[var(--ve-muted-strong)] transition group-open:rotate-180">
                         ˅
                       </span>
                     </div>
@@ -190,13 +190,13 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                           <form action={fulfillRedemption} className="space-y-2">
                             <input name="redemptionId" type="hidden" value={redemption.id} />
                             <input
-                              className="w-full rounded-[12px] border border-[#e1ddd5] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
+                              className="w-full rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
                               name="note"
                               placeholder="Fulfillment note"
                             />
                             <button
-                              className="w-full rounded-[12px] bg-[#e4f4ed] px-3 py-2 text-xs font-black text-[#087f5b]"
+                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
                               type="submit"
                             >
                               Mark fulfilled
@@ -208,13 +208,13 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                           <form action={refundRedemption} className="space-y-2">
                             <input name="redemptionId" type="hidden" value={redemption.id} />
                             <input
-                              className="w-full rounded-[12px] border border-[#e1ddd5] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
+                              className="w-full rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
                               name="reason"
                               placeholder="Refund reason"
                             />
                             <button
-                              className="w-full rounded-[12px] bg-[#fff0f0] px-3 py-2 text-xs font-black text-[#c00000]"
+                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
                               type="submit"
                             >
                               Refund XP
