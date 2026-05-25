@@ -25,6 +25,10 @@ import { getDashboardRecommendationSections } from "@/lib/supabase-recommendatio
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import {
+  getUserAssessmentCompletionStatus,
+  learnerNeedsValuesAssessment,
+} from "@/lib/values-assessment";
 import { formatXpLabel } from "@/lib/xp-format";
 
 function ContinueLearningCard({
@@ -81,6 +85,20 @@ export default async function DashboardPage() {
   }
 
   const supabase = await createSupabaseServerClient();
+
+  if (isSupabaseConfigured && user) {
+    const assessmentStatus = await getUserAssessmentCompletionStatus(supabase, user.id);
+
+    if (
+      learnerNeedsValuesAssessment({
+        role: profile?.role,
+        assessmentCompletedAt: assessmentStatus?.assessment_completed_at ?? null,
+      })
+    ) {
+      redirect("/onboarding/assessment");
+    }
+  }
+
   const catalog = await getLearningCatalog(supabase);
   const currentCourse = catalog[0];
   const rawDisplayName = profile?.display_name ?? "";

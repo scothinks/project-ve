@@ -12,6 +12,14 @@ type ProfileFraudFlagsRow = {
   fraud_flags: Record<string, unknown> | null;
 };
 
+type ProfileAccessRow = {
+  role: "learner" | "admin";
+};
+
+type UserValueProfileStatusRow = {
+  assessment_completed_at: string | null;
+};
+
 const freshOAuthWindowMs = 5 * 60 * 1000;
 
 function getSafeNextUrl(request: NextRequest) {
@@ -167,7 +175,26 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.redirect(new URL(next, request.url));
+  const [{ data: profile }, { data: valueProfile }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<ProfileAccessRow>(),
+    supabase
+      .from("user_value_profiles")
+      .select("assessment_completed_at")
+      .eq("user_id", user.id)
+      .maybeSingle<UserValueProfileStatusRow>(),
+  ]);
+
+  const shouldRouteToAssessment =
+    profile?.role !== "admin"
+    && !valueProfile?.assessment_completed_at
+    && next !== "/onboarding/assessment";
+
+  const destination = shouldRouteToAssessment ? "/onboarding/assessment" : next;
+  const response = NextResponse.redirect(new URL(destination, request.url));
   clearOAuthSignupProofCookie(response);
   return response;
 }
