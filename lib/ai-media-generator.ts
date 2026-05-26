@@ -40,7 +40,7 @@ export type LearningMediaGenerationContext = {
   pageSubtitle?: string | null;
   placementLabel?: string | null;
   revisionFeedback?: string | null;
-  targetKind: "course_cover" | "course_thumbnail" | "lesson_thumbnail" | "page_cover" | "asset_only";
+  targetKind: "course_cover" | "course_thumbnail" | "lesson_thumbnail" | "page_cover" | "page_block" | "asset_only";
 };
 
 type OpenAiImageSize = "1024x1024" | "1024x1536" | "1536x1024";
@@ -117,10 +117,6 @@ export function getAiMediaConfig() {
     canGenerate: missingRequirements.length === 0,
     missingRequirements,
   };
-}
-
-function getBooleanMetadata(metadata: JsonRecord, key: string) {
-  return metadata[key] === true;
 }
 
 function buildStoragePath(asset: LearningMediaAssetForGeneration, context: LearningMediaGenerationContext) {
@@ -302,9 +298,8 @@ export async function generateLearningMediaImage(
 ): Promise<GenerateLearningMediaImageResult> {
   const { asset, context, replaceExisting = false } = input;
   const metadata = asRecord(asset.metadata) ?? {};
-  const isStale = getBooleanMetadata(metadata, "stale");
 
-  if (asset.url && !replaceExisting && !isStale) {
+  if (asset.url && !replaceExisting) {
     return {
       assetId: asset.id,
       status: "skipped",
@@ -373,9 +368,6 @@ export async function generateLearningMediaImage(
       originalPrompt,
       revisedPrompt: generated.revisedPrompt,
       size,
-      stale: false,
-      staleAt: null,
-      staleReason: null,
       previousUrl,
       targetKind: context.targetKind,
       targetPageId: context.pageId ?? null,
@@ -427,7 +419,6 @@ export async function generateLearningMediaImage(
           originalPrompt,
           size,
           lastFailedAt: generatedAt,
-          stale: false,
           targetKind: context.targetKind,
           targetPageId: context.pageId ?? null,
           targetLessonId: context.lessonId ?? null,

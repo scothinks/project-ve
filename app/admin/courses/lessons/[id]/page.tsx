@@ -29,7 +29,6 @@ import { getAiMediaConfig } from "@/lib/ai-media-generator";
 import { parseImagePresentation } from "@/lib/image-presentation";
 import {
   isRequiredMediaAsset,
-  isStaleMediaAsset,
   validateMediaApproval,
 } from "@/lib/ai-media-workflow";
 import {
@@ -87,6 +86,15 @@ function asRecord(value: unknown) {
     : {};
 }
 
+function getMetadataBoolean(metadata: Record<string, unknown> | null | undefined, key: string) {
+  return asRecord(metadata)[key] === true;
+}
+
+function getMetadataString(metadata: Record<string, unknown> | null | undefined, key: string) {
+  const value = asRecord(metadata)[key];
+  return typeof value === "string" ? value : "";
+}
+
 function latestTextFeedback(notes: Record<string, unknown>) {
   const history = Array.isArray(notes.textRevisionFeedbackHistory)
     ? notes.textRevisionFeedbackHistory
@@ -124,6 +132,14 @@ function latestMediaFeedback(notes: Record<string, unknown>) {
   return null;
 }
 
+function collapsibleSummaryClasses() {
+  return "cursor-pointer list-none px-5 py-5";
+}
+
+function collapsibleBodyClasses() {
+  return "border-t border-[var(--ve-line-soft)] px-5 pb-5";
+}
+
 export default async function LessonDetailPage({ params, searchParams }: LessonDetailPageProps) {
   const { id } = await params;
   const { page: selectedPageId, notice } = await searchParams;
@@ -156,7 +172,6 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
       !hasRequiredImageAssets
       || mediaValidation.missingRequiredAssets.length > 0
       || mediaValidation.failedRequiredAssets.length > 0
-      || mediaValidation.staleRequiredAssets.length > 0
     );
 
   return (
@@ -192,13 +207,26 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
 
       {lesson.ai_generated ? (
         <section className="mb-6 grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
-          <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI workflow</p>
-            <h2 className="mt-2 text-lg font-black">Review this lesson independently</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-              Approve text, generate media, and approve media for this lesson without waiting for the rest of the course.
-            </p>
+          <AdminCard className="p-0">
+            <details open>
+              <summary className={collapsibleSummaryClasses()}>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI workflow</p>
+                    <h2 className="mt-2 text-lg font-black">Review this lesson independently</h2>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                      Approve text, generate media, and approve media for this lesson without waiting for the rest of the course.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <AdminStatusBadge tone={workflowTone(lesson.ai_text_status)}>{lesson.ai_text_status.replaceAll("_", " ")}</AdminStatusBadge>
+                    <AdminStatusBadge tone={workflowTone(lesson.ai_media_status)}>{lesson.ai_media_status.replaceAll("_", " ")}</AdminStatusBadge>
+                    <AdminStatusBadge tone={workflowTone(lesson.ai_publish_status)}>{lesson.ai_publish_status.replaceAll("_", " ")}</AdminStatusBadge>
+                  </div>
+                </div>
+              </summary>
 
+              <div className={collapsibleBodyClasses()}>
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4">
                 <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Text status</p>
@@ -280,7 +308,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                 </>
               ) : null}
 
-              {["draft", "in_review", "changes_requested"].includes(lesson.ai_media_status) ? (
+              {["draft", "generation_ready", "in_review", "changes_requested"].includes(lesson.ai_media_status) ? (
                 <>
                   <form action={approveLessonMedia}>
                     <input name="lessonId" type="hidden" value={lesson.id} />
@@ -301,7 +329,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
               <p className="mt-4 text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                 {!hasRequiredImageAssets
                   ? "Lesson media approval is blocked because the required lesson image assets have not been seeded yet. Generate lesson media first."
-                  : `Lesson media approval is blocked by required assets: ${mediaValidation.missingRequiredAssets.length} missing preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"}, ${mediaValidation.failedRequiredAssets.length} failed, ${mediaValidation.staleRequiredAssets.length} stale.`}
+                  : `Lesson media approval is blocked by required assets: ${mediaValidation.missingRequiredAssets.length} missing preview${mediaValidation.missingRequiredAssets.length === 1 ? "" : "s"}, ${mediaValidation.failedRequiredAssets.length} failed.`}
               </p>
             ) : null}
 
@@ -390,13 +418,31 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                 </form>
               </div>
             </div>
+              </div>
+            </details>
           </AdminCard>
 
-          <AdminCard>
-            <h2 className="text-lg font-black">Lesson media assets</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-              Manage only this lesson’s AI media here. Course cover and course thumbnail still stay on the course page.
-            </p>
+          <AdminCard className="p-0">
+            <details open>
+              <summary className={collapsibleSummaryClasses()}>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-black">Lesson media assets</h2>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                      Manage only this lesson’s AI media here. Course cover and course thumbnail still stay on the course page.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <AdminStatusBadge tone="neutral">{mediaAssets.length} assets</AdminStatusBadge>
+                    {mediaApprovalBlocked ? <AdminStatusBadge tone="danger">blocked</AdminStatusBadge> : null}
+                  </div>
+                </div>
+              </summary>
+
+              <div className={collapsibleBodyClasses()}>
+            <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              Infographics stay as in-page media recommendations. They are not used as page cover art because the cover crop is too tight and will clip them.
+            </div>
             {mediaAssets.length === 0 ? (
               <div className="mt-4">
                 <EmptyAdminState>No lesson media briefs yet.</EmptyAdminState>
@@ -405,6 +451,14 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
               <div className="mt-4 space-y-4">
                 {mediaAssets.map((asset) => {
                   const presentation = parseImagePresentation(asset.metadata);
+                  const isRequired = isRequiredMediaAsset(asset);
+                  const excludeFromGeneration = !isRequired && getMetadataBoolean(asset.metadata, "excludeFromGeneration");
+                  const targetPageId = getMetadataString(asset.metadata, "targetPageId");
+                  const pageMediaTarget = asset.asset_type === "infographic"
+                    ? "page_block"
+                    : getMetadataString(asset.metadata, "targetKind") === "page_block"
+                      ? "page_block"
+                      : "page_cover";
 
                   return (
                   <form action={saveLearningMediaAsset} className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={asset.id}>
@@ -418,14 +472,19 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                         <p className="mt-1 text-sm font-black capitalize">{asset.asset_type}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <AdminStatusBadge tone={isRequiredMediaAsset(asset) ? "warning" : "neutral"}>
-                          {isRequiredMediaAsset(asset) ? "required" : "optional"}
+                        <AdminStatusBadge tone={isRequired ? "warning" : "neutral"}>
+                          {isRequired ? "required" : "optional"}
                         </AdminStatusBadge>
+                        {asset.asset_type === "infographic" ? (
+                          <AdminStatusBadge tone="neutral">in-page media</AdminStatusBadge>
+                        ) : null}
                         <AdminStatusBadge tone={workflowTone(asset.review_status)}>{asset.review_status.replaceAll("_", " ")}</AdminStatusBadge>
                         <AdminStatusBadge tone={asset.generation_status === "failed" ? "danger" : asset.generation_status === "completed" ? "good" : "warning"}>
                           {asset.generation_status.replaceAll("_", " ")}
                         </AdminStatusBadge>
-                        {isStaleMediaAsset(asset) ? <AdminStatusBadge tone="danger">stale</AdminStatusBadge> : null}
+                        {excludeFromGeneration ? (
+                          <AdminStatusBadge tone="neutral">generation off</AdminStatusBadge>
+                        ) : null}
                       </div>
                     </div>
                     <div className="mt-3 grid gap-3 text-xs font-semibold leading-5 text-[var(--ve-muted)] md:grid-cols-2">
@@ -439,7 +498,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                         Error: <span className="font-black text-[var(--foreground)]">{asset.generation_error ?? "None"}</span>
                       </p>
                     </div>
-                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                    <div className={`mt-4 grid gap-3 ${targetPageId ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
                       <label>
                         <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Asset type</span>
                         <select className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.asset_type} name="assetType">
@@ -465,6 +524,21 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                           <option value="rejected">Rejected</option>
                         </select>
                       </label>
+                      {targetPageId ? (
+                        <label>
+                          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Where it appears</span>
+                          <select
+                            className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
+                            defaultValue={pageMediaTarget}
+                            name="pageMediaTarget"
+                          >
+                            {asset.asset_type !== "infographic" ? (
+                              <option value="page_cover">Page preview cover</option>
+                            ) : null}
+                            <option value="page_block">In-page content block</option>
+                          </select>
+                        </label>
+                      ) : null}
                     </div>
                     <label className="mt-3 block">
                       <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Prompt</span>
@@ -474,6 +548,28 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                       <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Script</span>
                       <textarea className="mt-2 min-h-24 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.script ?? ""} name="script" />
                     </label>
+                    {!isRequired ? (
+                      <label className="mt-3 flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-4 py-3">
+                        <input
+                          className="mt-1 h-4 w-4 accent-[var(--ve-green)]"
+                          defaultChecked={excludeFromGeneration}
+                          name="excludeFromGeneration"
+                          type="checkbox"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-black text-[var(--foreground)]">
+                            Do not generate or show this optional media
+                          </span>
+                          <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                            Use this when you do not want this page recommendation to fill again. Saving with this on also clears its current preview slot.
+                          </span>
+                        </span>
+                      </label>
+                    ) : (
+                      <div className="mt-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                        This asset powers a core learner surface, so it stays in the generation workflow.
+                      </div>
+                    )}
                     <MediaAssetPresentationEditor
                       initialAltText={asset.alt_text ?? ""}
                       initialFit={presentation.fit}
@@ -496,6 +592,8 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                 )})}
               </div>
             )}
+              </div>
+            </details>
           </AdminCard>
         </section>
       ) : (

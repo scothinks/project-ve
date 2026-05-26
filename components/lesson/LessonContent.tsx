@@ -42,6 +42,7 @@ export function LessonContent({ blocks }: LessonContentProps) {
         if (block.type === "callout") {
           const toneClasses = calloutToneClasses[block.variant] ?? calloutToneClasses.tip;
           const labelClasses = calloutLabelClasses[block.variant] ?? calloutLabelClasses.tip;
+          const displayLabel = block.label || block.variant.replace("_", " ");
 
           return (
             <section
@@ -49,9 +50,11 @@ export function LessonContent({ blocks }: LessonContentProps) {
               key={block.id}
             >
               <p className={`text-[11px] font-black uppercase tracking-[0.12em] ${labelClasses}`}>
-                {block.variant.replace("_", " ")}
+                {displayLabel}
               </p>
-              <h3 className="mt-2 text-sm font-bold text-[var(--foreground)]">{block.title}</h3>
+              {block.title ? (
+                <h3 className="mt-2 text-sm font-bold text-[var(--foreground)]">{block.title}</h3>
+              ) : null}
               <p className="mt-2 text-xs leading-5 text-[var(--ve-muted-strong)]">{block.body}</p>
             </section>
           );

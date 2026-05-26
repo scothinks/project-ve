@@ -2,13 +2,9 @@
 
 import Link from "next/link";
 import { ArrowLeftIcon, MenuIcon } from "@/components/ui/Icons";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { parseImagePresentation } from "@/lib/image-presentation";
-import {
-  saveLessonBlock,
-  saveLessonPage,
-} from "@/app/admin/courses/actions";
 import { EmptyAdminState, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
 import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
 import type {
@@ -29,6 +25,32 @@ type LessonPageBuilderProps = {
   initialPageId?: string;
 };
 
+type BuilderDraftSnapshot = {
+  selectedPageId: string;
+  pages: AdminLessonPageRow[];
+  blocks: DraftBlock[];
+};
+
+type BuilderSaveResponse = {
+  status: string;
+  notice?: string;
+  pages?: Array<{
+    clientId: string;
+    pageId: string;
+    status: string;
+  }>;
+  blocks?: Array<{
+    clientId: string;
+    blockId: string;
+    pageId: string;
+    sortOrder: number;
+    status: string;
+  }>;
+  savedAt?: string;
+};
+
+type AutosaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+
 const blockToolbarItems = [
   { type: "text", label: "Text" },
   { type: "callout", label: "Callout" },
@@ -37,6 +59,8 @@ const blockToolbarItems = [
   { type: "audio", label: "Audio" },
   { type: "table", label: "Table" },
 ];
+
+const AUTOSAVE_DELAY_MS = 15_000;
 
 function ArrowUpIcon() {
   return (
@@ -147,6 +171,92 @@ function getPreviewCalloutVariant(value: string): CalloutBlock["variant"] {
   return "key_point";
 }
 
+function isDraftId(value: string) {
+  return value.startsWith("draft-");
+}
+
+function createBuilderSnapshotKey(
+  pages: AdminLessonPageRow[],
+  blocks: DraftBlock[],
+) {
+  const normalizedPages = [...pages]
+    .sort((first, second) => first.page_number - second.page_number || first.id.localeCompare(second.id))
+    .map((page) => ({
+      id: page.id,
+      title: page.title,
+      subtitle: page.subtitle ?? "",
+      page_type: page.page_type,
+      page_number: page.page_number,
+      cover_image: page.cover_image ?? {},
+    }));
+  const normalizedBlocks = [...blocks]
+    .sort((first, second) => {
+      if (first.page_id !== second.page_id) return first.page_id.localeCompare(second.page_id);
+      if (first.sort_order !== second.sort_order) return first.sort_order - second.sort_order;
+      return first.id.localeCompare(second.id);
+    })
+    .map((block) => ({
+      id: block.id,
+      page_id: block.page_id,
+      block_type: block.block_type,
+      sort_order: block.sort_order,
+      payload: block.payload ?? {},
+      isDraft: block.isDraft === true,
+    }));
+
+  return JSON.stringify({
+    pages: normalizedPages,
+    blocks: normalizedBlocks,
+  });
+}
+
+function reconcileBuilderStateFromSave(
+  currentPages: AdminLessonPageRow[],
+  currentBlocks: DraftBlock[],
+  currentSelectedPageId: string,
+  response: BuilderSaveResponse,
+) {
+  const pageResults = Array.isArray(response.pages) ? response.pages : [];
+  const blockResults = Array.isArray(response.blocks) ? response.blocks : [];
+  const pageIdMap = new Map(pageResults.map((item) => [item.clientId, item.pageId]));
+  const blockResultMap = new Map(blockResults.map((item) => [item.clientId, item]));
+
+  const nextPages = currentPages.map((page) => {
+    const savedPageId = pageIdMap.get(page.id);
+    return savedPageId ? { ...page, id: savedPageId } : page;
+  });
+
+  const nextBlocks = currentBlocks.map((block) => {
+    const savedBlock = blockResultMap.get(block.id);
+    const resolvedPageId = pageIdMap.get(block.page_id) ?? block.page_id;
+
+    if (savedBlock) {
+      return {
+        ...block,
+        id: savedBlock.blockId,
+        page_id: savedBlock.pageId,
+        sort_order: savedBlock.sortOrder,
+        isDraft: false,
+      };
+    }
+
+    if (resolvedPageId !== block.page_id) {
+      return {
+        ...block,
+        page_id: resolvedPageId,
+      };
+    }
+
+    return block;
+  });
+
+  return {
+    pages: nextPages,
+    blocks: nextBlocks,
+    selectedPageId: pageIdMap.get(currentSelectedPageId) ?? currentSelectedPageId,
+  };
+}
+
 function updateBlockPayload(
   blocks: DraftBlock[],
   blockId: string,
@@ -217,7 +327,8 @@ function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
       id: block.id,
       type: "callout",
       variant: getPreviewCalloutVariant(getPayloadString(payload, "variant")),
-      title: title || "Key point",
+      label: getPayloadString(payload, "label") || undefined,
+      title: title || undefined,
       body: getPayloadString(payload, "body") || "Callout text appears here.",
     };
   }
@@ -276,6 +387,28 @@ function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
   };
 }
 
+function mergeDraftPages(
+  serverPages: AdminLessonPageRow[],
+  draftPages: AdminLessonPageRow[],
+) {
+  const draftById = new Map(draftPages.map((page) => [page.id, page]));
+  return serverPages.map((page) => draftById.get(page.id) ?? page);
+}
+
+function mergeDraftBlocks(
+  serverBlocks: AdminLessonBlockRow[],
+  draftBlocks: DraftBlock[],
+) {
+  const serverById = new Map(serverBlocks.map((block) => [block.id, block]));
+  const mergedServerBlocks = serverBlocks.map((block) => {
+    const draft = draftBlocks.find((item) => item.id === block.id);
+    return draft ? { ...block, payload: draft.payload, sort_order: draft.sort_order, page_id: draft.page_id } : block;
+  });
+
+  const draftOnlyBlocks = draftBlocks.filter((block) => block.isDraft || !serverById.has(block.id));
+  return [...mergedServerBlocks, ...draftOnlyBlocks];
+}
+
 function blockSummary(block: DraftBlock) {
   const payload = block.payload ?? {};
   return String(payload.title ?? payload.heading ?? payload.body ?? payload.src ?? "")
@@ -301,6 +434,10 @@ function ReorderPageButtons({
 
   function reorder(direction: "up" | "down") {
     onReorder(pageId, direction);
+    if (isDraftId(pageId)) {
+      return;
+    }
+
     startTransition(() => {
       void fetch("/api/admin/learning/reorder", {
         method: "POST",
@@ -313,7 +450,17 @@ function ReorderPageButtons({
           pageId,
           direction,
         }),
-      }).then(() => router.refresh());
+      })
+        .then((response) => {
+          if (!response.ok) {
+            window.alert("The page order could not be saved. Refreshing to restore the latest version.");
+            router.refresh();
+          }
+        })
+        .catch(() => {
+          window.alert("The page order could not be saved. Refreshing to restore the latest version.");
+          router.refresh();
+        });
     });
   }
 
@@ -390,7 +537,17 @@ function BlockActionButtons({
           blockId: block.id,
           direction,
         }),
-      }).then(() => router.refresh());
+      })
+        .then((response) => {
+          if (!response.ok) {
+            window.alert("The block order could not be saved. Refreshing to restore the latest version.");
+            router.refresh();
+          }
+        })
+        .catch(() => {
+          window.alert("The block order could not be saved. Refreshing to restore the latest version.");
+          router.refresh();
+        });
     });
   }
 
@@ -430,45 +587,39 @@ function BlockActionButtons({
   );
 }
 
-function AddPageForm({ lessonId, pageNumber }: { lessonId: string; pageNumber: number }) {
-  const title = `Untitled page ${pageNumber}`;
-
+function AddPageButton({ onAddPage }: { onAddPage: () => void }) {
   return (
-    <form action={saveLessonPage}>
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="pageId" type="hidden" value="" />
-      <input name="pageNumber" type="hidden" value={pageNumber} />
-      <input name="title" type="hidden" value={title} />
-      <input name="subtitle" type="hidden" value="" />
-      <input name="pageType" type="hidden" value="concept" />
-      <input name="coverImageUrl" type="hidden" value="" />
-      <input name="coverImageAlt" type="hidden" value="" />
-      <button
-        className="inline-flex w-full items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white transition hover:brightness-95"
-        type="submit"
-      >
-        + Add page
-      </button>
-    </form>
+    <button
+      className="inline-flex w-full items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white transition hover:brightness-95"
+      onClick={onAddPage}
+      type="button"
+    >
+      + Add page
+    </button>
   );
 }
 
 function PageSettingsEditor({
-  lessonId,
   page,
   onChange,
+  onSaveNow,
+  isSaving,
 }: {
-  lessonId: string;
   page: AdminLessonPageRow;
   onChange: (page: AdminLessonPageRow) => void;
+  onSaveNow: () => void;
+  isSaving: boolean;
 }) {
   const coverImage = page.cover_image ?? {};
 
   return (
-    <form action={saveLessonPage} className="space-y-4">
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="pageId" type="hidden" value={page.id} />
-      <input name="pageNumber" type="hidden" value={page.page_number} />
+    <form
+      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSaveNow();
+      }}
+    >
       <div className="grid gap-3 md:grid-cols-[1fr_10rem]">
         <label>
           <span className={labelClasses()}>Page title</span>
@@ -547,41 +698,31 @@ function PageSettingsEditor({
           />
         </label>
       </div>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save page
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+        {isSaving ? "Saving..." : "Save now"}
       </button>
     </form>
   );
 }
 
-function HiddenBlockFields({ lessonId, block }: { lessonId: string; block: DraftBlock }) {
-  return (
-    <>
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="blockId" type="hidden" value={block.isDraft ? "" : block.id} />
-      <input name="pageId" type="hidden" value={block.page_id} />
-      <input name="blockType" type="hidden" value={block.block_type} />
-      <input name="sortOrder" type="hidden" value={block.sort_order} />
-    </>
-  );
-}
-
 function BlockEditor({
-  lessonId,
   block,
   isFirst,
   isLast,
   onPayloadChange,
   onReorder,
   onRemove,
+  onSaveNow,
+  isSaving,
 }: {
-  lessonId: string;
   block: DraftBlock;
   isFirst: boolean;
   isLast: boolean;
   onPayloadChange: (key: string, value: unknown) => void;
   onReorder: (blockId: string, direction: "up" | "down") => void;
   onRemove: (block: DraftBlock) => void;
+  onSaveNow: () => void;
+  isSaving: boolean;
 }) {
   const payload = block.payload ?? {};
   const title = String(payload.title ?? payload.heading ?? "");
@@ -609,9 +750,24 @@ function BlockEditor({
 
   if (block.block_type === "image") {
     return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
+      <form
+        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSaveNow();
+        }}
+      >
         <Header label="Image block" />
+        {typeof payload.aiManagedByAssetId === "string" && payload.aiManagedByAssetId ? (
+          <>
+            <input name="aiManagedByAssetId" type="hidden" value={payload.aiManagedByAssetId} />
+            <input name="aiManagedKind" type="hidden" value={String(payload.aiManagedKind ?? "learning_media_asset")} />
+            <input name="aiGenerated" type="hidden" value={payload.aiGenerated === true ? "true" : "false"} />
+            <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-3 py-2 text-xs font-semibold text-[var(--ve-muted)]">
+              This image block is linked to an AI media brief. Editing the content here keeps that link intact.
+            </div>
+          </>
+        ) : null}
         <label className="block">
           <span className={labelClasses()}>Image URL</span>
           <input
@@ -641,8 +797,8 @@ function BlockEditor({
             />
           </label>
         </div>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save image
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+          {isSaving ? "Saving..." : "Save now"}
         </button>
       </form>
     );
@@ -652,8 +808,13 @@ function BlockEditor({
     const mediaLabel = block.block_type === "video" ? "Video" : "Audio";
 
     return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
+      <form
+        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSaveNow();
+        }}
+      >
         <Header label={`${mediaLabel} block`} />
         <div className="grid gap-3 md:grid-cols-2">
           <label>
@@ -693,8 +854,8 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("caption", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save {mediaLabel.toLowerCase()}
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+          {isSaving ? "Saving..." : "Save now"}
         </button>
       </form>
     );
@@ -706,8 +867,13 @@ function BlockEditor({
       : "";
 
     return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
+      <form
+        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSaveNow();
+        }}
+      >
         <Header label="Table block" />
         <div className="grid gap-3 md:grid-cols-2">
           <label>
@@ -765,8 +931,8 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("caption", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save table
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+          {isSaving ? "Saving..." : "Save now"}
         </button>
       </form>
     );
@@ -774,12 +940,17 @@ function BlockEditor({
 
   if (block.block_type === "callout") {
     return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
+      <form
+        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSaveNow();
+        }}
+      >
         <Header label="Callout block" />
         <div className="grid gap-3 md:grid-cols-[10rem_1fr]">
           <label>
-            <span className={labelClasses()}>Variant</span>
+            <span className={labelClasses()}>Tone</span>
             <select
               className={compactFieldClasses()}
               name="variant"
@@ -793,15 +964,26 @@ function BlockEditor({
             </select>
           </label>
           <label>
-            <span className={labelClasses()}>Title</span>
+            <span className={labelClasses()}>Callout label</span>
             <input
               className={compactFieldClasses()}
-              name="heading"
-              value={title}
-              onChange={(event) => onPayloadChange("title", event.target.value)}
+              name="label"
+              placeholder="Example: Think about this"
+              value={String(payload.label ?? "")}
+              onChange={(event) => onPayloadChange("label", event.target.value)}
             />
           </label>
         </div>
+        <label className="block">
+          <span className={labelClasses()}>Title</span>
+          <input
+            className={compactFieldClasses()}
+            name="heading"
+            placeholder="Optional"
+            value={title}
+            onChange={(event) => onPayloadChange("title", event.target.value)}
+          />
+        </label>
         <label className="block">
           <span className={labelClasses()}>Body</span>
           <textarea
@@ -811,16 +993,21 @@ function BlockEditor({
             onChange={(event) => onPayloadChange("body", event.target.value)}
           />
         </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save callout
+        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+          {isSaving ? "Saving..." : "Save now"}
         </button>
       </form>
     );
   }
 
   return (
-    <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-      <HiddenBlockFields block={block} lessonId={lessonId} />
+    <form
+      className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSaveNow();
+      }}
+    >
       <Header label="Text block" />
       <label className="block">
         <span className={labelClasses()}>Heading</span>
@@ -840,8 +1027,8 @@ function BlockEditor({
           onChange={(event) => onPayloadChange("body", event.target.value)}
         />
       </label>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save text
+      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
+        {isSaving ? "Saving..." : "Save now"}
       </button>
     </form>
   );
@@ -857,6 +1044,108 @@ export function LessonPageBuilder({
   const [pages, setPages] = useState(initialPages);
   const [blocks, setBlocks] = useState<DraftBlock[]>(initialBlocks);
   const [selectedPageId, setSelectedPageId] = useState(initialPageId ?? initialPages[0]?.id ?? "");
+  const [autosaveState, setAutosaveState] = useState<AutosaveState>("idle");
+  const [autosaveMessage, setAutosaveMessage] = useState("Autosaves after you stop editing.");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const storageKey = `lesson-builder-draft:${lesson.id}`;
+  const hasHydratedDraftRef = useRef(false);
+  const pagesRef = useRef(pages);
+  const blocksRef = useRef(blocks);
+  const selectedPageIdRef = useRef(selectedPageId);
+  const saveTimerRef = useRef<number | null>(null);
+  const saveInFlightRef = useRef(false);
+  const queuedSaveRef = useRef(false);
+  const lastSavedSnapshotRef = useRef(createBuilderSnapshotKey(initialPages, initialBlocks));
+  const saveBuilderSnapshotRef = useRef<(force?: boolean) => Promise<void>>(async () => {});
+
+  useEffect(() => {
+    const raw = window.sessionStorage.getItem(storageKey);
+    if (!raw) {
+      hasHydratedDraftRef.current = true;
+      return;
+    }
+
+    try {
+      const snapshot = JSON.parse(raw) as Partial<BuilderDraftSnapshot>;
+      if (Array.isArray(snapshot.pages)) {
+        setPages(mergeDraftPages(initialPages, snapshot.pages));
+      } else {
+        setPages(initialPages);
+      }
+
+      if (Array.isArray(snapshot.blocks)) {
+        setBlocks(mergeDraftBlocks(initialBlocks, snapshot.blocks));
+      } else {
+        setBlocks(initialBlocks);
+      }
+
+      if (typeof snapshot.selectedPageId === "string" && snapshot.selectedPageId) {
+        setSelectedPageId(snapshot.selectedPageId);
+      } else {
+        setSelectedPageId(initialPageId ?? initialPages[0]?.id ?? "");
+      }
+      lastSavedSnapshotRef.current = createBuilderSnapshotKey(initialPages, initialBlocks);
+    } catch {
+      window.sessionStorage.removeItem(storageKey);
+      setPages(initialPages);
+      setBlocks(initialBlocks);
+      setSelectedPageId(initialPageId ?? initialPages[0]?.id ?? "");
+      lastSavedSnapshotRef.current = createBuilderSnapshotKey(initialPages, initialBlocks);
+    } finally {
+      hasHydratedDraftRef.current = true;
+    }
+  }, [initialBlocks, initialPageId, initialPages, storageKey]);
+
+  useEffect(() => {
+    pagesRef.current = pages;
+    blocksRef.current = blocks;
+    selectedPageIdRef.current = selectedPageId;
+  }, [blocks, pages, selectedPageId]);
+
+  useEffect(() => {
+    if (!hasHydratedDraftRef.current) {
+      return;
+    }
+
+    const snapshot: BuilderDraftSnapshot = {
+      selectedPageId,
+      pages,
+      blocks,
+    };
+
+    window.sessionStorage.setItem(storageKey, JSON.stringify(snapshot));
+  }, [blocks, pages, selectedPageId, storageKey]);
+
+  useEffect(() => {
+    if (!hasHydratedDraftRef.current) {
+      return;
+    }
+
+    const snapshotKey = createBuilderSnapshotKey(pages, blocks);
+    if (snapshotKey === lastSavedSnapshotRef.current) {
+      return;
+    }
+
+    setAutosaveState((current) => (current === "saving" ? current : "dirty"));
+    setAutosaveMessage("Unsaved changes. Autosaving soon.");
+
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = window.setTimeout(() => {
+      void saveBuilderSnapshotRef.current();
+    }, AUTOSAVE_DELAY_MS);
+  }, [blocks, pages]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
+
   const sortedPages = useMemo(
     () => [...pages].sort((first, second) => first.page_number - second.page_number),
     [pages],
@@ -881,6 +1170,88 @@ export function LessonPageBuilder({
     toPreviewImageAsset(selectedPage?.cover_image, selectedPage?.title ?? lesson.title) ??
     (selectedPageIndex === 0 ? toPreviewImageAsset(lesson.cover_image, lesson.title) : null);
 
+  const saveBuilderSnapshot = useCallback(async (force = false) => {
+    if (!hasHydratedDraftRef.current) {
+      return;
+    }
+
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+
+    const snapshotKey = createBuilderSnapshotKey(pagesRef.current, blocksRef.current);
+    if (!force && snapshotKey === lastSavedSnapshotRef.current) {
+      if (autosaveState !== "saved") {
+        setAutosaveState("saved");
+        setAutosaveMessage(lastSavedAt ? "All changes saved." : "Nothing new to save.");
+      }
+      return;
+    }
+
+    if (saveInFlightRef.current) {
+      queuedSaveRef.current = true;
+      return;
+    }
+
+    saveInFlightRef.current = true;
+    setAutosaveState("saving");
+    setAutosaveMessage("Saving changes...");
+
+    try {
+      const response = await fetch("/api/admin/learning/builder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          pages: pagesRef.current,
+          blocks: blocksRef.current,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as BuilderSaveResponse & {
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "The lesson content could not be saved.");
+      }
+
+      const reconciled = reconcileBuilderStateFromSave(
+        pagesRef.current,
+        blocksRef.current,
+        selectedPageIdRef.current,
+        payload,
+      );
+
+      pagesRef.current = reconciled.pages;
+      blocksRef.current = reconciled.blocks;
+      selectedPageIdRef.current = reconciled.selectedPageId;
+      setPages(reconciled.pages);
+      setBlocks(reconciled.blocks);
+      setSelectedPageId(reconciled.selectedPageId);
+
+      lastSavedSnapshotRef.current = createBuilderSnapshotKey(reconciled.pages, reconciled.blocks);
+      setAutosaveState("saved");
+      setAutosaveMessage(payload.notice || "All changes saved.");
+      setLastSavedAt(payload.savedAt ?? new Date().toISOString());
+    } catch (error: unknown) {
+      setAutosaveState("error");
+      setAutosaveMessage(
+        error instanceof Error ? error.message : "The lesson content could not be saved.",
+      );
+    } finally {
+      saveInFlightRef.current = false;
+      if (queuedSaveRef.current) {
+        queuedSaveRef.current = false;
+        void saveBuilderSnapshot();
+      }
+    }
+  }, [autosaveState, lastSavedAt, lesson.id]);
+
+  saveBuilderSnapshotRef.current = saveBuilderSnapshot;
+
   function addDraftBlock(blockType: string) {
     if (!selectedPage) return;
 
@@ -893,13 +1264,36 @@ export function LessonPageBuilder({
         sort_order: nextBlockSortOrder,
         payload:
           blockType === "callout"
-            ? { variant: "key_point", title: "", body: "" }
+            ? { variant: "key_point", label: "", title: "", body: "" }
             : blockType === "table"
               ? { title: "", columns: [], rows: [] }
               : {},
         isDraft: true,
       },
     ]);
+  }
+
+  function addDraftPage() {
+    const nextPageNumber =
+      sortedPages.reduce((highest, page) => Math.max(highest, page.page_number), 0) + 1;
+    const draftId = `draft-page-${Date.now()}`;
+    const timestamp = new Date().toISOString();
+
+    setPages((current) => [
+      ...current,
+      {
+        id: draftId,
+        lesson_id: lesson.id,
+        page_number: nextPageNumber,
+        title: `Untitled page ${nextPageNumber}`,
+        subtitle: null,
+        page_type: "concept",
+        cover_image: {},
+        created_at: timestamp,
+        updated_at: timestamp,
+      },
+    ]);
+    setSelectedPageId(draftId);
   }
 
   function updateBlock(blockId: string, key: string, value: unknown) {
@@ -940,13 +1334,12 @@ export function LessonPageBuilder({
     })
       .then((response) => {
         if (!response.ok) {
-          window.alert("The block could not be removed. Refreshing the page to restore the latest version.");
+          window.alert("The block could not be removed. Refresh the page to restore the latest version.");
+          router.refresh();
         }
-
-        router.refresh();
       })
       .catch(() => {
-        window.alert("The block could not be removed. Refreshing the page to restore the latest version.");
+        window.alert("The block could not be removed. Refresh the page to restore the latest version.");
         router.refresh();
       });
   }
@@ -1009,7 +1402,7 @@ export function LessonPageBuilder({
           <p className="mb-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
             Adds a blank page at the end. Edit details in Page settings.
           </p>
-          <AddPageForm lessonId={lesson.id} pageNumber={sortedPages.length + 1} />
+          <AddPageButton onAddPage={addDraftPage} />
         </div>
       </div>
 
@@ -1027,14 +1420,46 @@ export function LessonPageBuilder({
                     {selectedPage.subtitle}
                   </p>
                 ) : null}
+                <p className="mt-2 text-xs font-bold text-[var(--ve-muted)]">
+                  {autosaveState === "saving" && "Saving changes..."}
+                  {autosaveState === "dirty" && `Autosaving in ${Math.round(AUTOSAVE_DELAY_MS / 1000)}s.`}
+                  {autosaveState === "saved" &&
+                    (lastSavedAt
+                      ? `Saved at ${new Date(lastSavedAt).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}.`
+                      : "All changes saved.")}
+                  {autosaveState === "error" && autosaveMessage}
+                  {autosaveState === "idle" && "Autosaves after you stop editing."}
+                </p>
               </div>
-              <AdminStatusBadge>{selectedPageBlocks.length} blocks</AdminStatusBadge>
+              <div className="flex items-center gap-2">
+                <AdminStatusBadge>{selectedPageBlocks.length} blocks</AdminStatusBadge>
+                <button
+                  className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-black transition hover:border-[var(--ve-green)] hover:text-[var(--ve-green)] disabled:opacity-60"
+                  disabled={autosaveState === "saving"}
+                  onClick={() => {
+                    void saveBuilderSnapshot(true);
+                  }}
+                  type="button"
+                >
+                  {autosaveState === "saving" ? "Saving..." : "Save now"}
+                </button>
+              </div>
             </div>
 
             <details className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
               <summary className="cursor-pointer text-sm font-black">Page settings</summary>
               <div className="mt-4">
-                <PageSettingsEditor lessonId={lesson.id} onChange={updatePage} page={selectedPage} />
+                <PageSettingsEditor
+                  onChange={updatePage}
+                  onSaveNow={() => {
+                    void saveBuilderSnapshot(true);
+                  }}
+                  page={selectedPage}
+                  isSaving={autosaveState === "saving"}
+                />
               </div>
             </details>
 
@@ -1067,10 +1492,13 @@ export function LessonPageBuilder({
                     isFirst={index === 0}
                     isLast={index === selectedPageBlocks.length - 1}
                     key={block.id}
-                    lessonId={lesson.id}
                     onRemove={removeBlock}
                     onPayloadChange={(key, value) => updateBlock(block.id, key, value)}
                     onReorder={reorderBlock}
+                    onSaveNow={() => {
+                      void saveBuilderSnapshot(true);
+                    }}
+                    isSaving={autosaveState === "saving"}
                   />
                 ))
               )}

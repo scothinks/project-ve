@@ -65,17 +65,36 @@ function parseBlockPayload(formData: FormData) {
   if (blockType === "callout") {
     return {
       variant: sanitizePlainTextInput(String(formData.get("variant") ?? "key_point"), 40),
+      label: sanitizePlainTextInput(String(formData.get("label") ?? ""), 80),
       title: sanitizePlainTextInput(String(formData.get("heading") ?? ""), 180),
       body: sanitizePlainTextInput(String(formData.get("body") ?? ""), 2000),
     };
   }
 
   if (blockType === "image") {
-    return {
+    const payload: Record<string, unknown> = {
       src: sanitizeUrlInput(String(formData.get("src") ?? ""), 1000),
       alt: sanitizePlainTextInput(String(formData.get("alt") ?? ""), 240),
       caption: sanitizePlainTextInput(String(formData.get("caption") ?? ""), 500),
     };
+
+    const aiManagedByAssetId = sanitizePlainTextInput(String(formData.get("aiManagedByAssetId") ?? ""), 120);
+    const aiManagedKind = sanitizePlainTextInput(String(formData.get("aiManagedKind") ?? ""), 80);
+    const aiGenerated = String(formData.get("aiGenerated") ?? "").trim().toLowerCase();
+
+    if (aiManagedByAssetId) {
+      payload.aiManagedByAssetId = aiManagedByAssetId;
+    }
+
+    if (aiManagedKind) {
+      payload.aiManagedKind = aiManagedKind;
+    }
+
+    if (aiGenerated === "true" || aiGenerated === "1" || aiGenerated === "yes" || aiGenerated === "on") {
+      payload.aiGenerated = true;
+    }
+
+    return payload;
   }
 
   if (blockType === "video" || blockType === "audio") {
@@ -449,14 +468,45 @@ export async function saveLessonPage(formData: FormData) {
 export async function saveLessonBlock(formData: FormData) {
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const blockId = sanitizePlainTextInput(String(formData.get("blockId") ?? ""), 120);
+  const pageId = sanitizePlainTextInput(String(formData.get("pageId") ?? ""), 120);
   const { supabase } = await requireAdmin();
+  let resolvedSortOrder = parseInteger(formData.get("sortOrder"));
+
+  if (blockId) {
+    const { data: existingBlock, error: existingBlockError } = await supabase
+      .from("lesson_content_blocks")
+      .select("sort_order")
+      .eq("id", blockId)
+      .maybeSingle<{ sort_order: number }>();
+
+    if (existingBlockError) throw existingBlockError;
+    if (existingBlock) {
+      resolvedSortOrder = existingBlock.sort_order;
+    }
+  } else if (pageId) {
+    const { data: lastBlock, error: lastBlockError } = await supabase
+      .from("lesson_content_blocks")
+      .select("sort_order")
+      .eq("page_id", pageId)
+      .order("sort_order", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ sort_order: number }>();
+
+    if (lastBlockError) throw lastBlockError;
+    resolvedSortOrder = (lastBlock?.sort_order ?? 0) + 1;
+  }
+
   const { error } = await supabase.rpc("admin_upsert_lesson_block", {
     p_block_id: blockId || null,
-    p_page_id: sanitizePlainTextInput(String(formData.get("pageId") ?? ""), 120),
+    p_page_id: pageId,
     p_block_type: String(formData.get("blockType") ?? "text"),
-    p_sort_order: parseInteger(formData.get("sortOrder")),
+    p_sort_order: resolvedSortOrder,
     p_payload: parseBlockPayload(formData),
   });
+
+  if (error?.code === "23505") {
+    throw new Error("This block could not be saved because the page order changed. Refresh and try again.");
+  }
 
   if (error) throw error;
 

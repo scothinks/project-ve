@@ -23,9 +23,9 @@ import {
 } from "@/lib/ai-media-generator";
 import { normalizeImageFit, normalizeImagePosition } from "@/lib/image-presentation";
 import {
+  isGenerationExcludedMediaAsset,
   isImageMediaAsset,
   isRequiredMediaAsset,
-  isStaleMediaAsset,
   validateMediaApproval,
   type MediaApprovalValidation,
 } from "@/lib/ai-media-workflow";
@@ -82,6 +82,7 @@ type WorkflowQuizRow = {
 };
 
 type WorkflowLessonBlockRow = {
+  id?: string;
   page_id: string;
   block_type: string;
   sort_order: number;
@@ -121,6 +122,7 @@ type WorkflowMediaAssetRow = {
 type MediaTarget =
   | { kind: "course_thumbnail" | "course_cover" | "asset_only"; key: string; pageId?: undefined }
   | { kind: "lesson_thumbnail"; key: string; pageId?: undefined }
+  | { kind: "page_block"; key: string; pageId: string }
   | { kind: "page_cover"; key: string; pageId: string };
 
 function asRecord(value: unknown) {
@@ -538,7 +540,6 @@ function deriveCourseMediaStatus(
     requiredCourseAssets.length > 0
     && courseAssetValidation.missingRequiredAssets.length === 0
     && courseAssetValidation.failedRequiredAssets.length === 0
-    && courseAssetValidation.staleRequiredAssets.length === 0
     && requiredCourseAssets.every((asset) => asset.review_status === "approved");
 
   if (lessonStatuses.every((status) => status === "approved") && courseRequiredAssetsApproved) {
@@ -976,7 +977,9 @@ function createPageVisualSeedRows(
         lessonId: lesson.id,
         lessonTitle: lesson.title,
         required: false,
-        targetKind: "page_cover",
+        targetKind: "page_block",
+        preferredPlacement: "page_block",
+        mediaNote: "Infographics are intended for in-page teaching use, not page cover art.",
         targetPageId: infographicPage.id,
       },
       review_status: "draft",
@@ -1254,7 +1257,24 @@ function resolveMediaTarget(
     return { kind: "lesson_thumbnail", key: `lesson-thumbnail:${asset.lesson_id ?? "lesson"}` };
   }
 
+  if (
+    metadataTargetKind === "asset_only"
+    && asset.asset_type === "infographic"
+    && metadataTargetPageId
+    && getMetadataString(metadata, "preferredPlacement") === "page_block"
+  ) {
+    return { kind: "page_block", key: `page-block:${metadataTargetPageId}:${asset.id}`, pageId: metadataTargetPageId };
+  }
+
   if (metadataTargetKind === "asset_only") {
+    return { kind: "asset_only", key: `asset-only:${asset.id}` };
+  }
+
+  if (metadataTargetKind === "page_block" && metadataTargetPageId) {
+    return { kind: "page_block", key: `page-block:${metadataTargetPageId}:${asset.id}`, pageId: metadataTargetPageId };
+  }
+
+  if (asset.asset_type === "infographic") {
     return { kind: "asset_only", key: `asset-only:${asset.id}` };
   }
 
@@ -1360,6 +1380,144 @@ async function applyAssetTarget(
     if (error) {
       throw error;
     }
+
+    return;
+  }
+
+  if (target.kind === "page_block") {
+    const { data: blocks, error: blocksError } = await supabase
+      .from("lesson_content_blocks")
+      .select("id, page_id, block_type, sort_order, payload")
+      .eq("page_id", target.pageId)
+      .order("sort_order", { ascending: true })
+      .returns<WorkflowLessonBlockRow[]>();
+
+    if (blocksError) {
+      throw blocksError;
+    }
+
+    const matchingBlock = (blocks ?? []).find((block) =>
+      block.block_type === "image" && asRecord(block.payload).aiManagedByAssetId === asset.id,
+    );
+
+    const nextPayload = {
+      ...asRecord(matchingBlock?.payload),
+      src: asset.url,
+      alt: asset.alt_text || asset.caption || asset.placement,
+      caption: asset.caption || "",
+      aiManagedByAssetId: asset.id,
+      aiManagedKind: "learning_media_asset",
+      aiGenerated: true,
+    };
+
+    if (matchingBlock?.id) {
+      const { error } = await supabase
+        .from("lesson_content_blocks")
+        .update({
+          payload: nextPayload,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchingBlock.id);
+
+      if (error) {
+        throw error;
+      }
+
+      return;
+    }
+
+    const nextSortOrder = (blocks ?? []).reduce((max, block) => Math.max(max, block.sort_order), 0) + 1;
+    const { error } = await supabase
+      .from("lesson_content_blocks")
+      .insert({
+        page_id: target.pageId,
+        block_type: "image",
+        sort_order: nextSortOrder,
+        payload: nextPayload,
+      });
+
+    if (error) {
+      throw error;
+    }
+  }
+}
+
+async function clearAssetTarget(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  asset: WorkflowMediaAssetRow,
+  target: MediaTarget,
+) {
+  if (target.kind === "asset_only" || target.kind === "course_cover") {
+    return;
+  }
+
+  if (target.kind === "course_thumbnail" && asset.course_id) {
+    const { error } = await supabase
+      .from("courses")
+      .update({ thumbnail: {} })
+      .eq("id", asset.course_id);
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
+  if (target.kind === "lesson_thumbnail" && asset.lesson_id) {
+    const { error } = await supabase
+      .from("lessons")
+      .update({ cover_image: {} })
+      .eq("id", asset.lesson_id);
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
+  if (target.kind === "page_cover") {
+    const { error } = await supabase
+      .from("lesson_pages")
+      .update({ cover_image: {} })
+      .eq("id", target.pageId);
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
+  if (target.kind === "page_block") {
+    const { data: blocks, error: blocksError } = await supabase
+      .from("lesson_content_blocks")
+      .select("id, payload")
+      .eq("page_id", target.pageId)
+      .eq("block_type", "image")
+      .returns<Array<{ id: string; payload: Record<string, unknown> }>>();
+
+    if (blocksError) {
+      throw blocksError;
+    }
+
+    const matchingBlockIds = (blocks ?? [])
+      .filter((block) => asRecord(block.payload).aiManagedByAssetId === asset.id)
+      .map((block) => block.id);
+
+    if (matchingBlockIds.length === 0) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("lesson_content_blocks")
+      .delete()
+      .in("id", matchingBlockIds);
+
+    if (error) {
+      throw error;
+    }
   }
 }
 
@@ -1374,8 +1532,7 @@ function assetHasUsablePreview(asset: WorkflowMediaAssetRow) {
 function assetEligibleForApproval(asset: WorkflowMediaAssetRow) {
   return assetHasUsablePreview(asset)
     && asset.generation_status !== "failed"
-    && asset.generation_status !== "skipped"
-    && !isStaleMediaAsset(asset);
+    && asset.generation_status !== "skipped";
 }
 
 function getApprovedReviewStatus(asset: WorkflowMediaAssetRow) {
@@ -1605,8 +1762,15 @@ function buildGeneratedLessonTreeRows({
           lessonTitle: lesson.title,
           targetKind:
             mediaBrief.assetType === "thumbnail" ? "lesson_thumbnail"
-              : mediaBrief.assetType === "image" || mediaBrief.assetType === "infographic" ? "page_cover"
+              : mediaBrief.assetType === "image" ? "page_cover"
+                : mediaBrief.assetType === "infographic" ? "page_block"
                 : undefined,
+          preferredPlacement:
+            mediaBrief.assetType === "infographic" ? "page_block" : undefined,
+          mediaNote:
+            mediaBrief.assetType === "infographic"
+              ? "Infographics are intended for in-page teaching use, not page cover art."
+              : undefined,
           targetPageId,
         },
         review_status: "draft",
@@ -2477,6 +2641,11 @@ export async function generateCourseMediaAssets(formData: FormData) {
     let skippedCount = 0;
 
     for (const asset of imageAssets) {
+      if (isGenerationExcludedMediaAsset(asset)) {
+        skippedCount += 1;
+        continue;
+      }
+
       const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
       if (!target) {
         skippedCount += 1;
@@ -2506,7 +2675,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
       }
 
       const lesson = asset.lesson_id ? lessons.find((row) => row.id === asset.lesson_id) ?? null : null;
-      const page = target.kind === "page_cover"
+      const page = target.kind === "page_cover" || target.kind === "page_block"
         ? pages.find((row) => row.id === target.pageId) ?? null
         : null;
 
@@ -2545,7 +2714,6 @@ export async function generateCourseMediaAssets(formData: FormData) {
             ...asRecord(asset.metadata),
             generatedAt: result.generatedAt,
             revisedPrompt: result.revisedPrompt,
-            stale: false,
             targetKind: target.kind,
             targetPageId: target.kind === "page_cover" ? target.pageId : null,
           },
@@ -2699,10 +2867,9 @@ export async function approveCourseMedia(formData: FormData) {
     ||
     validation.missingRequiredAssets.length > 0
     || validation.failedRequiredAssets.length > 0
-    || validation.staleRequiredAssets.length > 0
   ) {
     throw new Error(
-      "Required media assets are still missing, stale, failed, or not seeded yet. Regenerate media and confirm the required previews before approval.",
+      "Required media assets are still missing, failed, or not seeded yet. Regenerate media and confirm the required previews before approval.",
     );
   }
 
@@ -2878,6 +3045,11 @@ export async function generateLessonMediaAssets(formData: FormData) {
     let skippedCount = 0;
 
     for (const asset of imageAssets) {
+      if (isGenerationExcludedMediaAsset(asset)) {
+        skippedCount += 1;
+        continue;
+      }
+
       const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
       if (!target) {
         skippedCount += 1;
@@ -2906,7 +3078,7 @@ export async function generateLessonMediaAssets(formData: FormData) {
         usedPageIds.add(target.pageId);
       }
 
-      const page = target.kind === "page_cover"
+      const page = target.kind === "page_cover" || target.kind === "page_block"
         ? lessonPages.find((row) => row.id === target.pageId) ?? null
         : null;
 
@@ -2945,7 +3117,6 @@ export async function generateLessonMediaAssets(formData: FormData) {
             ...asRecord(asset.metadata),
             generatedAt: result.generatedAt,
             revisedPrompt: result.revisedPrompt,
-            stale: false,
             targetKind: target.kind,
             targetPageId: target.kind === "page_cover" ? target.pageId : null,
           },
@@ -3089,10 +3260,9 @@ export async function approveLessonMedia(formData: FormData) {
     !hasRequiredImageAssets
     || validation.missingRequiredAssets.length > 0
     || validation.failedRequiredAssets.length > 0
-    || validation.staleRequiredAssets.length > 0
   ) {
     throw new Error(
-      "Required lesson media assets are still missing, stale, failed, or not seeded yet. Generate lesson media and confirm the required previews before approval.",
+      "Required lesson media assets are still missing, failed, or not seeded yet. Generate lesson media and confirm the required previews before approval.",
     );
   }
 
@@ -3241,9 +3411,6 @@ export async function normalizeCourseLegacyMediaAssets(formData: FormData) {
       normalizedFromAssetType: asset.asset_type,
       normalizedAt: new Date().toISOString(),
       normalizedBy: profile.id,
-      stale: false,
-      staleAt: null,
-      staleReason: null,
       previousUrl: asset.url,
     };
 
@@ -3356,32 +3523,51 @@ export async function saveLearningMediaAsset(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  const nextAssetType = sanitizePlainTextInput(String(formData.get("assetType") ?? "image"), 40);
+  const requestedPageMediaTarget = sanitizePlainTextInput(String(formData.get("pageMediaTarget") ?? ""), 40);
   const nextUrl = sanitizeUrlInput(String(formData.get("url") ?? ""), 1000) || null;
   const presentation = parseImagePresentationInput(formData);
+  const excludeFromGeneration = parseBooleanFlag(formData.get("excludeFromGeneration"));
   const { data: existingAsset, error: assetError } = await supabase
     .from("learning_media_assets")
-    .select("url, metadata")
+    .select("url, metadata, asset_type, placement, lesson_id, course_id")
     .eq("id", assetId)
-    .maybeSingle<{ url: string | null; metadata: Record<string, unknown> }>();
+    .maybeSingle<Pick<WorkflowMediaAssetRow, "url" | "metadata" | "asset_type" | "placement" | "lesson_id" | "course_id">>();
 
   if (assetError) throw assetError;
 
+  const existingMetadata = asRecord(existingAsset?.metadata);
+  const targetPageId = getMetadataString(existingMetadata, "targetPageId");
+  const nextTargetKind =
+    nextAssetType === "infographic" && targetPageId
+      ? "page_block"
+      : requestedPageMediaTarget === "page_block" && targetPageId
+        ? "page_block"
+        : requestedPageMediaTarget === "page_cover" && targetPageId
+          ? "page_cover"
+          : getMetadataString(existingMetadata, "targetKind");
+
   const nextMetadata = {
-    ...asRecord(existingAsset?.metadata),
-    stale: false,
-    staleAt: null,
-    staleReason: null,
+    ...existingMetadata,
     previousUrl: existingAsset?.url ?? null,
     manuallyEditedAt: new Date().toISOString(),
+    excludeFromGeneration,
     fit: presentation.fit,
     positionX: presentation.positionX,
     positionY: presentation.positionY,
+    ...(nextTargetKind ? { targetKind: nextTargetKind } : {}),
+    ...(nextAssetType === "infographic" || nextTargetKind === "page_block"
+      ? { preferredPlacement: "page_block" }
+      : {}),
+    ...(nextAssetType === "infographic"
+      ? { mediaNote: "Infographics are intended for in-page teaching use, not page cover art." }
+      : {}),
   };
 
   const { error } = await supabase
     .from("learning_media_assets")
     .update({
-      asset_type: sanitizePlainTextInput(String(formData.get("assetType") ?? "image"), 40),
+      asset_type: nextAssetType,
       placement: sanitizePlainTextInput(String(formData.get("placement") ?? ""), 180),
       prompt: sanitizePlainTextInput(String(formData.get("prompt") ?? ""), 2000),
       script: sanitizePlainTextInput(String(formData.get("script") ?? ""), 4000),
@@ -3407,7 +3593,7 @@ export async function saveLearningMediaAsset(formData: FormData) {
 
   if (updatedAssetError) throw updatedAssetError;
 
-  if (updatedAsset?.url) {
+  if (updatedAsset) {
     const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>();
     for (const page of pages) {
       const current = pagesByLessonId.get(page.lesson_id) ?? [];
@@ -3415,9 +3601,67 @@ export async function saveLearningMediaAsset(formData: FormData) {
       pagesByLessonId.set(page.lesson_id, current);
     }
 
+    const previousTarget = existingAsset
+      ? resolveMediaTarget(
+          {
+            id: assetId,
+            course_id: existingAsset.course_id,
+            lesson_id: existingAsset.lesson_id,
+            asset_type: existingAsset.asset_type,
+            placement: existingAsset.placement,
+            source: "ai_generated",
+            prompt: null,
+            script: null,
+            url: existingAsset.url,
+            storage_path: null,
+            provider: null,
+            model: null,
+            alt_text: null,
+            caption: null,
+            metadata: existingAsset.metadata ?? {},
+            review_status: "draft",
+            generation_status: "pending",
+            generation_error: null,
+            sort_order: 0,
+          },
+          pagesByLessonId,
+          new Set<string>(),
+        )
+      : null;
     const target = resolveMediaTarget(updatedAsset, pagesByLessonId, new Set<string>());
+    if (previousTarget && existingAsset && (!target || previousTarget.key !== target.key)) {
+      await clearAssetTarget(
+        supabase,
+        {
+          id: assetId,
+          course_id: existingAsset.course_id,
+          lesson_id: existingAsset.lesson_id,
+          asset_type: existingAsset.asset_type,
+          placement: existingAsset.placement,
+          source: "ai_generated",
+          prompt: null,
+          script: null,
+          url: existingAsset.url,
+          storage_path: null,
+          provider: null,
+          model: null,
+          alt_text: null,
+          caption: null,
+          metadata: existingAsset.metadata ?? {},
+          review_status: "draft",
+          generation_status: "pending",
+          generation_error: null,
+          sort_order: 0,
+        },
+        previousTarget,
+      );
+    }
     if (target) {
-      await applyAssetTarget(supabase, updatedAsset, target);
+      if (excludeFromGeneration || !updatedAsset.url) {
+        await clearAssetTarget(supabase, updatedAsset, target);
+      } else {
+        await applyAssetTarget(supabase, updatedAsset, target);
+      }
     }
   }
 

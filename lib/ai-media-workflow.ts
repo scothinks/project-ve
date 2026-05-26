@@ -12,8 +12,7 @@ type MediaApprovalAsset = {
 
 export type MediaApprovalOptionalReason =
   | "missing_preview"
-  | "failed_generation"
-  | "stale_asset";
+  | "failed_generation";
 
 export type MediaApprovalOptionalWarning<T extends MediaApprovalAsset = MediaApprovalAsset> = {
   asset: T;
@@ -23,7 +22,6 @@ export type MediaApprovalOptionalWarning<T extends MediaApprovalAsset = MediaApp
 export type MediaApprovalValidation<T extends MediaApprovalAsset = MediaApprovalAsset> = {
   missingRequiredAssets: T[];
   failedRequiredAssets: T[];
-  staleRequiredAssets: T[];
   optionalWarnings: Array<MediaApprovalOptionalWarning<T>>;
 };
 
@@ -46,10 +44,6 @@ function getMetadataString(metadata: Record<string, unknown>, key: string) {
 
 export function isImageMediaAsset(asset: Pick<MediaApprovalAsset, "asset_type">) {
   return IMAGE_ASSET_TYPES.has(asset.asset_type);
-}
-
-export function isStaleMediaAsset(asset: Pick<MediaApprovalAsset, "metadata">) {
-  return getMetadataBoolean(asRecord(asset.metadata), "stale");
 }
 
 export function getMediaAssetTargetKind(
@@ -91,6 +85,10 @@ export function isRequiredMediaAsset(asset: MediaApprovalAsset) {
   return getMetadataBoolean(asRecord(asset.metadata), "required");
 }
 
+export function isGenerationExcludedMediaAsset(asset: Pick<MediaApprovalAsset, "metadata">) {
+  return getMetadataBoolean(asRecord(asset.metadata), "excludeFromGeneration");
+}
+
 function hasUsableUrl(asset: Pick<MediaApprovalAsset, "url">) {
   return typeof asset.url === "string" && asset.url.trim().length > 0;
 }
@@ -101,6 +99,10 @@ export function validateMediaApproval<T extends MediaApprovalAsset>(assets: T[])
   const optionalAssets = imageAssets.filter((asset) => !isRequiredMediaAsset(asset));
 
   const optionalWarnings = optionalAssets.flatMap((asset) => {
+    if (isGenerationExcludedMediaAsset(asset)) {
+      return [];
+    }
+
     const reasons: MediaApprovalOptionalReason[] = [];
 
     if (!hasUsableUrl(asset) && asset.review_status !== "rejected" && asset.generation_status !== "skipped") {
@@ -111,17 +113,12 @@ export function validateMediaApproval<T extends MediaApprovalAsset>(assets: T[])
       reasons.push("failed_generation");
     }
 
-    if (isStaleMediaAsset(asset)) {
-      reasons.push("stale_asset");
-    }
-
     return reasons.length > 0 ? [{ asset, reasons }] : [];
   });
 
   return {
     missingRequiredAssets: requiredAssets.filter((asset) => !hasUsableUrl(asset)),
     failedRequiredAssets: requiredAssets.filter((asset) => asset.generation_status === "failed"),
-    staleRequiredAssets: requiredAssets.filter(isStaleMediaAsset),
     optionalWarnings,
   };
 }
