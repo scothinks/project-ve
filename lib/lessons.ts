@@ -122,7 +122,8 @@ export type CalloutBlock = {
   id: string;
   type: "callout";
   variant: "tip" | "warning" | "key_point" | "example";
-  title: string;
+  label?: string;
+  title?: string;
   body: string;
 };
 

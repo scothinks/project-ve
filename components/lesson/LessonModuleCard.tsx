@@ -15,7 +15,7 @@ export function LessonModuleCard({ lesson, completed = false }: LessonModuleCard
   return (
     <Link href={`/lessons/${lesson.id}`} className="block">
       <Card className="overflow-hidden" variant="lesson">
-        <div className="h-24 bg-[#dff2e9]">
+        <div className="h-32 bg-[#dff2e9]">
           <img
             alt={lesson.coverImage.alt}
             className={`h-full w-full ${getImageFitClass(lesson.coverImage)}`}

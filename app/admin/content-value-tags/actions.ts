@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
@@ -162,6 +162,7 @@ export async function saveContentValueTag(formData: FormData) {
     revalidateContentPaths(contentType, contentId);
     redirectWithNotice(redirectTo, "Value tag saved.");
   } catch (error) {
+    unstable_rethrow(error);
     redirectWithNotice(
       redirectTo,
       error instanceof Error ? error.message : "Could not save value tag.",
@@ -197,6 +198,7 @@ export async function updateContentValueTag(formData: FormData) {
     revalidateContentPaths(contentType, contentId);
     redirectWithNotice(redirectTo, "Value tag updated.");
   } catch (error) {
+    unstable_rethrow(error);
     redirectWithNotice(
       redirectTo,
       error instanceof Error ? error.message : "Could not update value tag.",
@@ -228,6 +230,7 @@ export async function deleteContentValueTag(formData: FormData) {
     revalidateContentPaths(contentType, contentId);
     redirectWithNotice(redirectTo, "Value tag removed.");
   } catch (error) {
+    unstable_rethrow(error);
     redirectWithNotice(
       redirectTo,
       error instanceof Error ? error.message : "Could not remove value tag.",
