@@ -19,15 +19,20 @@ import {
 import { LessonPageBuilder } from "@/components/admin/LessonPageBuilder";
 import {
   approveLessonMedia,
+  approveLessonManualMedia,
+  approveLearningMediaAsset,
   approveLessonText,
+  generateLearningMediaAsset,
   generateLessonMediaAssets,
   requestLessonMediaChanges,
   requestLessonTextChanges,
   saveLearningMediaAsset,
+  useLibraryMediaAsset,
 } from "@/app/admin/courses/lesson-page-actions";
 import { getAiMediaConfig } from "@/lib/ai-media-generator";
 import { parseImagePresentation } from "@/lib/image-presentation";
 import {
+  isImageMediaAsset,
   isRequiredMediaAsset,
   validateMediaApproval,
 } from "@/lib/ai-media-workflow";
@@ -160,9 +165,14 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
     courseId: lesson.course_id,
     lessonId: lesson.id,
   });
+  const mediaLibraryAssets = (await getAdminLearningMediaAssets(supabase, {
+    courseId: lesson.course_id,
+  })).filter((asset) => typeof asset.url === "string" && asset.url.trim().length > 0 && isImageMediaAsset(asset));
   const totalXp = questions.reduce((total, question) => total + question.xp, 0);
   const mediaValidation = validateMediaApproval(mediaAssets);
   const hasRequiredImageAssets = mediaAssets.some(isRequiredMediaAsset);
+  const hasManualLessonMedia =
+    typeof lesson.cover_image?.src === "string" && lesson.cover_image.src.trim().length > 0;
   const storedTextFeedback = latestTextFeedback(lesson.ai_generation_notes ?? {});
   const storedMediaFeedback = latestMediaFeedback(lesson.ai_generation_notes ?? {});
   const mediaApprovalBlocked =
@@ -296,6 +306,18 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                       type="submit"
                     />
                   </form>
+                  {hasManualLessonMedia ? (
+                    <form action={approveLessonManualMedia}>
+                      <input name="lessonId" type="hidden" value={lesson.id} />
+                      <input name="redirectTo" type="hidden" value={`/admin/courses/lessons/${lesson.id}`} />
+                      <PendingSubmitButton
+                        className={workflowButtonClasses("neutral")}
+                        label="Use Own Media"
+                        pendingLabel="Approving Own Media..."
+                        type="submit"
+                      />
+                    </form>
+                  ) : null}
                   {!mediaConfig.canGenerate ? (
                     <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-danger)]">
                       Media generation is unavailable until these server settings are added: {mediaConfig.missingRequirements.join(", ")}.
@@ -459,6 +481,9 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                     : getMetadataString(asset.metadata, "targetKind") === "page_block"
                       ? "page_block"
                       : "page_cover";
+                  const availableLibraryAssets = mediaLibraryAssets.filter((libraryAsset) => libraryAsset.id !== asset.id);
+                  const canGenerateAsset = mediaConfig.canGenerate && !excludeFromGeneration;
+                  const canApproveAsset = typeof asset.url === "string" && asset.url.trim().length > 0 && asset.generation_status !== "failed";
 
                   return (
                   <form action={saveLearningMediaAsset} className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={asset.id}>
@@ -582,12 +607,68 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
                       <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Caption</span>
                       <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.caption ?? ""} name="caption" />
                     </label>
-                    <PendingSubmitButton
-                      className="mt-4 rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black"
-                      label="Save lesson media asset"
-                      pendingLabel="Saving Media Asset..."
-                      type="submit"
-                    />
+                    <div className="mt-4 grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                      <label>
+                        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Use from library</span>
+                        <select
+                          className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
+                          defaultValue=""
+                          disabled={availableLibraryAssets.length === 0}
+                          name="libraryAssetId"
+                        >
+                          <option value="">{availableLibraryAssets.length === 0 ? "No saved media yet" : "Choose saved media"}</option>
+                          {availableLibraryAssets.map((libraryAsset) => (
+                            <option key={libraryAsset.id} value={libraryAsset.id}>
+                              {libraryAsset.lesson?.title ? `${libraryAsset.lesson.title} · ` : ""}{libraryAsset.placement}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <PendingSubmitButton
+                        className="rounded-[12px] bg-[var(--ve-card)] px-4 py-2 text-sm font-black disabled:opacity-50"
+                        disabled={availableLibraryAssets.length === 0}
+                        formAction={useLibraryMediaAsset}
+                        label="Use from library"
+                        name="actionIntent"
+                        pendingLabel="Applying..."
+                        pendingValue="useLibrary"
+                        type="submit"
+                        value="useLibrary"
+                      />
+                      <PendingSubmitButton
+                        className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                        disabled={!canGenerateAsset}
+                        formAction={generateLearningMediaAsset}
+                        label="Generate Media"
+                        name="actionIntent"
+                        pendingLabel="Generating..."
+                        pendingValue="generate"
+                        type="submit"
+                        value="generate"
+                      />
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <PendingSubmitButton
+                        className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black"
+                        label="Save lesson media asset"
+                        name="actionIntent"
+                        pendingLabel="Saving Media Asset..."
+                        pendingValue="save"
+                        type="submit"
+                        value="save"
+                      />
+                      <PendingSubmitButton
+                        className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                        disabled={!canApproveAsset}
+                        formAction={approveLearningMediaAsset}
+                        label="Approve Media"
+                        name="actionIntent"
+                        pendingLabel="Approving..."
+                        pendingValue="approve"
+                        type="submit"
+                        value="approve"
+                      />
+                    </div>
                   </form>
                 )})}
               </div>

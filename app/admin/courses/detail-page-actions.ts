@@ -2,7 +2,10 @@
 
 import {
   approveCourseMedia as approveCourseMediaBase,
+  approveCourseManualMedia as approveCourseManualMediaBase,
+  approveLearningMediaAsset as approveLearningMediaAssetBase,
   approveCourseText as approveCourseTextBase,
+  generateLearningMediaAsset as generateLearningMediaAssetBase,
   generateCourseMediaAssets as generateCourseMediaAssetsBase,
   normalizeCourseLegacyMediaAssets as normalizeCourseLegacyMediaAssetsBase,
   publishApprovedCourse as publishApprovedCourseBase,
@@ -10,6 +13,7 @@ import {
   requestCourseMediaChanges as requestCourseMediaChangesBase,
   requestCourseTextChanges as requestCourseTextChangesBase,
   saveLearningMediaAsset as saveLearningMediaAssetBase,
+  useLibraryMediaAsset as applyLibraryMediaAssetBase,
 } from "@/app/admin/courses/ai-actions";
 import {
   generateCourseExpansionPlan as generateCourseExpansionPlanBase,
@@ -39,6 +43,22 @@ export async function normalizeCourseLegacyMediaAssets(formData: FormData) {
 
 export async function approveCourseMedia(formData: FormData) {
   return approveCourseMediaBase(formData);
+}
+
+export async function approveCourseManualMedia(formData: FormData) {
+  return approveCourseManualMediaBase(formData);
+}
+
+export async function generateLearningMediaAsset(formData: FormData) {
+  return generateLearningMediaAssetBase(formData);
+}
+
+export async function approveLearningMediaAsset(formData: FormData) {
+  return approveLearningMediaAssetBase(formData);
+}
+
+export async function useLibraryMediaAsset(formData: FormData) {
+  return applyLibraryMediaAssetBase(formData);
 }
 
 export async function requestCourseMediaChanges(formData: FormData) {

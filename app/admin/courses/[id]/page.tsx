@@ -15,14 +15,18 @@ import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import { saveLesson, setLessonStatus } from "@/app/admin/courses/actions";
 import {
   approveCourseMedia,
+  approveCourseManualMedia,
+  approveLearningMediaAsset,
   approveCourseText,
   generateCourseMediaAssets,
+  generateLearningMediaAsset,
   normalizeCourseLegacyMediaAssets,
   publishApprovedCourse,
   reviseCourseTextWithAi,
   requestCourseMediaChanges,
   requestCourseTextChanges,
   saveLearningMediaAsset,
+  useLibraryMediaAsset,
   generateCourseExpansionPlan,
   generateLessonFromExpansionSuggestion,
   generatePlannedLessonsFromSelectedPlan,
@@ -317,6 +321,13 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const mediaConfig = getAiMediaConfig();
   const mediaValidation = validateMediaApproval(mediaAssets);
   const hasRequiredImageAssets = mediaAssets.some(isRequiredMediaAsset);
+  const mediaLibraryAssets = mediaAssets.filter(
+    (asset) => typeof asset.url === "string"
+      && asset.url.trim().length > 0
+      && isImageMediaAsset(asset),
+  );
+  const hasManualCourseMedia =
+    typeof course.thumbnail?.src === "string" && course.thumbnail.src.trim().length > 0;
   const optionalWarningCounts = mediaValidation.optionalWarnings.reduce(
     (counts, warning) => {
       for (const reason of warning.reasons) {
@@ -498,6 +509,13 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                           type="submit"
                         />
                       </form>
+                      {hasManualCourseMedia ? (
+                        <form action={approveCourseManualMedia}>
+                          <input name="courseId" type="hidden" value={course.id} />
+                          <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
+                          <button className={workflowButtonClasses("neutral")} type="submit">Use Own Media</button>
+                        </form>
+                      ) : null}
                       <p className="basis-full text-xs font-semibold leading-5 text-[var(--ve-muted)]">
                         Generates supported visual assets from approved lesson text and media prompts. AI briefs now stay limited to images and infographics.
                       </p>
@@ -809,6 +827,9 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   : getMetadataString(asset.metadata, "targetKind") === "page_block"
                     ? "page_block"
                     : "page_cover";
+                const availableLibraryAssets = mediaLibraryAssets.filter((libraryAsset) => libraryAsset.id !== asset.id);
+                const canGenerateAsset = mediaConfig.canGenerate && !excludeFromGeneration;
+                const canApproveAsset = typeof asset.url === "string" && asset.url.trim().length > 0 && asset.generation_status !== "failed";
 
                 return (
                 <form action={saveLearningMediaAsset} className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={asset.id}>
@@ -928,9 +949,68 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Caption</span>
                     <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.caption ?? ""} name="caption" />
                   </label>
-                  <button className="mt-4 rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black" type="submit">
-                    Save media asset
-                  </button>
+                  <div className="mt-4 grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Use from library</span>
+                      <select
+                        className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
+                        defaultValue=""
+                        disabled={availableLibraryAssets.length === 0}
+                        name="libraryAssetId"
+                      >
+                        <option value="">{availableLibraryAssets.length === 0 ? "No saved media yet" : "Choose saved media"}</option>
+                        {availableLibraryAssets.map((libraryAsset) => (
+                          <option key={libraryAsset.id} value={libraryAsset.id}>
+                            {libraryAsset.lesson?.title ? `${libraryAsset.lesson.title} · ` : ""}{libraryAsset.placement}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-card)] px-4 py-2 text-sm font-black disabled:opacity-50"
+                      disabled={availableLibraryAssets.length === 0}
+                      formAction={useLibraryMediaAsset}
+                      label="Use from library"
+                      name="actionIntent"
+                      pendingLabel="Applying..."
+                      pendingValue="useLibrary"
+                      type="submit"
+                      value="useLibrary"
+                    />
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                      disabled={!canGenerateAsset}
+                      formAction={generateLearningMediaAsset}
+                      label="Generate Media"
+                      name="actionIntent"
+                      pendingLabel="Generating..."
+                      pendingValue="generate"
+                      type="submit"
+                      value="generate"
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black"
+                      label="Save media asset"
+                      name="actionIntent"
+                      pendingLabel="Saving Media Asset..."
+                      pendingValue="save"
+                      type="submit"
+                      value="save"
+                    />
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                      disabled={!canApproveAsset}
+                      formAction={approveLearningMediaAsset}
+                      label="Approve Media"
+                      name="actionIntent"
+                      pendingLabel="Approving..."
+                      pendingValue="approve"
+                      type="submit"
+                      value="approve"
+                    />
+                  </div>
                 </form>
               )})}
                 </div>
@@ -1114,6 +1194,8 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                 targetKind === "course_cover"
                   ? "Use this for the wider shell artwork. Keep the key subject away from the edges."
                   : "This is the learner card image. Position it for the card crop first.";
+              const availableLibraryAssets = mediaLibraryAssets.filter((libraryAsset) => libraryAsset.id !== asset.id);
+              const canApproveAsset = typeof asset.url === "string" && asset.url.trim().length > 0 && asset.generation_status !== "failed";
 
               return (
                 <form action={saveLearningMediaAsset} className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={asset.id}>
@@ -1165,8 +1247,62 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   <PendingSubmitButton
                     className="mt-4 rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black"
                     label={`Save ${title}`}
+                    name="actionIntent"
                     pendingLabel="Saving Image..."
+                    pendingValue="save"
                     type="submit"
+                    value="save"
+                  />
+                  <div className="mt-4 grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                    <label>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Use from library</span>
+                      <select
+                        className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
+                        defaultValue=""
+                        disabled={availableLibraryAssets.length === 0}
+                        name="libraryAssetId"
+                      >
+                        <option value="">{availableLibraryAssets.length === 0 ? "No saved media yet" : "Choose saved media"}</option>
+                        {availableLibraryAssets.map((libraryAsset) => (
+                          <option key={libraryAsset.id} value={libraryAsset.id}>
+                            {libraryAsset.lesson?.title ? `${libraryAsset.lesson.title} · ` : ""}{libraryAsset.placement}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-card)] px-4 py-2 text-sm font-black disabled:opacity-50"
+                      disabled={availableLibraryAssets.length === 0}
+                      formAction={useLibraryMediaAsset}
+                      label="Use from library"
+                      name="actionIntent"
+                      pendingLabel="Applying..."
+                      pendingValue="useLibrary"
+                      type="submit"
+                      value="useLibrary"
+                    />
+                    <PendingSubmitButton
+                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                      disabled={!mediaConfig.canGenerate}
+                      formAction={generateLearningMediaAsset}
+                      label="Generate Media"
+                      name="actionIntent"
+                      pendingLabel="Generating..."
+                      pendingValue="generate"
+                      type="submit"
+                      value="generate"
+                    />
+                  </div>
+                  <PendingSubmitButton
+                    className="mt-3 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                    disabled={!canApproveAsset}
+                    formAction={approveLearningMediaAsset}
+                    label="Approve Media"
+                    name="actionIntent"
+                    pendingLabel="Approving..."
+                    pendingValue="approve"
+                    type="submit"
+                    value="approve"
                   />
                 </form>
               );
