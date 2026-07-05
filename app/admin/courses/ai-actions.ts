@@ -38,6 +38,7 @@ type WorkflowCourseRow = {
   description: string;
   category: string;
   level: AiGeneratorLevel;
+  thumbnail?: Record<string, unknown> | null;
   status: string;
   ai_generated: boolean;
   ai_text_status: string;
@@ -55,12 +56,15 @@ type WorkflowLessonRow = {
   course_id: string;
   title: string;
   description: string | null;
+  cover_image?: Record<string, unknown> | null;
   sort_order: number;
   ai_generated: boolean;
   ai_text_status: string;
   ai_media_status: string;
   ai_publish_status: string;
   ai_generation_notes: Record<string, unknown>;
+  media_approved_at?: string | null;
+  media_approved_by?: string | null;
 };
 
 type WorkflowLessonPageRow = {
@@ -337,7 +341,7 @@ async function getCourseWorkflowData(
 ) {
   const { data: course, error: courseError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by")
+    .select("id, slug, title, description, category, level, thumbnail, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by")
     .eq("id", courseId)
     .maybeSingle<WorkflowCourseRow>();
 
@@ -348,7 +352,7 @@ async function getCourseWorkflowData(
 
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
-    .select("id, course_id, title, description, sort_order, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes")
+    .select("id, course_id, title, description, cover_image, sort_order, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, media_approved_at, media_approved_by")
     .eq("course_id", courseId)
     .order("sort_order", { ascending: true })
     .returns<WorkflowLessonRow[]>();
@@ -671,6 +675,11 @@ function parseImagePresentationInput(formData: FormData) {
     positionX: normalizeImagePosition(Number.parseInt(String(formData.get("imagePositionX") ?? "50"), 10), 50),
     positionY: normalizeImagePosition(Number.parseInt(String(formData.get("imagePositionY") ?? "50"), 10), 50),
   };
+}
+
+function getImagePayloadString(image: Record<string, unknown> | null | undefined, key: string) {
+  const value = image?.[key];
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function parseRequiredChangeRequest(formData: FormData, fieldName: string) {
@@ -2921,6 +2930,99 @@ export async function approveCourseMedia(formData: FormData) {
   redirect(appendAdminNotice(redirectTo, "Media approved. Publishing is now unlocked."));
 }
 
+export async function approveCourseManualMedia(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
+  ensureAiCourse(course);
+
+  if (course.ai_text_status !== "approved") {
+    throw new Error("Approve course text before approving manual media.");
+  }
+
+  const manualUrl = getImagePayloadString(course.thumbnail as Record<string, unknown> | null, "src");
+  if (!manualUrl) {
+    throw new Error("Add a course thumbnail before approving manual media.");
+  }
+
+  const now = new Date().toISOString();
+  const lessonIds = lessons.map((lesson) => lesson.id);
+  const assets = await getCourseMediaAssets(supabase, courseId);
+  const courseAssets = assets.filter((asset) => asset.lesson_id === null);
+  let requiredAsset = courseAssets.find((asset) => isRequiredMediaAsset(asset));
+
+  if (!requiredAsset) {
+    const { data: insertedAsset, error: insertError } = await supabase
+      .from("learning_media_assets")
+      .insert({
+        course_id: course.id,
+        lesson_id: null,
+        asset_type: "thumbnail",
+        placement: "course_thumbnail",
+        source: "manual",
+        prompt: "Editor-provided course media.",
+        script: "",
+        url: manualUrl,
+        storage_path: null,
+        provider: "manual",
+        model: "manual",
+        alt_text: getImagePayloadString(course.thumbnail as Record<string, unknown> | null, "alt") || `${course.title} course thumbnail`,
+        caption: course.title,
+        metadata: {
+          required: true,
+          targetKind: "course_thumbnail",
+          manuallyApprovedAt: now,
+          manuallyApprovedBy: profile.id,
+        },
+        review_status: "approved",
+        generation_status: "skipped",
+        generation_error: null,
+        sort_order: courseAssets.reduce((max, asset) => Math.max(max, asset.sort_order), -1) + 1,
+      })
+      .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+      .single<WorkflowMediaAssetRow>();
+
+    if (insertError) throw insertError;
+    requiredAsset = insertedAsset;
+  } else {
+    const { error: updateAssetError } = await supabase
+      .from("learning_media_assets")
+      .update({
+        source: "manual",
+        url: manualUrl,
+        provider: "manual",
+        model: "manual",
+        alt_text: getImagePayloadString(course.thumbnail as Record<string, unknown> | null, "alt") || requiredAsset.alt_text || `${course.title} course thumbnail`,
+        caption: requiredAsset.caption || course.title,
+        review_status: "approved",
+        generation_status: "skipped",
+        generation_error: null,
+        metadata: {
+          ...asRecord(requiredAsset.metadata),
+          required: true,
+          targetKind: getMetadataString(asRecord(requiredAsset.metadata), "targetKind") || "course_thumbnail",
+          manuallyApprovedAt: now,
+          manuallyApprovedBy: profile.id,
+        },
+      })
+      .eq("id", requiredAsset.id);
+
+    if (updateAssetError) throw updateAssetError;
+  }
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, courseId, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_course_manual_media_approved", "course", courseId, {
+    approvedAt: now,
+    assetId: requiredAsset.id,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(courseId, lessonIds);
+  redirect(appendAdminNotice(redirectTo, "Manual course media approved."));
+}
+
 export async function requestCourseMediaChanges(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
@@ -3303,6 +3405,430 @@ export async function approveLessonMedia(formData: FormData) {
 
   revalidateLearningPaths(course.id, lessons.map((item) => item.id));
   redirect(appendAdminNotice(redirectTo, "Lesson media approved."));
+}
+
+export async function approveLessonManualMedia(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, lessons } = workflow;
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+
+  if (lesson.ai_text_status !== "approved") {
+    throw new Error("Approve this lesson's text before approving manual media.");
+  }
+
+  const manualUrl = getImagePayloadString(lesson.cover_image as Record<string, unknown> | null, "src");
+  if (!manualUrl) {
+    throw new Error("Add a lesson thumbnail or cover image before approving manual media.");
+  }
+
+  const existingAssets = (await getCourseMediaAssets(supabase, course.id))
+    .filter((asset) => asset.lesson_id === lessonId);
+  let requiredAsset = existingAssets.find((asset) => isRequiredMediaAsset(asset));
+  const now = new Date().toISOString();
+
+  if (!requiredAsset) {
+    const { data: insertedAsset, error: insertError } = await supabase
+      .from("learning_media_assets")
+      .insert({
+        course_id: course.id,
+        lesson_id: lesson.id,
+        asset_type: "thumbnail",
+        placement: "lesson_thumbnail",
+        source: "manual",
+        prompt: "Editor-provided lesson media.",
+        script: "",
+        url: manualUrl,
+        storage_path: null,
+        provider: "manual",
+        model: "manual",
+        alt_text: getImagePayloadString(lesson.cover_image as Record<string, unknown> | null, "alt") || `${lesson.title} lesson image`,
+        caption: lesson.title,
+        metadata: {
+          required: true,
+          targetKind: "lesson_thumbnail",
+          manuallyApprovedAt: now,
+          manuallyApprovedBy: profile.id,
+        },
+        review_status: "approved",
+        generation_status: "skipped",
+        generation_error: null,
+        sort_order: existingAssets.reduce((max, asset) => Math.max(max, asset.sort_order), -1) + 1,
+      })
+      .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+      .single<WorkflowMediaAssetRow>();
+
+    if (insertError) throw insertError;
+    requiredAsset = insertedAsset;
+  } else {
+    const { error: updateAssetError } = await supabase
+      .from("learning_media_assets")
+      .update({
+        source: "manual",
+        url: manualUrl,
+        provider: "manual",
+        model: "manual",
+        alt_text: getImagePayloadString(lesson.cover_image as Record<string, unknown> | null, "alt") || requiredAsset.alt_text || `${lesson.title} lesson image`,
+        caption: requiredAsset.caption || lesson.title,
+        review_status: "approved",
+        generation_status: "skipped",
+        generation_error: null,
+        metadata: {
+          ...asRecord(requiredAsset.metadata),
+          required: true,
+          targetKind: getMetadataString(asRecord(requiredAsset.metadata), "targetKind") || "lesson_thumbnail",
+          manuallyApprovedAt: now,
+          manuallyApprovedBy: profile.id,
+        },
+      })
+      .eq("id", requiredAsset.id);
+
+    if (updateAssetError) throw updateAssetError;
+  }
+
+  const { error: lessonError } = await supabase
+    .from("lessons")
+    .update({
+      ai_media_status: "approved",
+      ai_publish_status: "ready",
+      media_approved_at: now,
+      media_approved_by: profile.id,
+    })
+    .eq("id", lessonId);
+
+  if (lessonError) throw lessonError;
+
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "ai_lesson_manual_media_approved", "lesson", lessonId, {
+    courseId: course.id,
+    approvedAt: now,
+    assetId: requiredAsset.id,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessons.map((item) => item.id));
+  redirect(appendAdminNotice(redirectTo, "Manual lesson media approved."));
+}
+
+async function getLearningMediaAssetById(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  assetId: string,
+) {
+  const { data, error } = await supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+    .eq("id", assetId)
+    .maybeSingle<WorkflowMediaAssetRow>();
+
+  if (error) throw error;
+  if (!data) {
+    throw new Error("Media asset not found.");
+  }
+
+  return data;
+}
+
+function buildPagesByLessonId(pages: WorkflowLessonPageRow[]) {
+  const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>();
+  for (const page of pages) {
+    const current = pagesByLessonId.get(page.lesson_id) ?? [];
+    current.push(page);
+    pagesByLessonId.set(page.lesson_id, current);
+  }
+
+  return pagesByLessonId;
+}
+
+async function resetMediaApprovalAfterAssetChange(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+  lessonId: string | null,
+) {
+  if (lessonId) {
+    const { error } = await supabase.rpc("admin_reset_ai_course_media", {
+      p_course_id: courseId,
+      p_lesson_id: lessonId,
+      p_media_status: "draft",
+    });
+
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase
+    .from("courses")
+    .update({
+      ai_media_status: "draft",
+      ai_publish_status: "not_ready",
+      media_approved_at: null,
+      media_approved_by: null,
+    })
+    .eq("id", courseId)
+    .eq("ai_generated", true);
+
+  if (error) throw error;
+}
+
+async function approveMediaScopeIfReady(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  courseId: string,
+  lessonId: string | null,
+  actorUserId: string,
+) {
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const assets = await getCourseMediaAssets(supabase, courseId);
+
+  if (lessonId) {
+    const lesson = workflow.lessons.find((item) => item.id === lessonId);
+    if (!lesson) {
+      throw new Error("Lesson not found.");
+    }
+
+    const lessonAssets = assets.filter((asset) => asset.lesson_id === lessonId);
+    const requiredLessonAssets = lessonAssets.filter(isRequiredMediaAsset);
+    const validation = validateMediaApproval(lessonAssets);
+    const lessonReady =
+      lesson.ai_text_status === "approved"
+      && requiredLessonAssets.length > 0
+      && validation.missingRequiredAssets.length === 0
+      && validation.failedRequiredAssets.length === 0
+      && requiredLessonAssets.every((asset) => asset.review_status === "approved");
+
+    if (lessonReady) {
+      const approvedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from("lessons")
+        .update({
+          ai_media_status: "approved",
+          ai_publish_status: "ready",
+          media_approved_at: lesson.media_approved_at ?? approvedAt,
+          media_approved_by: lesson.media_approved_by ?? actorUserId,
+        })
+        .eq("id", lessonId);
+
+      if (error) throw error;
+    }
+  }
+
+  return recomputeCourseAiStatuses(supabase, courseId, actorUserId);
+}
+
+export async function generateLearningMediaAsset(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const assetId = sanitizePlainTextInput(String(formData.get("assetId") ?? ""), 120);
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120) || null;
+  const redirectTo = getRedirectTarget(formData, lessonId ? `/admin/courses/lessons/${lessonId}` : `/admin/courses/${courseId}`);
+  const mediaConfig = getAiMediaConfig();
+
+  if (!mediaConfig.canGenerate) {
+    redirect(
+      appendAdminNotice(
+        redirectTo,
+        `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+      ),
+    );
+  }
+
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const { course, lessons, pages } = workflow;
+  ensureAiCourse(course);
+
+  const asset = await getLearningMediaAssetById(supabase, assetId);
+  if (asset.course_id !== courseId) {
+    throw new Error("This media asset does not belong to this course.");
+  }
+
+  if (!isImageMediaAsset(asset)) {
+    throw new Error("This media slot is not an image-based media type yet.");
+  }
+
+  if (isGenerationExcludedMediaAsset(asset)) {
+    throw new Error("This optional media slot is excluded from generation.");
+  }
+
+  const lesson = asset.lesson_id
+    ? lessons.find((item) => item.id === asset.lesson_id) ?? null
+    : null;
+
+  if (asset.lesson_id) {
+    if (!lesson) {
+      throw new Error("Media asset lesson not found.");
+    }
+    ensureAiLesson(lesson);
+    if (lesson.ai_text_status !== "approved") {
+      throw new Error("Approve this lesson's text before generating this media.");
+    }
+  } else if (course.ai_text_status !== "approved") {
+    throw new Error("Approve the course text before generating this media.");
+  }
+
+  const target = resolveMediaTarget(asset, buildPagesByLessonId(pages), new Set<string>());
+  if (!target) {
+    throw new Error("This media slot does not have a supported target.");
+  }
+
+  const page = target.kind === "page_cover" || target.kind === "page_block"
+    ? pages.find((row) => row.id === target.pageId) ?? null
+    : null;
+
+  const result = await generateLearningMediaImage({
+    asset: asset as LearningMediaAssetForGeneration,
+    context: {
+      courseId: course.id,
+      courseTitle: course.title,
+      courseDescription: course.description,
+      courseCategory: course.category,
+      lessonId: lesson?.id ?? null,
+      lessonTitle: lesson?.title ?? null,
+      lessonDescription: lesson?.description ?? null,
+      pageId: page?.id ?? null,
+      pageTitle: page?.title ?? null,
+      pageSubtitle: page?.subtitle ?? null,
+      placementLabel: asset.placement,
+      revisionFeedback: null,
+      targetKind: target.kind,
+    } satisfies LearningMediaGenerationContext,
+    replaceExisting: true,
+  });
+
+  const updatedAsset = await getLearningMediaAssetById(supabase, assetId);
+  await applyAssetTarget(supabase, updatedAsset, target);
+  await resetMediaApprovalAfterAssetChange(supabase, courseId, asset.lesson_id);
+  await recomputeCourseAiStatuses(supabase, courseId, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "learning_media_asset_generated", "media_asset", assetId, {
+    courseId,
+    lessonId: asset.lesson_id,
+    targetKind: target.kind,
+    status: result.status,
+    replacedExisting: result.replacedExisting,
+  });
+
+  revalidateLearningPaths(courseId, asset.lesson_id ? [asset.lesson_id] : []);
+  redirect(appendAdminNotice(redirectTo, result.status === "generated" ? "Media generated." : "Existing media reused."));
+}
+
+export async function approveLearningMediaAsset(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const assetId = sanitizePlainTextInput(String(formData.get("assetId") ?? ""), 120);
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120) || null;
+  const redirectTo = getRedirectTarget(formData, lessonId ? `/admin/courses/lessons/${lessonId}` : `/admin/courses/${courseId}`);
+  const asset = await getLearningMediaAssetById(supabase, assetId);
+
+  if (asset.course_id !== courseId) {
+    throw new Error("This media asset does not belong to this course.");
+  }
+
+  if (!assetHasUsablePreview(asset) || asset.generation_status === "failed") {
+    throw new Error("Add or generate a media preview before approval.");
+  }
+
+  const { error } = await supabase
+    .from("learning_media_assets")
+    .update({ review_status: "approved", generation_error: null })
+    .eq("id", assetId);
+
+  if (error) throw error;
+
+  const updatedAsset = await getLearningMediaAssetById(supabase, assetId);
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const target = resolveMediaTarget(updatedAsset, buildPagesByLessonId(workflow.pages), new Set<string>());
+  if (target) {
+    await applyAssetTarget(supabase, updatedAsset, target);
+  }
+
+  const aggregate = await approveMediaScopeIfReady(supabase, courseId, asset.lesson_id, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "learning_media_asset_approved", "media_asset", assetId, {
+    courseId,
+    lessonId: asset.lesson_id,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(courseId, asset.lesson_id ? [asset.lesson_id] : []);
+  redirect(appendAdminNotice(redirectTo, "Media approved."));
+}
+
+export async function useLibraryMediaAsset(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const assetId = sanitizePlainTextInput(String(formData.get("assetId") ?? ""), 120);
+  const libraryAssetId = sanitizePlainTextInput(String(formData.get("libraryAssetId") ?? ""), 120);
+  const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120) || null;
+  const redirectTo = getRedirectTarget(formData, lessonId ? `/admin/courses/lessons/${lessonId}` : `/admin/courses/${courseId}`);
+
+  if (!libraryAssetId) {
+    throw new Error("Choose a library media asset first.");
+  }
+
+  const [targetAsset, libraryAsset] = await Promise.all([
+    getLearningMediaAssetById(supabase, assetId),
+    getLearningMediaAssetById(supabase, libraryAssetId),
+  ]);
+
+  if (targetAsset.course_id !== courseId || libraryAsset.course_id !== courseId) {
+    throw new Error("Library media must belong to this course.");
+  }
+
+  if (!assetHasUsablePreview(libraryAsset)) {
+    throw new Error("The selected library media does not have a usable preview.");
+  }
+
+  if (!isImageMediaAsset(libraryAsset)) {
+    throw new Error("Only image media can be reused from the library.");
+  }
+
+  const metadata = asRecord(targetAsset.metadata);
+  const { error } = await supabase
+    .from("learning_media_assets")
+    .update({
+      url: libraryAsset.url,
+      storage_path: libraryAsset.storage_path,
+      source: "library",
+      provider: libraryAsset.provider,
+      model: libraryAsset.model,
+      alt_text: libraryAsset.alt_text || targetAsset.alt_text,
+      caption: libraryAsset.caption || targetAsset.caption,
+      review_status: "draft",
+      generation_status: "completed",
+      generation_error: null,
+      metadata: {
+        ...metadata,
+        previousUrl: targetAsset.url,
+        librarySourceAssetId: libraryAsset.id,
+        librarySourcePlacement: libraryAsset.placement,
+        librarySelectedAt: new Date().toISOString(),
+        librarySelectedBy: profile.id,
+      },
+    })
+    .eq("id", assetId);
+
+  if (error) throw error;
+
+  const updatedAsset = await getLearningMediaAssetById(supabase, assetId);
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const target = resolveMediaTarget(updatedAsset, buildPagesByLessonId(workflow.pages), new Set<string>());
+  if (target) {
+    await applyAssetTarget(supabase, updatedAsset, target);
+  }
+
+  await resetMediaApprovalAfterAssetChange(supabase, courseId, targetAsset.lesson_id);
+  await recomputeCourseAiStatuses(supabase, courseId, profile.id);
+
+  await insertAuditEvent(supabase, profile.id, "learning_media_asset_library_selected", "media_asset", assetId, {
+    courseId,
+    lessonId: targetAsset.lesson_id,
+    libraryAssetId,
+  });
+
+  revalidateLearningPaths(courseId, targetAsset.lesson_id ? [targetAsset.lesson_id] : []);
+  redirect(appendAdminNotice(redirectTo, "Library media applied."));
 }
 
 export async function requestLessonMediaChanges(formData: FormData) {

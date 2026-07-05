@@ -1,12 +1,18 @@
-import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppInstallPrompt } from "@/components/pwa/AppInstallPrompt";
 import { PwaBootstrap } from "@/components/pwa/PwaBootstrap";
 import { PushEnablePrompt } from "@/components/pwa/PushEnablePrompt";
 
-const geist = Geist({
-  subsets: ["latin"],
+const geist = localFont({
+  src: [
+    { path: "./fonts/geist/Geist-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/geist/Geist-Medium.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/geist/Geist-Bold.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/geist/Geist-Black.ttf", weight: "900", style: "normal" },
+  ],
+  display: "swap",
   variable: "--font-geist",
 });
 
