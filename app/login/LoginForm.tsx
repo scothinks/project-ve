@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import {
   normalizeEmailInput,
@@ -24,7 +23,7 @@ type LoginFormProps = {
   onViewChange?: (view: AuthView) => void;
 };
 
-type PendingAction = "submit" | "google" | "forgot" | "resend";
+type PendingAction = "submit" | "google" | "forgot" | "resend" | "redirect";
 
 declare global {
   interface Window {
@@ -44,7 +43,6 @@ declare global {
 }
 
 export function LoginForm({ onViewChange }: LoginFormProps) {
-  const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
@@ -64,8 +62,12 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
   const [turnstileWidgetId, setTurnstileWidgetId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const isLoading = pendingAction !== null;
+  const isRedirecting = pendingAction === "redirect";
+  const showSubmitSpinner = pendingAction === "submit" || isRedirecting;
 
-  const submitLabel = isPasswordRecovery
+  const submitLabel = isRedirecting
+    ? "Opening dashboard..."
+    : isPasswordRecovery
     ? pendingAction === "submit"
       ? "Saving password..."
       : "Save New Password"
@@ -76,6 +78,13 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       : authMode === "signup"
         ? "Create Account"
         : "Login";
+
+  function openDashboard() {
+    setPendingAction("redirect");
+    window.setTimeout(() => {
+      window.location.replace("/dashboard");
+    }, 0);
+  }
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get("ref");
@@ -247,7 +256,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
           return;
         }
       }
-      router.push("/dashboard");
+      openDashboard();
       return;
     }
 
@@ -319,7 +328,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
           setPendingAction(null);
           return;
         }
-        router.push("/dashboard");
+        openDashboard();
         return;
       }
 
@@ -340,7 +349,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       return;
     }
 
-    router.push("/dashboard");
+    openDashboard();
   }
 
   async function handleGoogleLogin() {
@@ -353,7 +362,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       setPendingAction("google");
       setMessage(null);
       setSuccessMessage(null);
-      router.push("/dashboard");
+      openDashboard();
       return;
     }
 
@@ -704,6 +713,19 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         </p>
       ) : null}
 
+      {isRedirecting ? (
+        <p
+          className="flex items-center justify-center rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs font-black text-[var(--ve-green)]"
+          role="status"
+        >
+          <span
+            aria-hidden="true"
+            className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+          Opening dashboard...
+        </p>
+      ) : null}
+
       {!isSupabaseConfigured ? (
         <p className="rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
           Supabase env vars are not set, so login continues in demo mode.
@@ -711,7 +733,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       ) : null}
 
       <Button className="mt-6 w-full" disabled={isLoading} type="submit" variant="soft">
-        {pendingAction === "submit" ? (
+        {showSubmitSpinner ? (
           <span
             aria-hidden="true"
             className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
