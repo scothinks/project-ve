@@ -24,6 +24,8 @@ type LoginFormProps = {
   onViewChange?: (view: AuthView) => void;
 };
 
+type PendingAction = "submit" | "google" | "forgot" | "resend";
+
 declare global {
   interface Window {
     turnstile?: {
@@ -60,7 +62,20 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
   const [canResendConfirmation, setCanResendConfirmation] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [turnstileWidgetId, setTurnstileWidgetId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const isLoading = pendingAction !== null;
+
+  const submitLabel = isPasswordRecovery
+    ? pendingAction === "submit"
+      ? "Saving password..."
+      : "Save New Password"
+    : pendingAction === "submit"
+      ? authMode === "signup"
+        ? "Creating account..."
+        : "Logging in..."
+      : authMode === "signup"
+        ? "Create Account"
+        : "Login";
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get("ref");
@@ -221,10 +236,13 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      setPendingAction("submit");
+      setMessage(null);
       if (authMode === "signup") {
         try {
           await applyReferralIfNeeded();
         } catch (error) {
+          setPendingAction(null);
           setMessage(error instanceof Error ? error.message : "Could not apply referral.");
           return;
         }
@@ -238,7 +256,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       return;
     }
 
-    setIsLoading(true);
+    setPendingAction("submit");
     setMessage(null);
 
     const safeEmail = normalizeEmailInput(email);
@@ -246,19 +264,19 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
 
     if (authMode === "signup") {
       if (safeFullName.length < 2) {
-        setIsLoading(false);
+        setPendingAction(null);
         setMessage("Enter your name.");
         return;
       }
 
       if (!acceptedTerms) {
-        setIsLoading(false);
+        setPendingAction(null);
         setMessage("Accept the Terms before creating an account.");
         return;
       }
 
       if (turnstileSiteKey && !captchaToken) {
-        setIsLoading(false);
+        setPendingAction(null);
         setMessage("Complete the signup check and try again.");
         return;
       }
@@ -281,9 +299,8 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         sessionExists?: boolean;
       };
 
-      setIsLoading(false);
-
       if (!response.ok) {
+        setPendingAction(null);
         window.turnstile?.reset(turnstileWidgetId ?? undefined);
         setCaptchaToken(null);
         setMessage(data.error ?? "Could not create account.");
@@ -299,12 +316,14 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
               ? referralError.message
               : "Account created, but referral could not be applied.",
           );
+          setPendingAction(null);
           return;
         }
         router.push("/dashboard");
         return;
       }
 
+      setPendingAction(null);
       setConfirmationEmail(data.email ?? safeEmail);
       return;
     }
@@ -314,8 +333,8 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       password,
     });
 
-    setIsLoading(false);
     if (error) {
+      setPendingAction(null);
       setMessage(error.message);
       setCanResendConfirmation(error.message.toLowerCase().includes("email not confirmed"));
       return;
@@ -331,23 +350,26 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      setPendingAction("google");
+      setMessage(null);
+      setSuccessMessage(null);
       router.push("/dashboard");
       return;
     }
 
-    setIsLoading(true);
+    setPendingAction("google");
     setMessage(null);
     setSuccessMessage(null);
 
     if (authMode === "signup" && !acceptedTerms) {
-      setIsLoading(false);
+      setPendingAction(null);
       setMessage("Accept the Terms before creating an account.");
       return;
     }
 
     if (authMode === "signup" && turnstileSiteKey) {
       if (!captchaToken) {
-        setIsLoading(false);
+        setPendingAction(null);
         setMessage("Complete the signup check and try again.");
         return;
       }
@@ -364,7 +386,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       const data = (await response.json().catch(() => ({}))) as { error?: string };
 
       if (!response.ok) {
-        setIsLoading(false);
+        setPendingAction(null);
         window.turnstile?.reset(turnstileWidgetId ?? undefined);
         setCaptchaToken(null);
         setMessage(data.error ?? "Could not start Google signup.");
@@ -384,7 +406,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     });
 
     if (error) {
-      setIsLoading(false);
+      setPendingAction(null);
       setMessage(error.message);
     }
   }
@@ -402,7 +424,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       return;
     }
 
-    setIsLoading(true);
+    setPendingAction("forgot");
     setMessage(null);
     setSuccessMessage(null);
 
@@ -412,7 +434,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       )}`,
     });
 
-    setIsLoading(false);
+    setPendingAction(null);
 
     if (error) {
       setMessage(error.message);
@@ -436,7 +458,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       return;
     }
 
-    setIsLoading(true);
+    setPendingAction("resend");
     setMessage(null);
     setSuccessMessage(null);
 
@@ -450,7 +472,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       },
     });
 
-    setIsLoading(false);
+    setPendingAction(null);
 
     if (error) {
       setMessage(error.message);
@@ -472,13 +494,13 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       return;
     }
 
-    setIsLoading(true);
+    setPendingAction("submit");
     setMessage(null);
     setSuccessMessage(null);
 
     const { error } = await supabase.auth.updateUser({ password });
 
-    setIsLoading(false);
+    setPendingAction(null);
 
     if (error) {
       setMessage(error.message);
@@ -549,7 +571,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
   }
 
   return (
-    <form className="mt-7 space-y-3" onSubmit={handleLogin}>
+    <form aria-busy={isLoading} className="mt-7 space-y-3" onSubmit={handleLogin}>
       {referralCode && authMode === "signup" ? (
         <p className="px-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
           <span className="font-black text-[var(--ve-green)]">Invite active.</span>{" "}
@@ -561,6 +583,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         <input
           className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-7 text-[15px] font-semibold outline-none placeholder:text-[var(--ve-muted-soft)] focus:border-[#008751]"
           autoComplete="name"
+          disabled={isLoading}
           maxLength={120}
           onBlur={() => setFullName((current) => sanitizePlainTextInput(current, 120).trim())}
           onChange={(event) =>
@@ -575,6 +598,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       <input
         className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-7 text-[15px] font-semibold outline-none placeholder:text-[var(--ve-muted-soft)] focus:border-[#008751]"
         autoComplete="email"
+        disabled={isLoading}
         maxLength={254}
         onBlur={() => setEmail((current) => normalizeEmailInput(current))}
         onChange={(event) => setEmail(event.target.value.replace(/[\u0000-\u001F\u007F<>]/g, ""))}
@@ -588,6 +612,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
           autoComplete={
             authMode === "signup" || isPasswordRecovery ? "new-password" : "current-password"
           }
+          disabled={isLoading}
           maxLength={128}
           minLength={authMode === "signup" || isPasswordRecovery ? 8 : undefined}
           onChange={(event) => setPassword(event.target.value)}
@@ -597,6 +622,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         />
         <button
           className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[#008751]"
+          disabled={isLoading}
           onClick={() => setShowPassword((current) => !current)}
           type="button"
         >
@@ -609,6 +635,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
           <input
             checked={remember}
             className="size-3.5 accent-[#008751]"
+            disabled={isLoading}
             onChange={(event) => setRemember(event.target.checked)}
             type="checkbox"
           />
@@ -616,10 +643,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         </label>
         <button
           className="text-[#0824f8]"
+          disabled={isLoading}
           onClick={() => void handleForgotPassword()}
           type="button"
         >
-          Forgot Password?
+          {pendingAction === "forgot" ? "Sending reset..." : "Forgot Password?"}
         </button>
       </div>
 
@@ -628,6 +656,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
           <input
             checked={acceptedTerms}
             className="mt-0.5 size-4 shrink-0 accent-[#008751]"
+            disabled={isLoading}
             onChange={(event) => setAcceptedTerms(event.target.checked)}
             type="checkbox"
           />
@@ -661,7 +690,9 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
               onClick={() => void handleResendConfirmation()}
               type="button"
             >
-              Resend confirmation email
+              {pendingAction === "resend"
+                ? "Sending confirmation..."
+                : "Resend confirmation email"}
             </button>
           ) : null}
         </div>
@@ -680,17 +711,13 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
       ) : null}
 
       <Button className="mt-6 w-full" disabled={isLoading} type="submit" variant="soft">
-        {isPasswordRecovery
-          ? isLoading
-            ? "Saving password..."
-            : "Save New Password"
-          : isLoading
-          ? authMode === "signup"
-            ? "Creating account..."
-            : "Logging in..."
-          : authMode === "signup"
-            ? "Create Account"
-            : "Login"}
+        {pendingAction === "submit" ? (
+          <span
+            aria-hidden="true"
+            className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+        ) : null}
+        {submitLabel}
       </Button>
 
       <p className="pt-1 text-center text-sm font-bold text-[var(--ve-muted)]">
@@ -701,6 +728,7 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
             : "Don\u0027t have an account?"}{" "}
         <button
           className="text-[#0824f8]"
+          disabled={isLoading}
           onClick={() => {
             setAuthMode(isPasswordRecovery || authMode === "signup" ? "login" : "signup");
             setIsPasswordRecovery(false);
@@ -726,12 +754,24 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
 
           <Button
             className="w-full rounded-[10px]"
+            disabled={isLoading}
             onClick={handleGoogleLogin}
             type="button"
             variant="outline"
           >
-            <span className="mr-3 text-lg font-black text-[#ea4335]">G</span>
-            {authMode === "signup" ? "Sign up with Google" : "Sign in with Google"}
+            {pendingAction === "google" ? (
+              <span
+                aria-hidden="true"
+                className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+              />
+            ) : (
+              <span className="mr-3 text-lg font-black text-[#ea4335]">G</span>
+            )}
+            {pendingAction === "google"
+              ? "Connecting to Google..."
+              : authMode === "signup"
+                ? "Sign up with Google"
+                : "Sign in with Google"}
           </Button>
         </>
       ) : null}
