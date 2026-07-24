@@ -713,19 +713,6 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         </p>
       ) : null}
 
-      {isRedirecting ? (
-        <p
-          className="flex items-center justify-center rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs font-black text-[var(--ve-green)]"
-          role="status"
-        >
-          <span
-            aria-hidden="true"
-            className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-          />
-          Opening dashboard...
-        </p>
-      ) : null}
-
       {!isSupabaseConfigured ? (
         <p className="rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
           Supabase env vars are not set, so login continues in demo mode.
