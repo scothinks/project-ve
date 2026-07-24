@@ -11,6 +11,9 @@
   --ve-card-subtle: #fafafa;
   --ve-green: #087f5b;
   --ve-green-rgb: 8, 127, 91;
+  --ve-green-action: #087f5b;
+  --ve-green-label: #087f5b;
+  --ve-green-on-accent: #ffffff;
   --ve-green-soft: #e4f4ed;
   --ve-mission: #ff7a59;
   --ve-mission-soft: #fff0e8;
@@ -19,9 +22,15 @@
   --ve-store-soft: #fff8df;
   --ve-sky: #6fa8ff;
   --ve-sky-rgb: 111, 168, 255;
+  --ve-sky-action: #146c9c;
+  --ve-sky-label: #146c9c;
+  --ve-sky-on-accent: #10233b;
   --ve-sky-soft: #e3f1ff;
   --ve-violet: #8d68f2;
   --ve-violet-rgb: 141, 104, 242;
+  --ve-violet-action: #6f4bd8;
+  --ve-violet-label: #6f4bd8;
+  --ve-violet-on-accent: #19112f;
   --ve-violet-soft: #eee7ff;
   --ve-danger: #d45a5a;
   --ve-danger-soft: #fff0f0;
@@ -32,6 +41,13 @@
   --ve-line: #d2d2d2;
   --ve-line-soft: #e6e1d8;
   --ve-shadow-rgb: 17, 17, 17;
+  --ve-intro-card: #ffffff;
+  --ve-intro-control: #fbfaf7;
+  --ve-intro-dot: #8b918d;
+  --ve-intro-line: #d9d2c7;
+  --ve-intro-panel: #e9e4db;
+  --ve-intro-shadow-alpha: 0.14;
+  --ve-intro-shadow-rgb: 17, 17, 17;
   color-scheme: light;
 }
 
@@ -47,6 +63,9 @@
     --ve-card-subtle: #252c28;
     --ve-green: #44c08e;
     --ve-green-rgb: 68, 192, 142;
+    --ve-green-action: #087f5b;
+    --ve-green-label: #44c08e;
+    --ve-green-on-accent: #0c241a;
     --ve-green-soft: #153126;
     --ve-mission: #ff8f73;
     --ve-mission-soft: #36231d;
@@ -55,9 +74,15 @@
     --ve-store-soft: #372d12;
     --ve-sky: #86b8ff;
     --ve-sky-rgb: 134, 184, 255;
+    --ve-sky-action: #146c9c;
+    --ve-sky-label: #86b8ff;
+    --ve-sky-on-accent: #10233b;
     --ve-sky-soft: #1b2c39;
     --ve-violet: #b297ff;
     --ve-violet-rgb: 178, 151, 255;
+    --ve-violet-action: #6f4bd8;
+    --ve-violet-label: #b297ff;
+    --ve-violet-on-accent: #19112f;
     --ve-violet-soft: #2a2142;
     --ve-danger: #f08a8a;
     --ve-danger-soft: #3a2020;
@@ -68,6 +93,13 @@
     --ve-line: #39413c;
     --ve-line-soft: #2b322e;
     --ve-shadow-rgb: 0, 0, 0;
+    --ve-intro-card: #28302b;
+    --ve-intro-control: #1d2420;
+    --ve-intro-dot: #7e8982;
+    --ve-intro-line: #4a564f;
+    --ve-intro-panel: #3a453e;
+    --ve-intro-shadow-alpha: 0.34;
+    --ve-intro-shadow-rgb: 0, 0, 0;
     color-scheme: dark;
   }
 }
