@@ -51,6 +51,16 @@ function CampaignsIcon({ className }: IconProps) {
   );
 }
 
+function AdsIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M4 6h16v12H4z" stroke="currentColor" />
+      <path d="M8 10h5M8 13h8" stroke="currentColor" />
+      <path d="M17 6v12" stroke="currentColor" />
+    </svg>
+  );
+}
+
 function RewardsIcon({ className }: IconProps) {
   return (
     <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
@@ -149,6 +159,7 @@ const adminLinks = [
   { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
   { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
   { href: "/admin/campaigns", label: "Campaigns", icon: CampaignsIcon },
+  { href: "/admin/ads", label: "Ads", icon: AdsIcon },
   { href: "/admin/rewards", label: "Rewards", icon: RewardsIcon },
   { href: "/admin/rewards/perks", label: "Perks", icon: PerksIcon },
   { href: "/admin/inventory/new", label: "Inventory", icon: InventoryIcon },

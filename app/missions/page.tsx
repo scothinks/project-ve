@@ -1,9 +1,24 @@
+import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { MissionPanel } from "@/components/missions/MissionPanel";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
+import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
+import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
-export default function MissionsPage() {
+export default async function MissionsPage() {
+  const [{ user }, supabase] = await Promise.all([
+    getCurrentUserProfile(),
+    createSupabaseServerClient(),
+  ]);
+  const segmentKeys = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
+  const missionsAd = await getAdDecision(supabase, {
+    placementKey: "missions_card",
+    route: "/missions",
+    userId: user?.id,
+    segmentKeys,
+  });
+
   return (
     <main className="mobile-shell min-h-screen bg-[#fffaf4]">
       <AppHeader
@@ -31,6 +46,9 @@ export default function MissionsPage() {
         />
         <div className="mt-6">
           <MissionPanel />
+        </div>
+        <div className="mt-6">
+          <DirectAdCard ad={missionsAd} />
         </div>
       </section>
       <BottomNav active="Missions" />

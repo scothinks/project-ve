@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { CourseCard } from "@/components/course/CourseCard";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { FeaturedRewardCard } from "@/components/rewards/FeaturedRewardCard";
@@ -37,6 +38,7 @@ import {
   learnerNeedsValuesAssessment,
 } from "@/lib/values-assessment";
 import { formatXpLabel } from "@/lib/xp-format";
+import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 
 function buildRequestOrigin(headerMap: Headers) {
   const proto = headerMap.get("x-forwarded-proto") ?? "https";
@@ -366,6 +368,14 @@ export default async function DashboardPage() {
     personalizedSection: personalizedMissionSection,
     featuredMission,
   });
+  const dashboardAdSegments = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
+  const homeFeedAd = await getAdDecision(supabase, {
+    placementKey: "home_feed_card",
+    route: "/dashboard",
+    userId: user?.id,
+    contentValueTags: [],
+    segmentKeys: dashboardAdSegments,
+  });
 
   return (
     <main className="mobile-shell min-h-screen">
@@ -427,6 +437,8 @@ export default async function DashboardPage() {
             {completedCourses}/{totalCourses} courses completed
           </p>
         </Card>
+
+        <DirectAdCard ad={homeFeedAd} />
 
         {continueLearningItem ? (
           <div>
