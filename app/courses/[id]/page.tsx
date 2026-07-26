@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LessonModuleCard } from "@/components/lesson/LessonModuleCard";
@@ -17,6 +18,7 @@ import { getLearningCourse } from "@/lib/supabase-learning";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { formatXpLabel } from "@/lib/xp-format";
+import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -42,6 +44,19 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   const { progressPercent } = getCourseProgress(course, completedLessonIds);
   const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds);
   const heroImage = course.coverImage ?? course.thumbnail;
+  const [contentValueTags, segmentKeys] = await Promise.all([
+    getAdContentValueTags(supabase, { courseId: course.id }).catch(() => []),
+    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+  ]);
+  const courseDetailAd = await getAdDecision(supabase, {
+    placementKey: "course_detail_card",
+    route: `/courses/${course.id}`,
+    userId: user?.id,
+    courseId: course.id,
+    courseCategory: course.category,
+    contentValueTags,
+    segmentKeys,
+  });
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
@@ -94,6 +109,10 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             ) : null}
           </div>
         </Card>
+
+        <div className="mt-6">
+          <DirectAdCard ad={courseDetailAd} />
+        </div>
 
         <section className="mt-8">
           <h2 className="text-[17px] font-bold">Lessons</h2>

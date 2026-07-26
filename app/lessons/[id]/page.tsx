@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { LessonMenu } from "@/components/lesson/LessonMenu";
 import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
 import { LessonPageProgressMarker } from "@/components/lesson/LessonPageProgressMarker";
@@ -6,6 +7,7 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
@@ -37,6 +39,29 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const previousHref = `/lessons/${lesson.id}?page=${currentPageNumber - 1}`;
   const nextHref = `/lessons/${lesson.id}?page=${currentPageNumber + 1}`;
   const pageCover = page.coverImage ?? (isFirstPage ? lesson.coverImage : null);
+  const {
+    data: { user },
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const [contentValueTags, segmentKeys] = await Promise.all([
+    getAdContentValueTags(supabase, {
+      courseId: course.id,
+      lessonId: lesson.id,
+    }).catch(() => []),
+    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+  ]);
+  const footerAd = await getAdDecision(supabase, {
+    placementKey: "lesson_footer_card",
+    route: `/lessons/${lesson.id}`,
+    userId: user?.id,
+    courseId: course.id,
+    courseCategory: course.category,
+    lessonId: lesson.id,
+    pageId: page.id,
+    pageNumber: currentPageNumber,
+    pageType: page.type,
+    contentValueTags,
+    segmentKeys,
+  });
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
@@ -92,6 +117,10 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           ) : (
             <Button href={nextHref}>Next</Button>
           )}
+        </div>
+
+        <div className="mt-8">
+          <DirectAdCard ad={footerAd} />
         </div>
 
         <div className="mt-8 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_62%,var(--ve-card))] px-4 py-3 text-center text-xs font-black text-[color:color-mix(in_srgb,var(--ve-mission)_42%,var(--foreground))]">
