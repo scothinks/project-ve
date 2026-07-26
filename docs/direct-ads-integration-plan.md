@@ -931,14 +931,19 @@ Fallback options:
 1. render nothing
    - best when preserving learning flow matters more than layout consistency.
 
-2. house ad/product promo
-   - promote Project VE missions, XP store, referrals, notification opt-in, app install, or new courses.
-   - should be clearly non-sponsored or labeled as Project VE.
+2. house ad / advertise-here fallback
+   - promote Project VE sponsorship inventory rather than contextual learner CTAs.
+   - frame sponsorship as helping keep high-value learner rewards available to everyone.
+   - should be clearly non-sponsored and explicitly labeled as an advertise-here placement.
+   - should link to the Project VE advertising information page.
+   - should be configurable per placement from the admin console.
+   - should track non-billable fallback impressions, viewable impressions, and clicks for sponsor-interest reporting.
+   - should route interested sponsors into a dedicated sponsor inquiry flow, not the general support form.
 
 3. sponsor make-good inventory
    - only if the flight is approved, compatible, and still subject to density/frequency caps.
 
-For the lesson footer MVP, default fallback should be a Project VE house card or no render. Do not show low-quality paid filler just to fill space.
+For the lesson footer MVP, default fallback should be a Project VE advertise-here house card or no render. Do not show low-quality paid filler or generic contextual promos just to fill space.
 
 ## Admin Experience
 
@@ -1530,7 +1535,7 @@ Guardrails:
 - Use rolling windows for enforcement caps and campaign-timezone calendar windows for reporting.
 - Add decision timeout behavior: no paid ad if decisioning exceeds latency budget.
 - Add empty-render fallback.
-- Add house ad/product promo fallback support.
+- Add configurable advertise-here house fallback support.
 
 ### Phase 3: Targeting
 

@@ -122,10 +122,6 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         <div className="mt-8">
           <DirectAdCard ad={footerAd} />
         </div>
-
-        <div className="mt-8 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_62%,var(--ve-card))] px-4 py-3 text-center text-xs font-black text-[color:color-mix(in_srgb,var(--ve-mission)_42%,var(--foreground))]">
-          DARKER &amp; RICHER. Because of you.
-        </div>
       </section>
     </main>
   );

@@ -25,9 +25,6 @@ export default function LoginPage() {
         <LoginForm onViewChange={setView} />
       </section>
 
-      <div className="mt-12 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_58%,var(--ve-card))] px-4 py-3 text-center text-xs font-black text-[color:color-mix(in_srgb,var(--ve-store)_32%,var(--foreground))]">
-        DARKER &amp; RICHER. Because of you.
-      </div>
       <div className="mx-auto mt-28 h-1 w-[102px] rounded-full bg-[var(--ve-line)]" />
     </main>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdEventTracker } from "@/components/ads/AdEventTracker";
+import { HouseAdEventTracker } from "@/components/ads/HouseAdEventTracker";
 import type { DirectAdCardModel } from "@/lib/ads";
 import { cn } from "@/lib/utils";
 
@@ -91,15 +92,23 @@ function AdShell({
     </article>
   );
 
-  if (!ad.isPaid) {
-    return card;
+  if (ad.isPaid) {
+    return (
+      <AdEventTracker decisionId={ad.decisionId} format={ad.format} placementKey={ad.placementKey}>
+        {card}
+      </AdEventTracker>
+    );
   }
 
-  return (
-    <AdEventTracker decisionId={ad.decisionId} format={ad.format} placementKey={ad.placementKey}>
-      {card}
-    </AdEventTracker>
-  );
+  if (ad.isHouseFallback) {
+    return (
+      <HouseAdEventTracker fallbackKey={ad.decisionId} placementKey={ad.placementKey}>
+        {card}
+      </HouseAdEventTracker>
+    );
+  }
+
+  return card;
 }
 
 export function DirectAdCard({ ad, className }: DirectAdCardProps) {
