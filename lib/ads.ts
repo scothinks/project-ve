@@ -32,6 +32,7 @@ export type DirectAdCardModel = {
   placementKey: AdPlacementKey;
   format: DirectAdFormat;
   isPaid: boolean;
+  isHouseFallback?: boolean;
   sponsorLabel: string;
   disclosureLabel: string;
   eyebrow?: string | null;
@@ -75,6 +76,12 @@ type PlacementRow = {
   supports_video: boolean;
   supports_sequence: boolean;
   default_frequency_cap: Record<string, unknown> | null;
+  house_fallback_enabled: boolean;
+  house_fallback_eyebrow: string;
+  house_fallback_headline: string;
+  house_fallback_body: string;
+  house_fallback_cta_label: string;
+  house_fallback_cta_url: string;
 };
 
 type PartnerRow = {
@@ -177,7 +184,15 @@ type RuntimeCounts = {
   campaignBillableSpend?: number;
 };
 
+type RecentLessonDecision = {
+  creativeId?: string | null;
+  creativeVersionId?: string | null;
+  lessonId?: string | null;
+  pageNumber?: number | null;
+};
+
 const activeStatuses = new Set(["active", "published", "approved"]);
+const supportedRenderableFormats = new Set<DirectAdFormat>(["native_card"]);
 const decisionTimeoutMs = 100;
 
 function isActiveDateRange(startsAt: string | null, endsAt: string | null) {
@@ -238,6 +253,22 @@ function getSequenceScore(flight: FlightRow, pageNumber?: number | null) {
 
   if (!sequencePage || !pageNumber) return 0;
   return sequencePage === pageNumber ? 20 : -15;
+}
+
+function allowsConsecutiveCreative(flight: FlightRow) {
+  return flight.sequence_rules?.allowConsecutiveCreative === true;
+}
+
+function isConsecutiveSameCreative(
+  creative: CreativeRow,
+  context: DirectAdDecisionContext,
+  recentDecision: RecentLessonDecision | null,
+) {
+  if (!context.lessonId || !context.pageNumber || !recentDecision?.creativeId) return false;
+  if (recentDecision.lessonId !== context.lessonId) return false;
+  if (recentDecision.pageNumber !== context.pageNumber - 1) return false;
+
+  return recentDecision.creativeId === creative.id;
 }
 
 function getExperimentAssignment(flight: FlightRow, sessionKeyHash: string | null) {
@@ -301,54 +332,29 @@ async function getSessionHash() {
   return hashRiskValue(deviceId);
 }
 
-function buildHouseAd(context: DirectAdDecisionContext): DirectAdCardModel | null {
-  const defaults: Record<AdPlacementKey, Pick<DirectAdCardModel, "eyebrow" | "headline" | "body" | "ctaLabel" | "clickUrl">> = {
-    lesson_footer_card: {
-      eyebrow: "Keep going",
-      headline: "Earn more XP after this lesson",
-      body: "Finish the quiz, then check Missions for practical actions that can unlock more progress.",
-      ctaLabel: "Open Missions",
-      clickUrl: "/missions",
-    },
-    home_feed_card: {
-      eyebrow: "Recommended next",
-      headline: "Pick up where your learning left off",
-      body: "Continue a course or complete a mission to keep your progress moving.",
-      ctaLabel: "Browse Courses",
-      clickUrl: "/courses",
-    },
-    course_detail_card: {
-      eyebrow: "Before you continue",
-      headline: "Match lessons to your goals",
-      body: "Use your values profile to prioritize the courses that fit your current goals.",
-      ctaLabel: "View Profile",
-      clickUrl: "/profile",
-    },
-    missions_card: {
-      eyebrow: "More ways to progress",
-      headline: "Complete missions to turn lessons into action",
-      body: "Missions help you apply what you learn and earn XP.",
-      ctaLabel: "View Missions",
-      clickUrl: "/missions",
-    },
-    xp_store_card: {
-      eyebrow: "Use your XP",
-      headline: "Redeem rewards when you reach your goal",
-      body: "Keep learning and completing missions to unlock more reward options.",
-      ctaLabel: "View Rewards",
-      clickUrl: "/xp-store",
-    },
-  };
-  const fallback = defaults[context.placementKey];
+function buildHouseAd(
+  context: DirectAdDecisionContext,
+  placement?: Partial<PlacementRow> | null,
+): DirectAdCardModel | null {
+  if (placement && !placement.house_fallback_enabled) return null;
 
   return {
     decisionId: `house-${context.placementKey}-${context.lessonId ?? "lesson"}-${context.pageId ?? "page"}`,
     placementKey: context.placementKey,
     format: "native_card",
     isPaid: false,
-    sponsorLabel: "Project VE",
-    disclosureLabel: "Project VE",
-    ...fallback,
+    isHouseFallback: true,
+    sponsorLabel: "Project VE Partnerships",
+    disclosureLabel: "Advertise here",
+    eyebrow: placement?.house_fallback_eyebrow ?? "Support learner rewards",
+    headline:
+      placement?.house_fallback_headline ??
+      "Help keep high-value rewards available to everyone.",
+    body:
+      placement?.house_fallback_body ??
+      "Sponsor this space to reach motivated learners and help Project VE keep meaningful rewards accessible across the community.",
+    ctaLabel: placement?.house_fallback_cta_label ?? "Advertise here",
+    clickUrl: placement?.house_fallback_cta_url ?? "/advertise",
   };
 }
 
@@ -575,7 +581,7 @@ async function getPaidAdDecision(
   const [{ data: placement }, { data: flights }] = await Promise.all([
     supabase
       .from("ad_placements")
-      .select("key, status, allowed_creative_formats, supports_video, supports_sequence, default_frequency_cap")
+      .select("key, status, allowed_creative_formats, supports_video, supports_sequence, default_frequency_cap, house_fallback_enabled, house_fallback_eyebrow, house_fallback_headline, house_fallback_body, house_fallback_cta_label, house_fallback_cta_url")
       .eq("key", context.placementKey)
       .maybeSingle<PlacementRow>(),
     supabase
@@ -587,13 +593,14 @@ async function getPaidAdDecision(
       .returns<FlightRow[]>(),
   ]);
 
-  if (!placement || placement.status !== "active" || !flights?.length) return null;
+  if (!placement || placement.status !== "active") return null;
+  if (!flights?.length) return buildHouseAd(context, placement);
 
   const activeFlights = flights.filter(
     (flight) => activeStatuses.has(flight.status) && isActiveDateRange(flight.starts_at, flight.ends_at),
   );
 
-  if (!activeFlights.length) return null;
+  if (!activeFlights.length) return buildHouseAd(context, placement);
 
   const campaignIds = Array.from(new Set(activeFlights.map((flight) => flight.campaign_id)));
   const creativeIds = Array.from(new Set(activeFlights.map((flight) => flight.creative_id)));
@@ -657,6 +664,14 @@ async function getPaidAdDecision(
 	  const recentCompetitorKeys = Array.isArray(recentCompetitorKeysData)
 	    ? recentCompetitorKeysData
 	    : [];
+  const { data: recentLessonDecisionData } =
+    sessionKeyHash && context.placementKey === "lesson_footer_card"
+      ? await supabase.rpc("get_ad_recent_lesson_decision", {
+          p_session_key_hash: sessionKeyHash,
+          p_placement_key: context.placementKey,
+        })
+      : { data: null };
+  const recentLessonDecision = (recentLessonDecisionData ?? null) as RecentLessonDecision | null;
 	  const ineligibleReasons: Record<string, string> = {};
 
 	  const candidates: Array<{
@@ -701,6 +716,10 @@ async function getPaidAdDecision(
       ineligibleReasons[flight.id] = "creative_version_not_approved";
       continue;
     }
+    if (!supportedRenderableFormats.has(creative.creative_format)) {
+      ineligibleReasons[flight.id] = "unsupported_creative_format";
+      continue;
+    }
     if (!placement.allowed_creative_formats.includes(creative.creative_format)) {
       ineligibleReasons[flight.id] = "placement_format_incompatible";
       continue;
@@ -715,6 +734,13 @@ async function getPaidAdDecision(
     }
     if (!passesRuleTargeting(flight, context)) {
       ineligibleReasons[flight.id] = "segment_targeting_mismatch";
+      continue;
+    }
+    if (
+      !allowsConsecutiveCreative(flight) &&
+      isConsecutiveSameCreative(creative, context, recentLessonDecision)
+    ) {
+      ineligibleReasons[flight.id] = "consecutive_creative_fatigue";
       continue;
     }
 
@@ -772,7 +798,7 @@ async function getPaidAdDecision(
 
   const selected = candidates.sort((first, second) => second.score - first.score)[0];
 
-  if (!selected) return null;
+  if (!selected) return buildHouseAd(context, placement);
 
   const imageAsset = selected.creativeVersion.image_asset_id
     ? assetMap.get(selected.creativeVersion.image_asset_id)
@@ -816,13 +842,14 @@ async function getPaidAdDecision(
   });
   const decisionId = (decisionRow as { decisionId?: string } | null)?.decisionId;
 
-  if (decisionError || !decisionId) return null;
+  if (decisionError || !decisionId) return buildHouseAd(context, placement);
 
   return {
     decisionId,
     placementKey: context.placementKey,
     format: selected.creative.creative_format,
     isPaid: selected.campaign.campaign_type !== "house",
+    isHouseFallback: false,
     sponsorLabel: selected.creativeVersion.sponsor_label || selected.partner.name,
     disclosureLabel: selected.creativeVersion.disclosure_label || "Sponsored",
     eyebrow: selected.creativeVersion.eyebrow,
@@ -838,6 +865,21 @@ async function getPaidAdDecision(
   };
 }
 
+async function getPlacementHouseAd(
+  supabase: SupabaseClient,
+  context: DirectAdDecisionContext,
+): Promise<DirectAdCardModel | null> {
+  const { data: placement } = await supabase
+    .from("ad_placements")
+    .select("key, status, allowed_creative_formats, supports_video, supports_sequence, default_frequency_cap, house_fallback_enabled, house_fallback_eyebrow, house_fallback_headline, house_fallback_body, house_fallback_cta_label, house_fallback_cta_url")
+    .eq("key", context.placementKey)
+    .maybeSingle<PlacementRow>();
+
+  if (!placement || placement.status !== "active") return null;
+
+  return buildHouseAd(context, placement);
+}
+
 export async function getAdDecision(
   supabase: SupabaseClient | null,
   context: DirectAdDecisionContext,
@@ -846,5 +888,6 @@ export async function getAdDecision(
     return buildHouseAd(context);
   }
 
-  return withTimeout(getPaidAdDecision(supabase, context), buildHouseAd(context));
+  const timeoutFallback = await withTimeout(getPlacementHouseAd(supabase, context), null);
+  return withTimeout(getPaidAdDecision(supabase, context), timeoutFallback);
 }

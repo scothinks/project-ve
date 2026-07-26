@@ -9,7 +9,7 @@ import { sanitizePlainTextInput } from "@/lib/input-safety";
 
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxNativeImageBytes = 1024 * 1024;
-const allowedCreativeFormats = new Set(["native_card", "text_card"]);
+const allowedCreativeFormats = new Set(["native_card"]);
 
 function slugify(value: string, fallback: string) {
   const slug = value
@@ -122,6 +122,21 @@ function requireHttpsUrl(value: string, fieldLabel: string) {
   }
 }
 
+function requireAdvertiseFallbackUrl(value: string) {
+  const trimmed = sanitizePlainTextInput(value, 400).trim() || "/advertise";
+
+  if (
+    trimmed === "/advertise" ||
+    trimmed === "/advertise/inquiry" ||
+    trimmed.startsWith("/advertise?") ||
+    trimmed.startsWith("/advertise#")
+  ) {
+    return trimmed;
+  }
+
+  throw new Error("Fallback CTA URL must stay on the Project VE advertising page.");
+}
+
 function revalidateAds() {
   revalidatePath("/admin/ads");
   revalidatePath("/lessons/[id]", "page");
@@ -129,6 +144,29 @@ function revalidateAds() {
   revalidatePath("/courses/[id]", "page");
   revalidatePath("/missions");
   revalidatePath("/xp-store");
+}
+
+export async function saveAdPlacementFallback(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const placementKey = sanitizePlainTextInput(String(formData.get("placementKey") ?? ""), 80);
+  const enabled = String(formData.get("houseFallbackEnabled") ?? "") === "true";
+
+  if (!placementKey) throw new Error("Placement is required.");
+
+  const { error } = await supabase.rpc("admin_update_ad_placement_fallback", {
+    p_placement_key: placementKey,
+    p_enabled: enabled,
+    p_eyebrow: sanitizePlainTextInput(String(formData.get("houseFallbackEyebrow") ?? ""), 80).trim(),
+    p_headline: sanitizePlainTextInput(String(formData.get("houseFallbackHeadline") ?? ""), 160).trim(),
+    p_body: sanitizePlainTextInput(String(formData.get("houseFallbackBody") ?? ""), 500).trim(),
+    p_cta_label: sanitizePlainTextInput(String(formData.get("houseFallbackCtaLabel") ?? ""), 80).trim(),
+    p_cta_url: requireAdvertiseFallbackUrl(String(formData.get("houseFallbackCtaUrl") ?? "")),
+  });
+
+  if (error) throw error;
+
+  revalidateAds();
+  redirect(appendAdminNotice("/admin/ads#library", "Placement fallback campaign updated."));
 }
 
 export async function saveAdPartner(formData: FormData) {
@@ -301,6 +339,8 @@ export async function saveAdCreativeVersion(formData: FormData) {
   const creativeId = sanitizePlainTextInput(String(formData.get("creativeId") ?? ""), 120);
   const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 180).trim();
   const headline = sanitizePlainTextInput(String(formData.get("headline") ?? ""), 160).trim();
+  const body = sanitizePlainTextInput(String(formData.get("body") ?? ""), 500).trim();
+  const ctaLabel = sanitizePlainTextInput(String(formData.get("ctaLabel") ?? ""), 80).trim();
   const sponsorLabel = sanitizePlainTextInput(String(formData.get("sponsorLabel") ?? ""), 120).trim();
   const disclosureLabel =
     sanitizePlainTextInput(String(formData.get("disclosureLabel") ?? "Sponsored"), 40).trim() ||
@@ -313,6 +353,9 @@ export async function saveAdCreativeVersion(formData: FormData) {
   if (!campaignId) throw new Error("Campaign is required.");
   if (!name) throw new Error("Creative name is required.");
   if (!headline) throw new Error("Headline is required.");
+  if (!body) throw new Error("Native card body copy is required.");
+  if (!ctaLabel) throw new Error("Native card CTA label is required.");
+  if (!ctaUrl) throw new Error("Native card CTA URL is required.");
   if (!sponsorLabel) throw new Error("Sponsor label is required.");
   if (!disclosureLabel) throw new Error("Disclosure label is required.");
 
@@ -329,7 +372,7 @@ export async function saveAdCreativeVersion(formData: FormData) {
   const creativeFormat = String(formData.get("creativeFormat") ?? "native_card");
 
   if (!allowedCreativeFormats.has(creativeFormat)) {
-    throw new Error("Only native card and text card creatives are supported in V1.");
+    throw new Error("Only native card creatives are supported in V1.");
   }
 
   const imageAssetId = await uploadCreativeImage(formData, campaign.partner_id);
@@ -362,11 +405,11 @@ export async function saveAdCreativeVersion(formData: FormData) {
       creativeId: id,
       status: versionStatus,
       headline,
-      body: sanitizePlainTextInput(String(formData.get("body") ?? ""), 500).trim(),
+      body,
       eyebrow: sanitizePlainTextInput(String(formData.get("eyebrow") ?? ""), 80).trim(),
       imageAssetId: imageAssetId ?? "",
       imageAlt: sanitizePlainTextInput(String(formData.get("imageAlt") ?? ""), 160).trim(),
-      ctaLabel: sanitizePlainTextInput(String(formData.get("ctaLabel") ?? ""), 80).trim(),
+      ctaLabel,
       ctaUrl,
       sponsorLabel,
       disclosureLabel,
@@ -392,6 +435,7 @@ export async function saveAdFlight(formData: FormData) {
   if (!placementKey) throw new Error("Placement is required.");
 
   const sequencePageNumber = parseInteger(formData.get("sequencePageNumber"));
+  const allowConsecutiveCreative = String(formData.get("allowConsecutiveCreative") ?? "") === "true";
   const { error } = await supabase.rpc("admin_insert_ad_flight", {
     p_payload: {
       campaignId,
@@ -417,7 +461,10 @@ export async function saveAdFlight(formData: FormData) {
         ),
         userWeeklyPartnerImpressions: parseInteger(formData.get("userWeeklyPartnerImpressions"), 5),
       },
-      sequenceRules: sequencePageNumber > 0 ? { pageNumber: sequencePageNumber } : {},
+      sequenceRules: {
+        ...(sequencePageNumber > 0 ? { pageNumber: sequencePageNumber } : {}),
+        ...(allowConsecutiveCreative ? { allowConsecutiveCreative: true } : {}),
+      },
       brandSafetyRules: {
         excludedContentTags: parseStringList(formData.get("brandExcludedContentTags")),
         excludedPageTypes: parseStringList(formData.get("brandExcludedPageTypes")),
