@@ -10,6 +10,13 @@ import { sanitizePlainTextInput } from "@/lib/input-safety";
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxNativeImageBytes = 1024 * 1024;
 const allowedCreativeFormats = new Set(["native_card"]);
+const allowedAdminAdReturnPaths = new Set([
+  "/admin/ads",
+  "/admin/ads/launch",
+  "/admin/ads/review",
+  "/admin/ads/reporting",
+  "/admin/ads/inventory",
+]);
 
 function slugify(value: string, fallback: string) {
   const slug = value
@@ -137,8 +144,17 @@ function requireAdvertiseFallbackUrl(value: string) {
   throw new Error("Fallback CTA URL must stay on the Project VE advertising page.");
 }
 
+function getAdminAdReturnPath(value: FormDataEntryValue | null, fallback: string) {
+  const rawPath = sanitizePlainTextInput(String(value ?? ""), 120).trim();
+  return allowedAdminAdReturnPaths.has(rawPath) ? rawPath : fallback;
+}
+
 function revalidateAds() {
   revalidatePath("/admin/ads");
+  revalidatePath("/admin/ads/launch");
+  revalidatePath("/admin/ads/review");
+  revalidatePath("/admin/ads/reporting");
+  revalidatePath("/admin/ads/inventory");
   revalidatePath("/lessons/[id]", "page");
   revalidatePath("/dashboard");
   revalidatePath("/courses/[id]", "page");
@@ -166,7 +182,7 @@ export async function saveAdPlacementFallback(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads#library", "Placement fallback campaign updated."));
+  redirect(appendAdminNotice("/admin/ads/inventory", "Placement fallback campaign updated."));
 }
 
 export async function saveAdPartner(formData: FormData) {
@@ -207,7 +223,7 @@ export async function saveAdPartner(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Ad partner saved."));
+  redirect(appendAdminNotice("/admin/ads/launch", "Ad partner saved."));
 }
 
 export async function saveAdCampaign(formData: FormData) {
@@ -265,7 +281,7 @@ export async function saveAdCampaign(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Ad campaign saved."));
+  redirect(appendAdminNotice("/admin/ads/launch", "Ad campaign saved."));
 }
 
 async function uploadCreativeImage(formData: FormData, partnerId: string) {
@@ -421,7 +437,7 @@ export async function saveAdCreativeVersion(formData: FormData) {
   if (versionError) throw versionError;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Creative version saved."));
+  redirect(appendAdminNotice("/admin/ads/launch", "Creative version saved."));
 }
 
 export async function saveAdFlight(formData: FormData) {
@@ -479,7 +495,7 @@ export async function saveAdFlight(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Ad flight saved."));
+  redirect(appendAdminNotice("/admin/ads/launch", "Ad flight saved."));
 }
 
 export async function setAdEntityStatus(formData: FormData) {
@@ -488,6 +504,7 @@ export async function setAdEntityStatus(formData: FormData) {
   const entityId = sanitizePlainTextInput(String(formData.get("entityId") ?? ""), 120);
   const status = String(formData.get("status") ?? "paused");
   const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 300).trim();
+  const returnPath = getAdminAdReturnPath(formData.get("returnPath"), "/admin/ads/review");
 
   const { error } = await supabase.rpc("admin_set_ad_entity_status", {
     p_entity_type: entityType,
@@ -499,7 +516,7 @@ export async function setAdEntityStatus(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Ad status updated."));
+  redirect(appendAdminNotice(returnPath, "Ad status updated."));
 }
 
 export async function refreshAdBillingSnapshot(formData: FormData) {
@@ -520,7 +537,7 @@ export async function refreshAdBillingSnapshot(formData: FormData) {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Billing snapshot refreshed."));
+  redirect(appendAdminNotice("/admin/ads/reporting", "Billing snapshot refreshed."));
 }
 
 export async function createAdMakeGoodRecommendations() {
@@ -530,7 +547,7 @@ export async function createAdMakeGoodRecommendations() {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Make-good recommendations refreshed."));
+  redirect(appendAdminNotice("/admin/ads/reporting", "Make-good recommendations refreshed."));
 }
 
 export async function purgeOldAdRuntimeData() {
@@ -540,5 +557,5 @@ export async function purgeOldAdRuntimeData() {
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice("/admin/ads", "Ad retention cleanup completed."));
+  redirect(appendAdminNotice("/admin/ads/reporting", "Ad retention cleanup completed."));
 }
