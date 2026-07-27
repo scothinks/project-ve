@@ -2,19 +2,32 @@ import { CourseLibrary } from "@/components/course/CourseLibrary";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getCompletedLessonIds, getLessonProgress } from "@/lib/progress";
-import { getLearningCatalog } from "@/lib/supabase-learning";
-import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+import {
+  getCompletedLessonIds,
+  getLessonProgress,
+  type LessonProgressRecord,
+} from "@/lib/progress";
+import { getCachedLearningCourseSummaries } from "@/lib/supabase-learning";
+import {
+  createSupabaseServerClient,
+  getCurrentUserProfile,
+  hasSupabaseAuthCookies,
+} from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 export default async function CoursesPage() {
-  const [{ user }, supabase] = await Promise.all([
-    getCurrentUserProfile(),
-    createSupabaseServerClient(),
+  const [catalog, hasAuthCookies] = await Promise.all([
+    getCachedLearningCourseSummaries(),
+    hasSupabaseAuthCookies(),
   ]);
-  const catalog = await getLearningCatalog(supabase);
-  const lessonProgress =
-    isSupabaseConfigured && user && supabase ? await getLessonProgress(supabase, user.id) : [];
+  let lessonProgress: LessonProgressRecord[] = [];
+
+  if (isSupabaseConfigured && hasAuthCookies) {
+    const supabase = await createSupabaseServerClient();
+    const { user } = await getCurrentUserProfile(supabase);
+    lessonProgress = user && supabase ? await getLessonProgress(supabase, user.id) : [];
+  }
+
   const completedLessonIds = Array.from(
     getCompletedLessonIds(
       lessonProgress,

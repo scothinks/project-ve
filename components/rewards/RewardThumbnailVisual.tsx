@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { TablerRewardIcon } from "@/components/rewards/TablerRewardIcon";
 import { getRewardIconNameFromLegacy, type RewardIconName } from "@/lib/reward-icons";
@@ -73,12 +74,16 @@ export function RewardThumbnailVisual({
 
   if (thumbnail.url && !imageFailed) {
     return (
-      <img
-        alt=""
-        className={cn("h-full w-full object-cover", imageClassName)}
-        onError={() => setImageFailed(true)}
-        src={thumbnail.url}
-      />
+      <div className="relative h-full w-full">
+        <Image
+          alt=""
+          className={cn("object-cover", imageClassName)}
+          fill
+          sizes="(max-width: 768px) 33vw, 160px"
+          onError={() => setImageFailed(true)}
+          src={thumbnail.url}
+        />
+      </div>
     );
   }
 

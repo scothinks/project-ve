@@ -626,11 +626,13 @@ function getReferralShareUrl(origin: string, referralCode: string) {
 }
 
 export async function getSupabaseMissionSummaries({
+  syncAwards = false,
   supabase,
   userId,
   referralCode,
   origin,
 }: {
+  syncAwards?: boolean;
   supabase: SupabaseClient;
   userId: string;
   referralCode: string | null;
@@ -648,20 +650,25 @@ export async function getSupabaseMissionSummaries({
     throw error;
   }
 
-  const summaries: UserMissionSummary[] = [];
   const missionRows = (missions ?? []).map((mission) => ({
     ...(mission as Omit<DbMission, "rewards"> & { rewards?: unknown }),
     rewards: normalizeMissionReward((mission as { rewards?: unknown }).rewards),
   })) as DbMission[];
 
-  for (const mission of missionRows) {
-    const progressResult = await getMissionProgress(supabase, userId, mission);
-    await syncMissionAwards(supabase, userId, mission, progressResult);
+  return Promise.all(missionRows.map(async (mission): Promise<UserMissionSummary> => {
+    const [progressResult, awardedCount] = await Promise.all([
+      getMissionProgress(supabase, userId, mission),
+      getAwardedCount(supabase, userId, mission.id),
+    ]);
+
+    if (syncAwards) {
+      await syncMissionAwards(supabase, userId, mission, progressResult);
+    }
 
     const awardScope = getMissionPeriodScope(mission);
     const hasCurrentAward =
       mission.repeatability === "per_referral"
-        ? (await getAwardedCount(supabase, userId, mission.id)) > 0
+        ? awardedCount > 0
         : await hasMissionAward(supabase, userId, mission.id, awardScope);
     const progress = normalizeProgress(progressResult.progress, hasCurrentAward);
     const isProof = mission.validation_type === "proof_upload" || mission.validation_type === "manual_review";
@@ -688,11 +695,11 @@ export async function getSupabaseMissionSummaries({
             requiredFriendLessonCount,
             invitedCount: progressResult.referralProgress?.invitedCount ?? 0,
             qualifiedCount: progressResult.referralProgress?.qualifiedIds.length ?? 0,
-            awardedCount: await getAwardedCount(supabase, userId, mission.id),
+            awardedCount,
           }
         : undefined;
 
-    summaries.push({
+    return {
       id: mission.id,
       title: mission.title,
       description: mission.description,
@@ -717,10 +724,8 @@ export async function getSupabaseMissionSummaries({
       completionLabel: status === "completed" ? getMissionCompletionLabel(mission) : undefined,
       availableAgainAt: status === "completed" ? getMissionAvailableAgainAt(mission) : undefined,
       referral,
-    });
-  }
-
-  return summaries;
+    };
+  }));
 }
 
 export async function submitSupabaseMissionProof({

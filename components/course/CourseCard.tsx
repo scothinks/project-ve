@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { Course } from "@/lib/lessons";
 import { getCourseXP } from "@/lib/lessons";
@@ -26,9 +27,11 @@ export function CourseCard({
     <Link className="block" href={href}>
       <Card className="overflow-hidden" variant="lesson">
         <div className="relative h-32">
-          <img
+          <Image
             alt={course.thumbnail.alt}
             className={`h-full w-full ${getImageFitClass(course.thumbnail)}`}
+            fill
+            sizes="(max-width: 768px) 100vw, 420px"
             src={course.thumbnail.src}
             style={getImagePresentationStyle(course.thumbnail)}
           />

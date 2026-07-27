@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import Image from "next/image";
 import Link from "next/link";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { CourseCard } from "@/components/course/CourseCard";
@@ -26,6 +27,7 @@ import {
 } from "@/lib/progress";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { measureAsync } from "@/lib/performance";
 import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getLearningCatalog } from "@/lib/supabase-learning";
 import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
@@ -53,10 +55,12 @@ function ContinueLearningCard({
 }) {
   return (
     <Card className="overflow-hidden border border-[#dff2e9]">
-      <div className="h-28">
-        <img
+      <div className="relative h-28">
+        <Image
           alt={item.lesson.coverImage.alt}
           className={`h-full w-full ${getImageFitClass(item.lesson.coverImage)}`}
+          fill
+          sizes="(max-width: 768px) 100vw, 420px"
           src={item.lesson.coverImage.src}
           style={getImagePresentationStyle(item.lesson.coverImage)}
         />
@@ -260,13 +264,12 @@ function buildRecommendedMissionItems(params: {
 }
 
 export default async function DashboardPage() {
-  const { user, profile } = await getCurrentUserProfile();
+  const supabase = await createSupabaseServerClient();
+  const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (isSupabaseConfigured && !user) {
     redirect("/login");
   }
-
-  const supabase = await createSupabaseServerClient();
 
   if (isSupabaseConfigured && user) {
     const assessmentStatus = await getUserAssessmentCompletionStatus(supabase, user.id);
@@ -281,8 +284,10 @@ export default async function DashboardPage() {
     }
   }
 
-  const catalog = await getLearningCatalog(supabase);
-  const requestHeaders = await headers();
+  const [catalog, requestHeaders] = await Promise.all([
+    measureAsync("dashboard.learning_catalog", () => getLearningCatalog(supabase)),
+    headers(),
+  ]);
   const origin = buildRequestOrigin(requestHeaders);
   const currentCourse = catalog[0];
   const rawDisplayName = profile?.display_name ?? "";
@@ -290,8 +295,32 @@ export default async function DashboardPage() {
   const displayName = hasRealName ? rawDisplayName : "Learner";
   const firstName = displayName.split(/\s+/)[0] || "Learner";
   const xpBalance = profile?.xp_balance_cached ?? 45232;
-  const lessonProgress =
-    isSupabaseConfigured && user && supabase ? await getLessonProgress(supabase, user.id) : [];
+  const [
+    lessonProgress,
+    recommendationSections,
+    rewardSnapshot,
+    unreadNotificationCount,
+    missionRecommendations,
+    dashboardAdSegments,
+  ] = await measureAsync("dashboard.primary_data_batch", () => Promise.all([
+    isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
+    getDashboardRecommendationSections(supabase, catalog),
+    isSupabaseConfigured && user && supabase
+      ? getRewardStoreSnapshot(supabase, user.id, xpBalance).catch(() => null)
+      : Promise.resolve(demoRewardStoreSnapshot),
+    isSupabaseConfigured && user && supabase
+      ? getUnreadNotificationCount(supabase, user.id).catch(() => 0)
+      : Promise.resolve(0),
+    isSupabaseConfigured && user && supabase
+      ? getSupabaseMissionSummaries({
+          supabase,
+          userId: user.id,
+          referralCode: profile?.referral_code ?? null,
+          origin,
+        }).catch(() => [])
+      : Promise.resolve([]),
+    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+  ]));
   const completedLessonIds = getCompletedLessonIds(
     lessonProgress,
     catalog.flatMap((course) => course.lessons),
@@ -305,7 +334,6 @@ export default async function DashboardPage() {
     return isCourseCompleted(course);
   }).length;
   const totalCourses = catalog.length;
-  const recommendationSections = await getDashboardRecommendationSections(supabase, catalog);
   const hasPublishedRecommendationSections = recommendationSections.length > 0;
   const activeRecommendationSections = recommendationSections
     .map((section) => ({
@@ -320,43 +348,33 @@ export default async function DashboardPage() {
   const starterLessons = (currentCourse?.lessons ?? []).filter(
     (lesson) => !isLessonCompleted(lesson.id),
   );
-  const rewardSnapshot =
-    isSupabaseConfigured && user && supabase
-      ? await getRewardStoreSnapshot(supabase, user.id, xpBalance).catch(() => null)
-      : demoRewardStoreSnapshot;
-  const unreadNotificationCount =
-    isSupabaseConfigured && user && supabase
-      ? await getUnreadNotificationCount(supabase, user.id).catch(() => 0)
-      : 0;
   const featuredRewards = (rewardSnapshot?.rewards ?? []).slice(0, 2);
-  const continueLearningItem =
+  const [continueLearningItem, personalizedRecommendations, homeFeedAd] = await measureAsync("dashboard.secondary_data_batch", () => Promise.all([
     isSupabaseConfigured && user && supabase
-      ? await getContinueLearningItem({
+      ? getContinueLearningItem({
           supabase,
           userId: user.id,
           catalog,
           lessonProgress,
         })
-      : null;
-  const missionRecommendations =
+      : Promise.resolve(null),
     isSupabaseConfigured && user && supabase
-      ? await getSupabaseMissionSummaries({
-          supabase,
-          userId: user.id,
-          referralCode: profile?.referral_code ?? null,
-          origin,
-        }).catch(() => [])
-      : [];
-  const personalizedRecommendations =
-    isSupabaseConfigured && user && supabase
-      ? await getPersonalizedDashboardRecommendations({
+      ? getPersonalizedDashboardRecommendations({
           supabase,
           userId: user.id,
           catalog,
           lessonProgress,
           missions: missionRecommendations,
         }).catch(() => ({ sections: [], userProfile: null, userScores: [] }))
-      : { sections: [], userProfile: null, userScores: [] };
+      : Promise.resolve({ sections: [], userProfile: null, userScores: [] }),
+    getAdDecision(supabase, {
+      placementKey: "home_feed_card",
+      route: "/dashboard",
+      userId: user?.id,
+      contentValueTags: [],
+      segmentKeys: dashboardAdSegments,
+    }),
+  ]));
   const featuredMission = missionRecommendations[0] ?? null;
   const personalizedMissionSection = personalizedRecommendations.sections.find(
     (section) => section.id === "mission",
@@ -368,15 +386,6 @@ export default async function DashboardPage() {
     personalizedSection: personalizedMissionSection,
     featuredMission,
   });
-  const dashboardAdSegments = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
-  const homeFeedAd = await getAdDecision(supabase, {
-    placementKey: "home_feed_card",
-    route: "/dashboard",
-    userId: user?.id,
-    contentValueTags: [],
-    segmentKeys: dashboardAdSegments,
-  });
-
   return (
     <main className="mobile-shell min-h-screen">
       <ReferralAttributionCapture />

@@ -37,8 +37,18 @@ export type UserProfile = {
   role: "learner" | "admin";
 };
 
-export async function getCurrentUserProfile() {
-  const supabase = await createSupabaseServerClient();
+export async function hasSupabaseAuthCookies() {
+  const cookieStore = await cookies();
+
+  return cookieStore
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("auth-token"));
+}
+
+export async function getCurrentUserProfile(
+  existingSupabase?: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+) {
+  const supabase = existingSupabase ?? await createSupabaseServerClient();
 
   if (!supabase) {
     return { user: null, profile: null };
