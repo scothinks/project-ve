@@ -7,10 +7,8 @@ import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 export default async function MissionsPage() {
-  const [{ user }, supabase] = await Promise.all([
-    getCurrentUserProfile(),
-    createSupabaseServerClient(),
-  ]);
+  const supabase = await createSupabaseServerClient();
+  const { user } = await getCurrentUserProfile(supabase);
   const segmentKeys = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
   const missionsAd = await getAdDecision(supabase, {
     placementKey: "missions_card",

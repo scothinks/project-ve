@@ -35,10 +35,8 @@ export async function GET() {
     });
   }
 
-  const [{ user, profile }, supabase] = await Promise.all([
-    getCurrentUserProfile(),
-    createSupabaseServerClient(),
-  ]);
+  const supabase = await createSupabaseServerClient();
+  const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (!user || !profile || !supabase) {
     return NextResponse.json({ error: "Please sign in to use the XP Store." }, { status: 401 });

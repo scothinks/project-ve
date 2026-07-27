@@ -5,7 +5,7 @@ import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabas
 
 export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
-  const { user, profile } = await getCurrentUserProfile();
+  const { user, profile } = await getCurrentUserProfile(supabase);
   const origin = new URL(request.url).origin;
 
   if (supabase && user) {

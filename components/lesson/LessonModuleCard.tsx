@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Lesson } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getLessonXP } from "@/lib/lessons";
@@ -15,10 +16,12 @@ export function LessonModuleCard({ lesson, completed = false }: LessonModuleCard
   return (
     <Link href={`/lessons/${lesson.id}`} className="block">
       <Card className="overflow-hidden" variant="lesson">
-        <div className="h-32 bg-[#dff2e9]">
-          <img
+        <div className="relative h-32 bg-[#dff2e9]">
+          <Image
             alt={lesson.coverImage.alt}
             className={`h-full w-full ${getImageFitClass(lesson.coverImage)}`}
+            fill
+            sizes="(max-width: 768px) 100vw, 420px"
             src={lesson.coverImage.src}
             style={getImagePresentationStyle(lesson.coverImage)}
           />

@@ -888,6 +888,8 @@ export async function getAdDecision(
     return buildHouseAd(context);
   }
 
-  const timeoutFallback = await withTimeout(getPlacementHouseAd(supabase, context), null);
-  return withTimeout(getPaidAdDecision(supabase, context), timeoutFallback);
+  const fallbackPromise = withTimeout(getPlacementHouseAd(supabase, context), null);
+  const paidDecision = await withTimeout(getPaidAdDecision(supabase, context), null);
+
+  return paidDecision ?? fallbackPromise;
 }

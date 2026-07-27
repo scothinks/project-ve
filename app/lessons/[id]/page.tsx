@@ -22,7 +22,10 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const { id } = await params;
   const { page: pageParam, ref } = await searchParams;
   const supabase = await createSupabaseServerClient();
-  const detail = await getLearningLesson(supabase, id);
+  const [detail, userResult] = await Promise.all([
+    getLearningLesson(supabase, id),
+    supabase ? supabase.auth.getUser() : Promise.resolve({ data: { user: null } }),
+  ]);
 
   if (!detail) {
     notFound();
@@ -41,7 +44,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const pageCover = page.coverImage ?? (isFirstPage ? lesson.coverImage : null);
   const {
     data: { user },
-  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  } = userResult;
   const [contentValueTags, segmentKeys] = await Promise.all([
     getAdContentValueTags(supabase, {
       courseId: course.id,

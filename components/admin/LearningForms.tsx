@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import { CourseCategoryField } from "@/components/admin/CourseCategoryField";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type {
@@ -133,11 +134,13 @@ function CoursePreview({
         Learner card preview
       </p>
       <div className="mt-4 overflow-hidden rounded-[18px] bg-[var(--ve-card)] shadow-sm">
-        <div className="h-28 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
+        <div className="relative h-28 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
           {getImageValue(course?.thumbnail, "src") ? (
-            <img
+            <Image
               alt=""
-              className={`h-full w-full ${getImageFitClass(course?.thumbnail ?? null)}`}
+              className={getImageFitClass(course?.thumbnail ?? null)}
+              fill
+              sizes="320px"
               src={getImageValue(course?.thumbnail, "src")}
               style={getImagePresentationStyle(course?.thumbnail ?? null)}
             />

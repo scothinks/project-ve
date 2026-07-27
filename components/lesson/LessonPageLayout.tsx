@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { LessonContent } from "@/components/lesson/LessonContent";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { ImageAsset, LessonContentBlock, LessonPageType } from "@/lib/lessons";
@@ -109,24 +110,32 @@ export function LessonPageLayout({
         </div>
 
         {coverImage && isImageBeforeTitle ? (
-          <img
-            alt={coverImage.alt}
-            className={`${config.image} ${getImageFitClass(coverImage)}`}
-            src={coverImage.src}
-            style={getImagePresentationStyle(coverImage)}
-          />
+          <div className={`relative overflow-hidden ${config.image}`}>
+            <Image
+              alt={coverImage.alt}
+              className={getImageFitClass(coverImage)}
+              fill
+              sizes="(max-width: 768px) 100vw, 420px"
+              src={coverImage.src}
+              style={getImagePresentationStyle(coverImage)}
+            />
+          </div>
         ) : null}
 
         <h1 className={config.title}>{title}</h1>
         {subtitle ? <p className={config.subtitle}>{subtitle}</p> : null}
 
         {coverImage && !isImageBeforeTitle ? (
-          <img
-            alt={coverImage.alt}
-            className={`${config.image} ${getImageFitClass(coverImage)}`}
-            src={coverImage.src}
-            style={getImagePresentationStyle(coverImage)}
-          />
+          <div className={`relative overflow-hidden ${config.image}`}>
+            <Image
+              alt={coverImage.alt}
+              className={getImageFitClass(coverImage)}
+              fill
+              sizes="(max-width: 768px) 100vw, 420px"
+              src={coverImage.src}
+              style={getImagePresentationStyle(coverImage)}
+            />
+          </div>
         ) : null}
       </div>
 

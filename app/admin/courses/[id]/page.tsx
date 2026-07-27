@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   AdminCard,
@@ -1409,11 +1410,15 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                             {previewFrames.length > 0 ? (
                               previewFrames.map((preview) => (
                                 <div className="overflow-hidden rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)]" key={preview.key}>
-                                  <img
-                                    alt={preview.alt}
-                                    className="h-24 w-full object-cover"
-                                    src={preview.src}
-                                  />
+                                  <div className="relative h-24 w-full">
+                                    <Image
+                                      alt={preview.alt}
+                                      className="object-cover"
+                                      fill
+                                      sizes="(max-width: 768px) 33vw, 220px"
+                                      src={preview.src}
+                                    />
+                                  </div>
                                   <div className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
                                     {preview.label}
                                   </div>
@@ -1512,11 +1517,15 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                                   <div className="rounded-[14px] bg-[var(--ve-panel)] p-3" key={page.id}>
                                     <div className="flex flex-wrap items-start gap-3">
                                       {pageImage ? (
-                                        <img
-                                          alt={getImageValue(page.cover_image, "alt") || `${page.title} preview`}
-                                          className="h-16 w-24 rounded-[10px] object-cover"
-                                          src={pageImage}
-                                        />
+                                        <div className="relative h-16 w-24 overflow-hidden rounded-[10px]">
+                                          <Image
+                                            alt={getImageValue(page.cover_image, "alt") || `${page.title} preview`}
+                                            className="object-cover"
+                                            fill
+                                            sizes="96px"
+                                            src={pageImage}
+                                          />
+                                        </div>
                                       ) : (
                                         <div className="flex h-16 w-24 items-center justify-center rounded-[10px] border border-dashed border-[var(--ve-line-soft)] text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
                                           No image

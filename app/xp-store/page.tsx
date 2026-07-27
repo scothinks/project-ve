@@ -4,17 +4,24 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { XPStore } from "@/components/rewards/XPStore";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
+import { demoRewardStoreSnapshot } from "@/lib/rewards";
+import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 export default async function XPStorePage() {
-  const { user } = await getCurrentUserProfile();
+  const supabase = await createSupabaseServerClient();
+  const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (isSupabaseConfigured && !user) {
     redirect("/login");
   }
-  const supabase = await createSupabaseServerClient();
-  const segmentKeys = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
+  const [segmentKeys, rewardSnapshot] = await Promise.all([
+    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+    supabase && user && profile
+      ? getRewardStoreSnapshot(supabase, user.id, profile.xp_balance_cached ?? 0).catch(() => null)
+      : Promise.resolve(isSupabaseConfigured ? null : demoRewardStoreSnapshot),
+  ]);
   const storeAd = await getAdDecision(supabase, {
     placementKey: "xp_store_card",
     route: "/xp-store",
@@ -30,7 +37,7 @@ export default async function XPStorePage() {
         className="bg-[#fffaf0] shadow-none"
         showMenu={false}
       />
-      <XPStore />
+      <XPStore initialSnapshot={rewardSnapshot} />
       <section className="px-6 pb-28">
         <DirectAdCard ad={storeAd} />
       </section>

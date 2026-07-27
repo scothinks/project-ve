@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { LessonContentBlock } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 
@@ -63,11 +64,13 @@ export function LessonContent({ blocks }: LessonContentProps) {
         if (block.type === "image") {
           return (
             <figure key={block.id}>
-              <img
+              <Image
                 alt={block.alt}
                 className={`w-full rounded-[18px] ${getImageFitClass(block)}`}
+                height={506}
                 src={block.src}
                 style={getImagePresentationStyle(block)}
+                width={900}
               />
               {block.caption ? (
                 <figcaption className="mt-2 text-center text-[11px] font-semibold text-[var(--ve-muted)]">

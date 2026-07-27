@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type AvatarProps = {
@@ -26,12 +27,12 @@ export function Avatar({ name, email, avatarUrl, className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "grid place-items-center overflow-hidden rounded-full bg-[var(--ve-green-soft)] text-sm font-black text-[var(--ve-green)] shadow-inner",
+        "relative grid place-items-center overflow-hidden rounded-full bg-[var(--ve-green-soft)] text-sm font-black text-[var(--ve-green)] shadow-inner",
         className,
       )}
     >
       {avatarUrl ? (
-        <img alt="" className="h-full w-full object-cover" src={avatarUrl} />
+        <Image alt="" className="object-cover" fill sizes="54px" src={avatarUrl} />
       ) : (
         <span>{getInitials(name, email)}</span>
       )}

@@ -6,7 +6,7 @@ type RouteContext = {
 };
 
 export async function POST(_request: Request, { params }: RouteContext) {
-  const { id } = await params;
+  await params;
 
   try {
     const supabase = await createSupabaseServerClient();

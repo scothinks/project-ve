@@ -337,7 +337,6 @@ export async function getContinueLearningItem({
   const lessonById = new Map(
     catalog.flatMap((course) => course.lessons.map((lesson) => [lesson.id, { lesson, course }] as const)),
   );
-  const progressByLessonId = new Map(lessonProgress.map((record) => [record.lesson_id, record]));
   const startedLessons = lessonProgress
     .map((record) => {
       const entry = lessonById.get(record.lesson_id);

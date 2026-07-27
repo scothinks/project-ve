@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
@@ -28,26 +29,23 @@ export const dynamic = "force-dynamic";
 
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { id } = await params;
-  const [{ user }, supabase] = await Promise.all([
-    getCurrentUserProfile(),
-    createSupabaseServerClient(),
-  ]);
+  const supabase = await createSupabaseServerClient();
+  const { user } = await getCurrentUserProfile(supabase);
   const course = await getLearningCourse(supabase, id);
 
   if (!course) {
     notFound();
   }
 
-  const lessonProgress =
-    isSupabaseConfigured && user && supabase ? await getLessonProgress(supabase, user.id) : [];
+  const [lessonProgress, contentValueTags, segmentKeys] = await Promise.all([
+    isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
+    getAdContentValueTags(supabase, { courseId: course.id }).catch(() => []),
+    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+  ]);
   const completedLessonIds = getCompletedLessonIds(lessonProgress, course.lessons);
   const { progressPercent } = getCourseProgress(course, completedLessonIds);
   const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds);
   const heroImage = course.coverImage ?? course.thumbnail;
-  const [contentValueTags, segmentKeys] = await Promise.all([
-    getAdContentValueTags(supabase, { courseId: course.id }).catch(() => []),
-    getLearnerAdSegments(supabase, user?.id).catch(() => []),
-  ]);
   const courseDetailAd = await getAdDecision(supabase, {
     placementKey: "course_detail_card",
     route: `/courses/${course.id}`,
@@ -63,12 +61,16 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
       <AppHeader title={course.title} backHref="/courses" showMenu={false} />
       <section className="px-6 py-8 pb-28">
         <Card className="overflow-hidden">
-          <img
-            alt={heroImage.alt}
-            className={`h-40 w-full ${getImageFitClass(heroImage)}`}
-            src={heroImage.src}
-            style={getImagePresentationStyle(heroImage)}
-          />
+          <div className="relative h-40 w-full">
+            <Image
+              alt={heroImage.alt}
+              className={getImageFitClass(heroImage)}
+              fill
+              sizes="(max-width: 768px) 100vw, 420px"
+              src={heroImage.src}
+              style={getImagePresentationStyle(heroImage)}
+            />
+          </div>
           <div className="p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">

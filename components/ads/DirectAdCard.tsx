@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { AdEventTracker } from "@/components/ads/AdEventTracker";
 import { HouseAdEventTracker } from "@/components/ads/HouseAdEventTracker";
 import type { DirectAdCardModel } from "@/lib/ads";
@@ -26,11 +27,15 @@ function AdShell({
       )}
     >
       {ad.imageUrl ? (
-        <img
-          alt={ad.imageAlt || `${ad.sponsorLabel} sponsor creative`}
-          className="h-32 w-full object-cover"
-          src={ad.imageUrl}
-        />
+        <div className="relative h-32 w-full">
+          <Image
+            alt={ad.imageAlt || `${ad.sponsorLabel} sponsor creative`}
+            className="object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 420px"
+            src={ad.imageUrl}
+          />
+        </div>
       ) : null}
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
@@ -43,11 +48,15 @@ function AdShell({
             </p>
           </div>
           {ad.logoUrl ? (
-            <img
-              alt={`${ad.sponsorLabel} logo`}
-              className="size-10 rounded-[12px] object-contain"
-              src={ad.logoUrl}
-            />
+            <div className="relative size-10 overflow-hidden rounded-[12px]">
+              <Image
+                alt={`${ad.sponsorLabel} logo`}
+                className="object-contain"
+                fill
+                sizes="40px"
+                src={ad.logoUrl}
+              />
+            </div>
           ) : null}
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
@@ -271,10 +272,13 @@ function RewardFulfillment({
           </div>
         </div>
         <div className="mt-4 rounded-[22px] bg-[var(--ve-card)] p-4">
-          <img
+          <Image
             alt="Reward pass"
             className="mx-auto size-44 rounded-[18px]"
+            height={176}
             src={buildPseudoQrSvg(qrPayload)}
+            unoptimized
+            width={176}
           />
           <div className="mt-4 rounded-[16px] bg-[var(--ve-card-muted)] px-4 py-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ve-muted)]">
@@ -450,25 +454,31 @@ function ManualClaimForm({
   );
 }
 
-export function XPStore() {
-  const [snapshot, setSnapshot] = useState<RewardStoreSnapshot | null>(null);
+export function XPStore({
+  initialAuthRequired = false,
+  initialSnapshot = null,
+}: {
+  initialAuthRequired?: boolean;
+  initialSnapshot?: RewardStoreSnapshot | null;
+}) {
+  const [snapshot, setSnapshot] = useState<RewardStoreSnapshot | null>(initialSnapshot);
   const [tab, setTab] = useState<Tab>("store");
   const [expandedRewardId, setExpandedRewardId] = useState<string | null>(null);
   const [expandedRedemptionId, setExpandedRedemptionId] = useState<string | null>(null);
   const [activeRedemption, setActiveRedemption] = useState<RewardRedemption | null>(null);
   const [confirmReward, setConfirmReward] = useState<StoreReward | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialSnapshot && !initialAuthRequired);
   const [redeeming, setRedeeming] = useState(false);
-  const [authRequired, setAuthRequired] = useState(false);
+  const [authRequired, setAuthRequired] = useState(initialAuthRequired);
   const [storePage, setStorePage] = useState(1);
   const [historyPage, setHistoryPage] = useState(1);
   const activeNativeOutcome =
     activeRedemption?.fulfillmentType === "native"
       ? getNativeOutcomeDetails(activeRedemption)
       : null;
-  const rewardItems = snapshot?.rewards ?? [];
-  const redemptionItems = snapshot?.redemptions ?? [];
+  const rewardItems = useMemo(() => snapshot?.rewards ?? [], [snapshot?.rewards]);
+  const redemptionItems = useMemo(() => snapshot?.redemptions ?? [], [snapshot?.redemptions]);
   const paginatedRewards = useMemo(
     () => paginateItems(rewardItems, storePage, 6),
     [rewardItems, storePage],
@@ -498,8 +508,6 @@ export function XPStore() {
   }
 
   useEffect(() => {
-    void loadStore();
-
     function reload() {
       void loadStore();
     }
