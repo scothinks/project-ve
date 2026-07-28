@@ -496,7 +496,9 @@ export default async function DashboardPage() {
       <section className="rounded-b-[28px] bg-[#123c35] px-7 pb-7 pt-14 text-[#fff8df] lg:mx-[clamp(1.75rem,3vw,3rem)] lg:mt-8 lg:rounded-[36px] lg:px-10 lg:pt-10">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[2rem] font-semibold tracking-[-0.03em] text-[#fff8df]">Home</h1>
+            <h1 className="text-[2rem] font-semibold tracking-[-0.03em] text-[#fff8df]">
+              Project VE
+            </h1>
             <p className="mt-2 text-[0.98rem] font-medium tracking-[-0.01em] text-[#d9efe5]">
               Welcome back, <span className="font-semibold text-[#f4fbf7]">{firstName}</span>
             </p>
