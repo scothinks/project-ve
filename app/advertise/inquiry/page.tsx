@@ -18,7 +18,7 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
       <AppHeader title="Sponsor inquiry" backHref="/advertise" />
-      <section className="space-y-5 px-6 py-8 pb-16">
+      <section className="learner-page learner-page--spacious space-y-5">
         {submitted === "1" ? (
           <Card>
             <div className="p-5">

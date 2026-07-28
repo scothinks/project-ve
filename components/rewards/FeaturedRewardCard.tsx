@@ -19,27 +19,51 @@ function RewardThumbnail({ reward }: { reward: StoreReward }) {
   );
 }
 
-export function FeaturedRewardCard({ reward }: { reward: StoreReward }) {
+export function FeaturedRewardCard({
+  reward,
+  compact = false,
+}: {
+  reward: StoreReward;
+  compact?: boolean;
+}) {
   return (
-    <Link href="/xp-store" className="block min-w-[190px] flex-1">
+    <Link href="/xp-store" className="block h-full">
       <Card className="flex h-full flex-col overflow-hidden border border-[#fff1bf]" variant="store">
-        <div className="relative h-28 shrink-0">
+        <div className={`relative shrink-0 ${compact ? "h-16" : "h-28"}`}>
           <RewardThumbnail reward={reward} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-end">
+          <div
+            className={`absolute left-4 right-4 flex items-end justify-end ${
+              compact ? "bottom-3" : "bottom-4"
+            }`}
+          >
             <StatusBadge
-              className="shrink-0 px-3 py-1 text-[clamp(0.68rem,2.4vw,0.75rem)]"
+              className={`shrink-0 px-3 py-1 ${
+                compact ? "text-[0.68rem]" : "text-[clamp(0.68rem,2.4vw,0.75rem)]"
+              }`}
               tone="store"
             >
               {formatXpLabel(reward.costXp)}
             </StatusBadge>
           </div>
         </div>
-        <div className="flex flex-1 flex-col p-5">
-          <h3 className="line-clamp-3 min-h-[4.9rem] text-[1.12rem] font-semibold leading-7 tracking-[-0.025em] text-[var(--foreground)]">
+        <div className={`flex flex-1 flex-col ${compact ? "p-3.5" : "p-5"}`}>
+          <h3
+            className={`${
+              compact
+                ? "min-h-[2.6rem] text-[0.98rem] leading-[1.32] line-clamp-2"
+                : "min-h-[4.9rem] text-[1.12rem] leading-7 line-clamp-3"
+            } font-semibold tracking-[-0.025em] text-[var(--foreground)]`}
+          >
             {reward.title}
           </h3>
-          <p className="mt-2 line-clamp-3 text-[0.95rem] font-medium leading-6 text-[var(--ve-muted)]">
+          <p
+            className={`${
+              compact
+                ? "text-[0.82rem] leading-5 line-clamp-2"
+                : "text-[0.95rem] leading-6 line-clamp-3"
+            } ${compact ? "mt-1.5" : "mt-2"} font-medium text-[var(--ve-muted)]`}
+          >
             {reward.description}
           </p>
         </div>

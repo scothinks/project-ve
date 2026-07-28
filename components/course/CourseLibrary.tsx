@@ -53,7 +53,7 @@ export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibrar
   return (
     <div className="space-y-5">
       <div>
-        <div className="flex h-[5.25rem] flex-col justify-center rounded-[18px] border border-[#d8ded9] bg-[var(--ve-card)] px-4 focus-within:border-[var(--ve-green)]">
+        <div className="flex min-h-[5.25rem] flex-col justify-center rounded-[18px] border border-[#d8ded9] bg-[var(--ve-card)] px-4 focus-within:border-[var(--ve-green)] lg:min-h-[4.75rem] lg:px-5">
           <div className="flex items-center gap-3">
           <svg
             aria-hidden="true"
@@ -92,8 +92,8 @@ export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibrar
         </div>
       </div>
 
-      <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden bg-[color:color-mix(in_srgb,var(--ve-card)_95%,transparent)] py-3 backdrop-blur">
-        <div className="hide-scrollbar flex flex-nowrap gap-2 overflow-x-auto px-6">
+      <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden bg-[color:color-mix(in_srgb,var(--ve-card)_95%,transparent)] py-3 backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:backdrop-blur-0">
+        <div className="hide-scrollbar flex flex-nowrap gap-2 overflow-x-auto px-6 lg:flex-wrap lg:px-0">
           {categories.map((item) => (
             <button
               className={cn(
@@ -111,12 +111,13 @@ export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibrar
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-3 lg:max-w-[48rem]">
         {filteredCourses.length > 0 ? (
           paginatedCourses.items.map((course) => (
             <CourseCard
               completedLessonIds={completedLessonIds}
               course={course}
+              desktopLayout="horizontal"
               key={course.id}
             />
           ))

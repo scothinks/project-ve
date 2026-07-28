@@ -326,7 +326,7 @@ function RewardFulfillment({
 
 function StoreLoadingState() {
   return (
-    <section className="px-6 pb-28 pt-5">
+    <section className="learner-page learner-page--standard">
       <ExperienceHeader
         badge={
           <div className="grid size-16 place-items-center rounded-[22px] bg-[#f6c453] text-xl font-black text-[#251b08] shadow-[0_12px_24px_rgba(246,196,83,0.26)]">
@@ -347,11 +347,11 @@ function StoreLoadingState() {
           <div className="h-8 w-16 rounded-[18px] bg-[#fff8df]" />
         </div>
       </Card>
-      <div className="mt-5 grid grid-cols-2 gap-2 rounded-[18px] bg-[#fff4c4] p-1">
+      <div className="mx-auto mt-5 grid max-w-[28rem] grid-cols-2 gap-2 rounded-[18px] bg-[#fff4c4] p-1">
         <div className="h-10 rounded-[14px] bg-[var(--ve-card)]" />
         <div className="h-10 rounded-[14px] bg-[#ffedab]" />
       </div>
-      <div className="mt-5 space-y-3">
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {[0, 1].map((item) => (
           <Card className="flex gap-4 p-4" key={item} variant="store">
             <div className="size-20 shrink-0 rounded-[18px] bg-[#fff8df]" />
@@ -594,7 +594,7 @@ export function XPStore({
 
   if (!snapshot) {
     return (
-      <section className="px-6 py-8">
+      <section className="learner-page learner-page--spacious">
         <Card className="p-6" variant="store">
           <p className="text-sm font-bold">{message ?? "Could not load XP Store."}</p>
           {authRequired ? (
@@ -612,7 +612,7 @@ export function XPStore({
   }
 
   return (
-    <section className="px-6 pb-28 pt-5">
+    <section className="learner-page learner-page--standard">
       <ExperienceHeader
         badge={
           <div className="grid size-16 place-items-center rounded-[22px] bg-[#f6c453] text-xl font-black text-[#251b08] shadow-[0_12px_24px_rgba(246,196,83,0.26)]">
@@ -639,7 +639,7 @@ export function XPStore({
         </div>
       </Card>
 
-      <div className="mt-5 grid grid-cols-2 gap-2 rounded-[18px] bg-[#fff4c4] p-1">
+      <div className="mx-auto mt-5 grid max-w-[28rem] grid-cols-2 gap-2 rounded-[18px] bg-[#fff4c4] p-1">
         <button
           className={cn(
             "h-10 rounded-[14px] text-[0.98rem] font-semibold tracking-[-0.01em]",
@@ -669,31 +669,32 @@ export function XPStore({
       ) : null}
 
       {tab === "store" ? (
-        <div className="mt-5 space-y-4">
-          {snapshot.rewards.length === 0 ? (
-            <Card className="p-6 text-center" variant="store">
-              <p className="text-sm font-black">No rewards available</p>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                New rewards will appear here when they are available.
-              </p>
-            </Card>
-          ) : paginatedRewards.items.map((reward) => {
+        <>
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {snapshot.rewards.length === 0 ? (
+              <Card className="p-6 text-center" variant="store">
+                <p className="text-sm font-black">No rewards available</p>
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  New rewards will appear here when they are available.
+                </p>
+              </Card>
+            ) : paginatedRewards.items.map((reward) => {
             const expanded = expandedRewardId === reward.id;
             const canRedeem = snapshot.xpBalance >= reward.costXp && !reward.isSoldOut;
 
             return (
               <Card className="overflow-hidden p-5" key={reward.id} variant="store">
-                <div className="flex gap-4">
+                <div className="grid gap-4 min-[390px]:grid-cols-[5.75rem_minmax(0,1fr)] min-[390px]:items-start">
                   <div className="size-20 shrink-0 overflow-hidden rounded-[18px]">
                     <RewardThumb thumbnail={reward.thumbnail} title={reward.title} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h2 className="truncate text-[1.08rem] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+                        <h2 className="line-clamp-2 text-[1.08rem] font-semibold leading-6 tracking-[-0.02em] text-[var(--foreground)]">
                           {reward.title}
                         </h2>
-                        <p className="mt-2 text-[0.98rem] font-medium leading-7 text-[var(--ve-muted)]">
+                        <p className="mt-2 text-[0.95rem] font-medium leading-6 text-[var(--ve-muted)]">
                           {reward.description}
                         </p>
                       </div>
@@ -702,16 +703,16 @@ export function XPStore({
                         className="h-8 shrink-0 bg-[#fff8df] px-3 text-xs text-[#a66d00]"
                       />
                     </div>
-                    <div className="mt-5 flex items-center justify-between gap-3">
+                    <div className="mt-5 flex flex-col gap-3 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">
                       <button
-                        className="text-[0.95rem] font-medium tracking-[-0.01em] text-[#a66d00]"
+                        className="text-left text-[0.95rem] font-medium tracking-[-0.01em] text-[#a66d00]"
                         onClick={() => setExpandedRewardId(expanded ? null : reward.id)}
                         type="button"
                       >
                         {expanded ? "Hide details" : "Details"}
                       </button>
                       <Button
-                        className="h-10 px-5 text-[0.98rem]"
+                        className="h-10 w-full px-5 text-[0.98rem] min-[390px]:w-auto"
                         disabled={!canRedeem}
                         onClick={() => setConfirmReward(reward)}
                         type="button"
@@ -727,7 +728,7 @@ export function XPStore({
 
                 {expanded ? (
                     <div className="mt-5 border-t border-[var(--ve-line-soft)] pt-5">
-                    <div className="grid grid-cols-2 gap-4 text-xs font-bold text-[var(--ve-muted)]">
+                    <div className="grid grid-cols-1 gap-4 text-xs font-bold text-[var(--ve-muted)] min-[390px]:grid-cols-2">
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.12em]">Offer Ends</p>
                         <p className="mt-1 text-[var(--foreground)]">
@@ -766,9 +767,10 @@ export function XPStore({
                 ) : null}
               </Card>
             );
-          })}
+            })}
+          </div>
           <PaginationControls
-            className="pt-2"
+            className="mt-5 pt-2"
             currentPage={paginatedRewards.currentPage}
             onPageChange={(nextPage) => {
               setExpandedRewardId(null);
@@ -776,23 +778,24 @@ export function XPStore({
             }}
             totalPages={paginatedRewards.totalPages}
           />
-        </div>
+        </>
       ) : (
-        <div className="mt-5 space-y-4">
-          {snapshot.redemptions.length === 0 ? (
-            <Card className="p-6 text-center" variant="store">
-              <p className="text-sm font-black">No purchases yet</p>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                Redeem XP for a reward, then return here to manage it.
-              </p>
-            </Card>
-          ) : (
-            paginatedRedemptions.items.map((redemption) => {
+        <>
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {snapshot.redemptions.length === 0 ? (
+              <Card className="p-6 text-center" variant="store">
+                <p className="text-sm font-black">No purchases yet</p>
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  Redeem XP for a reward, then return here to manage it.
+                </p>
+              </Card>
+            ) : (
+              paginatedRedemptions.items.map((redemption) => {
               const expanded = expandedRedemptionId === redemption.id;
 
               return (
                 <Card className="overflow-hidden p-5" key={redemption.id} variant="store">
-                  <div className="flex gap-4">
+                  <div className="grid gap-4 min-[390px]:grid-cols-[5rem_minmax(0,1fr)] min-[390px]:items-start">
                     <div className="size-16 shrink-0 overflow-hidden rounded-[16px]">
                       <RewardThumb
                         thumbnail={redemption.rewardThumbnail}
@@ -802,10 +805,10 @@ export function XPStore({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h2 className="truncate text-[1.06rem] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+                          <h2 className="line-clamp-2 text-[1.06rem] font-semibold leading-6 tracking-[-0.02em] text-[var(--foreground)]">
                             {redemption.rewardTitle}
                           </h2>
-                          <p className="mt-2 text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)]">
+                          <p className="mt-2 text-[0.92rem] font-medium leading-6 tracking-[-0.01em] text-[var(--ve-muted)]">
                             {formatXpLabel(redemption.xpCost)} redeemed
                           </p>
                         </div>
@@ -814,7 +817,7 @@ export function XPStore({
                         </span>
                       </div>
                       <button
-                        className="mt-5 text-[0.95rem] font-medium tracking-[-0.01em] text-[#a66d00]"
+                        className="mt-5 text-left text-[0.95rem] font-medium tracking-[-0.01em] text-[#a66d00]"
                         onClick={() => setExpandedRedemptionId(expanded ? null : redemption.id)}
                         type="button"
                       >
@@ -871,10 +874,11 @@ export function XPStore({
                   ) : null}
                 </Card>
               );
-            })
-          )}
+              })
+            )}
+          </div>
           <PaginationControls
-            className="pt-2"
+            className="mt-5 pt-2"
             currentPage={paginatedRedemptions.currentPage}
             onPageChange={(nextPage) => {
               setExpandedRedemptionId(null);
@@ -882,7 +886,7 @@ export function XPStore({
             }}
             totalPages={paginatedRedemptions.totalPages}
           />
-        </div>
+        </>
       )}
 
       {confirmReward ? (

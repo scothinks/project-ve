@@ -12,7 +12,7 @@ export default async function TermsPage() {
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
       <AppHeader title="Terms" backHref="/profile" />
-      <section className="space-y-5 px-6 py-8 pb-28">
+      <section className="learner-page learner-page--spacious space-y-5">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-green)]">Legal</p>
           <h1 className="mt-2 text-3xl font-black leading-9">{page.title}</h1>

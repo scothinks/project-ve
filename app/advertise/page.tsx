@@ -33,7 +33,7 @@ export default function AdvertisePage() {
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
       <AppHeader title="Advertise" backHref="/" />
-      <section className="space-y-5 px-6 py-8 pb-16">
+      <section className="learner-page learner-page--spacious space-y-5">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
             Project VE Partnerships

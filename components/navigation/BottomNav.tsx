@@ -75,14 +75,14 @@ const items = [
 
 export function BottomNav({ active }: { active: string }) {
   return (
-    <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-6 pb-5 pt-3">
-      <div className="grid grid-cols-4 gap-2">
+    <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-6 pb-5 pt-3 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
+      <div className="mx-auto grid max-w-[22rem] grid-cols-4 gap-2 md:max-w-[26rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
         {items.map((item) => {
           const isActive = item.label === active;
           return (
             <Link
               className={cn(
-                "flex h-12 flex-col items-center justify-center rounded-[18px] text-[10px] font-semibold text-[var(--ve-muted)]",
+                "flex h-12 flex-col items-center justify-center rounded-[18px] text-[10px] font-semibold text-[var(--ve-muted)] lg:h-[4.25rem] lg:rounded-[22px]",
                 isActive && item.activeClassName,
               )}
               href={item.href}

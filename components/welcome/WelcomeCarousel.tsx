@@ -323,11 +323,11 @@ export function WelcomeCarousel({ destinationHref }: WelcomeCarouselProps) {
   const slide = slides[activeIndex];
 
   if (!ready) {
-    return <main className="mobile-shell min-h-[100dvh] bg-[var(--ve-shell)]" />;
+    return <main className="mobile-shell learner-compact-shell min-h-[100dvh] bg-[var(--ve-shell)]" />;
   }
 
   return (
-    <main className={cn("mobile-shell bg-[var(--ve-shell)]", styles.screen)}>
+    <main className={cn("mobile-shell learner-compact-shell bg-[var(--ve-shell)]", styles.screen)}>
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[38%] opacity-90"
         style={{

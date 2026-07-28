@@ -140,6 +140,129 @@ select {
   box-shadow: 0 20px 60px rgba(var(--ve-shadow-rgb), 0.16);
 }
 
+.learner-page {
+  padding-inline: 1.5rem;
+  padding-bottom: 7rem;
+}
+
+.learner-page--standard {
+  padding-top: 1.5rem;
+}
+
+.learner-page--spacious {
+  padding-top: 2rem;
+}
+
+.learner-content-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.learner-card-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.learner-readable {
+  width: 100%;
+}
+
+.learner-desktop-only {
+  display: none;
+}
+
+.learner-compact-shell {
+  width: min(100%, 430px);
+}
+
+@media (min-width: 768px) {
+  .mobile-shell {
+    width: min(100%, 720px);
+  }
+
+  .learner-compact-shell {
+    width: min(100%, 430px);
+  }
+
+  .learner-page {
+    padding-inline: 2rem;
+  }
+
+  .learner-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(var(--ve-green-rgb), 0.12), transparent 34rem),
+      linear-gradient(180deg, var(--ve-shell) 0%, var(--background) 100%);
+  }
+
+  .mobile-shell {
+    width: min(100%, 1180px);
+    min-height: 100vh;
+    padding-left: 6rem;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .learner-page {
+    padding-inline: clamp(1.75rem, 3vw, 3rem);
+    padding-bottom: 4rem;
+  }
+
+  .learner-page--standard {
+    padding-top: 2rem;
+  }
+
+  .learner-page--spacious {
+    padding-top: 3rem;
+  }
+
+  .learner-content-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+    align-items: start;
+    gap: 1.75rem;
+  }
+
+  .learner-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .learner-readable {
+    max-width: 48rem;
+    margin-inline: auto;
+  }
+
+  .learner-desktop-only {
+    display: block;
+  }
+
+  .learner-compact-shell {
+    width: min(100%, 430px);
+    padding-left: 0;
+    background: var(--ve-shell);
+    box-shadow: 0 20px 60px rgba(var(--ve-shadow-rgb), 0.16);
+  }
+}
+
+@media (min-width: 1280px) {
+  .mobile-shell {
+    width: min(100%, 1180px);
+  }
+
+  .learner-compact-shell {
+    width: min(100%, 430px);
+  }
+
+  .learner-card-grid--dense {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
 }

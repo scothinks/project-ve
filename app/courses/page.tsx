@@ -38,7 +38,7 @@ export default async function CoursesPage() {
   return (
     <main className="mobile-shell min-h-screen">
       <AppHeader title="Course Library" backHref="/dashboard" showMenu={false} />
-      <section className="px-6 pb-28 pt-6">
+      <section className="learner-page learner-page--standard">
         <SectionHeader
           eyebrow="Discover"
           subtitle="Search the Project VE library."

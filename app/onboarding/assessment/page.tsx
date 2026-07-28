@@ -47,7 +47,7 @@ export default async function ValuesAssessmentPage({ searchParams }: ValuesAsses
 
   if (!assessment) {
     return (
-      <main className="mobile-shell min-h-screen px-6 py-10">
+      <main className="mobile-shell learner-compact-shell min-h-screen px-6 py-10">
         <Card className="mx-auto max-w-2xl p-6">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
             Values Starter Check
@@ -69,7 +69,7 @@ export default async function ValuesAssessmentPage({ searchParams }: ValuesAsses
   }
 
   return (
-    <main className="mobile-shell min-h-screen px-5 py-8 pb-10">
+    <main className="mobile-shell learner-compact-shell min-h-screen px-5 py-8 pb-10">
       <ValuesAssessmentFlow
         action={submitValuesAssessment}
         assessment={{

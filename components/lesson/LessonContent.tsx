@@ -1,12 +1,42 @@
 import Image from "next/image";
-import type { LessonContentBlock } from "@/lib/lessons";
+import type { LessonContentBlock, LessonPageType } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 
 type LessonContentProps = {
   blocks: LessonContentBlock[];
+  variant?: LessonPageType | string;
 };
 
-export function LessonContent({ blocks }: LessonContentProps) {
+export function LessonContent({ blocks, variant = "concept" }: LessonContentProps) {
+  const isReflection = variant === "reflection";
+  const isSummary = variant === "summary";
+  const isExample = variant === "example";
+
+  const stackClasses = isReflection ? "space-y-6" : "space-y-5";
+  const textHeadingClasses = isReflection
+    ? "text-[15px] font-black leading-6 text-[var(--foreground)]"
+    : "text-[15px] font-black leading-6 text-[var(--foreground)]";
+  const textBodyClasses = isSummary
+    ? "mt-2 text-[15px] font-medium leading-7 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_92%,var(--foreground))]"
+    : isReflection
+      ? "mt-2 text-[15px] font-medium leading-7 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_88%,var(--foreground))]"
+      : "mt-2 text-[15px] font-medium leading-7 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_94%,var(--foreground))]";
+  const calloutShellClasses = isReflection
+    ? "rounded-[20px] border p-5"
+    : "rounded-[20px] border p-5";
+  const calloutTitleClasses = isSummary
+    ? "mt-2 text-[16px] font-black leading-6 text-[var(--foreground)]"
+    : "mt-2 text-[15px] font-black leading-6 text-[var(--foreground)]";
+  const calloutBodyClasses = isReflection
+    ? "mt-2 text-[14px] leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_90%,var(--foreground))]"
+    : "mt-2 text-[14px] leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_94%,var(--foreground))]";
+  const tableHeaderClasses = isExample || isSummary
+    ? "px-4 py-3.5 text-[13px] font-black"
+    : "px-4 py-3.5 text-[13px] font-bold";
+  const tableCellClasses = isReflection
+    ? "px-4 py-3.5 text-[14px] leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_88%,var(--foreground))]"
+    : "px-4 py-3.5 text-[14px] leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_94%,var(--foreground))]";
+
   const calloutToneClasses: Record<string, string> = {
     tip: "border-[color:color-mix(in_srgb,var(--ve-green)_20%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))]",
     key_point:
@@ -25,15 +55,15 @@ export function LessonContent({ blocks }: LessonContentProps) {
   };
 
   return (
-    <div className="space-y-4 text-left">
+    <div className={`${stackClasses} text-left`}>
       {blocks.map((block) => {
         if (block.type === "text") {
           return (
             <section key={block.id}>
               {block.heading ? (
-                <h3 className="text-sm font-bold text-[var(--foreground)]">{block.heading}</h3>
+                <h3 className={textHeadingClasses}>{block.heading}</h3>
               ) : null}
-              <p className="mt-2 text-[13px] font-medium leading-[1.55] text-[#939393]">
+              <p className={textBodyClasses}>
                 {block.body}
               </p>
             </section>
@@ -47,16 +77,16 @@ export function LessonContent({ blocks }: LessonContentProps) {
 
           return (
             <section
-              className={`rounded-[18px] border p-4 ${toneClasses}`}
+              className={`${calloutShellClasses} ${toneClasses}`}
               key={block.id}
             >
               <p className={`text-[11px] font-black uppercase tracking-[0.12em] ${labelClasses}`}>
                 {displayLabel}
               </p>
               {block.title ? (
-                <h3 className="mt-2 text-sm font-bold text-[var(--foreground)]">{block.title}</h3>
+                <h3 className={calloutTitleClasses}>{block.title}</h3>
               ) : null}
-              <p className="mt-2 text-xs leading-5 text-[var(--ve-muted-strong)]">{block.body}</p>
+              <p className={calloutBodyClasses}>{block.body}</p>
             </section>
           );
         }
@@ -73,7 +103,7 @@ export function LessonContent({ blocks }: LessonContentProps) {
                 width={900}
               />
               {block.caption ? (
-                <figcaption className="mt-2 text-center text-[11px] font-semibold text-[var(--ve-muted)]">
+                <figcaption className="mt-3 text-center text-[12px] font-semibold leading-5 text-[var(--ve-muted-strong)]">
                   {block.caption}
                 </figcaption>
               ) : null}
@@ -118,16 +148,16 @@ export function LessonContent({ blocks }: LessonContentProps) {
 
           return (
             <section className="rounded-[18px] border border-[var(--ve-line)] p-4" key={block.id}>
-              {block.title ? <p className="mb-3 text-sm font-bold">{block.title}</p> : null}
+              {block.title ? <p className="mb-3 text-[15px] font-black leading-6">{block.title}</p> : null}
               {isPlaceholder ? (
-                <div className="rounded-[14px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-card-subtle)] px-4 py-3 text-xs font-semibold text-[var(--ve-muted)]">
+                <div className="rounded-[14px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-card-subtle)] px-4 py-3 text-sm font-semibold text-[var(--ve-muted-strong)]">
                   Audio media placeholder
                 </div>
               ) : (
                 <audio className="w-full" controls preload="metadata" src={block.src} />
               )}
               {block.transcript ? (
-                <p className="mt-3 text-xs leading-5 text-[var(--ve-muted)]">{block.transcript}</p>
+                <p className="mt-3 text-[14px] leading-6 text-[var(--ve-muted-strong)]">{block.transcript}</p>
               ) : null}
             </section>
           );
@@ -136,15 +166,15 @@ export function LessonContent({ blocks }: LessonContentProps) {
         return (
           <section className="overflow-hidden rounded-[18px] border border-[var(--ve-line-soft)]" key={block.id}>
             {block.title ? (
-              <h3 className="border-b border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)] px-4 py-3 text-sm font-bold">
+              <h3 className="border-b border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)] px-4 py-3 text-[15px] font-black leading-6">
                 {block.title}
               </h3>
             ) : null}
-            <table className="w-full border-collapse text-left text-xs">
+            <table className="w-full border-collapse text-left">
               <thead className="bg-[var(--ve-panel-soft)] text-[var(--ve-muted-strong)]">
                 <tr>
                   {block.columns.map((column) => (
-                    <th className="px-3 py-3 font-bold" key={column}>
+                    <th className={tableHeaderClasses} key={column}>
                       {column}
                     </th>
                   ))}
@@ -154,7 +184,7 @@ export function LessonContent({ blocks }: LessonContentProps) {
                 {block.rows.map((row, rowIndex) => (
                   <tr className="border-t border-[var(--ve-line-soft)]" key={`${block.id}-${rowIndex}`}>
                     {row.map((cell, cellIndex) => (
-                      <td className="px-3 py-3 text-[var(--ve-muted-strong)]" key={`${cell}-${cellIndex}`}>
+                      <td className={tableCellClasses} key={`${cell}-${cellIndex}`}>
                         {cell}
                       </td>
                     ))}
@@ -163,7 +193,7 @@ export function LessonContent({ blocks }: LessonContentProps) {
               </tbody>
             </table>
             {block.caption ? (
-              <p className="px-4 py-3 text-[11px] font-semibold text-[var(--ve-muted)]">
+              <p className="px-4 py-3 text-[12px] font-semibold leading-5 text-[var(--ve-muted-strong)]">
                 {block.caption}
               </p>
             ) : null}

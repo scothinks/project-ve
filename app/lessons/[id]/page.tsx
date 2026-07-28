@@ -80,9 +80,9 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         }
         title={lesson.title}
       />
-      <section className="px-6 py-8">
-        <Card className="overflow-hidden">
-          <div className="px-6 py-7">
+      <section className="learner-page learner-page--spacious">
+        <Card className="learner-readable overflow-hidden">
+          <div className="px-6 py-7 lg:px-10 lg:py-10">
             <LessonPageLayout
               blocks={page.blocks}
               coverImage={pageCover}
@@ -93,7 +93,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           </div>
         </Card>
 
-        <div className="mt-7 flex justify-center gap-1.5">
+        <div className="mx-auto mt-7 flex max-w-3xl justify-center gap-1.5">
           {lesson.pages.map((lessonPage) => (
             <span
               className={`size-2.5 rounded-full ${
@@ -104,7 +104,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-3">
           {isFirstPage ? (
             <Button href="/dashboard" variant="outline">
               Dashboard
@@ -122,7 +122,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           )}
         </div>
 
-        <div className="mt-8">
+        <div className="mx-auto mt-8 max-w-3xl">
           <DirectAdCard ad={footerAd} />
         </div>
       </section>
