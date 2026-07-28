@@ -25,8 +25,8 @@ export default function LoginPage() {
         </Link>
 
         <div className="max-w-xl">
-          <div className="grid size-16 place-items-center rounded-[24px] bg-[#123c35] text-2xl font-black text-[#fff8df] shadow-[0_24px_60px_rgba(18,60,53,0.22)]">
-            N
+          <div className="grid size-16 place-items-center rounded-[24px] bg-[#087f5b] text-[1.35rem] font-black tracking-[-0.04em] text-white shadow-[0_24px_60px_rgba(18,60,53,0.22)]">
+            VE
           </div>
           <p className="mt-8 text-xs font-black uppercase tracking-[0.18em] text-[var(--ve-green)]">
             Project VE: Values Education
