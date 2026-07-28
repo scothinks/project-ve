@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 const referralStorageKey = "project-ve-referral-code";
+const referralAttemptedStorageKey = "project-ve-referral-code-attempted";
 
 export function ReferralAttributionCapture() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
@@ -17,6 +18,12 @@ export function ReferralAttributionCapture() {
       if (!code) {
         return;
       }
+
+      if (window.sessionStorage.getItem(referralAttemptedStorageKey) === code) {
+        return;
+      }
+
+      window.sessionStorage.setItem(referralAttemptedStorageKey, code);
 
       let referredUserHint: string | undefined;
 
@@ -38,10 +45,16 @@ export function ReferralAttributionCapture() {
 
       if (response.ok) {
         window.localStorage.removeItem(referralStorageKey);
+        window.sessionStorage.removeItem(referralAttemptedStorageKey);
+        return;
+      }
+
+      if (response.status === 400) {
+        window.localStorage.removeItem(referralStorageKey);
       }
     }
 
-    void applyReferral();
+    void applyReferral().catch(() => undefined);
   }, [supabase]);
 
   return null;
