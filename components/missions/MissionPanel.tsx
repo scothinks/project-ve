@@ -467,7 +467,7 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
         </div>
       ) : null}
 
-      <div className={cn("space-y-4", isFeatured ? "mt-3" : "mt-0")}>
+      <div className={cn("learner-card-grid", isFeatured ? "mt-3" : "mt-0")}>
         {loading
           ? Array.from({ length: skeletonCount }).map((_, index) => (
               <Card
@@ -734,7 +734,7 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
                 </div>
               ) : null}
 
-              <div className="mt-5 space-y-4">
+              <div className="learner-card-grid mt-5">
                 {(activeProofMission.proofRequiredFields ?? []).map((field) => {
                   const fieldStatus = activeProofMission.proofFieldStatuses?.[field];
                   const isLocked = fieldStatus === "approved" || fieldStatus === "submitted";

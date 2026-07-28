@@ -15,7 +15,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
   const starterLesson = catalog[0]?.lessons[0];
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)] px-8 py-12">
+    <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ve-card)] px-8 py-12">
       <ReferralCodeCapture code={code} />
 
       <div className="flex items-center justify-between">

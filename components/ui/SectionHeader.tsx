@@ -33,7 +33,7 @@ export function SectionHeader({
   trailing,
 }: SectionHeaderProps) {
   return (
-    <div className={cn("flex items-end justify-between gap-4", className)}>
+    <div className={cn("flex items-start justify-between gap-4", className)}>
       <div>
         {eyebrow ? (
           <p
@@ -57,7 +57,7 @@ export function SectionHeader({
         ) : null}
       </div>
       {trailing ?? (actionHref && actionLabel ? (
-        <Button href={actionHref} className="h-8 shrink-0 px-4 text-xs" variant="ghost">
+        <Button href={actionHref} className="mt-0.5 h-8 shrink-0 px-4 text-xs" variant="ghost">
           {actionLabel}
         </Button>
       ) : null)}

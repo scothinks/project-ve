@@ -38,7 +38,7 @@ export default async function XPStorePage() {
         showMenu={false}
       />
       <XPStore initialSnapshot={rewardSnapshot} />
-      <section className="px-6 pb-28">
+      <section className="learner-page">
         <DirectAdCard ad={storeAd} />
       </section>
       <BottomNav active="Store" />

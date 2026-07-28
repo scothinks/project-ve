@@ -54,24 +54,24 @@ function ContinueLearningCard({
   item: NonNullable<Awaited<ReturnType<typeof getContinueLearningItem>>>;
 }) {
   return (
-    <Card className="overflow-hidden border border-[#dff2e9]">
-      <div className="relative h-28">
+    <Card className="overflow-hidden border border-[#dff2e9] lg:grid lg:grid-cols-[14rem_minmax(0,1fr)]">
+      <div className="relative h-28 lg:h-full lg:min-h-[12rem]">
         <Image
           alt={item.lesson.coverImage.alt}
           className={`h-full w-full ${getImageFitClass(item.lesson.coverImage)}`}
           fill
-          sizes="(max-width: 768px) 100vw, 420px"
+          sizes="(max-width: 768px) 100vw, 260px"
           src={item.lesson.coverImage.src}
           style={getImagePresentationStyle(item.lesson.coverImage)}
         />
       </div>
-      <div className="p-5">
+      <div className="p-5 lg:p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#008751]">
               {item.course.title}
             </p>
-            <h3 className="mt-1 text-[1.22rem] font-semibold tracking-[-0.025em] leading-7 text-[var(--foreground)]">
+            <h3 className="mt-1 text-[1.18rem] font-semibold leading-7 tracking-[-0.025em] text-[var(--foreground)]">
               {item.lesson.title}
             </h3>
           </div>
@@ -96,6 +96,78 @@ function ContinueLearningCard({
   );
 }
 
+function XpBalanceCard({
+  completedCourses,
+  totalCourses,
+  xpBalance,
+}: {
+  completedCourses: number;
+  totalCourses: number;
+  xpBalance: number;
+}) {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+            XP Balance
+          </p>
+          <p className="mt-1 max-w-[11rem] whitespace-nowrap text-[clamp(1.25rem,6vw,1.75rem)] font-black leading-none tabular-nums">
+            {formatXpLabel(xpBalance)}
+          </p>
+        </div>
+        <Button href="/xp-store" className="h-10 px-5 text-[0.98rem]" variant="soft">
+          Redeem
+        </Button>
+      </div>
+      <div className="mt-6 h-2 rounded-full bg-[#e8e8e8]">
+        <div
+          className="h-full rounded-full bg-[#008751]"
+          style={{
+            width: totalCourses > 0 ? `${(completedCourses / totalCourses) * 100}%` : "0%",
+          }}
+        />
+      </div>
+      <p className="mt-3 text-right text-[0.88rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)]">
+        {completedCourses}/{totalCourses} courses completed
+      </p>
+    </Card>
+  );
+}
+
+function FeaturedRewardsSection({
+  rewards,
+  compact = false,
+}: {
+  rewards: NonNullable<Awaited<ReturnType<typeof getRewardStoreSnapshot>>>["rewards"];
+  compact?: boolean;
+}) {
+  if (rewards.length === 0) return null;
+
+  return (
+    <div>
+      <SectionHeader
+        actionHref="/xp-store"
+        actionLabel="View all"
+        subtitle="Redeem XP for currently available offers."
+        title="Featured rewards"
+        tone="store"
+      />
+      <div
+        className={
+          compact
+            ? "mt-3 space-y-2.5"
+            : "mt-3 grid grid-cols-1 gap-3 min-[390px]:grid-cols-2"
+        }
+      >
+        {rewards.map((reward) => (
+          <FeaturedRewardCard compact key={reward.id} reward={reward} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const missionStatusCopy: Record<UserMissionSummary["status"], string> = {
   not_started: "Not started",
   in_progress: "In progress",
@@ -104,6 +176,9 @@ const missionStatusCopy: Record<UserMissionSummary["status"], string> = {
   rejected: "Rejected",
   completed: "Completed",
 };
+
+const secondaryDashboardCardListClass =
+  "mt-3 grid gap-3 lg:max-w-[calc(100%-2rem)] xl:max-w-[calc(100%-3rem)]";
 
 const recommendedMissionTheme: Record<
   MissionCategory,
@@ -149,9 +224,11 @@ const recommendedMissionTheme: Record<
 function RecommendedMissionCard({
   mission,
   href,
+  compact = false,
 }: {
   mission: UserMissionSummary;
   href: string;
+  compact?: boolean;
 }) {
   const theme = recommendedMissionTheme[mission.category];
   const rewardLabel = getMissionRewardLabel(mission);
@@ -168,36 +245,63 @@ function RecommendedMissionCard({
       mission.status === "rejected");
 
   return (
-    <Card className={`overflow-hidden p-5 sm:p-6 ${theme.card}`} variant="quiet">
+    <Card
+      className={`overflow-hidden ${compact ? "p-4" : "p-5 sm:p-6"} ${theme.card}`}
+      variant="quiet"
+    >
       <div className="flex items-start gap-3">
         <div
-          className={`inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${theme.label}`}
+          className={`inline-flex rounded-full font-black uppercase ${
+            compact
+              ? "px-2.5 py-1 text-[10px] tracking-[0.12em]"
+              : "px-3 py-1 text-[11px] tracking-[0.14em]"
+          } ${theme.label}`}
         >
           {mission.category}
         </div>
 
         <div
-          className={`ml-auto max-w-[72%] rounded-[18px] px-4 py-2.5 text-right sm:max-w-[18rem] ${theme.pill}`}
+          className={`ml-auto text-right ${
+            compact
+              ? "max-w-[62%] rounded-[16px] px-3 py-2"
+              : "max-w-[72%] rounded-[18px] px-4 py-2.5 sm:max-w-[18rem]"
+          } ${theme.pill}`}
           title={rewardLabel}
         >
-          <span className="block text-[0.95rem] font-black tracking-[-0.02em] sm:text-base">
+          <span
+            className={`block font-black tracking-[-0.02em] ${
+              compact ? "text-[0.9rem]" : "text-[0.95rem] sm:text-base"
+            }`}
+          >
             {rewardLabel}
           </span>
         </div>
       </div>
 
-      <div className="mt-5 min-w-0">
-        <h3 className="text-[1.24rem] font-semibold tracking-[-0.025em] text-[var(--foreground)]">
+      <div className={`${compact ? "mt-4" : "mt-5"} min-w-0`}>
+        <h3
+          className={`${compact ? "text-[1.05rem]" : "text-[1.24rem]"} font-semibold tracking-[-0.025em] text-[var(--foreground)]`}
+        >
           {mission.title}
         </h3>
-        <p className="mt-3 max-w-none text-[0.98rem] font-medium leading-[1.7] text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
+        <p
+          className={`${
+            compact
+              ? "mt-2 line-clamp-3 text-[0.86rem] leading-6"
+              : "mt-3 text-[0.98rem] leading-[1.7] sm:max-w-[34ch]"
+          } max-w-none font-medium text-[var(--ve-muted-strong)]`}
+        >
           {mission.description}
         </p>
       </div>
 
       {hasStructuredProgress ? (
-        <div className="mt-5">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
+        <div className={compact ? "mt-4" : "mt-5"}>
+          <div
+            className={`flex flex-wrap items-center justify-between gap-2 font-semibold tracking-[-0.01em] text-[var(--ve-muted)] ${
+              compact ? "text-[0.8rem]" : "text-[0.9rem]"
+            }`}
+          >
             <span className="min-w-0 flex-1">
               {mission.completionLabel ?? missionStatusCopy[mission.status]}
             </span>
@@ -214,8 +318,8 @@ function RecommendedMissionCard({
         </div>
       ) : null}
 
-      <div className="mt-5">
-        <Button className="h-10 px-5 text-[0.98rem]" href={href}>
+      <div className={compact ? "mt-4" : "mt-5"}>
+        <Button className={compact ? "h-9 px-4 text-sm" : "h-10 px-5 text-[0.98rem]"} href={href}>
           Open mission
         </Button>
       </div>
@@ -389,7 +493,7 @@ export default async function DashboardPage() {
   return (
     <main className="mobile-shell min-h-screen">
       <ReferralAttributionCapture />
-      <section className="rounded-b-[28px] bg-[#123c35] px-7 pb-7 pt-14 text-[#fff8df]">
+      <section className="rounded-b-[28px] bg-[#123c35] px-7 pb-7 pt-14 text-[#fff8df] lg:mx-[clamp(1.75rem,3vw,3rem)] lg:mt-8 lg:rounded-[36px] lg:px-10 lg:pt-10">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-[2rem] font-semibold tracking-[-0.03em] text-[#fff8df]">Home</h1>
@@ -419,201 +523,221 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="space-y-6 px-6 py-6 pb-28">
-        <Card className="-mt-12 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-                XP Balance
-              </p>
-              <p className="mt-1 max-w-[11rem] whitespace-nowrap text-[clamp(1.25rem,6vw,1.75rem)] font-black leading-none tabular-nums">
-                {formatXpLabel(xpBalance)}
-              </p>
-            </div>
-            <Button href="/xp-store" className="h-10 px-5 text-[0.98rem]" variant="soft">
-              Redeem
-            </Button>
-          </div>
-          <div className="mt-6 h-2 rounded-full bg-[#e8e8e8]">
-            <div
-              className="h-full rounded-full bg-[#008751]"
-              style={{
-                width: totalCourses > 0 ? `${(completedCourses / totalCourses) * 100}%` : "0%",
-              }}
-            />
-          </div>
-          <p className="mt-3 text-right text-[0.88rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)]">
-            {completedCourses}/{totalCourses} courses completed
-          </p>
-        </Card>
-
-        <DirectAdCard ad={homeFeedAd} />
-
-        {continueLearningItem ? (
-          <div>
-            <SectionHeader
-              subtitle="Jump back into the exact step you were working on."
-              title="Continue learning"
-            />
-            <div className="mt-3">
-              <ContinueLearningCard item={continueLearningItem} />
-            </div>
-          </div>
-        ) : null}
-
-        <SectionHeader
-          actionHref="/courses"
-          actionLabel="Browse"
-          subtitle="Starter packs and current focus areas."
-          title="Recommended for you"
-        />
-
-        {activeRecommendationSections.length > 0 ? (
-          activeRecommendationSections.map((section) => (
-            <div id={section.eyebrow?.toLowerCase().replace(/\s+/g, "-") ?? section.id} key={section.id}>
-              <SectionHeader
-                eyebrow={section.eyebrow ?? undefined}
-                subtitle={section.subtitle ?? undefined}
-                title={section.title}
+      <section className="learner-page learner-page--standard">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(17rem,20rem)] lg:items-start lg:gap-7 xl:gap-8">
+          <div className="space-y-6">
+            <div className="-mt-12 lg:hidden">
+              <XpBalanceCard
+                completedCourses={completedCourses}
+                totalCourses={totalCourses}
+                xpBalance={xpBalance}
               />
-              <div className="mt-3 space-y-3">
-                {section.items.map((item) =>
-                  item.type === "course" ? (
-                    <CourseCard
-                      completedLessonIds={completedLessonIds}
-                      course={item.course}
-                      key={item.id}
-                    />
-                  ) : (
-                    <LessonModuleCard
-                      completed={isLessonCompleted(item.lesson.id)}
-                      key={item.id}
-                      lesson={item.lesson}
-                    />
-                  ),
-                )}
-              </div>
             </div>
-          ))
-        ) : catalog.length > 0 && !hasPublishedRecommendationSections ? (
-          <>
-            {starterLessons.length ? (
-              <div id="lessons">
+
+            <div className="lg:hidden">
+              <DirectAdCard ad={homeFeedAd} />
+            </div>
+
+            {continueLearningItem ? (
+              <div>
                 <SectionHeader
-                  eyebrow="Starter pack"
-                  subtitle="Begin with practical choices and everyday values."
+                  subtitle="Jump back into the exact step you were working on."
+                  title="Continue learning"
                 />
-                <div className="mt-3 space-y-3">
-                  {starterLessons.map((lesson) => (
-                    <LessonModuleCard
-                      completed={isLessonCompleted(lesson.id)}
-                      key={lesson.id}
-                      lesson={lesson}
+                <div className="mt-3">
+                  <ContinueLearningCard item={continueLearningItem} />
+                </div>
+              </div>
+            ) : null}
+
+            {activeRecommendationSections.length > 0 ? (
+              <SectionHeader
+                actionHref="/courses"
+                actionLabel="Browse"
+                subtitle="Starter packs and current focus areas."
+                title="Recommended for you"
+              />
+            ) : null}
+
+            {activeRecommendationSections.length > 0 ? (
+              activeRecommendationSections.map((section) => (
+                <div
+                  id={section.eyebrow?.toLowerCase().replace(/\s+/g, "-") ?? section.id}
+                  key={section.id}
+                >
+                  <SectionHeader
+                    eyebrow={section.eyebrow ?? undefined}
+                    subtitle={section.subtitle ?? undefined}
+                    title={section.title}
+                  />
+                  <div className={secondaryDashboardCardListClass}>
+                    {section.items.map((item) =>
+                      item.type === "course" ? (
+                        <CourseCard
+                          completedLessonIds={completedLessonIds}
+                          course={item.course}
+                          desktopLayout="horizontal"
+                          key={item.id}
+                        />
+                      ) : (
+                        <LessonModuleCard
+                          completed={isLessonCompleted(item.lesson.id)}
+                          desktopLayout="horizontal"
+                          key={item.id}
+                          lesson={item.lesson}
+                        />
+                      ),
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : catalog.length > 0 && !hasPublishedRecommendationSections ? (
+              <>
+                {starterLessons.length ? (
+                  <div id="lessons">
+                    <SectionHeader
+                      eyebrow="Starter pack"
+                      subtitle="Begin with practical choices and everyday values."
+                    />
+                    <div className={secondaryDashboardCardListClass}>
+                      {starterLessons.map((lesson) => (
+                        <LessonModuleCard
+                          completed={isLessonCompleted(lesson.id)}
+                          desktopLayout="horizontal"
+                          key={lesson.id}
+                          lesson={lesson}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <Card className="p-5">
+                  <h2 className="text-base font-black">Browse the course library</h2>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                    Focus area recommendations stay empty until a tutor curates them. You can still
+                    browse all published courses any time.
+                  </p>
+                  <div className="mt-4">
+                    <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
+                      Browse courses
+                    </Button>
+                  </div>
+                </Card>
+              </>
+            ) : catalog.length > 0 ? (
+              <Card className="p-5">
+                <h2 className="text-base font-black">You are caught up</h2>
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  You have finished the current recommendations. Browse the full library to replay
+                  lessons or go deeper.
+                </p>
+                <div className="mt-4">
+                  <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
+                    Browse courses
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-5">
+                <h2 className="text-base font-black">No lessons yet</h2>
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  New values education courses will appear here when they are published.
+                </p>
+              </Card>
+            )}
+
+            {nonMissionPersonalizedSections.map((section) => (
+              <div key={section.id}>
+                <SectionHeader
+                  subtitle={section.subtitle}
+                  title={section.title}
+                />
+                <div className={secondaryDashboardCardListClass}>
+                  {section.items.map((item) => (
+                    item.lesson ? (
+                      <LessonModuleCard
+                        completed={isLessonCompleted(item.lesson.id)}
+                        desktopLayout="horizontal"
+                        key={`${section.id}:${item.id}`}
+                        lesson={item.lesson}
+                      />
+                    ) : item.course ? (
+                      <CourseCard
+                        completedLessonIds={completedLessonIds}
+                        course={item.course}
+                        desktopLayout="horizontal"
+                        href={item.href}
+                        key={`${section.id}:${item.id}`}
+                      />
+                    ) : null
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {recommendedMissionItems.length > 0 ? (
+              <div className="lg:hidden">
+                <SectionHeader
+                  actionHref="/missions"
+                  actionLabel="View all"
+                  subtitle="Take the next challenge that fits your path."
+                  title="Recommended missions"
+                  tone="mission"
+                />
+                <div className="learner-card-grid mt-3">
+                  {recommendedMissionItems.map((item) => (
+                    <RecommendedMissionCard
+                      href={item.href}
+                      key={`recommended-mission:${item.id}`}
+                      mission={item.mission}
                     />
                   ))}
                 </div>
               </div>
             ) : null}
 
-            <Card className="p-5">
-              <h2 className="text-base font-black">Browse the course library</h2>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                Focus area recommendations stay empty until a tutor curates them. You can still
-                browse all published courses any time.
-              </p>
-              <div className="mt-4">
-                <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
-                  Browse courses
-                </Button>
-              </div>
-            </Card>
-          </>
-        ) : catalog.length > 0 ? (
-          <Card className="p-5">
-            <h2 className="text-base font-black">You are caught up</h2>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              You have finished the current recommendations. Browse the full library to replay lessons or go deeper.
-            </p>
-            <div className="mt-4">
-              <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
-                Browse courses
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <Card className="p-5">
-            <h2 className="text-base font-black">No lessons yet</h2>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              New values education courses will appear here when they are published.
-            </p>
-          </Card>
-        )}
-
-        {nonMissionPersonalizedSections.map((section) => (
-          <div key={section.id}>
-            <SectionHeader
-              subtitle={section.subtitle}
-              title={section.title}
-            />
-            <div className="mt-3 space-y-3">
-              {section.items.map((item) => (
-                item.lesson ? (
-                  <LessonModuleCard
-                    completed={isLessonCompleted(item.lesson.id)}
-                    key={`${section.id}:${item.id}`}
-                    lesson={item.lesson}
-                  />
-                ) : item.course ? (
-                  <CourseCard
-                    completedLessonIds={completedLessonIds}
-                    course={item.course}
-                    href={item.href}
-                    key={`${section.id}:${item.id}`}
-                  />
-                ) : null
-              ))}
+            <div className="lg:hidden">
+              <FeaturedRewardsSection rewards={featuredRewards} />
             </div>
           </div>
-        ))}
 
-        {recommendedMissionItems.length > 0 ? (
-          <div>
-            <SectionHeader
-              actionHref="/missions"
-              actionLabel="View all"
-              subtitle="Take the next challenge that fits your path."
-              title="Recommended missions"
-              tone="mission"
-            />
-            <div className="mt-3 space-y-3">
-              {recommendedMissionItems.map((item) => (
-                <RecommendedMissionCard
-                  href={item.href}
-                  key={`recommended-mission:${item.id}`}
-                  mission={item.mission}
+          <aside className="hidden space-y-5 lg:block">
+            <div className="-mt-12">
+              <XpBalanceCard
+                completedCourses={completedCourses}
+                totalCourses={totalCourses}
+                xpBalance={xpBalance}
+              />
+            </div>
+
+            <DirectAdCard ad={homeFeedAd} />
+
+            {recommendedMissionItems.length > 0 ? (
+              <div>
+                <SectionHeader
+                  actionHref="/missions"
+                  actionLabel="View all"
+                  subtitle="Take the next challenge that fits your path."
+                  title="Missions"
+                  tone="mission"
                 />
-              ))}
-            </div>
-          </div>
-        ) : null}
+                <div className="mt-3 space-y-3">
+                  {recommendedMissionItems.slice(0, 2).map((item) => (
+                    <RecommendedMissionCard
+                      compact
+                      href={item.href}
+                      key={`desktop-mission:${item.id}`}
+                      mission={item.mission}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
-        {featuredRewards.length > 0 ? (
-          <SectionHeader
-            actionHref="/xp-store"
-            actionLabel="View all"
-            subtitle="Redeem XP for currently available offers."
-            title="Featured rewards"
-            tone="store"
-          />
-        ) : null}
-
-        {featuredRewards.length > 0 ? (
-          <div className="hide-scrollbar -mx-6 flex gap-3 overflow-x-auto px-6 pb-1">
-            {featuredRewards.map((reward) => (
-              <FeaturedRewardCard key={reward.id} reward={reward} />
-            ))}
-          </div>
-        ) : null}
+            <FeaturedRewardsSection compact rewards={featuredRewards} />
+          </aside>
+        </div>
       </section>
 
       <BottomNav active="Home" />

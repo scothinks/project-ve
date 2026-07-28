@@ -25,7 +25,7 @@ export default async function MissionsPage() {
         className="bg-[#fffaf4] shadow-none"
         showMenu={false}
       />
-      <section className="px-6 pb-28 pt-5">
+      <section className="learner-page learner-page--standard">
         <ExperienceHeader
           badge={
             <div className="grid size-16 place-items-center rounded-[22px] bg-[#ff7a59] text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_12px_24px_rgba(255,122,89,0.22)]">

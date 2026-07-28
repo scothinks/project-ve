@@ -45,7 +45,7 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
 
   if (result === undefined) {
     return (
-      <section className="px-6 py-8">
+      <section className="learner-page learner-page--spacious">
         <Card className="p-6">
           <p className="text-sm font-bold">Loading result...</p>
         </Card>
@@ -55,7 +55,7 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
 
   if (result === null) {
     return (
-      <section className="px-6 py-8">
+      <section className="learner-page learner-page--spacious">
         <Card className="p-6 text-center">
           <p className="text-lg font-black">No quiz result yet</p>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
@@ -88,7 +88,8 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
     }));
 
   return (
-    <section className="px-6 py-8">
+    <section className="learner-page learner-page--spacious">
+      <div className="learner-readable">
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4">
           <p className="text-xs font-bold text-[var(--ve-muted)]">Correct Answers</p>
@@ -125,7 +126,7 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
 
       <section className="mt-7">
         <h2 className="text-[17px] font-bold">Questions to Review</h2>
-        <div className="mt-3 space-y-3">
+        <div className="learner-card-grid mt-3">
           {reviewQuestions.length > 0 ? (
             reviewQuestions.map((question) => (
               <Card className="min-h-[61px] px-5 py-4" key={question.id}>
@@ -161,6 +162,7 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
           Lessons
         </Button>
       </section>
+      </div>
     </section>
   );
 }

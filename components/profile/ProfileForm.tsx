@@ -303,7 +303,7 @@ export function ProfileForm({
   }
 
   return (
-    <section className="space-y-5 px-6 py-8 pb-28">
+    <section className="learner-page learner-page--spacious space-y-5">
       <div>
         <h1 className="mt-2 text-2xl font-black leading-8">Manage profile</h1>
         <p className="mt-2 text-sm font-semibold leading-5 text-[var(--ve-muted)]">{email}</p>

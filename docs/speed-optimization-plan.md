@@ -109,3 +109,4 @@ Measured from a local production server with a warmed Next cache. These timings 
 - Some admin unused-variable lint warnings predate this work and remain intentionally untouched.
 - A deeper database-level mission summary RPC would further reduce query count, but the current implementation removes read-path writes and parallelizes the existing logic without requiring a migration.
 - Browser-level Lighthouse/Web Vitals should be captured in staging because local server timing does not measure hydration, image loading, real device CPU, or mobile network behavior.
+- Investigate why `/api/referrals/accept` fires during simple learner navigation such as dashboard → courses → course detail. Current likely source is `ReferralAttributionCapture` on `/dashboard`; confirm whether stale `project-ve-referral-code` localStorage or missing accepted/refused state causes repeated 400s, then gate or clear it so normal course browsing does not produce referral API noise.

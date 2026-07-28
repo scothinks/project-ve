@@ -27,8 +27,8 @@ export default async function QuizPage({ params }: QuizPageProps) {
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
       <AppHeader title="Flash Quiz" />
-      <section className="px-6 py-8">
-        <div className="mb-6">
+      <section className="learner-page learner-page--spacious">
+        <div className="learner-readable mb-6">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-muted)]">
             {lesson.title}
           </p>
@@ -37,7 +37,9 @@ export default async function QuizPage({ params }: QuizPageProps) {
             Up to {formatXpLabel(getQuizXP(lesson.quiz))} from unearned correct answers, subject to your daily limit.
           </p>
         </div>
-        <QuizOptions lessonId={lesson.id} quizId={quiz.id} questions={quiz.questions} />
+        <div className="learner-readable">
+          <QuizOptions lessonId={lesson.id} quizId={quiz.id} questions={quiz.questions} />
+        </div>
       </section>
     </main>
   );

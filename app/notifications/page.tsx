@@ -42,7 +42,7 @@ export default async function NotificationsPage() {
   return (
     <main className="mobile-shell flex min-h-screen flex-col bg-[var(--ve-shell)]">
       <AppHeader title="Notifications" backHref="/profile" showMenu={false} />
-      <section className="flex-1 space-y-5 px-6 py-6 pb-28">
+      <section className="learner-page learner-page--standard flex-1 space-y-5">
         {unreadCount > 0 ? (
           <form action={markAllNotificationsRead}>
             <Button className="h-10 px-4" type="submit" variant="soft">
@@ -52,7 +52,8 @@ export default async function NotificationsPage() {
         ) : null}
 
         {notifications.length > 0 ? (
-          notifications.map((notification) => {
+          <div className="learner-card-grid">
+            {notifications.map((notification) => {
             const unread = !notification.readAt;
             return (
               <Card
@@ -105,7 +106,8 @@ export default async function NotificationsPage() {
                 </div>
               </Card>
             );
-          })
+          })}
+          </div>
         ) : (
           <Card className="p-5">
             <h2 className="text-base font-black">No notifications</h2>
