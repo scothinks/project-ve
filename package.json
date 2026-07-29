@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "npm run test:db",
+    "test:db": "npx supabase test db",
+    "test:p0": "npm run typecheck && npm run lint && npm run build && npm run test:db",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

@@ -91,7 +91,6 @@ type QuestionRow = {
   question_order: number;
   question_type: string;
   prompt: string;
-  explanation: string | null;
   xp: number;
 };
 
@@ -100,7 +99,6 @@ type OptionRow = {
   question_id: string;
   option_order: number;
   label: string;
-  is_correct: boolean;
 };
 
 const fallbackImage: ImageAsset = {
@@ -349,10 +347,8 @@ function mapCatalog({
               prompt: question.prompt,
               type: isQuestionType(question.question_type) ? question.question_type : "single_choice",
               options: mappedOptions,
-              correctOptionIds: (optionsByQuestionId.get(question.id) ?? [])
-                .filter((option) => option.is_correct)
-                .map((option) => option.id),
-              explanation: question.explanation ?? "",
+              correctOptionIds: [],
+              explanation: "",
               xp: question.xp,
               order: question.question_order,
             };
@@ -603,8 +599,8 @@ async function loadMappedPublishedCourses(
       : Promise.resolve({ data: [], error: null }),
     quizIds.length > 0
       ? supabase
-          .from("quiz_questions")
-          .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
+          .from("learner_quiz_questions")
+          .select("id, quiz_id, question_order, question_type, prompt, xp")
           .in("quiz_id", quizIds)
           .order("question_order", { ascending: true })
           .returns<QuestionRow[]>()
@@ -618,8 +614,8 @@ async function loadMappedPublishedCourses(
   const optionsResult =
     questionIds.length > 0
       ? await supabase
-          .from("quiz_options")
-          .select("id, question_id, option_order, label, is_correct")
+          .from("learner_quiz_options")
+          .select("id, question_id, option_order, label")
           .in("question_id", questionIds)
           .order("option_order", { ascending: true })
           .returns<OptionRow[]>()
@@ -673,8 +669,8 @@ async function loadMappedPublishedCourseSummaries(
   const questionsResult =
     quizIds.length > 0
       ? await supabase
-          .from("quiz_questions")
-          .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
+          .from("learner_quiz_questions")
+          .select("id, quiz_id, question_order, question_type, prompt, xp")
           .in("quiz_id", quizIds)
           .order("question_order", { ascending: true })
           .returns<QuestionRow[]>()

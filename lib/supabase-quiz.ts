@@ -1,13 +1,7 @@
 import "server-only";
-import { randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  getPublicQuiz,
-  type PublicQuizQuestion,
-  type QuizQuestion,
-} from "@/lib/lessons";
-import { getLearningLesson } from "@/lib/supabase-learning";
-import { getEffectiveDailyQuizXpLimit, xpTimezone } from "@/lib/xp-settings";
+import { type PublicQuizQuestion } from "@/lib/lessons";
+import { xpTimezone } from "@/lib/xp-settings";
 
 type QuestionResult = {
   questionId: string;
@@ -81,23 +75,6 @@ type AnswerRpcResponse = {
   nextResetAt: string;
 };
 
-function getStartOfUserDay(now = new Date()) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: xpTimezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(now);
-
-  return new Date(`${year}-${month}-${day}T00:00:00+01:00`);
-}
-
-function getNextDailyResetAt(now = new Date()) {
-  const start = getStartOfUserDay(now);
-  return new Date(start.getTime() + 24 * 60 * 60 * 1000).toISOString();
-}
-
 function formatDailyResetAt(resetAtIso: string) {
   const resetAt = new Date(resetAtIso);
 
@@ -113,121 +90,13 @@ function formatDailyResetAt(resetAtIso: string) {
   }).format(resetAt);
 }
 
-function buildDailyCapBlockedMessage(resetAtIso: string) {
-  return `You have reached today's quiz XP limit. Quiz XP unlocks at ${formatDailyResetAt(resetAtIso)}.`;
-}
-
 function buildDailyCapSavedMessage(resetAtIso: string) {
   return `You have reached today's quiz XP limit. Your progress is saved. You can answer the remaining questions after ${formatDailyResetAt(resetAtIso)}.`;
 }
 
-async function getDailyEarnedXp(supabase: SupabaseClient, userId: string) {
-  const start = getStartOfUserDay();
-  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-  const { data, error } = await supabase
-    .from("xp_transactions")
-    .select("amount")
-    .eq("user_id", userId)
-    .eq("direction", "earn")
-    .eq("source_type", "quiz_question")
-    .gte("created_at", start.toISOString())
-    .lt("created_at", end.toISOString());
-
-  if (error) {
-    throw error;
-  }
-
-  return (data ?? []).reduce((total, transaction) => total + Number(transaction.amount), 0);
-}
-
-async function getLastEndedAttempt(
-  supabase: SupabaseClient,
-  userId: string,
-  lessonId: string,
-) {
-  const { data, error } = await supabase
-    .from("quiz_attempts")
-    .select("ended_at, status")
-    .eq("user_id", userId)
-    .eq("lesson_id", lessonId)
-    .not("ended_at", "is", null)
-    .order("ended_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ ended_at: string; status: string }>();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-async function hasReadAllPagesAfter(
-  supabase: SupabaseClient,
-  userId: string,
-  lessonId: string,
-  pageIds: string[],
-  afterIso?: string | null,
-) {
-  const { data, error } = await supabase
-    .from("lesson_page_completions")
-    .select("page_id, completed_at")
-    .eq("user_id", userId)
-    .eq("lesson_id", lessonId);
-
-  if (error) {
-    throw error;
-  }
-
-  const completedAtByPageId = new Map(
-    (data ?? []).map((completion) => [
-      String(completion.page_id),
-      String(completion.completed_at),
-    ]),
-  );
-  const after = afterIso ? new Date(afterIso) : null;
-
-  return pageIds.every((pageId) => {
-    const completedAt = completedAtByPageId.get(pageId);
-    if (!completedAt) {
-      return false;
-    }
-
-    return after ? new Date(completedAt) > after : true;
-  });
-}
-
-async function getAwardedQuestionIds(
-  supabase: SupabaseClient,
-  userId: string,
-  questionIds: string[],
-) {
-  if (questionIds.length === 0) {
-    return new Set<string>();
-  }
-
-  const { data, error } = await supabase
-    .from("xp_transactions")
-    .select("source_id")
-    .eq("user_id", userId)
-    .eq("direction", "earn")
-    .eq("source_type", "quiz_question")
-    .in("source_id", questionIds);
-
-  if (error) {
-    throw error;
-  }
-
-  return new Set((data ?? []).map((transaction) => String(transaction.source_id)));
-}
-
-function getQuestionsXp(questions: QuizQuestion[]) {
-  return questions.reduce((total, question) => total + question.xp, 0);
-}
-
 export async function startSupabaseQuizAttempt({
   supabase,
-  userId,
+  userId: _userId,
   lessonId,
   quizId,
 }: {
@@ -236,143 +105,18 @@ export async function startSupabaseQuizAttempt({
   lessonId: string;
   quizId: string;
 }): Promise<StartQuizResult> {
-  const detail = await getLearningLesson(supabase, lessonId);
-  const lesson = detail?.lesson;
-  const quiz = lesson?.quiz;
+  void _userId;
 
-  if (!lesson || !quiz || quiz.id !== quizId || quiz.lessonId !== lesson.id) {
-    return {
-      status: "blocked",
-      reason: "lesson_incomplete",
-      message: "We could not find this quiz for the selected lesson.",
-    };
-  }
-
-  const lastEndedAttempt = await getLastEndedAttempt(supabase, userId, lesson.id);
-  const requiresFreshReread = Boolean(lastEndedAttempt?.ended_at && lesson.retryPolicy.requiresReread);
-  const hasCompletedPages = await hasReadAllPagesAfter(
-    supabase,
-    userId,
-    lesson.id,
-    lesson.pages.map((page) => page.id),
-    requiresFreshReread ? lastEndedAttempt?.ended_at : undefined,
-  );
-
-  if (lesson.quizAccess.requiresLessonCompletion && !hasCompletedPages) {
-    return {
-      status: "blocked",
-      reason: "lesson_incomplete",
-      message: requiresFreshReread
-        ? "Please reread the lesson pages before retrying this quiz."
-        : "Complete the lesson pages before starting the quiz.",
-    };
-  }
-
-  if (lesson.retryPolicy.mode === "disabled" && lastEndedAttempt) {
-    return {
-      status: "blocked",
-      reason: "retry_disabled",
-      message: "This lesson quiz can only be completed once.",
-    };
-  }
-
-  if (lesson.retryPolicy.mode === "cooldown" && lastEndedAttempt?.ended_at) {
-    const retryAvailableAt = new Date(
-      new Date(lastEndedAttempt.ended_at).getTime() +
-        (lesson.retryPolicy.cooldownHours ?? 24) * 60 * 60 * 1000,
-    );
-
-    if (retryAvailableAt > new Date()) {
-      return {
-        status: "blocked",
-        reason: "cooldown",
-        message: "Your progress is saved. This quiz unlocks again after the retry window.",
-        retryAvailableAt: retryAvailableAt.toISOString(),
-      };
-    }
-  }
-
-  const dailyXpLimit = await getEffectiveDailyQuizXpLimit(supabase, userId);
-  const dailyXpRemaining = Math.max(0, dailyXpLimit - (await getDailyEarnedXp(supabase, userId)));
-  const awardedQuestionIds = await getAwardedQuestionIds(
-    supabase,
-    userId,
-    quiz.questions.map((question) => question.id),
-  );
-  const unawardedQuestions = quiz.questions.filter(
-    (question) => !awardedQuestionIds.has(question.id),
-  );
-  const earnableQuestionsToday = unawardedQuestions.filter(
-    (question) => question.xp <= dailyXpRemaining,
-  );
-  const mode: AttemptMode = unawardedQuestions.length > 0 ? "earning" : "practice";
-  const includedQuestions = mode === "earning" ? earnableQuestionsToday : quiz.questions;
-
-  if (mode === "earning" && includedQuestions.length === 0) {
-    const nextResetAt = getNextDailyResetAt();
-    return {
-      status: "blocked",
-      reason: "daily_cap_reached",
-      message: buildDailyCapBlockedMessage(nextResetAt),
-      nextResetAt,
-    };
-  }
-
-  const attemptId = randomUUID();
-  const seed = `${quiz.id}:${attemptId}`;
-  const publicQuiz = getPublicQuiz(quiz, seed);
-  const publicQuestionById = new Map(
-    publicQuiz.questions.map((question) => [question.id, question]),
-  );
-  const publicQuestions = includedQuestions.map(
-    (question) => publicQuestionById.get(question.id) ?? question,
-  );
-
-  const { error: attemptError } = await supabase.from("quiz_attempts").insert({
-    id: attemptId,
-    user_id: userId,
-    lesson_id: lesson.id,
-    quiz_id: quiz.id,
-    quiz_version: 1,
-    mode,
-    status: "in_progress",
-    seed,
+  const { data, error } = await supabase.rpc("start_quiz_attempt", {
+    p_quiz_id: quizId,
+    p_lesson_id: lessonId,
   });
 
-  if (attemptError) {
-    throw attemptError;
+  if (error) {
+    throw error;
   }
 
-  const { error: questionsError } = await supabase.from("quiz_attempt_questions").insert(
-    includedQuestions.map((question, index) => ({
-      attempt_id: attemptId,
-      question_id: question.id,
-      question_order: index + 1,
-      question_snapshot: {
-        id: question.id,
-        prompt: question.prompt,
-        type: question.type,
-        xp: question.xp,
-        order: question.order,
-      },
-      options_snapshot: publicQuestionById.get(question.id)?.options ?? question.options,
-      xp: question.xp,
-    })),
-  );
-
-  if (questionsError) {
-    throw questionsError;
-  }
-
-  return {
-    status: "started",
-    attemptId,
-    mode,
-    questions: publicQuestions,
-    dailyXpLimit,
-    dailyXpRemaining,
-    totalPossibleXp: getQuestionsXp(includedQuestions),
-  };
+  return data as StartQuizResult;
 }
 
 async function buildAttemptResult(
