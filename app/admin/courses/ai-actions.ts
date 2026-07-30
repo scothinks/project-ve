@@ -37,6 +37,7 @@ import { logAppError, ValidationError } from "@/lib/app-errors";
 import { formatValidationIssues } from "@/lib/form-data-validation";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 import type { ValidationResult } from "@/lib/request-validation";
+import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
 type WorkflowCourseRow = {
   id: string;
@@ -1844,14 +1845,18 @@ async function createJob(
   actorUserId: string,
   jobType: "course_text" | "media_assets",
   prompt: Record<string, unknown>,
+  options: {
+    entityId?: string | null;
+    status?: "queued" | "running";
+  } = {},
 ) {
   const { data, error } = await supabase
     .from("ai_generation_jobs")
     .insert({
       entity_type: "course",
-      entity_id: null,
+      entity_id: options.entityId ?? null,
       job_type: jobType,
-      status: "running",
+      status: options.status ?? "running",
       prompt,
       result: {},
       created_by: actorUserId,
@@ -1872,6 +1877,371 @@ async function updateJob(
   if (error) throw error;
 }
 
+type AiGenerationClaim = {
+  id: string;
+  entity_type: string;
+  entity_id: string | null;
+  job_type: string;
+  prompt: Record<string, unknown>;
+  attempt_count: number;
+};
+
+type AdminRpcResult<T> = {
+  data: T | null;
+  error: { message: string } | null;
+};
+
+type AdminRpcClient = {
+  rpc: (functionName: string, args: Record<string, unknown>) => Promise<AdminRpcResult<unknown>>;
+};
+
+function getPromptString(prompt: Record<string, unknown>, key: string) {
+  const value = prompt[key];
+  return typeof value === "string" ? value : "";
+}
+
+function getPromptNumber(prompt: Record<string, unknown>, key: string, fallback: number) {
+  const value = prompt[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function getPromptInput(prompt: Record<string, unknown>): AiCourseGenerationInput {
+  return clampAiGenerationRequest({
+    audience: getPromptString(prompt, "audience"),
+    difficulty:
+      getPromptString(prompt, "difficulty") === "advanced"
+        ? "advanced"
+        : getPromptString(prompt, "difficulty") === "intermediate"
+          ? "intermediate"
+          : "beginner",
+    lessonCount: getPromptNumber(prompt, "lessonCount", 4),
+    notes: getPromptString(prompt, "notes"),
+    questionsPerLesson: getPromptNumber(prompt, "questionsPerLesson", 7),
+    region: getPromptString(prompt, "region"),
+    tone: getPromptString(prompt, "tone"),
+    topic: getPromptString(prompt, "topic"),
+  });
+}
+
+async function callAdminRpc<T>(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  functionName: string,
+  args: Record<string, unknown>,
+) {
+  const rpc = (supabase as unknown as AdminRpcClient).rpc;
+  const { data, error } = await rpc(functionName, args);
+  if (error) throw new Error(error.message);
+  return data as T;
+}
+
+async function enqueueCourseTextJob(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  actorUserId: string,
+  prompt: Record<string, unknown>,
+  entityId?: string | null,
+) {
+  return createJob(supabase, actorUserId, "course_text", prompt, {
+    entityId,
+    status: "queued",
+  });
+}
+
+async function claimNextAiGenerationJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workerId: string,
+) {
+  const claimed = await callAdminRpc<AiGenerationClaim[]>(supabase, "claim_ai_generation_job", {
+    p_worker_id: workerId,
+    p_lease_seconds: 1800,
+    p_max_attempts: 3,
+  });
+
+  return claimed[0] ?? null;
+}
+
+async function markAiGenerationJobFailed(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  jobId: string,
+  error: unknown,
+  retry: boolean,
+) {
+  await callAdminRpc<void>(supabase, "fail_ai_generation_job", {
+    p_job_id: jobId,
+    p_error: error instanceof Error ? error.message : "AI generation job failed.",
+    p_failure_code: error instanceof ValidationError ? "validation_error" : "worker_error",
+    p_failure_detail: {
+      name: error instanceof Error ? error.name : "UnknownError",
+    },
+    p_retry: retry,
+  });
+}
+
+async function materializeAiCourseTextJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  args: {
+    courseRow: Record<string, unknown> | null;
+    courseUpdate: Record<string, unknown> | null;
+    entityId: string;
+    generatedTree: ReturnType<typeof buildGeneratedLessonTreeRows>;
+    jobId: string;
+    jobResult: Record<string, unknown>;
+  },
+) {
+  await callAdminRpc<void>(supabase, "materialize_ai_course_text_job", {
+    p_job_id: args.jobId,
+    p_entity_id: args.entityId,
+    p_course_row: args.courseRow,
+    p_course_update: args.courseUpdate,
+    p_lesson_rows: args.generatedTree.lessonRows,
+    p_page_rows: args.generatedTree.pageRows,
+    p_block_rows: args.generatedTree.blockRows,
+    p_quiz_rows: args.generatedTree.quizRows,
+    p_question_rows: args.generatedTree.questionRows,
+    p_option_rows: args.generatedTree.optionRows,
+    p_media_rows: args.generatedTree.mediaRows,
+    p_job_result: args.jobResult,
+  });
+}
+
+async function processCreateCourseTextJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const input = getPromptInput(job.prompt);
+  if (!input.topic || !input.audience || !input.region || !input.tone) {
+    throw new ValidationError("AI course generation job is missing required prompt fields.");
+  }
+
+  const draft = await generateAiCourseDraftFromModel(input);
+  const courseSlugBase = slugify(draft.course.title);
+  const courseSlug = `${courseSlugBase}-${crypto.randomUUID().replaceAll("-", "").slice(0, 4)}`;
+  const courseId = createTextId("course", courseSlug);
+  const generatedTree = buildGeneratedLessonTreeRows({
+    courseId,
+    lessons: draft.lessons,
+    jobId: job.id,
+    startingSortOrder: 1,
+  });
+
+  const courseRow = {
+    id: courseId,
+    slug: courseSlug,
+    title: draft.course.title,
+    description: draft.course.description,
+    category: draft.course.category,
+    level: draft.course.level,
+    thumbnail: {},
+    status: "draft",
+    sort_order: 0,
+    estimated_minutes: draft.lessons.reduce((sum, lesson) => sum + lesson.estimatedMinutes, 0),
+    ai_text_status: "draft",
+    ai_media_status: "not_started",
+    ai_publish_status: "not_ready",
+    ai_generated: true,
+    ai_generation_notes: buildCourseNotes(input, job.id, draft, "create_course"),
+  };
+
+  generatedTree.mediaRows.push(
+    {
+      course_id: courseId,
+      lesson_id: null,
+      asset_type: "cover",
+      placement: "course_cover",
+      source: "ai_generated",
+      prompt: buildCourseCoverPrompt(courseRow),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${draft.course.title} course cover illustration`,
+      caption: draft.course.title,
+      metadata: {
+        jobId: job.id,
+        required: false,
+        targetKind: "course_cover",
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: generatedTree.mediaRows.length,
+    },
+    {
+      course_id: courseId,
+      lesson_id: null,
+      asset_type: "thumbnail",
+      placement: "course_thumbnail",
+      source: "ai_generated",
+      prompt: buildCourseThumbnailPrompt(courseRow),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${draft.course.title} course thumbnail`,
+      caption: draft.course.title,
+      metadata: {
+        jobId: job.id,
+        required: true,
+        targetKind: "course_thumbnail",
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: generatedTree.mediaRows.length + 1,
+    },
+  );
+
+  await materializeAiCourseTextJob(supabase, {
+    courseRow,
+    courseUpdate: null,
+    entityId: courseId,
+    generatedTree,
+    jobId: job.id,
+    jobResult: {
+      courseId,
+      title: draft.course.title,
+      lessonCount: draft.lessons.length,
+      mediaAssetCount: generatedTree.mediaRows.length,
+    },
+  });
+
+  await insertAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_draft_generated", "course", courseId, {
+    topic: input.topic,
+    audience: input.audience,
+    region: input.region,
+    lessonCount: draft.lessons.length,
+    questionsPerLesson: input.questionsPerLesson,
+    jobId: job.id,
+  });
+
+  revalidateLearningPaths(courseId, generatedTree.lessonIds);
+
+  return {
+    courseId,
+    lessonIds: generatedTree.lessonIds,
+    mode: "create_course",
+  };
+}
+
+async function processExtendCourseTextJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const input = getPromptInput(job.prompt);
+  const courseId = getPromptString(job.prompt, "courseId");
+  const continuityInstruction = getPromptString(job.prompt, "continuityInstruction");
+
+  if (!courseId) {
+    throw new ValidationError("AI course extension job is missing a course id.");
+  }
+
+  if (!input.topic || !input.audience || !input.region || !input.tone) {
+    throw new ValidationError("AI course extension job is missing required prompt fields.");
+  }
+
+  const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
+  const extensionContext = buildCourseExtensionContext(course, lessons, continuityInstruction);
+  const draft = await generateAiLessonExtension(input, extensionContext);
+  ensureNoDuplicateLessonTitles(lessons, draft.lessons);
+
+  const nextSortOrder = lessons.reduce((max, lesson) => Math.max(max, lesson.sort_order), 0) + 1;
+  const generatedTree = buildGeneratedLessonTreeRows({
+    courseId,
+    lessons: draft.lessons,
+    jobId: job.id,
+    startingSortOrder: nextSortOrder,
+  });
+
+  await materializeAiCourseTextJob(supabase, {
+    courseRow: null,
+    courseUpdate: {
+      ai_generated: true,
+      ai_text_status: "draft",
+      ai_media_status: "not_started",
+      ai_publish_status: "not_ready",
+      text_approved_at: null,
+      text_approved_by: null,
+      media_approved_at: null,
+      media_approved_by: null,
+      ai_generation_notes: {
+        ...buildCourseNotes(input, job.id, draft, "extend_course"),
+        extendedCourseId: courseId,
+        addedLessonCount: draft.lessons.length,
+        continuityInstruction: continuityInstruction || null,
+      },
+    },
+    entityId: courseId,
+    generatedTree,
+    jobId: job.id,
+    jobResult: {
+      mode: "extend_course",
+      courseId,
+      addedLessonCount: draft.lessons.length,
+      lessonIds: generatedTree.lessonIds,
+      mediaAssetCount: generatedTree.mediaRows.length,
+    },
+  });
+
+  await insertAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_extended_with_lessons", "course", courseId, {
+    jobId: job.id,
+    addedLessonCount: draft.lessons.length,
+    lessonIds: generatedTree.lessonIds,
+  });
+
+  revalidateLearningPaths(courseId, generatedTree.lessonIds);
+
+  return {
+    courseId,
+    lessonIds: generatedTree.lessonIds,
+    mode: "extend_course",
+  };
+}
+
+export async function processNextAiGenerationJob(workerId: string) {
+  const supabase = createSupabaseAdminClient();
+  const job = await claimNextAiGenerationJob(supabase, workerId);
+
+  if (!job) {
+    return {
+      processed: false,
+      status: "idle" as const,
+    };
+  }
+
+  try {
+    if (job.job_type !== "course_text") {
+      throw new ValidationError(`Unsupported AI generation job type: ${job.job_type}`);
+    }
+
+    const mode = getPromptString(job.prompt, "mode");
+    const result =
+      mode === "create_course"
+        ? await processCreateCourseTextJob(supabase, job)
+        : mode === "extend_course"
+          ? await processExtendCourseTextJob(supabase, job)
+          : (() => {
+              throw new ValidationError(`Unsupported AI course text job mode: ${mode}`);
+            })();
+
+    return {
+      jobId: job.id,
+      processed: true,
+      result,
+      status: "completed" as const,
+    };
+  } catch (error) {
+    await markAiGenerationJobFailed(supabase, job.id, error, job.attempt_count < 3).catch((failureError) => {
+      logAppError(failureError, {
+        operation: "admin.ai_generation_job.fail",
+        resourceId: job.id,
+      });
+    });
+
+    throw error;
+  }
+}
+
 export async function generateAiCourseDraft(formData: FormData) {
   const admin = await requireAdmin();
   const { supabase, profile } = admin;
@@ -1881,146 +2251,19 @@ export async function generateAiCourseDraft(formData: FormData) {
     throw new Error("Topic, target audience, country or region, and tone are required.");
   }
 
-  let jobId: string | null = null;
-  let courseId: string | null = null;
-  let successRedirectTo: string | null = null;
+  const jobId = await enqueueCourseTextJob(supabase, profile.id, {
+    actorUserId: profile.id,
+    mode: "create_course",
+    ...input,
+  });
 
-  try {
-    jobId = await createJob(supabase, profile.id, "course_text", {
-      mode: "create_course",
-      ...input,
-    });
-    const draft = await generateAiCourseDraftFromModel(input);
-    const courseSlugBase = slugify(draft.course.title);
-    const courseSlug = `${courseSlugBase}-${crypto.randomUUID().replaceAll("-", "").slice(0, 4)}`;
-    courseId = createTextId("course", courseSlug);
-    const generatedTree = buildGeneratedLessonTreeRows({
-      courseId,
-      lessons: draft.lessons,
-      jobId,
-      startingSortOrder: 1,
-    });
-
-    const courseRow = {
-      id: courseId,
-      slug: courseSlug,
-      title: draft.course.title,
-      description: draft.course.description,
-      category: draft.course.category,
-      level: draft.course.level,
-      thumbnail: {},
-      status: "draft",
-      sort_order: 0,
-      estimated_minutes: draft.lessons.reduce((sum, lesson) => sum + lesson.estimatedMinutes, 0),
-      ai_text_status: "draft",
-      ai_media_status: "not_started",
-      ai_publish_status: "not_ready",
-      ai_generated: true,
-      ai_generation_notes: buildCourseNotes(input, jobId, draft, "create_course"),
-    };
-
-    generatedTree.mediaRows.push(
-      {
-        course_id: courseId,
-        lesson_id: null,
-        asset_type: "cover",
-        placement: "course_cover",
-        source: "ai_generated",
-        prompt: buildCourseCoverPrompt(courseRow),
-        script: "",
-        url: null,
-        storage_path: null,
-        provider: null,
-        model: null,
-        alt_text: `${draft.course.title} course cover illustration`,
-        caption: draft.course.title,
-        metadata: {
-          jobId,
-          required: false,
-          targetKind: "course_cover",
-        },
-        review_status: "draft",
-        generation_status: "pending",
-        generation_error: null,
-        sort_order: generatedTree.mediaRows.length,
-      },
-      {
-        course_id: courseId,
-        lesson_id: null,
-        asset_type: "thumbnail",
-        placement: "course_thumbnail",
-        source: "ai_generated",
-        prompt: buildCourseThumbnailPrompt(courseRow),
-        script: "",
-        url: null,
-        storage_path: null,
-        provider: null,
-        model: null,
-        alt_text: `${draft.course.title} course thumbnail`,
-        caption: draft.course.title,
-        metadata: {
-          jobId,
-          required: true,
-          targetKind: "course_thumbnail",
-        },
-        review_status: "draft",
-        generation_status: "pending",
-        generation_error: null,
-        sort_order: generatedTree.mediaRows.length + 1,
-      },
-    );
-
-    const { error: courseError } = await supabase.from("courses").insert(courseRow);
-    if (courseError) throw courseError;
-    await insertGeneratedLessonTree(supabase, generatedTree);
-
-    await updateJob(supabase, jobId, {
-      entity_id: courseId,
-      status: "completed",
-      result: {
-        courseId,
-        title: draft.course.title,
-        lessonCount: draft.lessons.length,
-        mediaAssetCount: generatedTree.mediaRows.length,
-      },
-      error: null,
-    });
-
-    await insertAuditEvent(supabase, profile.id, "ai_course_draft_generated", "course", courseId, {
-      topic: input.topic,
-      audience: input.audience,
-      region: input.region,
-      lessonCount: draft.lessons.length,
-      questionsPerLesson: input.questionsPerLesson,
-      jobId,
-    });
-
-    revalidateLearningPaths(courseId, generatedTree.lessonIds);
-    successRedirectTo = appendAdminNotice(
-      `/admin/courses/${courseId}`,
-      "AI course draft created. Review the text before media generation.",
-    );
-  } catch (error) {
-    if (courseId) {
-      await supabase.from("courses").delete().eq("id", courseId);
-    }
-
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: courseId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "AI course draft generation failed.",
-      }).catch(() => undefined);
-    }
-
-    throw error;
-  }
-
-  if (!successRedirectTo) {
-    throw new Error("AI course draft generation completed without a redirect target.");
-  }
-
-  redirect(successRedirectTo);
+  revalidatePath("/admin/courses");
+  redirect(
+    appendAdminNotice(
+      "/admin/courses",
+      `AI course draft generation queued. Job ${jobId} will materialize the course when the worker runs.`,
+    ),
+  );
 }
 
 export async function extendCourseWithAiLessons(formData: FormData) {
@@ -2037,113 +2280,29 @@ export async function extendCourseWithAiLessons(formData: FormData) {
     throw new Error("Topic, target audience, country or region, and tone are required.");
   }
 
-  let jobId: string | null = null;
-  let insertedLessonIds: string[] = [];
-  let successRedirectTo: string | null = null;
+  const { course } = await getCourseWorkflowData(supabase, courseId);
+  ensureAiCourse(course);
 
-  try {
-    const { course, lessons } = await getCourseWorkflowData(supabase, courseId);
-    const extensionContext = buildCourseExtensionContext(course, lessons, continuityInstruction);
-
-    jobId = await createJob(supabase, profile.id, "course_text", {
+  const jobId = await enqueueCourseTextJob(
+    supabase,
+    profile.id,
+    {
+      actorUserId: profile.id,
       mode: "extend_course",
       courseId,
       continuityInstruction,
       ...input,
-    });
+    },
+    courseId,
+  );
 
-    const draft = await generateAiLessonExtension(input, extensionContext);
-    ensureNoDuplicateLessonTitles(lessons, draft.lessons);
-
-    const nextSortOrder = lessons.reduce((max, lesson) => Math.max(max, lesson.sort_order), 0) + 1;
-    const generatedTree = buildGeneratedLessonTreeRows({
-      courseId,
-      lessons: draft.lessons,
-      jobId,
-      startingSortOrder: nextSortOrder,
-    });
-
-    await insertGeneratedLessonTree(supabase, generatedTree);
-    insertedLessonIds = generatedTree.lessonIds;
-
-    const { error: courseUpdateError } = await supabase
-      .from("courses")
-      .update({
-        ai_generated: true,
-        ai_text_status: "draft",
-        ai_media_status: "not_started",
-        ai_publish_status: "not_ready",
-        text_approved_at: null,
-        text_approved_by: null,
-        media_approved_at: null,
-        media_approved_by: null,
-        ai_generation_notes: {
-          ...buildCourseNotes(input, jobId, draft, "extend_course"),
-          extendedCourseId: courseId,
-          addedLessonCount: draft.lessons.length,
-          continuityInstruction: continuityInstruction || null,
-        },
-      })
-      .eq("id", courseId);
-
-    if (courseUpdateError) throw courseUpdateError;
-
-    await updateJob(supabase, jobId, {
-      entity_id: courseId,
-      status: "completed",
-      result: {
-        mode: "extend_course",
-        courseId,
-        addedLessonCount: draft.lessons.length,
-        lessonIds: generatedTree.lessonIds,
-        mediaAssetCount: generatedTree.mediaRows.length,
-      },
-      error: null,
-    });
-
-    await insertAuditEvent(supabase, profile.id, "ai_course_extended_with_lessons", "course", courseId, {
-      jobId,
-      addedLessonCount: draft.lessons.length,
-      lessonIds: generatedTree.lessonIds,
-    });
-
-    revalidateLearningPaths(courseId, generatedTree.lessonIds);
-    successRedirectTo = appendAdminNotice(
+  revalidatePath(`/admin/courses/${courseId}`);
+  redirect(
+    appendAdminNotice(
       `/admin/courses/${courseId}`,
-      `${draft.lessons.length} AI lesson${draft.lessons.length === 1 ? "" : "s"} added. Review the new text before media generation.`,
-    );
-  } catch (error) {
-    if (insertedLessonIds.length > 0) {
-      try {
-        await supabase.from("lessons").delete().in("id", insertedLessonIds);
-      } catch (cleanupError) {
-        logAppError(cleanupError, {
-          operation: "admin.ai_course_extension.cleanup",
-          resourceId: courseId,
-          metadata: {
-            insertedLessonIds,
-            jobId,
-          },
-        });
-      }
-    }
-
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: courseId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Course extension failed.",
-      }).catch(() => undefined);
-    }
-
-    throw error;
-  }
-
-  if (!successRedirectTo) {
-    throw new Error("AI course extension completed without a redirect target.");
-  }
-
-  redirect(successRedirectTo);
+      `AI lesson generation queued. Job ${jobId} will add the lessons when the worker runs.`,
+    ),
+  );
 }
 
 export async function approveCourseText(formData: FormData) {

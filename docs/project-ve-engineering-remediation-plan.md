@@ -1146,6 +1146,44 @@ Do not create an unbounded sequential request whose durability depends on one HT
 * media generation retries individual failures safely;
 * reset actions remain admin-only.
 
+### Current implementation status
+
+Initial durable course-text worker pass is implemented:
+
+* `ai_generation_jobs` now has durable queue metadata:
+  `attempt_count`, `locked_at`, `locked_by`, `heartbeat_at`, `available_at`,
+  `failure_code`, `failure_detail`, `idempotency_key`, `started_at`, and
+  `completed_at`;
+* job status now uses `queued`, `running`, `completed`, and `failed`;
+* `public.claim_ai_generation_job(...)` claims one queued or stale job with
+  `FOR UPDATE SKIP LOCKED`;
+* `public.materialize_ai_course_text_job(...)` transactionally inserts generated
+  course text rows across courses, lessons, pages, blocks, quizzes, questions,
+  options, and media seed rows, and marks the job completed in the same database
+  transaction;
+* `public.fail_ai_generation_job(...)` marks failed jobs or requeues retryable
+  failures;
+* worker RPCs are `SERVICE_ROLE_ONLY`, explicitly revoked from `anon` and
+  `authenticated`, and classified in `private.rpc_security_classifications`;
+* `generateAiCourseDraft(...)` and `extendCourseWithAiLessons(...)` now validate
+  input, create queued `course_text` jobs, and redirect with the job id instead
+  of calling the model and materializing rows inside the admin request;
+* `POST /api/admin/ai/jobs/process` processes queued jobs through a
+  service-role worker, authorized by `AI_GENERATION_WORKER_SECRET` or
+  `CRON_SECRET`.
+* `GET /api/admin/ai/jobs/process` uses the same worker path for Vercel Cron,
+  and `vercel.json` schedules it daily after notification dispatch.
+
+Remaining VE-AI-001 work:
+
+* deploy the cron route changes and confirm Vercel sends
+  `Authorization: Bearer $CRON_SECRET` to `/api/admin/ai/jobs/process`;
+* move AI text revision jobs onto the same durable worker/materialization path;
+* move course and lesson media generation onto queued worker execution with
+  bounded concurrency;
+* add worker-level tests for stale lease recovery, simultaneous claim exclusion,
+  retry behavior, and no-partial-materialization failure cases.
+
 ---
 
 # VE-DATA-001
