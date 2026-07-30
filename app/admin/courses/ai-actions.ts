@@ -2024,8 +2024,7 @@ async function callAdminRpc<T>(
   functionName: string,
   args: Record<string, unknown>,
 ) {
-  const rpc = (supabase as unknown as AdminRpcClient).rpc;
-  const { data, error } = await rpc(functionName, args);
+  const { data, error } = await (supabase as unknown as AdminRpcClient).rpc(functionName, args);
   if (error) throw new Error(error.message);
   return data as T;
 }
