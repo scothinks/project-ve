@@ -2001,6 +2001,19 @@ function getPromptBoolean(prompt: Record<string, unknown>, key: string) {
   return prompt[key] === true;
 }
 
+function isValidationFailure(error: unknown) {
+  if (error instanceof ValidationError) {
+    return true;
+  }
+
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const record = error as { code?: unknown; name?: unknown };
+  return record.code === "VALIDATION_ERROR" || record.name === "ValidationError";
+}
+
 type MediaJobMode = "course_media" | "lesson_media" | "single_media_asset";
 
 function getMediaJobMode(prompt: Record<string, unknown>): MediaJobMode | "" {
@@ -2116,7 +2129,7 @@ async function markAiGenerationJobFailed(
   await callAdminRpc<void>(supabase, "fail_ai_generation_job", {
     p_job_id: jobId,
     p_error: error instanceof Error ? error.message : "AI generation job failed.",
-    p_failure_code: error instanceof ValidationError ? "validation_error" : "worker_error",
+    p_failure_code: isValidationFailure(error) ? "validation_error" : "worker_error",
     p_failure_detail: {
       name: error instanceof Error ? error.name : "UnknownError",
     },
@@ -3170,7 +3183,8 @@ export async function processNextAiGenerationJob(workerId: string) {
       status: "completed" as const,
     };
   } catch (error) {
-    const retry = !(error instanceof ValidationError) && job.attempt_count < 3;
+    const isValidationError = isValidationFailure(error);
+    const retry = !isValidationError && job.attempt_count < 3;
     await markAiGenerationJobFailed(supabase, job.id, error, retry).catch((failureError) => {
       logAppError(failureError, {
         operation: "admin.ai_generation_job.fail",
@@ -3178,12 +3192,12 @@ export async function processNextAiGenerationJob(workerId: string) {
       });
     });
 
-    if (error instanceof ValidationError) {
+    if (isValidationError) {
       return {
         jobId: job.id,
         processed: true,
         result: {
-          error: error.message,
+          error: error instanceof Error ? error.message : "AI generation job failed validation.",
           failureCode: "validation_error",
           retry,
         },
