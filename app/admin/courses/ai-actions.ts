@@ -1798,48 +1798,6 @@ function buildGeneratedLessonTreeRows({
   };
 }
 
-async function insertGeneratedLessonTree(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
-  rows: ReturnType<typeof buildGeneratedLessonTreeRows>,
-) {
-  const { lessonRows, pageRows, blockRows, quizRows, questionRows, optionRows, mediaRows } = rows;
-
-  if (lessonRows.length > 0) {
-    const { error } = await supabase.from("lessons").insert(lessonRows);
-    if (error) throw error;
-  }
-
-  if (pageRows.length > 0) {
-    const { error } = await supabase.from("lesson_pages").insert(pageRows);
-    if (error) throw error;
-  }
-
-  if (blockRows.length > 0) {
-    const { error } = await supabase.from("lesson_content_blocks").insert(blockRows);
-    if (error) throw error;
-  }
-
-  if (quizRows.length > 0) {
-    const { error } = await supabase.from("quizzes").insert(quizRows);
-    if (error) throw error;
-  }
-
-  if (questionRows.length > 0) {
-    const { error } = await supabase.from("quiz_questions").insert(questionRows);
-    if (error) throw error;
-  }
-
-  if (optionRows.length > 0) {
-    const { error } = await supabase.from("quiz_options").insert(optionRows);
-    if (error) throw error;
-  }
-
-  if (mediaRows.length > 0) {
-    const { error } = await supabase.from("learning_media_assets").insert(mediaRows);
-    if (error) throw error;
-  }
-}
-
 async function createJob(
   supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
   actorUserId: string,
@@ -1991,6 +1949,31 @@ async function materializeAiCourseTextJob(
     p_job_id: args.jobId,
     p_entity_id: args.entityId,
     p_course_row: args.courseRow,
+    p_course_update: args.courseUpdate,
+    p_lesson_rows: args.generatedTree.lessonRows,
+    p_page_rows: args.generatedTree.pageRows,
+    p_block_rows: args.generatedTree.blockRows,
+    p_quiz_rows: args.generatedTree.quizRows,
+    p_question_rows: args.generatedTree.questionRows,
+    p_option_rows: args.generatedTree.optionRows,
+    p_media_rows: args.generatedTree.mediaRows,
+    p_job_result: args.jobResult,
+  });
+}
+
+async function replaceAiCourseTextJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  args: {
+    courseUpdate: Record<string, unknown>;
+    entityId: string;
+    generatedTree: ReturnType<typeof buildGeneratedLessonTreeRows>;
+    jobId: string;
+    jobResult: Record<string, unknown>;
+  },
+) {
+  await callAdminRpc<void>(supabase, "replace_ai_course_text_job", {
+    p_job_id: args.jobId,
+    p_entity_id: args.entityId,
     p_course_update: args.courseUpdate,
     p_lesson_rows: args.generatedTree.lessonRows,
     p_page_rows: args.generatedTree.pageRows,
@@ -2198,6 +2181,185 @@ async function processExtendCourseTextJob(
   };
 }
 
+async function processReviseCourseTextJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const courseId = getPromptString(job.prompt, "courseId");
+  const feedback = getPromptString(job.prompt, "feedback").trim();
+  const actorUserId = getPromptString(job.prompt, "actorUserId");
+
+  if (!courseId) {
+    throw new ValidationError("AI course revision job is missing a course id.");
+  }
+
+  if (!actorUserId) {
+    throw new ValidationError("AI course revision job is missing an actor user id.");
+  }
+
+  if (!feedback) {
+    throw new ValidationError("AI course revision job is missing requested text changes.");
+  }
+
+  const revisionData = await getCourseRevisionData(supabase, courseId);
+  const { course, lessons, pages, quizzes, blocks, questions } = revisionData;
+  ensureAiCourse(course);
+
+  if (course.status === "published") {
+    throw new ValidationError("Disable the course before revising AI text because published courses do not have a separate draft version yet.");
+  }
+
+  const storedFeedback = getLatestTextRevisionFeedback(asRecord(course.ai_generation_notes));
+  const generatedFrom = getGeneratedFromInput(course);
+  const questionsPerLesson = Math.max(
+    getRecommendedQuestionCountForRevision(course.level),
+    questions.reduce((max, question) => Math.max(max, question.question_order), 0),
+  );
+
+  const input = clampAiGenerationRequest({
+    topic: course.title,
+    audience: generatedFrom.audience,
+    region: generatedFrom.region,
+    difficulty: course.level,
+    tone: generatedFrom.tone,
+    lessonCount: lessons.length,
+    questionsPerLesson,
+    notes: buildCourseRevisionNotes({
+      course,
+      lessons,
+      pages,
+      blocks,
+      quizzes,
+      questions,
+      feedback,
+    }),
+  });
+
+  const draft = await generateAiCourseDraftFromModel(input);
+  ensureNoDuplicateLessonTitles([], draft.lessons);
+
+  const generatedTree = buildGeneratedLessonTreeRows({
+    courseId,
+    lessons: draft.lessons,
+    jobId: job.id,
+    startingSortOrder: 1,
+  });
+
+  generatedTree.mediaRows.push(
+    {
+      course_id: courseId,
+      lesson_id: null,
+      asset_type: "cover",
+      placement: "course_cover",
+      source: "ai_generated",
+      prompt: buildCourseCoverPrompt(draft.course),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${draft.course.title} course cover illustration`,
+      caption: draft.course.title,
+      metadata: {
+        jobId: job.id,
+        required: false,
+        targetKind: "course_cover",
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: generatedTree.mediaRows.length,
+    },
+    {
+      course_id: courseId,
+      lesson_id: null,
+      asset_type: "thumbnail",
+      placement: "course_thumbnail",
+      source: "ai_generated",
+      prompt: buildCourseThumbnailPrompt(draft.course),
+      script: "",
+      url: null,
+      storage_path: null,
+      provider: null,
+      model: null,
+      alt_text: `${draft.course.title} course thumbnail`,
+      caption: draft.course.title,
+      metadata: {
+        jobId: job.id,
+        required: true,
+        targetKind: "course_thumbnail",
+      },
+      review_status: "draft",
+      generation_status: "pending",
+      generation_error: null,
+      sort_order: generatedTree.mediaRows.length + 1,
+    },
+  );
+
+  const revisionNotesBase = appendTextRevisionFeedback(asRecord(course.ai_generation_notes), {
+    kind: "applied",
+    feedback,
+    requestedAt: storedFeedback?.requestedAt ?? new Date().toISOString(),
+    requestedBy: storedFeedback?.requestedBy ?? actorUserId,
+    revisedAt: new Date().toISOString(),
+    revisedBy: actorUserId,
+    jobId: job.id,
+  });
+
+  const nextCourseNotes = {
+    ...revisionNotesBase,
+    ...buildCourseNotes(input, job.id, draft, "revise_course"),
+    sourceCourseId: courseId,
+    revisedFromTitle: course.title,
+    latestTextRevisionFeedback: feedback,
+    latestTextRevisionAt: new Date().toISOString(),
+  };
+
+  await replaceAiCourseTextJob(supabase, {
+    courseUpdate: {
+      title: draft.course.title,
+      description: draft.course.description,
+      category: draft.course.category,
+      level: draft.course.level,
+      estimated_minutes: draft.lessons.reduce((sum, lesson) => sum + lesson.estimatedMinutes, 0),
+      ai_generated: true,
+      ai_text_status: "draft",
+      ai_media_status: "not_started",
+      ai_publish_status: "not_ready",
+      text_approved_at: null,
+      text_approved_by: null,
+      media_approved_at: null,
+      media_approved_by: null,
+      ai_generation_notes: nextCourseNotes,
+    },
+    entityId: courseId,
+    generatedTree,
+    jobId: job.id,
+    jobResult: {
+      mode: "revise_course",
+      courseId,
+      title: draft.course.title,
+      lessonCount: draft.lessons.length,
+      mediaAssetCount: generatedTree.mediaRows.length,
+    },
+  });
+
+  await insertAuditEvent(supabase, actorUserId, "ai_course_text_revised", "course", courseId, {
+    jobId: job.id,
+    feedback,
+    revisedTitle: draft.course.title,
+    lessonCount: draft.lessons.length,
+  });
+
+  revalidateLearningPaths(courseId, generatedTree.lessonIds);
+
+  return {
+    courseId,
+    lessonIds: generatedTree.lessonIds,
+    mode: "revise_course",
+  };
+}
+
 export async function processNextAiGenerationJob(workerId: string) {
   const supabase = createSupabaseAdminClient();
   const job = await claimNextAiGenerationJob(supabase, workerId);
@@ -2220,6 +2382,8 @@ export async function processNextAiGenerationJob(workerId: string) {
         ? await processCreateCourseTextJob(supabase, job)
         : mode === "extend_course"
           ? await processExtendCourseTextJob(supabase, job)
+          : mode === "revise_course"
+            ? await processReviseCourseTextJob(supabase, job)
           : (() => {
               throw new ValidationError(`Unsupported AI course text job mode: ${mode}`);
             })();
@@ -2514,7 +2678,7 @@ export async function reviseCourseTextWithAi(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
   const revisionData = await getCourseRevisionData(supabase, courseId);
-  const { course, lessons, pages, quizzes, blocks, questions } = revisionData;
+  const { course } = revisionData;
   ensureAiCourse(course);
 
   if (course.status === "published") {
@@ -2528,205 +2692,25 @@ export async function reviseCourseTextWithAi(formData: FormData) {
     throw new Error("Add the requested text changes before revising with AI.");
   }
 
-  const generatedFrom = getGeneratedFromInput(course);
-  const questionsPerLesson = Math.max(
-    getRecommendedQuestionCountForRevision(course.level),
-    questions.reduce((max, question) => Math.max(max, question.question_order), 0),
-  );
-
-  const input = clampAiGenerationRequest({
-    topic: course.title,
-    audience: generatedFrom.audience,
-    region: generatedFrom.region,
-    difficulty: course.level,
-    tone: generatedFrom.tone,
-    lessonCount: lessons.length,
-    questionsPerLesson,
-    notes: buildCourseRevisionNotes({
-      course,
-      lessons,
-      pages,
-      blocks,
-      quizzes,
-      questions,
-      feedback,
-    }),
-  });
-
-  let jobId: string | null = null;
-  let successRedirectTo: string | null = null;
-
-  try {
-    jobId = await createJob(supabase, profile.id, "course_text", {
+  const jobId = await enqueueCourseTextJob(
+    supabase,
+    profile.id,
+    {
+      actorUserId: profile.id,
       mode: "revise_course",
       courseId,
       feedback,
-      lessonCount: lessons.length,
-      questionsPerLesson,
-    });
+    },
+    courseId,
+  );
 
-    const draft = await generateAiCourseDraftFromModel(input);
-    ensureNoDuplicateLessonTitles([], draft.lessons);
-
-    const generatedTree = buildGeneratedLessonTreeRows({
-      courseId,
-      lessons: draft.lessons,
-      jobId,
-      startingSortOrder: 1,
-    });
-
-    generatedTree.mediaRows.push(
-      {
-        course_id: courseId,
-        lesson_id: null,
-        asset_type: "cover",
-        placement: "course_cover",
-        source: "ai_generated",
-        prompt: buildCourseCoverPrompt(draft.course),
-        script: "",
-        url: null,
-        storage_path: null,
-        provider: null,
-        model: null,
-        alt_text: `${draft.course.title} course cover illustration`,
-        caption: draft.course.title,
-        metadata: {
-          jobId,
-          required: false,
-          targetKind: "course_cover",
-        },
-        review_status: "draft",
-        generation_status: "pending",
-        generation_error: null,
-        sort_order: generatedTree.mediaRows.length,
-      },
-      {
-        course_id: courseId,
-        lesson_id: null,
-        asset_type: "thumbnail",
-        placement: "course_thumbnail",
-        source: "ai_generated",
-        prompt: buildCourseThumbnailPrompt(draft.course),
-        script: "",
-        url: null,
-        storage_path: null,
-        provider: null,
-        model: null,
-        alt_text: `${draft.course.title} course thumbnail`,
-        caption: draft.course.title,
-        metadata: {
-          jobId,
-          required: true,
-          targetKind: "course_thumbnail",
-        },
-        review_status: "draft",
-        generation_status: "pending",
-        generation_error: null,
-        sort_order: generatedTree.mediaRows.length + 1,
-      },
-    );
-
-    const revisionNotesBase = appendTextRevisionFeedback(asRecord(course.ai_generation_notes), {
-      kind: "applied",
-      feedback,
-      requestedAt: storedFeedback?.requestedAt ?? new Date().toISOString(),
-      requestedBy: storedFeedback?.requestedBy ?? profile.id,
-      revisedAt: new Date().toISOString(),
-      revisedBy: profile.id,
-      jobId,
-    });
-
-    const nextCourseNotes = {
-      ...revisionNotesBase,
-      ...buildCourseNotes(input, jobId, draft, "revise_course"),
-      sourceCourseId: courseId,
-      revisedFromTitle: course.title,
-      latestTextRevisionFeedback: feedback,
-      latestTextRevisionAt: new Date().toISOString(),
-    };
-
-    const { error: mediaDeleteError } = await supabase
-      .from("learning_media_assets")
-      .delete()
-      .eq("course_id", courseId);
-
-    if (mediaDeleteError) throw mediaDeleteError;
-
-    const existingLessonIds = lessons.map((lesson) => lesson.id);
-    if (existingLessonIds.length > 0) {
-      const { error: deleteLessonsError } = await supabase
-        .from("lessons")
-        .delete()
-        .in("id", existingLessonIds);
-
-      if (deleteLessonsError) throw deleteLessonsError;
-    }
-
-    const { error: courseUpdateError } = await supabase
-      .from("courses")
-      .update({
-        title: draft.course.title,
-        description: draft.course.description,
-        category: draft.course.category,
-        level: draft.course.level,
-        estimated_minutes: draft.lessons.reduce((sum, lesson) => sum + lesson.estimatedMinutes, 0),
-        ai_text_status: "draft",
-        ai_media_status: "not_started",
-        ai_publish_status: "not_ready",
-        text_approved_at: null,
-        text_approved_by: null,
-        media_approved_at: null,
-        media_approved_by: null,
-        ai_generation_notes: nextCourseNotes,
-      })
-      .eq("id", courseId);
-
-    if (courseUpdateError) throw courseUpdateError;
-
-    await insertGeneratedLessonTree(supabase, generatedTree);
-
-    await updateJob(supabase, jobId, {
-      entity_id: courseId,
-      status: "completed",
-      result: {
-        mode: "revise_course",
-        courseId,
-        title: draft.course.title,
-        lessonCount: draft.lessons.length,
-        mediaAssetCount: generatedTree.mediaRows.length,
-      },
-      error: null,
-    });
-
-    await insertAuditEvent(supabase, profile.id, "ai_course_text_revised", "course", courseId, {
-      jobId,
-      feedback,
-      revisedTitle: draft.course.title,
-      lessonCount: draft.lessons.length,
-    });
-
-    revalidateLearningPaths(courseId, generatedTree.lessonIds);
-    successRedirectTo = appendAdminNotice(
+  revalidatePath(`/admin/courses/${courseId}`);
+  redirect(
+    appendAdminNotice(
       redirectTo,
-      "AI revision complete. Review the updated text before media generation.",
-    );
-  } catch (error) {
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: courseId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "AI text revision failed.",
-      }).catch(() => undefined);
-    }
-
-    throw error;
-  }
-
-  if (!successRedirectTo) {
-    throw new Error("AI course revision completed without a redirect target.");
-  }
-
-  redirect(successRedirectTo);
+      `AI revision queued. Job ${jobId} will replace the course text when the worker runs.`,
+    ),
+  );
 }
 
 export async function generateCourseMediaAssets(formData: FormData) {

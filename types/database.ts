@@ -5353,6 +5353,22 @@ export type Database = {
         Args: { p_reason?: string; p_redemption_id: string }
         Returns: Json
       }
+      replace_ai_course_text_job: {
+        Args: {
+          p_block_rows: Json
+          p_course_update: Json
+          p_entity_id: string
+          p_job_id: string
+          p_job_result: Json
+          p_lesson_rows: Json
+          p_media_rows: Json
+          p_option_rows: Json
+          p_page_rows: Json
+          p_question_rows: Json
+          p_quiz_rows: Json
+        }
+        Returns: undefined
+      }
       reward_available_inventory_counts: {
         Args: never
         Returns: {
