@@ -3,48 +3,31 @@
 import { createHash } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import {
+  parseAdBillingSnapshotForm,
+  parseAdCampaignForm,
+  parseAdCreativeVersionForm,
+  parseAdEntityStatusForm,
+  parseAdFlightForm,
+  parseAdPartnerForm,
+  parseAdPlacementFallbackForm,
+  slugifyAdValue,
+} from "@/lib/admin-ad-validation";
 import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
-import { sanitizePlainTextInput } from "@/lib/input-safety";
+import { ValidationError } from "@/lib/app-errors";
+import { formatValidationIssues } from "@/lib/form-data-validation";
+import type { ValidationResult } from "@/lib/request-validation";
 
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxNativeImageBytes = 1024 * 1024;
-const allowedCreativeFormats = new Set(["native_card"]);
-const allowedAdminAdReturnPaths = new Set([
-  "/admin/ads",
-  "/admin/ads/launch",
-  "/admin/ads/review",
-  "/admin/ads/reporting",
-  "/admin/ads/inventory",
-]);
 
-function slugify(value: string, fallback: string) {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+function requireValidForm<T>(result: ValidationResult<T>) {
+  if (!result.ok) {
+    throw new ValidationError(`Invalid ad form data. ${formatValidationIssues(result.issues)}`);
+  }
 
-  return slug || fallback;
-}
-
-function parseOptionalDate(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
-
-function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function parseStringList(value: FormDataEntryValue | null) {
-  return String(value ?? "")
-    .split(",")
-    .map((item) => sanitizePlainTextInput(item, 80).trim())
-    .filter(Boolean);
+  return result.data;
 }
 
 function getImageDimensions(bytes: Buffer, mimeType: string) {
@@ -115,40 +98,6 @@ function validateNativeImageDimensions(width: number, height: number) {
   }
 }
 
-function requireHttpsUrl(value: string, fieldLabel: string) {
-  if (!value) return "";
-
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:") {
-      throw new Error(`${fieldLabel} must use HTTPS.`);
-    }
-    return url.toString();
-  } catch {
-    throw new Error(`${fieldLabel} must be a valid HTTPS URL.`);
-  }
-}
-
-function requireAdvertiseFallbackUrl(value: string) {
-  const trimmed = sanitizePlainTextInput(value, 400).trim() || "/advertise";
-
-  if (
-    trimmed === "/advertise" ||
-    trimmed === "/advertise/inquiry" ||
-    trimmed.startsWith("/advertise?") ||
-    trimmed.startsWith("/advertise#")
-  ) {
-    return trimmed;
-  }
-
-  throw new Error("Fallback CTA URL must stay on the Project VE advertising page.");
-}
-
-function getAdminAdReturnPath(value: FormDataEntryValue | null, fallback: string) {
-  const rawPath = sanitizePlainTextInput(String(value ?? ""), 120).trim();
-  return allowedAdminAdReturnPaths.has(rawPath) ? rawPath : fallback;
-}
-
 function revalidateAds() {
   revalidatePath("/admin/ads");
   revalidatePath("/admin/ads/launch");
@@ -163,20 +112,17 @@ function revalidateAds() {
 }
 
 export async function saveAdPlacementFallback(formData: FormData) {
+  const input = requireValidForm(parseAdPlacementFallbackForm(formData));
   const { supabase } = await requireAdmin();
-  const placementKey = sanitizePlainTextInput(String(formData.get("placementKey") ?? ""), 80);
-  const enabled = String(formData.get("houseFallbackEnabled") ?? "") === "true";
-
-  if (!placementKey) throw new Error("Placement is required.");
 
   const { error } = await supabase.rpc("admin_update_ad_placement_fallback", {
-    p_placement_key: placementKey,
-    p_enabled: enabled,
-    p_eyebrow: sanitizePlainTextInput(String(formData.get("houseFallbackEyebrow") ?? ""), 80).trim(),
-    p_headline: sanitizePlainTextInput(String(formData.get("houseFallbackHeadline") ?? ""), 160).trim(),
-    p_body: sanitizePlainTextInput(String(formData.get("houseFallbackBody") ?? ""), 500).trim(),
-    p_cta_label: sanitizePlainTextInput(String(formData.get("houseFallbackCtaLabel") ?? ""), 80).trim(),
-    p_cta_url: requireAdvertiseFallbackUrl(String(formData.get("houseFallbackCtaUrl") ?? "")),
+    p_placement_key: input.placementKey,
+    p_enabled: input.enabled,
+    p_eyebrow: input.eyebrow,
+    p_headline: input.headline,
+    p_body: input.body,
+    p_cta_label: input.ctaLabel,
+    p_cta_url: input.ctaUrl,
   });
 
   if (error) throw error;
@@ -186,37 +132,24 @@ export async function saveAdPlacementFallback(formData: FormData) {
 }
 
 export async function saveAdPartner(formData: FormData) {
+  const input = requireValidForm(parseAdPartnerForm(formData));
   const { supabase, profile } = await requireAdmin();
-  const partnerId = sanitizePlainTextInput(String(formData.get("partnerId") ?? ""), 120);
-  const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 160).trim();
-  const status = String(formData.get("status") ?? "draft");
-  const termsAccepted = String(formData.get("termsAccepted") ?? "") === "true";
-
-  if (!name) throw new Error("Partner name is required.");
-
-  const id = partnerId || `ad-partner-${slugify(name, "partner")}`;
-  const websiteUrl = requireHttpsUrl(
-    sanitizePlainTextInput(String(formData.get("websiteUrl") ?? ""), 300).trim(),
-    "Website URL",
-  );
 
   const { error } = await supabase.rpc("admin_upsert_ad_partner", {
     p_payload: {
-      id,
-      name,
-      slug: slugify(name, id),
-      status,
-      contactName: sanitizePlainTextInput(String(formData.get("contactName") ?? ""), 160).trim(),
-      contactEmail: sanitizePlainTextInput(String(formData.get("contactEmail") ?? ""), 160).trim(),
-      websiteUrl,
-      allowedCtaDomains: parseStringList(formData.get("allowedCtaDomains")).map((domain) =>
-        domain.toLowerCase(),
-      ),
-      termsAccepted,
+      id: input.id,
+      name: input.name,
+      slug: input.slug,
+      status: input.status,
+      contactName: input.contactName,
+      contactEmail: input.contactEmail,
+      websiteUrl: input.websiteUrl,
+      allowedCtaDomains: input.allowedCtaDomains,
+      termsAccepted: input.termsAccepted,
       termsVersion: "ads-v1",
       actorId: profile.id,
-      contractReference: sanitizePlainTextInput(String(formData.get("contractReference") ?? ""), 160).trim(),
-      notes: sanitizePlainTextInput(String(formData.get("notes") ?? ""), 1000).trim(),
+      contractReference: input.contractReference,
+      notes: input.notes,
     },
   });
 
@@ -227,54 +160,47 @@ export async function saveAdPartner(formData: FormData) {
 }
 
 export async function saveAdCampaign(formData: FormData) {
+  const input = requireValidForm(parseAdCampaignForm(formData));
   const { supabase } = await requireAdmin();
-  const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
-  const partnerId = sanitizePlainTextInput(String(formData.get("partnerId") ?? ""), 120);
-  const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 180).trim();
-
-  if (!partnerId) throw new Error("Partner is required.");
-  if (!name) throw new Error("Campaign name is required.");
-
-  const id = campaignId || `ad-campaign-${slugify(name, "campaign")}`;
 
   const { error } = await supabase.rpc("admin_upsert_ad_campaign", {
     p_payload: {
-      id,
-      partnerId,
-      name,
-      status: String(formData.get("status") ?? "draft"),
-      campaignType: String(formData.get("campaignType") ?? "guaranteed"),
-      startsAt: parseOptionalDate(formData.get("startsAt")),
-      endsAt: parseOptionalDate(formData.get("endsAt")),
-      timezone: sanitizePlainTextInput(String(formData.get("timezone") ?? "Africa/Lagos"), 80),
-      budgetLabel: sanitizePlainTextInput(String(formData.get("budgetLabel") ?? ""), 120).trim(),
-      pricingModel: String(formData.get("pricingModel") ?? "flat_fee"),
-      rateAmount: parseInteger(formData.get("rateAmount")),
-      currency: sanitizePlainTextInput(String(formData.get("currency") ?? "NGN"), 3).toUpperCase(),
-      minorUnit: parseInteger(formData.get("minorUnit"), 2),
-      roundingMode: String(formData.get("roundingMode") ?? "half_up"),
-      grossBudgetAmount: parseInteger(formData.get("grossBudgetAmount"), 0) || "",
-      billableBudgetAmount: parseInteger(formData.get("billableBudgetAmount"), 0) || "",
-      spendCapAmount: parseInteger(formData.get("spendCapAmount"), 0) || "",
-      allowOverspend: String(formData.get("allowOverspend") ?? "") === "true",
-      overspendTolerancePercent: parseInteger(formData.get("overspendTolerancePercent"), 0),
-      contractedImpressions: parseInteger(formData.get("contractedImpressions"), 0) || "",
-      contractedClicks: parseInteger(formData.get("contractedClicks"), 0) || "",
-      contractedViewableImpressions: parseInteger(formData.get("contractedViewableImpressions"), 0) || "",
-      includedContentTags: parseStringList(formData.get("includedContentTags")),
-      excludedContentTags: parseStringList(formData.get("excludedContentTags")),
-      includedCourseCategories: parseStringList(formData.get("includedCourseCategories")),
-      excludedCourseCategories: parseStringList(formData.get("excludedCourseCategories")),
-      includedCourseIds: parseStringList(formData.get("includedCourseIds")),
-      excludedCourseIds: parseStringList(formData.get("excludedCourseIds")),
-      includedLessonIds: parseStringList(formData.get("includedLessonIds")),
-      excludedLessonIds: parseStringList(formData.get("excludedLessonIds")),
-      excludedPageTypes: parseStringList(formData.get("excludedPageTypes")),
-      competitorExclusionKeys: parseStringList(formData.get("competitorExclusionKeys")),
-      priority: parseInteger(formData.get("priority")),
-      pacingMode: String(formData.get("pacingMode") ?? "even"),
-      makeGoodPolicy: sanitizePlainTextInput(String(formData.get("makeGoodPolicy") ?? ""), 1000).trim(),
-      notes: sanitizePlainTextInput(String(formData.get("notes") ?? ""), 1000).trim(),
+      id: input.id,
+      partnerId: input.partnerId,
+      name: input.name,
+      status: input.status,
+      campaignType: input.campaignType,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      timezone: input.timezone,
+      budgetLabel: input.budgetLabel,
+      pricingModel: input.pricingModel,
+      rateAmount: input.rateAmount,
+      currency: input.currency,
+      minorUnit: input.minorUnit,
+      roundingMode: input.roundingMode,
+      grossBudgetAmount: input.grossBudgetAmount,
+      billableBudgetAmount: input.billableBudgetAmount,
+      spendCapAmount: input.spendCapAmount,
+      allowOverspend: input.allowOverspend,
+      overspendTolerancePercent: input.overspendTolerancePercent,
+      contractedImpressions: input.contractedImpressions,
+      contractedClicks: input.contractedClicks,
+      contractedViewableImpressions: input.contractedViewableImpressions,
+      includedContentTags: input.includedContentTags,
+      excludedContentTags: input.excludedContentTags,
+      includedCourseCategories: input.includedCourseCategories,
+      excludedCourseCategories: input.excludedCourseCategories,
+      includedCourseIds: input.includedCourseIds,
+      excludedCourseIds: input.excludedCourseIds,
+      includedLessonIds: input.includedLessonIds,
+      excludedLessonIds: input.excludedLessonIds,
+      excludedPageTypes: input.excludedPageTypes,
+      competitorExclusionKeys: input.competitorExclusionKeys,
+      priority: input.priority,
+      pacingMode: input.pacingMode,
+      makeGoodPolicy: input.makeGoodPolicy,
+      notes: input.notes,
     },
   });
 
@@ -284,7 +210,7 @@ export async function saveAdCampaign(formData: FormData) {
   redirect(appendAdminNotice("/admin/ads/launch", "Ad campaign saved."));
 }
 
-async function uploadCreativeImage(formData: FormData, partnerId: string) {
+async function uploadCreativeImage(formData: FormData, partnerId: string, altText: string) {
   const file = formData.get("imageFile");
 
   if (!(file instanceof File) || file.size === 0) {
@@ -301,12 +227,6 @@ async function uploadCreativeImage(formData: FormData, partnerId: string) {
 
   const { supabase } = await requireAdmin();
   const bytes = Buffer.from(await file.arrayBuffer());
-  const altText = sanitizePlainTextInput(String(formData.get("imageAlt") ?? ""), 160).trim();
-
-  if (altText.length < 10) {
-    throw new Error("Creative image alt text must be at least 10 characters.");
-  }
-
   const checksum = createHash("sha256").update(bytes).digest("hex");
   const dimensions = getImageDimensions(bytes, file.type);
 
@@ -350,86 +270,52 @@ async function uploadCreativeImage(formData: FormData, partnerId: string) {
 }
 
 export async function saveAdCreativeVersion(formData: FormData) {
+  const input = requireValidForm(parseAdCreativeVersionForm(formData));
   const { supabase } = await requireAdmin();
-  const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
-  const creativeId = sanitizePlainTextInput(String(formData.get("creativeId") ?? ""), 120);
-  const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 180).trim();
-  const headline = sanitizePlainTextInput(String(formData.get("headline") ?? ""), 160).trim();
-  const body = sanitizePlainTextInput(String(formData.get("body") ?? ""), 500).trim();
-  const ctaLabel = sanitizePlainTextInput(String(formData.get("ctaLabel") ?? ""), 80).trim();
-  const sponsorLabel = sanitizePlainTextInput(String(formData.get("sponsorLabel") ?? ""), 120).trim();
-  const disclosureLabel =
-    sanitizePlainTextInput(String(formData.get("disclosureLabel") ?? "Sponsored"), 40).trim() ||
-    "Sponsored";
-  const ctaUrl = requireHttpsUrl(
-    sanitizePlainTextInput(String(formData.get("ctaUrl") ?? ""), 400).trim(),
-    "CTA URL",
-  );
-
-  if (!campaignId) throw new Error("Campaign is required.");
-  if (!name) throw new Error("Creative name is required.");
-  if (!headline) throw new Error("Headline is required.");
-  if (!body) throw new Error("Native card body copy is required.");
-  if (!ctaLabel) throw new Error("Native card CTA label is required.");
-  if (!ctaUrl) throw new Error("Native card CTA URL is required.");
-  if (!sponsorLabel) throw new Error("Sponsor label is required.");
-  if (!disclosureLabel) throw new Error("Disclosure label is required.");
 
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
     .select("id, partner_id")
-    .eq("id", campaignId)
-    .maybeSingle<{ id: string; partner_id: string }>();
+    .eq("id", input.campaignId)
+    .maybeSingle();
 
   if (campaignError) throw campaignError;
   if (!campaign) throw new Error("Campaign not found.");
 
-  const id = creativeId || `ad-creative-${slugify(name, "creative")}`;
-  const creativeFormat = String(formData.get("creativeFormat") ?? "native_card");
+  const id = input.creativeId || `ad-creative-${slugifyAdValue(input.name, "creative")}`;
+  const imageAssetId = await uploadCreativeImage(formData, campaign.partner_id, input.imageAlt);
 
-  if (!allowedCreativeFormats.has(creativeFormat)) {
-    throw new Error("Only native card creatives are supported in V1.");
-  }
-
-  const imageAssetId = await uploadCreativeImage(formData, campaign.partner_id);
-
-  if (creativeFormat === "native_card" && !imageAssetId) {
+  if (input.creativeFormat === "native_card" && !imageAssetId) {
     throw new Error("Native card creatives require an uploaded image asset.");
   }
 
   const { error: creativeError } = await supabase.rpc("admin_upsert_ad_creative", {
     p_payload: {
       id,
-      campaignId,
-      name,
-      status: String(formData.get("creativeStatus") ?? "active"),
-      creativeFormat,
-      weight: parseInteger(formData.get("weight"), 1) || 1,
+      campaignId: input.campaignId,
+      name: input.name,
+      status: input.creativeStatus,
+      creativeFormat: input.creativeFormat,
+      weight: input.weight,
     },
   });
 
   if (creativeError) throw creativeError;
 
-  const versionStatus = String(formData.get("versionStatus") ?? "submitted");
-
-  if (versionStatus === "approved") {
-    throw new Error("Create the version as draft/submitted, then approve it through review.");
-  }
-
   const { error: versionError } = await supabase.rpc("admin_insert_ad_creative_version", {
     p_payload: {
       creativeId: id,
-      status: versionStatus,
-      headline,
-      body,
-      eyebrow: sanitizePlainTextInput(String(formData.get("eyebrow") ?? ""), 80).trim(),
+      status: input.versionStatus,
+      headline: input.headline,
+      body: input.body,
+      eyebrow: input.eyebrow,
       imageAssetId: imageAssetId ?? "",
-      imageAlt: sanitizePlainTextInput(String(formData.get("imageAlt") ?? ""), 160).trim(),
-      ctaLabel,
-      ctaUrl,
-      sponsorLabel,
-      disclosureLabel,
-      legalText: sanitizePlainTextInput(String(formData.get("legalText") ?? ""), 300).trim(),
+      imageAlt: input.imageAlt,
+      ctaLabel: input.ctaLabel,
+      ctaUrl: input.ctaUrl,
+      sponsorLabel: input.sponsorLabel,
+      disclosureLabel: input.disclosureLabel,
+      legalText: input.legalText,
       theme: {},
     },
   });
@@ -441,54 +327,39 @@ export async function saveAdCreativeVersion(formData: FormData) {
 }
 
 export async function saveAdFlight(formData: FormData) {
+  const input = requireValidForm(parseAdFlightForm(formData));
   const { supabase } = await requireAdmin();
-  const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
-  const creativeVersionId = sanitizePlainTextInput(String(formData.get("creativeVersionId") ?? ""), 120);
-  const placementKey = sanitizePlainTextInput(String(formData.get("placementKey") ?? ""), 80);
-
-  if (!campaignId) throw new Error("Campaign is required.");
-  if (!creativeVersionId) throw new Error("Creative version is required.");
-  if (!placementKey) throw new Error("Placement is required.");
-
-  const sequencePageNumber = parseInteger(formData.get("sequencePageNumber"));
-  const allowConsecutiveCreative = String(formData.get("allowConsecutiveCreative") ?? "") === "true";
   const { error } = await supabase.rpc("admin_insert_ad_flight", {
     p_payload: {
-      campaignId,
-      creativeVersionId,
-      placementKey,
-      status: String(formData.get("status") ?? "active"),
-      startsAt: parseOptionalDate(formData.get("startsAt")),
-      endsAt: parseOptionalDate(formData.get("endsAt")),
-      priority: parseInteger(formData.get("priority")),
-      weight: parseInteger(formData.get("weight"), 1) || 1,
+      campaignId: input.campaignId,
+      creativeVersionId: input.creativeVersionId,
+      placementKey: input.placementKey,
+      status: input.status,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      priority: input.priority,
+      weight: input.weight,
       targetingRules: {
-        includedSegmentKeys: parseStringList(formData.get("includedSegmentKeys")),
-        excludedSegmentKeys: parseStringList(formData.get("excludedSegmentKeys")),
-        experimentKey: sanitizePlainTextInput(String(formData.get("experimentKey") ?? ""), 80).trim(),
-        variants: parseStringList(formData.get("experimentVariants")),
+        includedSegmentKeys: input.includedSegmentKeys,
+        excludedSegmentKeys: input.excludedSegmentKeys,
+        experimentKey: input.experimentKey,
+        variants: input.experimentVariants,
       },
       frequencyCaps: {
-        sessionMaxPaidAds: parseInteger(formData.get("sessionMaxPaidAds"), 5),
-        userDailyCampaignImpressions: parseInteger(formData.get("userDailyCampaignImpressions"), 3),
-        userDailyCreativeVersionImpressions: parseInteger(
-          formData.get("userDailyCreativeVersionImpressions"),
-          2,
-        ),
-        userWeeklyPartnerImpressions: parseInteger(formData.get("userWeeklyPartnerImpressions"), 5),
+        sessionMaxPaidAds: input.sessionMaxPaidAds,
+        userDailyCampaignImpressions: input.userDailyCampaignImpressions,
+        userDailyCreativeVersionImpressions: input.userDailyCreativeVersionImpressions,
+        userWeeklyPartnerImpressions: input.userWeeklyPartnerImpressions,
       },
-      sequenceRules: {
-        ...(sequencePageNumber > 0 ? { pageNumber: sequencePageNumber } : {}),
-        ...(allowConsecutiveCreative ? { allowConsecutiveCreative: true } : {}),
-      },
+      sequenceRules: input.sequenceRules,
       brandSafetyRules: {
-        excludedContentTags: parseStringList(formData.get("brandExcludedContentTags")),
-        excludedPageTypes: parseStringList(formData.get("brandExcludedPageTypes")),
-        includedPageTypes: parseStringList(formData.get("brandIncludedPageTypes")),
+        excludedContentTags: input.brandExcludedContentTags,
+        excludedPageTypes: input.brandExcludedPageTypes,
+        includedPageTypes: input.brandIncludedPageTypes,
       },
-      competitorExclusionKeys: parseStringList(formData.get("competitorExclusionKeys")),
-      deliveryGoalImpressions: parseInteger(formData.get("deliveryGoalImpressions"), 0) || "",
-      deliveryGoalClicks: parseInteger(formData.get("deliveryGoalClicks"), 0) || "",
+      competitorExclusionKeys: input.competitorExclusionKeys,
+      deliveryGoalImpressions: input.deliveryGoalImpressions,
+      deliveryGoalClicks: input.deliveryGoalClicks,
     },
   });
 
@@ -499,39 +370,33 @@ export async function saveAdFlight(formData: FormData) {
 }
 
 export async function setAdEntityStatus(formData: FormData) {
+  const input = requireValidForm(parseAdEntityStatusForm(formData));
   const { supabase } = await requireAdmin();
-  const entityType = sanitizePlainTextInput(String(formData.get("entityType") ?? ""), 80);
-  const entityId = sanitizePlainTextInput(String(formData.get("entityId") ?? ""), 120);
-  const status = String(formData.get("status") ?? "paused");
-  const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 300).trim();
-  const returnPath = getAdminAdReturnPath(formData.get("returnPath"), "/admin/ads/review");
 
   const { error } = await supabase.rpc("admin_set_ad_entity_status", {
-    p_entity_type: entityType,
-    p_entity_id: entityId,
-    p_status: status,
-    p_reason: reason || null,
+    p_entity_type: input.entityType,
+    p_entity_id: input.entityId,
+    p_status: input.status,
+    p_reason: input.reason,
   });
 
   if (error) throw error;
 
   revalidateAds();
-  redirect(appendAdminNotice(returnPath, "Ad status updated."));
+  redirect(appendAdminNotice(input.returnPath, "Ad status updated."));
 }
 
 export async function refreshAdBillingSnapshot(formData: FormData) {
+  const input = requireValidForm(parseAdBillingSnapshotForm(formData));
   const { supabase } = await requireAdmin();
-  const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
-  const periodStart = parseOptionalDate(formData.get("periodStart"));
-  const periodEnd = parseOptionalDate(formData.get("periodEnd"));
-
-  if (!campaignId) throw new Error("Campaign is required.");
-  if (!periodStart || !periodEnd) throw new Error("Billing period start and end are required.");
+  if (!input.periodStart || !input.periodEnd) {
+    throw new ValidationError("Invalid ad form data. periodStart: Required. periodEnd: Required.");
+  }
 
   const { error } = await supabase.rpc("refresh_ad_billing_snapshot", {
-    p_campaign_id: campaignId,
-    p_period_start: periodStart,
-    p_period_end: periodEnd,
+    p_campaign_id: input.campaignId,
+    p_period_start: input.periodStart,
+    p_period_end: input.periodEnd,
   });
 
   if (error) throw error;

@@ -30,34 +30,14 @@ export async function POST(_request: NextRequest, { params }: Params) {
     .from("rewards")
     .select("fulfillment_type, distribution_mode")
     .eq("id", id)
-    .maybeSingle<{ fulfillment_type: string | null; distribution_mode?: string | null }>();
+    .maybeSingle();
 
-  let rewardRecord = reward;
-
-  if (rewardError && /distribution_mode/i.test(String(rewardError.message ?? ""))) {
-    const legacyResult = await supabase
-      .from("rewards")
-      .select("fulfillment_type")
-      .eq("id", id)
-      .maybeSingle<{ fulfillment_type: string | null }>();
-
-    if (legacyResult.error) {
-      return NextResponse.json({ error: legacyResult.error.message }, { status: 400 });
-    }
-
-    rewardRecord = legacyResult.data
-      ? {
-          ...legacyResult.data,
-          distribution_mode:
-            legacyResult.data.fulfillment_type === "perk_bundle" ? "perk_bundle" : "direct",
-        }
-      : null;
-  } else if (rewardError) {
+  if (rewardError) {
     return NextResponse.json({ error: rewardError.message }, { status: 400 });
   }
 
   const rpcName =
-    rewardRecord?.distribution_mode === "perk_bundle"
+    reward?.distribution_mode === "perk_bundle"
       ? "redeem_perk_bundle"
       : "redeem_reward";
   const { data, error } = await supabase.rpc(rpcName, {

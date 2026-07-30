@@ -96,8 +96,7 @@ export function PushEnablePrompt() {
         .is("read_at", null)
         .in("event_type", ["free_xp_grant", "referral_link_visited", "first_xp_earned"])
         .order("created_at", { ascending: false })
-        .limit(1)
-        .returns<PromptSignal[]>();
+        .limit(1);
 
       if (cancelled) {
         return;
@@ -109,7 +108,7 @@ export function PushEnablePrompt() {
         return;
       }
 
-      const nextSignal = data[0];
+      const nextSignal = (data as PromptSignal[])[0];
       const dismissedSignalId = window.localStorage.getItem(DISMISSED_SIGNAL_KEY);
 
       if (dismissedSignalId === nextSignal.id) {

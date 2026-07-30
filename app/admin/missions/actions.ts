@@ -53,7 +53,7 @@ async function getUniqueMissionId(
       .from("missions")
       .select("id")
       .eq("id", candidate)
-      .maybeSingle<{ id: string }>();
+      .maybeSingle();
 
     if (error) throw error;
     if (!data) return candidate;

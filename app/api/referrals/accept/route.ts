@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
+import {
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-type AcceptReferralBody = {
-  referralCode?: string;
-  referredUserHint?: string;
-};
-
 export async function POST(request: Request) {
-  const body = (await request.json()) as AcceptReferralBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (!body.referralCode) {
-    return NextResponse.json({ error: "Referral code is required." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const referralCode = getStringField(bodyResult.data, "referralCode", issues);
+  getOptionalStringField(bodyResult.data, "referredUserHint", issues);
+
+  if (issues.length > 0 || !referralCode) {
+    return validationErrorResponse(issues);
   }
 
   try {
@@ -35,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await supabase.rpc("accept_referral", {
-      p_referral_code: body.referralCode,
+      p_referral_code: referralCode,
     });
 
     if (error) {

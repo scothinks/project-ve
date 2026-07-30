@@ -1,8 +1,8 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Course, Lesson } from "@/lib/lessons";
 import type { UserMissionSummary } from "@/lib/missions";
+import type { AppSupabaseClient } from "@/lib/supabase";
 import {
   getCompletedLessonIds,
   getCourseProgress,
@@ -170,7 +170,7 @@ function pickBestTag(
   return best;
 }
 
-async function loadProfileData(supabase: SupabaseClient, userId: string) {
+async function loadProfileData(supabase: AppSupabaseClient, userId: string) {
   const [{ data: profile }, { data: scores }, { data: dimensions }] = await Promise.all([
     supabase
       .from("user_value_profiles")
@@ -178,21 +178,19 @@ async function loadProfileData(supabase: SupabaseClient, userId: string) {
         "user_id, latest_attempt_id, assessment_version_id, assessment_completed_at, readiness_level, primary_dimension_id, secondary_dimension_id, profile_summary, updated_at",
       )
       .eq("user_id", userId)
-      .maybeSingle<UserValueProfileRow>(),
+      .maybeSingle(),
     supabase
       .from("user_value_dimension_scores")
       .select("user_id, dimension_id, score, confidence, updated_at")
-      .eq("user_id", userId)
-      .returns<UserValueDimensionScoreRow[]>(),
+      .eq("user_id", userId),
     supabase
       .from("value_dimensions")
       .select("id, label, description, sort_order, status")
       .eq("status", "active")
-      .order("sort_order", { ascending: true })
-      .returns<ValueDimensionRow[]>(),
+      .order("sort_order", { ascending: true }),
   ]);
 
-  const valueDimensions: ValueDimension[] = (dimensions ?? []).map((dimension) => ({
+  const valueDimensions: ValueDimension[] = ((dimensions ?? []) as ValueDimensionRow[]).map((dimension) => ({
     id: dimension.id,
     label: dimension.label,
     description: dimension.description,
@@ -200,21 +198,22 @@ async function loadProfileData(supabase: SupabaseClient, userId: string) {
     status: dimension.status,
   }));
 
-  const userProfile: UserValueProfile | null = profile
+  const typedProfile = profile as UserValueProfileRow | null;
+  const userProfile: UserValueProfile | null = typedProfile
     ? {
-        userId: profile.user_id,
-        latestAttemptId: profile.latest_attempt_id,
-        assessmentVersionId: profile.assessment_version_id,
-        assessmentCompletedAt: profile.assessment_completed_at,
-        readinessLevel: profile.readiness_level,
-        primaryDimensionId: profile.primary_dimension_id,
-        secondaryDimensionId: profile.secondary_dimension_id,
-        profileSummary: profile.profile_summary ?? {},
-        updatedAt: profile.updated_at,
+        userId: typedProfile.user_id,
+        latestAttemptId: typedProfile.latest_attempt_id,
+        assessmentVersionId: typedProfile.assessment_version_id,
+        assessmentCompletedAt: typedProfile.assessment_completed_at,
+        readinessLevel: typedProfile.readiness_level,
+        primaryDimensionId: typedProfile.primary_dimension_id,
+        secondaryDimensionId: typedProfile.secondary_dimension_id,
+        profileSummary: typedProfile.profile_summary ?? {},
+        updatedAt: typedProfile.updated_at,
       }
     : null;
 
-  const userScores: UserValueDimensionScore[] = (scores ?? []).map((score) => ({
+  const userScores: UserValueDimensionScore[] = ((scores ?? []) as UserValueDimensionScoreRow[]).map((score) => ({
     userId: score.user_id,
     dimensionId: score.dimension_id,
     score: Number(score.score),
@@ -226,7 +225,7 @@ async function loadProfileData(supabase: SupabaseClient, userId: string) {
 }
 
 async function loadRelevantTags(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   candidateIds: {
     courseIds: string[];
     lessonIds: string[];
@@ -248,7 +247,7 @@ async function loadRelevantTags(
           .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
           .eq("content_type", "course")
           .in("content_id", candidateIds.courseIds)
-          .returns<ContentTagRow[]>()
+          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
       : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
     candidateIds.lessonIds.length > 0
       ? supabase
@@ -256,7 +255,7 @@ async function loadRelevantTags(
           .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
           .eq("content_type", "lesson")
           .in("content_id", candidateIds.lessonIds)
-          .returns<ContentTagRow[]>()
+          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
       : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
     candidateIds.missionIds.length > 0
       ? supabase
@@ -264,7 +263,7 @@ async function loadRelevantTags(
           .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
           .eq("content_type", "mission")
           .in("content_id", candidateIds.missionIds)
-          .returns<ContentTagRow[]>()
+          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
       : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
   ]);
 
@@ -308,7 +307,7 @@ export async function getPersonalizedDashboardRecommendations({
   lessonProgress,
   missions,
 }: {
-  supabase: SupabaseClient | null;
+  supabase: AppSupabaseClient | null;
   userId: string;
   catalog: Course[];
   lessonProgress: LessonProgressRecord[];

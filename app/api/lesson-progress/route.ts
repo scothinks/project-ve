@@ -1,18 +1,28 @@
 import { NextResponse } from "next/server";
+import { AppError } from "@/lib/app-errors";
+import {
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { markLessonPageCompletedInSupabase } from "@/lib/progress";
 import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-type LessonProgressBody = {
-  lessonId?: string;
-  pageId?: string;
-};
-
 export async function POST(request: Request) {
-  const body = (await request.json()) as LessonProgressBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (!body.lessonId || !body.pageId) {
-    return NextResponse.json({ error: "lessonId and pageId are required" }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const lessonId = getStringField(bodyResult.data, "lessonId", issues);
+  const pageId = getStringField(bodyResult.data, "pageId", issues);
+
+  if (issues.length > 0 || !lessonId || !pageId) {
+    return validationErrorResponse(issues);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -24,9 +34,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const detail = await getLearningLesson(supabase, body.lessonId);
+  let detail: Awaited<ReturnType<typeof getLearningLesson>>;
+
+  try {
+    detail = await getLearningLesson(supabase, lessonId);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Lesson content is temporarily unavailable." },
+      { status: error instanceof AppError ? error.status : 503 },
+    );
+  }
+
   const lesson = detail?.lesson;
-  const page = lesson?.pages.find((item) => item.id === body.pageId);
+  const page = lesson?.pages.find((item) => item.id === pageId);
 
   if (!lesson || !page) {
     return NextResponse.json({ error: "Page not found for lesson" }, { status: 404 });

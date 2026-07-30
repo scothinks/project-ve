@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+import {
+  getArrayField,
+  getBooleanField,
+  getNumberField,
+  getObjectField,
+  getOptionalStringField,
+  getStringField,
+  isJsonObject,
+  readJsonObject,
+  validationErrorResponse,
+  type JsonObject,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 
 type BuilderPageInput = {
   id?: string;
@@ -18,12 +31,6 @@ type BuilderBlockInput = {
   sort_order?: number;
   payload?: Record<string, unknown> | null;
   isDraft?: boolean;
-};
-
-type BuilderSaveBody = {
-  lessonId?: string;
-  pages?: BuilderPageInput[];
-  blocks?: BuilderBlockInput[];
 };
 
 type SavedPageResult = {
@@ -141,16 +148,91 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
   };
 }
 
-export async function POST(request: Request) {
-  const body = (await request.json()) as BuilderSaveBody;
-  const lessonId = sanitizePlainTextInput(String(body.lessonId ?? ""), 120);
+function validateBuilderPage(input: JsonObject, issues: ValidationIssue[]) {
+  const id = getOptionalStringField(input, "id", issues);
+  const title = getOptionalStringField(input, "title", issues, { allowEmpty: true });
+  const subtitle = getOptionalStringField(input, "subtitle", issues, { allowEmpty: true });
+  const pageType = getOptionalStringField(input, "page_type", issues);
+  const pageNumber = getNumberField(input, "page_number", issues, {
+    integer: true,
+    min: 1,
+    required: false,
+  });
+  const coverImage = getObjectField(input, "cover_image", issues, { required: false });
 
-  if (!lessonId) {
-    return NextResponse.json({ error: "lessonId is required." }, { status: 400 });
+  return {
+    ...(id !== null ? { id } : {}),
+    ...(title !== null ? { title } : {}),
+    ...(subtitle !== null ? { subtitle } : {}),
+    ...(pageType !== null ? { page_type: pageType } : {}),
+    ...(pageNumber !== null ? { page_number: pageNumber } : {}),
+    ...(coverImage !== null ? { cover_image: coverImage } : {}),
+  } satisfies BuilderPageInput;
+}
+
+function validateBuilderBlock(input: JsonObject, issues: ValidationIssue[]) {
+  const id = getOptionalStringField(input, "id", issues);
+  const pageId = getOptionalStringField(input, "page_id", issues);
+  const blockType = getOptionalStringField(input, "block_type", issues);
+  const sortOrder = getNumberField(input, "sort_order", issues, {
+    integer: true,
+    min: 1,
+    required: false,
+  });
+  const payload = getObjectField(input, "payload", issues, { required: false });
+  const isDraft = getBooleanField(input, "isDraft", issues, { required: false });
+
+  return {
+    ...(id !== null ? { id } : {}),
+    ...(pageId !== null ? { page_id: pageId } : {}),
+    ...(blockType !== null ? { block_type: blockType } : {}),
+    ...(sortOrder !== null ? { sort_order: sortOrder } : {}),
+    ...(payload !== null ? { payload } : {}),
+    ...(isDraft !== null ? { isDraft } : {}),
+  } satisfies BuilderBlockInput;
+}
+
+export async function POST(request: Request) {
+  const bodyResult = await readJsonObject(request);
+
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
   }
 
-  const pages = Array.isArray(body.pages) ? body.pages : [];
-  const blocks = Array.isArray(body.blocks) ? body.blocks : [];
+  const issues: ValidationIssue[] = [];
+  const rawLessonId = getStringField(bodyResult.data, "lessonId", issues);
+  const lessonId = sanitizePlainTextInput(rawLessonId ?? "", 120);
+  const rawPages = getArrayField(bodyResult.data, "pages", issues, { required: false }) ?? [];
+  const rawBlocks = getArrayField(bodyResult.data, "blocks", issues, { required: false }) ?? [];
+  const pages: BuilderPageInput[] = [];
+  const blocks: BuilderBlockInput[] = [];
+
+  rawPages.forEach((page, index) => {
+    if (!isJsonObject(page)) {
+      issues.push({ path: `pages.${index}`, message: "Expected an object." });
+      return;
+    }
+
+    pages.push(validateBuilderPage(page, issues));
+  });
+
+  rawBlocks.forEach((block, index) => {
+    if (!isJsonObject(block)) {
+      issues.push({ path: `blocks.${index}`, message: "Expected an object." });
+      return;
+    }
+
+    blocks.push(validateBuilderBlock(block, issues));
+  });
+
+  if (!lessonId) {
+    issues.push({ path: "lessonId", message: "Required." });
+  }
+
+  if (issues.length > 0) {
+    return validationErrorResponse(issues);
+  }
+
   const { supabase } = await requireAdmin();
   const savedPages: SavedPageResult[] = [];
   const savedBlocks: SavedBlockResult[] = [];
@@ -223,7 +305,7 @@ export async function POST(request: Request) {
       .from("lesson_content_blocks")
       .select("sort_order")
       .eq("id", savedBlockId)
-      .maybeSingle<{ sort_order: number }>();
+      .maybeSingle();
 
     if (savedBlockLookupError) {
       return NextResponse.json({ error: savedBlockLookupError.message }, { status: 500 });

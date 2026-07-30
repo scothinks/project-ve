@@ -137,7 +137,7 @@ export function ProfileForm({
 
     const { error: updateError } = await supabase.rpc("update_my_profile", {
       p_display_name: safeName,
-      p_avatar_url: safeAvatar || null,
+      p_avatar_url: safeAvatar || undefined,
     });
 
     setSavingProfile(false);

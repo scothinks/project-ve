@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRiskContext, hashRiskValue } from "@/lib/auth-risk";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { asSupabaseJson, nullableRpcText } from "@/lib/supabase-rpc";
 
 type ClickRouteProps = {
   params: Promise<{ decisionId: string }>;
@@ -41,12 +42,12 @@ export async function GET(request: NextRequest, { params }: ClickRouteProps) {
     p_decision_id: decisionId,
     p_event_dedupe_key: eventDedupeKey,
     p_client_event_time: new Date().toISOString(),
-    p_ip_hash: ipHash,
-    p_device_hash: deviceHash,
-    p_user_agent_hash: userAgentHash,
-    p_metadata: {
+    p_ip_hash: nullableRpcText(ipHash),
+    p_device_hash: nullableRpcText(deviceHash),
+    p_user_agent_hash: nullableRpcText(userAgentHash),
+    p_metadata: asSupabaseJson({
       referrer: request.headers.get("referer"),
-    },
+    }),
   });
 
   return NextResponse.redirect(ctaUrl);

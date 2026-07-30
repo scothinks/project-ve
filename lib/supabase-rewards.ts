@@ -1,5 +1,5 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AppSupabaseClient } from "@/lib/supabase";
 import type {
   RewardDistributionMode,
   RewardFulfillmentType,
@@ -12,7 +12,6 @@ import type {
 } from "@/lib/rewards";
 
 type JsonRecord = Record<string, unknown>;
-type LegacyRewardFulfillmentType = RewardFulfillmentType | "perk_bundle";
 
 type DbReward = {
   id: string;
@@ -34,10 +33,6 @@ type DbReward = {
   limit_period: RewardLimitPeriod;
   redemption_window_days: number | null;
   total_available: number;
-};
-
-type LegacyDbReward = Omit<DbReward, "visibility_mode" | "distribution_mode" | "fulfillment_type"> & {
-  fulfillment_type: LegacyRewardFulfillmentType;
 };
 
 type DbInventoryCount = {
@@ -172,66 +167,27 @@ function mapRedemption(redemption: DbRedemption): RewardRedemption {
   };
 }
 
-function withStoreVisibility(reward: LegacyDbReward): DbReward {
-  return {
-    ...reward,
-    distribution_mode: reward.fulfillment_type === "perk_bundle" ? "perk_bundle" : "direct",
-    fulfillment_type: reward.fulfillment_type === "perk_bundle" ? "manual" : reward.fulfillment_type,
-    visibility_mode: "store",
-  };
-}
-
-function isMissingRewardSchemaError(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const record = error as Record<string, unknown>;
-  const message = typeof record.message === "string" ? record.message : "";
-  const details = typeof record.details === "string" ? record.details : "";
-  return /visibility_mode|distribution_mode/i.test(`${message} ${details}`);
-}
-
-async function getPublishedRewards(supabase: SupabaseClient) {
+async function getPublishedRewards(supabase: AppSupabaseClient) {
   const baseSelect =
     "id, campaign_id, title, description, cost_xp, thumbnail, starts_at, ends_at, offer_expires_at, terms, claim_steps, fulfillment_type, fulfillment_config, per_user_limit, limit_period, redemption_window_days, total_available";
 
-  const query = supabase
+  const { data, error } = await supabase
     .from("rewards")
     .select(`${baseSelect}, visibility_mode, distribution_mode`)
     .eq("status", "published")
     .eq("is_enabled", true)
     .eq("visibility_mode", "store")
-    .order("sort_order", { ascending: true })
-    .returns<DbReward[]>();
+    .order("sort_order", { ascending: true });
 
-  const { data, error } = await query;
-
-  if (!error) {
-    return data ?? [];
-  }
-
-  if (!isMissingRewardSchemaError(error)) {
+  if (error) {
     throw error;
   }
 
-  const legacyResult = await supabase
-    .from("rewards")
-    .select(baseSelect)
-    .eq("status", "published")
-    .eq("is_enabled", true)
-    .order("sort_order", { ascending: true })
-    .returns<LegacyDbReward[]>();
-
-  if (legacyResult.error) {
-    throw legacyResult.error;
-  }
-
-  return (legacyResult.data ?? []).map(withStoreVisibility);
+  return (data ?? []) as DbReward[];
 }
 
 export async function getRewardStoreSnapshot(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   userId: string,
   xpBalance: number,
 ): Promise<RewardStoreSnapshot> {
@@ -265,8 +221,7 @@ export async function getRewardStoreSnapshot(
     .select(
       "id, reward_id, requested_at, fulfilled_at, xp_cost_at_redemption, fulfillment_type, fulfillment_payload, claim_data, claim_state, user_message, redemption_expires_at, expired_at, reward_title_snapshot, reward_description_snapshot, reward_thumbnail_snapshot, claim_steps_snapshot, fulfillment_config_snapshot, rewards:rewards!reward_redemptions_reward_id_fkey(id, title, description, cost_xp, thumbnail, claim_steps, fulfillment_config)",
     )
-    .order("requested_at", { ascending: false })
-    .returns<DbRedemption[]>();
+    .order("requested_at", { ascending: false });
 
   if (redemptionsError) {
     throw redemptionsError;
@@ -275,6 +230,6 @@ export async function getRewardStoreSnapshot(
   return {
     xpBalance,
     rewards: rewardsWithLiveInventory.map(mapReward),
-    redemptions: (redemptions ?? []).map(mapRedemption),
+    redemptions: ((redemptions ?? []) as DbRedemption[]).map(mapRedemption),
   };
 }

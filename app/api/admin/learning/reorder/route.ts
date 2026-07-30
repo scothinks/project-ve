@@ -1,33 +1,43 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
-
-type ReorderBody =
-  | {
-      kind: "page";
-      lessonId: string;
-      pageId: string;
-      direction: "up" | "down";
-    }
-  | {
-      kind: "block";
-      pageId: string;
-      blockId: string;
-      direction: "up" | "down";
-    };
+import {
+  getEnumField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Partial<ReorderBody>;
+  const bodyResult = await readJsonObject(request);
+
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const kind = getEnumField(bodyResult.data, "kind", ["page", "block"], issues);
+  const direction = getEnumField(bodyResult.data, "direction", ["up", "down"], issues);
+
+  if (issues.length > 0 || !kind || !direction) {
+    return validationErrorResponse(issues);
+  }
+
   const { supabase } = await requireAdmin();
 
-  if (body.kind === "page") {
-    if (!body.lessonId || !body.pageId) {
-      return NextResponse.json({ error: "lessonId and pageId are required." }, { status: 400 });
+  if (kind === "page") {
+    const pageIssues: ValidationIssue[] = [];
+    const lessonId = getStringField(bodyResult.data, "lessonId", pageIssues);
+    const pageId = getStringField(bodyResult.data, "pageId", pageIssues);
+
+    if (pageIssues.length > 0 || !lessonId || !pageId) {
+      return validationErrorResponse(pageIssues);
     }
 
     const { error } = await supabase.rpc("admin_reorder_lesson_page", {
-      p_lesson_id: body.lessonId,
-      p_page_id: body.pageId,
-      p_direction: body.direction === "up" ? "up" : "down",
+      p_lesson_id: lessonId,
+      p_page_id: pageId,
+      p_direction: direction,
     });
 
     if (error) {
@@ -37,15 +47,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "updated" });
   }
 
-  if (body.kind === "block") {
-    if (!body.pageId || !body.blockId) {
-      return NextResponse.json({ error: "pageId and blockId are required." }, { status: 400 });
+  if (kind === "block") {
+    const blockIssues: ValidationIssue[] = [];
+    const pageId = getStringField(bodyResult.data, "pageId", blockIssues);
+    const blockId = getStringField(bodyResult.data, "blockId", blockIssues);
+
+    if (blockIssues.length > 0 || !pageId || !blockId) {
+      return validationErrorResponse(blockIssues);
     }
 
     const { error } = await supabase.rpc("admin_reorder_lesson_block", {
-      p_page_id: body.pageId,
-      p_block_id: body.blockId,
-      p_direction: body.direction === "up" ? "up" : "down",
+      p_page_id: pageId,
+      p_block_id: blockId,
+      p_direction: direction,
     });
 
     if (error) {

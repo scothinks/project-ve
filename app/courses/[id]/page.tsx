@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
+import { withLoggedFallback } from "@/lib/app-errors";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getCourseXP } from "@/lib/lessons";
 import {
@@ -38,8 +39,24 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
   const [lessonProgress, contentValueTags, segmentKeys] = await Promise.all([
     isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
-    getAdContentValueTags(supabase, { courseId: course.id }).catch(() => []),
-    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+    withLoggedFallback({
+      context: {
+        operation: "course.ads.content_value_tags",
+        resourceId: course.id,
+        userId: user?.id,
+      },
+      fallback: [],
+      promise: getAdContentValueTags(supabase, { courseId: course.id }),
+    }),
+    withLoggedFallback({
+      context: {
+        operation: "course.ads.segments",
+        resourceId: course.id,
+        userId: user?.id,
+      },
+      fallback: [],
+      promise: getLearnerAdSegments(supabase, user?.id),
+    }),
   ]);
   const completedLessonIds = getCompletedLessonIds(lessonProgress, course.lessons);
   const completedLessonIdList = Array.from(completedLessonIds);

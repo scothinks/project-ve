@@ -1,5 +1,5 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AppSupabaseClient } from "@/lib/supabase";
 import {
   fallbackAdminManualGrantDailyLimit,
   fallbackDailyQuizXpLimit,
@@ -10,15 +10,6 @@ export {
   fallbackAdminManualGrantDailyLimit,
   fallbackDailyQuizXpLimit,
   xpTimezone,
-};
-
-type XpSettingsRow = {
-  default_daily_quiz_xp_limit: number;
-  admin_manual_grant_daily_limit: number;
-};
-
-type UserDailyXpLimitRow = {
-  earnable_quiz_xp_limit: number;
 };
 
 function getLocalDateInTimezone(now = new Date()) {
@@ -32,7 +23,7 @@ function getLocalDateInTimezone(now = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export async function getDefaultDailyQuizXpLimit(supabase: SupabaseClient | null) {
+export async function getDefaultDailyQuizXpLimit(supabase: AppSupabaseClient | null) {
   if (!supabase) {
     return fallbackDailyQuizXpLimit;
   }
@@ -41,7 +32,7 @@ export async function getDefaultDailyQuizXpLimit(supabase: SupabaseClient | null
     .from("xp_settings")
     .select("default_daily_quiz_xp_limit")
     .eq("id", 1)
-    .maybeSingle<XpSettingsRow>();
+    .maybeSingle();
 
   if (error) {
     return fallbackDailyQuizXpLimit;
@@ -51,7 +42,7 @@ export async function getDefaultDailyQuizXpLimit(supabase: SupabaseClient | null
 }
 
 export async function getEffectiveDailyQuizXpLimit(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   userId: string,
 ) {
   const defaultLimit = await getDefaultDailyQuizXpLimit(supabase);
@@ -61,7 +52,7 @@ export async function getEffectiveDailyQuizXpLimit(
     .select("earnable_quiz_xp_limit")
     .eq("user_id", userId)
     .eq("local_date", localDate)
-    .maybeSingle<UserDailyXpLimitRow>();
+    .maybeSingle();
 
   if (error) {
     return defaultLimit;

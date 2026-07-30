@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AppSupabaseClient } from "@/lib/supabase";
 
 export const VALUES_STARTER_CHECK_SLUG = "values-starter-check-v1";
 
@@ -44,14 +44,6 @@ export type UserValueDimensionScore = {
   updatedAt: string;
 };
 
-type AssessmentVersionRow = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  xp_award: number;
-};
-
 type AssessmentOptionRow = {
   id: string;
   label: string;
@@ -67,16 +59,12 @@ type AssessmentQuestionRow = {
   assessment_question_options?: AssessmentOptionRow[] | null;
 };
 
-type UserValueProfileStatusRow = {
-  assessment_completed_at: string | null;
-};
-
 type ValueDimensionRow = {
   id: string;
   label: string;
   description: string | null;
   sort_order: number;
-  status: "active" | "archived";
+  status: ValueDimension["status"];
 };
 
 export type ValuesAssessmentOption = {
@@ -104,7 +92,7 @@ export type PublishedValuesAssessment = {
 };
 
 export async function getPublishedValuesAssessment(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   slug = VALUES_STARTER_CHECK_SLUG,
 ): Promise<PublishedValuesAssessment | null> {
   if (!supabase) {
@@ -116,7 +104,7 @@ export async function getPublishedValuesAssessment(
     .select("id, slug, title, description, xp_award")
     .eq("slug", slug)
     .eq("status", "published")
-    .maybeSingle<AssessmentVersionRow>();
+    .maybeSingle();
 
   if (versionError || !version) {
     return null;
@@ -128,8 +116,7 @@ export async function getPublishedValuesAssessment(
       "id, prompt, helper_text, sort_order, assessment_question_options(id, label, description, sort_order)",
     )
     .eq("assessment_version_id", version.id)
-    .order("sort_order", { ascending: true })
-    .returns<AssessmentQuestionRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (questionsError) {
     return null;
@@ -141,7 +128,7 @@ export async function getPublishedValuesAssessment(
     title: version.title,
     description: version.description,
     xpAward: version.xp_award,
-    questions: (questions ?? []).map((question) => ({
+    questions: ((questions ?? []) as AssessmentQuestionRow[]).map((question) => ({
       id: question.id,
       prompt: question.prompt,
       helperText: question.helper_text,
@@ -160,7 +147,7 @@ export async function getPublishedValuesAssessment(
 }
 
 export async function getUserAssessmentCompletionStatus(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   userId: string,
 ) {
   if (!supabase) {
@@ -171,7 +158,7 @@ export async function getUserAssessmentCompletionStatus(
     .from("user_value_profiles")
     .select("assessment_completed_at")
     .eq("user_id", userId)
-    .maybeSingle<UserValueProfileStatusRow>();
+    .maybeSingle();
 
   if (error) {
     return null;
@@ -180,7 +167,9 @@ export async function getUserAssessmentCompletionStatus(
   return data;
 }
 
-export async function getActiveValueDimensions(supabase: SupabaseClient | null): Promise<ValueDimension[]> {
+export async function getActiveValueDimensions(
+  supabase: AppSupabaseClient | null,
+): Promise<ValueDimension[]> {
   if (!supabase) {
     return [];
   }
@@ -189,14 +178,13 @@ export async function getActiveValueDimensions(supabase: SupabaseClient | null):
     .from("value_dimensions")
     .select("id, label, description, sort_order, status")
     .eq("status", "active")
-    .order("sort_order", { ascending: true })
-    .returns<ValueDimensionRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (error) {
     return [];
   }
 
-  return (data ?? []).map((dimension) => ({
+  return ((data ?? []) as ValueDimensionRow[]).map((dimension) => ({
     id: dimension.id,
     label: dimension.label,
     description: dimension.description,

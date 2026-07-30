@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - codex/**
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-publishable-key
+      TURNSTILE_SECRET_KEY: ci-turnstile-secret
+      FRAUD_HASH_SALT: ci-fraud-hash-salt
+      OAUTH_SIGNUP_PROOF_SECRET: ci-oauth-proof-secret
+      SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key
+      OPENAI_API_KEY: ci-openai-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run ci
+
+  database-types:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check Supabase type drift
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' }}
+        run: npm run db:types:check:ci
+      - name: Skip Supabase type drift check
+        if: ${{ env.SUPABASE_ACCESS_TOKEN == '' || env.SUPABASE_PROJECT_REF == '' }}
+        run: |
+          echo "::notice::Skipping Supabase type drift check because SUPABASE_ACCESS_TOKEN and/or SUPABASE_PROJECT_REF is not configured."

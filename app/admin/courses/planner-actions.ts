@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import {
+  parseCourseExpansionPlanForm,
+  parseNewCoursePlanInputForm,
+  type ValidatedNewCoursePlanInput,
+} from "@/lib/admin-ai-validation";
+import {
   generateCourseExpansionPlans,
   generateNewCoursePlans,
   parseStoredCourseExpansionPlan,
@@ -25,6 +30,9 @@ import {
   extendCourseWithAiLessons,
   generateAiCourseDraft,
 } from "@/app/admin/courses/ai-actions";
+import { logAppError, ValidationError } from "@/lib/app-errors";
+import { formatValidationIssues } from "@/lib/form-data-validation";
+import type { ValidationResult } from "@/lib/request-validation";
 
 type PlannerCourseRow = {
   id: string;
@@ -78,16 +86,6 @@ type PlannerPlanRow = {
   generated_plan: Record<string, unknown>;
   selected_items: unknown[];
 };
-
-const EXPANSION_GOALS: CourseExpansionGoal[] = [
-  "Add beginner lessons",
-  "Add advanced lessons",
-  "Add scenario/practice lessons",
-  "Add recap/assessment lesson",
-  "Fill topic gaps",
-  "Improve weak course progression",
-  "Create follow-up course",
-];
 
 function asObject(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -146,37 +144,66 @@ function revalidatePlannerPaths(courseId?: string | null) {
 }
 
 function parseNewCoursePlanInput(formData: FormData): NewCoursePlanInput {
-  const levelRaw = String(formData.get("level") ?? "beginner");
-  const level: PlannerLevel =
-    levelRaw === "advanced" ? "advanced" : levelRaw === "intermediate" ? "intermediate" : "beginner";
-
-  return {
-    roughIdea: asString(formData.get("roughIdea"), 500),
-    audience: asString(formData.get("audience"), 200),
-    region: asString(formData.get("region"), 120),
-    level,
-    tone: asString(formData.get("tone"), 120),
-    notes: asString(formData.get("notes"), 2000),
-  };
+  return requireValidPlannerForm<ValidatedNewCoursePlanInput>(
+    parseNewCoursePlanInputForm(formData),
+  );
 }
 
-function parseExpansionGoal(formData: FormData): CourseExpansionGoal {
-  const goal = asString(formData.get("expansion_goal"), 120);
-  return EXPANSION_GOALS.find((value) => value === goal) ?? "Fill topic gaps";
+function requireValidPlannerForm<T>(result: ValidationResult<T>) {
+  if (!result.ok) {
+    throw new ValidationError(`Invalid AI planner form data. ${formatValidationIssues(result.issues)}`);
+  }
+
+  return result.data;
 }
 
-function parseJsonArray<T>(value: FormDataEntryValue | null, fallback: T[]): T[] {
-  try {
-    const parsed = JSON.parse(String(value ?? "[]")) as unknown;
-    return Array.isArray(parsed) ? (parsed as T[]) : fallback;
-  } catch {
+function parseJsonArray<T>(
+  value: FormDataEntryValue | null,
+  fallback: T[],
+  context: {
+    field: string;
+    operation: string;
+  },
+): T[] {
+  if (value === null || value === undefined || String(value).trim().length === 0) {
     return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(String(value)) as unknown;
+    if (Array.isArray(parsed)) {
+      return parsed as T[];
+    }
+
+    throw new ValidationError(`Expected ${context.field} to be a JSON array.`);
+  } catch (error) {
+    const appError =
+      error instanceof ValidationError
+        ? error
+        : new ValidationError(`Could not parse ${context.field}.`, error);
+
+    logAppError(appError, {
+      operation: context.operation,
+      metadata: { field: context.field },
+    });
+    throw appError;
   }
 }
 
 function getSelectedNewCoursePlanSelection(plan: PlannerPlanRow) {
   const [firstItem] = Array.isArray(plan.selected_items) ? plan.selected_items : [];
   return parseStoredNewCoursePlanSelection(firstItem);
+}
+
+function logInvalidPlannerRecord(operation: string, plan: PlannerPlanRow) {
+  logAppError(new ValidationError("Stored AI course plan could not be parsed."), {
+    operation,
+    resourceId: plan.id,
+    metadata: {
+      mode: plan.mode,
+      status: plan.status,
+    },
+  });
 }
 
 function buildSelectedPlanSelection(
@@ -218,23 +245,24 @@ async function getCourseExpansionContext(
     .from("courses")
     .select("id, title, description, category, level")
     .eq("id", courseId)
-    .maybeSingle<PlannerCourseRow>();
+    .maybeSingle();
 
   if (courseError) throw courseError;
   if (!course) {
     throw new Error("Course not found.");
   }
+  const courseRow = course as PlannerCourseRow;
 
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
     .select("id, title, description, sort_order")
     .eq("course_id", courseId)
-    .order("sort_order", { ascending: true })
-    .returns<PlannerLessonRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (lessonsError) throw lessonsError;
 
-  const lessonIds = (lessons ?? []).map((lesson) => lesson.id);
+  const lessonRows = (lessons ?? []) as PlannerLessonRow[];
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
   let pages: PlannerPageRow[] = [];
   let blocks: PlannerBlockRow[] = [];
   let quizzes: PlannerQuizRow[] = [];
@@ -246,19 +274,17 @@ async function getCourseExpansionContext(
         .from("lesson_pages")
         .select("id, lesson_id, page_number, title, subtitle, page_type")
         .in("lesson_id", lessonIds)
-        .order("page_number", { ascending: true })
-        .returns<PlannerPageRow[]>(),
+        .order("page_number", { ascending: true }),
       supabase
         .from("quizzes")
         .select("id, lesson_id, title")
-        .in("lesson_id", lessonIds)
-        .returns<PlannerQuizRow[]>(),
+        .in("lesson_id", lessonIds),
     ]);
 
     if (pagesResult.error) throw pagesResult.error;
     if (quizzesResult.error) throw quizzesResult.error;
-    pages = pagesResult.data ?? [];
-    quizzes = quizzesResult.data ?? [];
+    pages = (pagesResult.data ?? []) as PlannerPageRow[];
+    quizzes = (quizzesResult.data ?? []) as PlannerQuizRow[];
 
     const pageIds = pages.map((page) => page.id);
     const quizIds = quizzes.map((quiz) => quiz.id);
@@ -268,11 +294,10 @@ async function getCourseExpansionContext(
         .from("lesson_content_blocks")
         .select("page_id, block_type, sort_order, payload")
         .in("page_id", pageIds)
-        .order("sort_order", { ascending: true })
-        .returns<PlannerBlockRow[]>();
+        .order("sort_order", { ascending: true });
 
       if (error) throw error;
-      blocks = data ?? [];
+      blocks = (data ?? []) as PlannerBlockRow[];
     }
 
     if (quizIds.length > 0) {
@@ -280,11 +305,10 @@ async function getCourseExpansionContext(
         .from("quiz_questions")
         .select("quiz_id, question_order, prompt, explanation")
         .in("quiz_id", quizIds)
-        .order("question_order", { ascending: true })
-        .returns<PlannerQuestionRow[]>();
+        .order("question_order", { ascending: true });
 
       if (error) throw error;
-      questions = data ?? [];
+      questions = (data ?? []) as PlannerQuestionRow[];
     }
   }
 
@@ -314,7 +338,7 @@ async function getCourseExpansionContext(
     questionsByQuizId.set(question.quiz_id, current);
   }
 
-  const existingLessons = (lessons ?? []).map((lesson) => {
+  const existingLessons = lessonRows.map((lesson) => {
     const lessonPages = (pagesByLessonId.get(lesson.id) ?? []).map((page) => {
       const blockSummary = (blocksByPageId.get(page.id) ?? [])
         .slice(0, 3)
@@ -354,11 +378,11 @@ async function getCourseExpansionContext(
   });
 
   const context: CourseExpansionContext = {
-    courseId: course.id,
-    courseTitle: course.title,
-    courseDescription: course.description,
-    courseCategory: course.category,
-    courseLevel: course.level,
+    courseId: courseRow.id,
+    courseTitle: courseRow.title,
+    courseDescription: courseRow.description,
+    courseCategory: courseRow.category,
+    courseLevel: courseRow.level,
     existingLessons,
     expansionGoal,
     numberOfSuggestions,
@@ -376,16 +400,18 @@ async function getPlannerPlan(
     .from("ai_course_plans")
     .select("id, mode, course_id, status, generated_plan, selected_items")
     .eq("id", planId)
-    .maybeSingle<PlannerPlanRow>();
+    .maybeSingle();
 
   if (error) throw error;
   if (!data) {
     throw new Error("Planner record not found.");
   }
 
+  const plan = data as PlannerPlanRow;
+
   return {
-    ...data,
-    selected_items: Array.isArray(data.selected_items) ? data.selected_items : [],
+    ...plan,
+    selected_items: Array.isArray(plan.selected_items) ? plan.selected_items : [],
   };
 }
 
@@ -396,12 +422,20 @@ function mergeNewCourseOptionEdits(
   const learningObjectives = parseJsonArray<string>(
     formData.get("learningObjectivesJson"),
     baseOption.learningObjectives,
+    {
+      field: "learningObjectivesJson",
+      operation: "admin.course_planner.option.learning_objectives.parse",
+    },
   )
     .map((item) => asString(item, 240))
     .filter(Boolean);
   const lessonOutline = parseJsonArray<NewCoursePlanOption["lessonOutline"][number]>(
     formData.get("lessonOutlineJson"),
     baseOption.lessonOutline,
+    {
+      field: "lessonOutlineJson",
+      operation: "admin.course_planner.option.lesson_outline.parse",
+    },
   )
     .map((lesson) => ({
       title: asString(lesson?.title, 160),
@@ -600,14 +634,15 @@ export async function generateNewCoursePlanOptions(formData: FormData) {
       created_by: profile.id,
     })
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (error) throw error;
+  const plan = data as { id: string };
 
   revalidatePlannerPaths();
   redirect(
     appendAdminNotice(
-      buildUrl("/admin/courses/ai/planner", { plan: data.id }),
+      buildUrl("/admin/courses/ai/planner", { plan: plan.id }),
       "Three AI course brief options are ready.",
     ),
   );
@@ -615,10 +650,12 @@ export async function generateNewCoursePlanOptions(formData: FormData) {
 
 export async function generateCourseExpansionPlan(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
-  const courseId = asString(formData.get("course_id"), 120);
-  const expansionGoal = parseExpansionGoal(formData);
-  const numberOfSuggestions = clampInteger(parseInteger(formData.get("number_of_suggestions"), 3), 1, 6);
-  const notes = asString(formData.get("notes"), 2000);
+  const {
+    courseId,
+    expansionGoal,
+    notes,
+    numberOfSuggestions,
+  } = requireValidPlannerForm(parseCourseExpansionPlanForm(formData));
 
   if (!courseId) {
     throw new Error("Select a course to expand.");
@@ -655,14 +692,15 @@ export async function generateCourseExpansionPlan(formData: FormData) {
       created_by: profile.id,
     })
     .select("id")
-    .single<{ id: string }>();
+    .single();
 
   if (error) throw error;
+  const plan = data as { id: string };
 
   revalidatePlannerPaths(courseId);
   redirect(
     appendAdminNotice(
-      buildUrl("/admin/courses/ai/planner", { courseId, plan: data.id }),
+      buildUrl("/admin/courses/ai/planner", { courseId, plan: plan.id }),
       "AI expansion suggestions are ready.",
     ),
   );
@@ -684,6 +722,7 @@ export async function selectCoursePlanOption(formData: FormData) {
   if (plan.mode === "new_course") {
     const stored = parseStoredNewCoursePlan(plan.generated_plan);
     if (!stored) {
+      logInvalidPlannerRecord("admin.course_planner.new_course_plan.parse", plan);
       throw new Error("The saved course brief is invalid.");
     }
 
@@ -709,6 +748,7 @@ export async function selectCoursePlanOption(formData: FormData) {
 
   const stored = parseStoredCourseExpansionPlan(plan.generated_plan);
   if (!stored) {
+    logInvalidPlannerRecord("admin.course_planner.expansion_plan.parse", plan);
     throw new Error("The saved expansion plan is invalid.");
   }
 
@@ -741,6 +781,7 @@ function getSelectedNewCourseOptionFromForm(
   const stored = parseStoredNewCoursePlan(plan.generated_plan);
 
   if (!stored) {
+    logInvalidPlannerRecord("admin.course_planner.selected_new_course_plan.parse", plan);
     throw new Error("The saved course brief is invalid.");
   }
 
@@ -985,8 +1026,12 @@ export async function generateCourseShellFromSelectedPlan(formData: FormData) {
   } catch (error) {
     try {
       await supabase.from("courses").delete().eq("id", courseId);
-    } catch {
-      // Ignore cleanup failures so the original shell-generation error still surfaces.
+    } catch (cleanupError) {
+      logAppError(cleanupError, {
+        operation: "admin.course_planner.shell_generation.cleanup",
+        resourceId: courseId,
+        metadata: { planId },
+      });
     }
     throw error;
   }
@@ -1011,6 +1056,7 @@ export async function generatePlannedLessonsFromSelectedPlan(formData: FormData)
 
   const stored = parseStoredNewCoursePlan(plan.generated_plan);
   if (!stored) {
+    logInvalidPlannerRecord("admin.course_planner.planned_lessons_plan.parse", plan);
     throw new Error("The saved course brief is invalid.");
   }
 
@@ -1084,6 +1130,7 @@ export async function generateLessonFromExpansionSuggestion(formData: FormData) 
   const stored = parseStoredCourseExpansionPlan(plan.generated_plan);
 
   if (!stored) {
+    logInvalidPlannerRecord("admin.course_planner.expansion_suggestion_plan.parse", plan);
     throw new Error("The saved expansion plan is invalid.");
   }
 

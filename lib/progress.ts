@@ -94,7 +94,6 @@ export async function getLessonProgress(
 
 export async function markLessonPageCompletedInSupabase({
   supabase,
-  userId,
   lesson,
   pageId,
 }: {
@@ -103,60 +102,23 @@ export async function markLessonPageCompletedInSupabase({
   lesson: Lesson;
   pageId: string;
 }) {
-  const now = new Date().toISOString();
-
-  const { error: completionError } = await supabase.from("lesson_page_completions").upsert(
-    {
-      user_id: userId,
-      lesson_id: lesson.id,
-      page_id: pageId,
-      completed_at: now,
-    },
-    { onConflict: "user_id,lesson_id,page_id" },
-  );
-
-  if (completionError) {
-    throw completionError;
-  }
-
-  const { data: existingProgress, error: readError } = await supabase
-    .from("lesson_progress")
-    .select("completed_pages, completed_modules, quiz_score")
-    .eq("user_id", userId)
-    .eq("lesson_id", lesson.id)
-    .maybeSingle<{
-      completed_pages: string[] | null;
-      completed_modules: string[] | null;
-      quiz_score: number | null;
-    }>();
-
-  if (readError) {
-    throw readError;
-  }
-
-  const completedPages = Array.from(
-    new Set([...(existingProgress?.completed_pages ?? []), pageId]),
-  );
-  const completedPageSet = new Set(completedPages);
-  const isLessonComplete = lesson.pages.every((page) => completedPageSet.has(page.id));
-
-  const { error: upsertError } = await supabase.from("lesson_progress").upsert({
-    user_id: userId,
-    lesson_id: lesson.id,
-    completed_pages: completedPages,
-    completed_modules: existingProgress?.completed_modules ?? completedPages,
-    quiz_score: existingProgress?.quiz_score ?? null,
-    completed_at: isLessonComplete ? now : null,
-    updated_at: now,
+  const { data, error } = await supabase.rpc("complete_lesson_page", {
+    p_lesson_id: lesson.id,
+    p_page_id: pageId,
   });
 
-  if (upsertError) {
-    throw upsertError;
+  if (error) {
+    throw error;
   }
 
+  const progress = data as {
+    completedPages?: string[];
+    lessonCompleted?: boolean;
+  } | null;
+
   return {
-    completedPages,
-    isLessonComplete,
+    completedPages: progress?.completedPages ?? [],
+    isLessonComplete: progress?.lessonCompleted ?? false,
   };
 }
 

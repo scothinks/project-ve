@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { BellIcon } from "@/components/ui/Icons";
+import { withLoggedFallback } from "@/lib/app-errors";
 import { getNotificationPreferences, getUnreadNotificationCount } from "@/lib/notifications";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
@@ -27,11 +28,25 @@ export default async function ProfilePage() {
   const supabase = await createSupabaseServerClient();
   const notificationPreferences =
     supabase && user
-      ? await getNotificationPreferences(supabase, user.id).catch(() => defaultNotificationPreferences)
+      ? await withLoggedFallback({
+          context: {
+            operation: "profile.notification_preferences.load",
+            userId: user.id,
+          },
+          fallback: defaultNotificationPreferences,
+          promise: getNotificationPreferences(supabase, user.id),
+        })
       : defaultNotificationPreferences;
   const unreadNotificationCount =
     supabase && user
-      ? await getUnreadNotificationCount(supabase, user.id).catch(() => 0)
+      ? await withLoggedFallback({
+          context: {
+            operation: "profile.notifications.unread_count",
+            userId: user.id,
+          },
+          fallback: 0,
+          promise: getUnreadNotificationCount(supabase, user.id),
+        })
       : 0;
 
   return (

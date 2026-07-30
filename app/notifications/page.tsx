@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getUnreadNotificationCount, getUserNotifications } from "@/lib/notifications";
+import { loadNotificationPageState } from "@/lib/observability";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
@@ -34,10 +35,21 @@ export default async function NotificationsPage() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const notifications =
-    supabase && user ? await getUserNotifications(supabase, user.id, 40).catch(() => []) : [];
-  const unreadCount =
-    supabase && user ? await getUnreadNotificationCount(supabase, user.id).catch(() => 0) : 0;
+  let notifications: Awaited<ReturnType<typeof getUserNotifications>> = [];
+  let unreadCount = 0;
+  let notificationLoadFailed = false;
+
+  if (supabase && user) {
+    const state = await loadNotificationPageState({
+      notificationsPromise: getUserNotifications(supabase, user.id, 40),
+      unreadCountPromise: getUnreadNotificationCount(supabase, user.id),
+      userId: user.id,
+    });
+
+    notifications = state.notifications;
+    unreadCount = state.unreadCount;
+    notificationLoadFailed = state.notificationLoadFailed;
+  }
 
   return (
     <main className="mobile-shell flex min-h-screen flex-col bg-[var(--ve-shell)]">
@@ -51,7 +63,14 @@ export default async function NotificationsPage() {
           </form>
         ) : null}
 
-        {notifications.length > 0 ? (
+        {notificationLoadFailed ? (
+          <Card className="p-5">
+            <h2 className="text-base font-black">Notifications unavailable</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+              We could not load notifications right now. Try again shortly.
+            </p>
+          </Card>
+        ) : notifications.length > 0 ? (
           <div className="learner-card-grid">
             {notifications.map((notification) => {
             const unread = !notification.readAt;

@@ -143,9 +143,9 @@ export async function getStaticContentPage(slug: StaticContentSlug): Promise<Sta
     .from("static_content_pages")
     .select("slug, title, subtitle, body, faq_items, is_published, updated_at")
     .eq("slug", slug)
-    .maybeSingle<StaticContentRow>();
+    .maybeSingle();
 
-  return toStaticContentPage(slug, data);
+  return toStaticContentPage(slug, data as StaticContentRow | null);
 }
 
 export function getDefaultStaticContentPages() {

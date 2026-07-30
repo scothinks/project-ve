@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "crypto";
 import type { NextRequest, NextResponse } from "next/server";
+import { getOAuthSignupProofSecret } from "@/lib/security-env";
 
 type OAuthSignupProofPayload = {
   purpose: "oauth-signup";
@@ -14,10 +15,9 @@ type OAuthSignupProofPayload = {
 
 const cookieName = "project-ve-oauth-signup-proof";
 const maxAgeSeconds = 60 * 10;
-const localProofSecret = "project-ve-local-oauth-proof-secret";
 
 function getProofSecret() {
-  return process.env.FRAUD_HASH_SALT ?? process.env.TURNSTILE_SECRET_KEY ?? localProofSecret;
+  return getOAuthSignupProofSecret();
 }
 
 function sign(value: string) {

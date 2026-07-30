@@ -31,21 +31,21 @@ export async function loadAdsOverviewData() {
     { data: flights },
     { data: recentEvents },
   ] = await Promise.all([
-    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }).returns<PartnerRow[]>(),
-    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }).returns<CampaignRow[]>(),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }).returns<CreativeVersionRow[]>(),
-    supabase.from("ad_placements").select(placementSelect).order("key").returns<PlacementRow[]>(),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }).returns<FlightRow[]>(),
-    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000).returns<EventRow[]>(),
+    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase.from("ad_placements").select(placementSelect).order("key"),
+    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
+    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000),
   ]);
 
   return {
-    partners: partners ?? [],
-    campaigns: campaigns ?? [],
-    versions: versions ?? [],
-    placements: placements ?? [],
-    flights: flights ?? [],
-    recentEvents: recentEvents ?? [],
+    partners: (partners ?? []) as PartnerRow[],
+    campaigns: (campaigns ?? []) as CampaignRow[],
+    versions: (versions ?? []) as CreativeVersionRow[],
+    placements: (placements ?? []) as PlacementRow[],
+    flights: (flights ?? []) as FlightRow[],
+    recentEvents: (recentEvents ?? []) as EventRow[],
   };
 }
 
@@ -58,19 +58,19 @@ export async function loadAdsLaunchData() {
     { data: versions },
     { data: placements },
   ] = await Promise.all([
-    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }).returns<PartnerRow[]>(),
-    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }).returns<CampaignRow[]>(),
-    supabase.from("ad_creatives").select("id, campaign_id, name, status, creative_format, current_version_id").order("created_at", { ascending: false }).returns<CreativeRow[]>(),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }).returns<CreativeVersionRow[]>(),
-    supabase.from("ad_placements").select(placementSelect).order("key").returns<PlacementRow[]>(),
+    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_creatives").select("id, campaign_id, name, status, creative_format, current_version_id").order("created_at", { ascending: false }),
+    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase.from("ad_placements").select(placementSelect).order("key"),
   ]);
 
   return {
-    partners: partners ?? [],
-    campaigns: campaigns ?? [],
-    creatives: creatives ?? [],
-    versions: versions ?? [],
-    placements: placements ?? [],
+    partners: (partners ?? []) as PartnerRow[],
+    campaigns: (campaigns ?? []) as CampaignRow[],
+    creatives: (creatives ?? []) as CreativeRow[],
+    versions: (versions ?? []) as CreativeVersionRow[],
+    placements: (placements ?? []) as PlacementRow[],
   };
 }
 
@@ -83,19 +83,19 @@ export async function loadAdsReviewData() {
     { data: placements },
     { data: flights },
   ] = await Promise.all([
-    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }).returns<PartnerRow[]>(),
-    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }).returns<CampaignRow[]>(),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }).returns<CreativeVersionRow[]>(),
-    supabase.from("ad_placements").select(placementSelect).order("key").returns<PlacementRow[]>(),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }).returns<FlightRow[]>(),
+    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase.from("ad_placements").select(placementSelect).order("key"),
+    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
   ]);
 
   return {
-    partners: partners ?? [],
-    campaigns: campaigns ?? [],
-    versions: versions ?? [],
-    placements: placements ?? [],
-    flights: flights ?? [],
+    partners: (partners ?? []) as PartnerRow[],
+    campaigns: (campaigns ?? []) as CampaignRow[],
+    versions: (versions ?? []) as CreativeVersionRow[],
+    placements: (placements ?? []) as PlacementRow[],
+    flights: (flights ?? []) as FlightRow[],
   };
 }
 
@@ -110,23 +110,23 @@ export async function loadAdsReportingData() {
     { data: makeGoods },
     { data: auditEvents },
   ] = await Promise.all([
-    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }).returns<CampaignRow[]>(),
-    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000).returns<EventRow[]>(),
-    supabase.from("ad_house_fallback_events").select("event_type, placement_key").order("created_at", { ascending: false }).limit(1000).returns<HouseFallbackEventRow[]>(),
-    supabase.from("ad_sponsor_inquiries").select("id, contact_name, organization_name, email, campaign_goal, status, created_at").order("created_at", { ascending: false }).limit(8).returns<SponsorInquiryRow[]>(),
-    supabase.from("ad_billing_snapshots").select("id, campaign_id, period_start, period_end, billable_spend, billable_viewable_impressions, billable_clicks, filtered_event_count").order("created_at", { ascending: false }).limit(10).returns<BillingSnapshotRow[]>(),
-    supabase.from("ad_make_goods").select("id, campaign_id, status, reason, owed_impressions, owed_clicks").order("created_at", { ascending: false }).limit(10).returns<MakeGoodRow[]>(),
-    supabase.from("ad_audit_events").select("id, event_type, entity_type, entity_id, reason, created_at").order("created_at", { ascending: false }).limit(12).returns<AuditRow[]>(),
+    supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000),
+    supabase.from("ad_house_fallback_events").select("event_type, placement_key").order("created_at", { ascending: false }).limit(1000),
+    supabase.from("ad_sponsor_inquiries").select("id, contact_name, organization_name, email, campaign_goal, status, created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("ad_billing_snapshots").select("id, campaign_id, period_start, period_end, billable_spend, billable_viewable_impressions, billable_clicks, filtered_event_count").order("created_at", { ascending: false }).limit(10),
+    supabase.from("ad_make_goods").select("id, campaign_id, status, reason, owed_impressions, owed_clicks").order("created_at", { ascending: false }).limit(10),
+    supabase.from("ad_audit_events").select("id, event_type, entity_type, entity_id, reason, created_at").order("created_at", { ascending: false }).limit(12),
   ]);
 
   return {
-    campaigns: campaigns ?? [],
-    recentEvents: recentEvents ?? [],
-    houseFallbackEvents: houseFallbackEvents ?? [],
-    sponsorInquiries: sponsorInquiries ?? [],
-    billingSnapshots: billingSnapshots ?? [],
-    makeGoods: makeGoods ?? [],
-    auditEvents: auditEvents ?? [],
+    campaigns: (campaigns ?? []) as CampaignRow[],
+    recentEvents: (recentEvents ?? []) as EventRow[],
+    houseFallbackEvents: (houseFallbackEvents ?? []) as HouseFallbackEventRow[],
+    sponsorInquiries: (sponsorInquiries ?? []) as SponsorInquiryRow[],
+    billingSnapshots: (billingSnapshots ?? []) as BillingSnapshotRow[],
+    makeGoods: (makeGoods ?? []) as MakeGoodRow[],
+    auditEvents: (auditEvents ?? []) as AuditRow[],
   };
 }
 
@@ -139,18 +139,18 @@ export async function loadAdsInventoryData() {
     { data: placements },
     { data: flights },
   ] = await Promise.all([
-    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }).returns<PartnerRow[]>(),
-    supabase.from("ad_campaigns").select("id, partner_id, name, status, campaign_type, pricing_model").order("created_at", { ascending: false }).returns<CampaignRow[]>(),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }).returns<CreativeVersionRow[]>(),
-    supabase.from("ad_placements").select(placementSelect).order("key").returns<PlacementRow[]>(),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }).returns<FlightRow[]>(),
+    supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
+    supabase.from("ad_campaigns").select("id, partner_id, name, status, campaign_type, pricing_model").order("created_at", { ascending: false }),
+    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase.from("ad_placements").select(placementSelect).order("key"),
+    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
   ]);
 
   return {
-    partners: partners ?? [],
-    campaigns: campaigns ?? [],
-    versions: versions ?? [],
-    placements: placements ?? [],
-    flights: flights ?? [],
+    partners: (partners ?? []) as PartnerRow[],
+    campaigns: (campaigns ?? []) as CampaignRow[],
+    versions: (versions ?? []) as CreativeVersionRow[],
+    placements: (placements ?? []) as PlacementRow[],
+    flights: (flights ?? []) as FlightRow[],
   };
 }

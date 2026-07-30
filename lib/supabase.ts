@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "@/types/database";
 
 export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 export const supabasePublishableKey =
@@ -8,12 +10,14 @@ export const supabasePublishableKey =
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
+export type AppSupabaseClient = SupabaseClient<Database>;
+
 export function createSupabaseBrowserClient() {
   if (!supabaseUrl || !supabasePublishableKey) {
     return null;
   }
 
-  return createBrowserClient(supabaseUrl, supabasePublishableKey);
+  return createBrowserClient<Database>(supabaseUrl, supabasePublishableKey);
 }
 
 export function createPlainSupabaseClient() {
@@ -21,5 +25,5 @@ export function createPlainSupabaseClient() {
     return null;
   }
 
-  return createClient(supabaseUrl, supabasePublishableKey);
+  return createClient<Database>(supabaseUrl, supabasePublishableKey);
 }

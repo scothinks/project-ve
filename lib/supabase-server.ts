@@ -1,7 +1,9 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { logAppError, toDependencyUnavailableError } from "@/lib/app-errors";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 
 export async function createSupabaseServerClient() {
   if (!supabaseUrl || !supabasePublishableKey) {
@@ -10,7 +12,7 @@ export async function createSupabaseServerClient() {
 
   const cookieStore = await cookies();
 
-  return createServerClient(supabaseUrl, supabasePublishableKey, {
+  return createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -37,6 +39,10 @@ export type UserProfile = {
   role: "learner" | "admin";
 };
 
+function isAuthSessionMissingError(error: unknown) {
+  return error instanceof Error && error.name === "AuthSessionMissingError";
+}
+
 export async function hasSupabaseAuthCookies() {
   const cookieStore = await cookies();
 
@@ -56,17 +62,35 @@ export async function getCurrentUserProfile(
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
+
+  if (userError && !isAuthSessionMissingError(userError)) {
+    const appError = toDependencyUnavailableError(userError, "Authentication state is temporarily unavailable.");
+    logAppError(appError, {
+      operation: "auth.current_user.load",
+    });
+    throw appError;
+  }
 
   if (!user) {
     return { user: null, profile: null };
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, display_name, avatar_url, referral_code, xp_balance_cached, role")
     .eq("id", user.id)
-    .maybeSingle<UserProfile>();
+    .maybeSingle();
 
-  return { user, profile };
+  if (profileError) {
+    const appError = toDependencyUnavailableError(profileError, "Profile is temporarily unavailable.");
+    logAppError(appError, {
+      operation: "profile.current_user.load",
+      userId: user.id,
+    });
+    throw appError;
+  }
+
+  return { user, profile: profile as UserProfile | null };
 }

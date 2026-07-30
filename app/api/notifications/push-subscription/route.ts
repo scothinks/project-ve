@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
+import {
+  getObjectField,
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-
-function extractEndpoint(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const record = value as Record<string, unknown>;
-  return typeof record.endpoint === "string" && record.endpoint.length > 0
-    ? record.endpoint
-    : null;
-}
-
-function extractDeviceKey(value: unknown) {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
-}
+import { asSupabaseJson } from "@/lib/supabase-rpc";
 
 async function syncWebPushPreference(
   supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
@@ -52,22 +46,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const payload = await request.json().catch(() => null);
-  const subscription = payload && typeof payload === "object"
-    ? (payload as Record<string, unknown>).subscription
-    : null;
-  const deviceKey =
-    payload && typeof payload === "object"
-      ? extractDeviceKey((payload as Record<string, unknown>).deviceKey)
-      : null;
-  const userAgent =
-    payload && typeof payload === "object" && typeof (payload as Record<string, unknown>).userAgent === "string"
-      ? String((payload as Record<string, unknown>).userAgent)
-      : "";
-  const endpoint = extractEndpoint(subscription);
+  const bodyResult = await readJsonObject(request);
 
-  if (!endpoint || !subscription || !deviceKey) {
-    return NextResponse.json({ error: "Invalid push subscription." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const subscription = getObjectField(bodyResult.data, "subscription", issues);
+  const deviceKey = getStringField(bodyResult.data, "deviceKey", issues);
+  const userAgent = getOptionalStringField(bodyResult.data, "userAgent", issues, {
+    allowEmpty: true,
+  }) ?? "";
+  const endpoint = subscription ? getStringField(subscription, "endpoint", issues) : null;
+
+  if (issues.length > 0 || !endpoint || !subscription || !deviceKey) {
+    return validationErrorResponse(issues);
   }
 
   await supabase
@@ -82,7 +76,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       device_key: deviceKey,
       endpoint,
-      subscription,
+      subscription: asSupabaseJson(subscription),
       user_agent: userAgent,
       last_seen_at: new Date().toISOString(),
       failure_count: 0,
@@ -114,14 +108,17 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const payload = await request.json().catch(() => null);
-  const deviceKey =
-    payload && typeof payload === "object"
-      ? extractDeviceKey((payload as Record<string, unknown>).deviceKey)
-      : null;
+  const bodyResult = await readJsonObject(request);
 
-  if (!deviceKey) {
-    return NextResponse.json({ error: "Invalid device key." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const deviceKey = getStringField(bodyResult.data, "deviceKey", issues);
+
+  if (issues.length > 0 || !deviceKey) {
+    return validationErrorResponse(issues);
   }
 
   const { error: subscriptionError } = await supabase

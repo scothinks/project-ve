@@ -695,14 +695,13 @@ async function getProfilesByIds(
     .select(
       "id, display_name, referral_code, xp_balance_cached, role, created_at, redemption_unlocked_at, fraud_review_status",
     )
-    .in("id", uniqueIds)
-    .returns<AdminProfileRow[]>();
+    .in("id", uniqueIds);
 
   if (error) {
     throw error;
   }
 
-  return new Map((data ?? []).map((profile) => [profile.id, profile]));
+  return new Map(((data ?? []) as AdminProfileRow[]).map((profile) => [profile.id, profile]));
 }
 
 function attachApprovalNames<
@@ -754,8 +753,7 @@ export async function getAdminOverview(supabase: SupabaseClient) {
       .from("xp_transactions")
       .select("amount")
       .eq("direction", "earn")
-      .gte("created_at", todayStart.toISOString())
-      .returns<Array<{ amount: number }>>(),
+      .gte("created_at", todayStart.toISOString()),
   ]);
 
   if (pendingRedemptions.error) {
@@ -777,7 +775,7 @@ export async function getAdminOverview(supabase: SupabaseClient) {
     totalCampaigns,
     pendingRedemptions: pendingRedemptions.count ?? 0,
     pendingProofItems: pendingProofItems.count ?? 0,
-    xpEarnedToday: (earnedToday.data ?? []).reduce((total, row) => total + row.amount, 0),
+    xpEarnedToday: ((earnedToday.data ?? []) as Array<{ amount: number }>).reduce((total, row) => total + row.amount, 0),
   };
 }
 
@@ -793,14 +791,13 @@ async function getCampaignsByIds(supabase: SupabaseClient, campaignIds: string[]
     .select(
       "id, slug, name, description, status, starts_at, ends_at, budget_label, budget_amount, created_at, updated_at",
     )
-    .in("id", uniqueIds)
-    .returns<AdminCampaignRow[]>();
+    .in("id", uniqueIds);
 
   if (error) {
     throw error;
   }
 
-  return new Map((data ?? []).map((campaign) => [campaign.id, campaign]));
+  return new Map(((data ?? []) as AdminCampaignRow[]).map((campaign) => [campaign.id, campaign]));
 }
 
 export async function getAdminCampaigns(supabase: SupabaseClient) {
@@ -809,14 +806,13 @@ export async function getAdminCampaigns(supabase: SupabaseClient) {
     .select(
       "id, slug, name, description, status, starts_at, ends_at, budget_label, budget_amount, created_at, updated_at",
     )
-    .order("starts_at", { ascending: false, nullsFirst: false })
-    .returns<AdminCampaignRow[]>();
+    .order("starts_at", { ascending: false, nullsFirst: false });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []).map((mission) => ({
+  return ((data ?? []) as AdminCampaignRow[]).map((mission) => ({
     ...mission,
     reward: normalizeAdminMissionReward((mission as { reward?: unknown }).reward),
   }));
@@ -829,32 +825,33 @@ export async function getAdminCampaign(supabase: SupabaseClient, campaignId: str
       "id, slug, name, description, status, starts_at, ends_at, budget_label, budget_amount, created_at, updated_at",
     )
     .eq("id", campaignId)
-    .maybeSingle<AdminCampaignRow>();
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  return data
+  const campaign = data as AdminCampaignRow | null;
+
+  return campaign
     ? {
-        ...data,
-        reward: normalizeAdminMissionReward((data as { reward?: unknown }).reward),
+        ...campaign,
+        reward: normalizeAdminMissionReward((campaign as { reward?: unknown }).reward),
       }
-    : data;
+    : campaign;
 }
 
 export async function getAdminCourses(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("courses")
     .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
-    .order("sort_order", { ascending: true })
-    .returns<AdminCourseRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  const courses = data ?? [];
+  const courses = (data ?? []) as AdminCourseRow[];
   const courseIds = courses.map((course) => course.id);
   const approvalUserIds = courses.flatMap((course) => [
     course.text_approved_by,
@@ -868,8 +865,7 @@ export async function getAdminCourses(supabase: SupabaseClient) {
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
     .select("course_id, estimated_minutes")
-    .in("course_id", courseIds)
-    .returns<Array<{ course_id: string; estimated_minutes: number }>>();
+    .in("course_id", courseIds);
 
   if (lessonsError) {
     throw lessonsError;
@@ -878,7 +874,7 @@ export async function getAdminCourses(supabase: SupabaseClient) {
   const profilesById = await getProfilesByIds(supabase, approvalUserIds);
 
   const minutesByCourseId = new Map<string, number>();
-  for (const lesson of lessons ?? []) {
+  for (const lesson of ((lessons ?? []) as Array<{ course_id: string; estimated_minutes: number }>)) {
     minutesByCourseId.set(
       lesson.course_id,
       (minutesByCourseId.get(lesson.course_id) ?? 0) + lesson.estimated_minutes,
@@ -894,8 +890,7 @@ export async function getAdminCourses(supabase: SupabaseClient) {
 export async function getAdminCourseCategories(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("courses")
-    .select("category")
-    .returns<Array<{ category: string | null }>>();
+    .select("category");
 
   if (error) {
     throw error;
@@ -903,7 +898,7 @@ export async function getAdminCourseCategories(supabase: SupabaseClient) {
 
   return Array.from(
     new Set(
-      (data ?? [])
+      ((data ?? []) as Array<{ category: string | null }>)
         .map((row) => row.category?.trim())
         .filter((category): category is string => Boolean(category)),
     ),
@@ -915,20 +910,22 @@ export async function getAdminCourse(supabase: SupabaseClient, courseId: string)
     .from("courses")
     .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", courseId)
-    .maybeSingle<AdminCourseRow>();
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  if (!data) return data;
+  const course = data as AdminCourseRow | null;
+
+  if (!course) return course;
 
   const profilesById = await getProfilesByIds(supabase, [
-    data.text_approved_by,
-    data.media_approved_by,
+    course.text_approved_by,
+    course.media_approved_by,
   ]);
 
-  return attachApprovalNames([data], profilesById)[0] ?? data;
+  return attachApprovalNames([course], profilesById)[0] ?? course;
 }
 
 export async function getAdminLessons(
@@ -944,13 +941,13 @@ export async function getAdminLessons(
     query = query.eq("course_id", filters.courseId);
   }
 
-  const { data, error } = await query.returns<AdminLessonRow[]>();
+  const { data, error } = await query;
 
   if (error) {
     throw error;
   }
 
-  const lessons = data ?? [];
+  const lessons = (data ?? []) as AdminLessonRow[];
   const profilesById = await getProfilesByIds(
     supabase,
     lessons.flatMap((lesson) => [lesson.text_approved_by, lesson.media_approved_by]),
@@ -964,13 +961,15 @@ export async function getAdminLesson(supabase: SupabaseClient, lessonId: string)
     .from("lessons")
     .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", lessonId)
-    .maybeSingle<AdminLessonRow>();
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  if (!lesson) {
+  const lessonRow = lesson as AdminLessonRow | null;
+
+  if (!lessonRow) {
     return null;
   }
 
@@ -979,74 +978,73 @@ export async function getAdminLesson(supabase: SupabaseClient, lessonId: string)
       .from("lesson_pages")
       .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image, created_at, updated_at")
       .eq("lesson_id", lessonId)
-      .order("page_number", { ascending: true })
-      .returns<AdminLessonPageRow[]>(),
+      .order("page_number", { ascending: true }),
     supabase
       .from("lesson_content_blocks")
       .select("id, page_id, block_type, sort_order, payload")
-      .order("sort_order", { ascending: true })
-      .returns<AdminLessonBlockRow[]>(),
+      .order("sort_order", { ascending: true }),
     supabase
       .from("quizzes")
       .select("id, lesson_id, title, version, status, ai_text_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by")
       .eq("lesson_id", lessonId)
-      .maybeSingle<AdminQuizRow>(),
+      .maybeSingle(),
   ]);
 
   if (pagesResult.error) throw pagesResult.error;
   if (blocksResult.error) throw blocksResult.error;
   if (quizResult.error) throw quizResult.error;
 
-  const pages = pagesResult.data ?? [];
+  const pages = (pagesResult.data ?? []) as AdminLessonPageRow[];
   const pageIds = new Set(pages.map((page) => page.id));
-  const blocks = (blocksResult.data ?? []).filter((block) => pageIds.has(block.page_id));
+  const blocks = ((blocksResult.data ?? []) as AdminLessonBlockRow[]).filter((block) => pageIds.has(block.page_id));
+  const quizRow = quizResult.data as AdminQuizRow | null;
   let questions: AdminQuizQuestionRow[] = [];
 
-  if (quizResult.data) {
+  if (quizRow) {
     const [questionsResult, optionsResult] = await Promise.all([
       supabase
         .from("quiz_questions")
         .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
-        .eq("quiz_id", quizResult.data.id)
-        .order("question_order", { ascending: true })
-        .returns<AdminQuizQuestionRow[]>(),
+        .eq("quiz_id", quizRow.id)
+        .order("question_order", { ascending: true }),
       supabase
         .from("quiz_options")
         .select("id, question_id, option_order, label, is_correct")
-        .order("option_order", { ascending: true })
-        .returns<AdminQuizOptionRow[]>(),
+        .order("option_order", { ascending: true }),
     ]);
 
     if (questionsResult.error) throw questionsResult.error;
     if (optionsResult.error) throw optionsResult.error;
 
-    const questionIds = new Set((questionsResult.data ?? []).map((question) => question.id));
+    const questionRows = (questionsResult.data ?? []) as AdminQuizQuestionRow[];
+    const optionRows = (optionsResult.data ?? []) as AdminQuizOptionRow[];
+    const questionIds = new Set(questionRows.map((question) => question.id));
     const optionsByQuestionId = new Map<string, AdminQuizOptionRow[]>();
 
-    for (const option of (optionsResult.data ?? []).filter((option) => questionIds.has(option.question_id))) {
+    for (const option of optionRows.filter((option) => questionIds.has(option.question_id))) {
       const existing = optionsByQuestionId.get(option.question_id) ?? [];
       existing.push(option);
       optionsByQuestionId.set(option.question_id, existing);
     }
 
-    questions = (questionsResult.data ?? []).map((question) => ({
+    questions = questionRows.map((question) => ({
       ...question,
       options: optionsByQuestionId.get(question.id) ?? [],
     }));
   }
 
   const profilesById = await getProfilesByIds(supabase, [
-    lesson.text_approved_by,
-    lesson.media_approved_by,
-    quizResult.data?.text_approved_by ?? null,
+    lessonRow.text_approved_by,
+    lessonRow.media_approved_by,
+    quizRow?.text_approved_by ?? null,
   ]);
 
-  const [lessonWithNames] = attachApprovalNames([lesson], profilesById);
-  const quizWithNames = quizResult.data
+  const [lessonWithNames] = attachApprovalNames([lessonRow], profilesById);
+  const quizWithNames = quizRow
     ? {
-        ...quizResult.data,
-        text_approved_by_name: quizResult.data.text_approved_by
-          ? profilesById.get(quizResult.data.text_approved_by)?.display_name ?? null
+        ...quizRow,
+        text_approved_by_name: quizRow.text_approved_by
+          ? profilesById.get(quizRow.text_approved_by)?.display_name ?? null
           : null,
       }
     : null;
@@ -1078,13 +1076,13 @@ export async function getAdminLearningMediaAssets(
     query = query.eq("lesson_id", filters.lessonId);
   }
 
-  const { data, error } = await query.returns<AdminLearningMediaAssetRow[]>();
+  const { data, error } = await query;
 
   if (error) {
     throw error;
   }
 
-  const assets = data ?? [];
+  const assets = (data ?? []) as AdminLearningMediaAssetRow[];
   const lessonIds = Array.from(new Set(assets.map((asset) => asset.lesson_id).filter(Boolean))) as string[];
 
   if (lessonIds.length === 0) {
@@ -1094,14 +1092,13 @@ export async function getAdminLearningMediaAssets(
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
     .select("id, title")
-    .in("id", lessonIds)
-    .returns<Array<Pick<AdminLessonRow, "id" | "title">>>();
+    .in("id", lessonIds);
 
   if (lessonsError) {
     throw lessonsError;
   }
 
-  const lessonsById = new Map((lessons ?? []).map((lesson) => [lesson.id, lesson]));
+  const lessonsById = new Map(((lessons ?? []) as Array<Pick<AdminLessonRow, "id" | "title">>).map((lesson) => [lesson.id, lesson]));
 
   return assets.map((asset) => ({
     ...asset,
@@ -1154,7 +1151,7 @@ export async function getAdminAiCoursePlans(
     query = query.limit(filters.limit);
   }
 
-  const { data, error } = await query.returns<AdminAiCoursePlanRow[]>();
+  const { data, error } = await query;
 
   if (error) {
     throw error;
@@ -1162,7 +1159,7 @@ export async function getAdminAiCoursePlans(
 
   const excludeStatuses = new Set(filters.excludeStatuses ?? []);
 
-  return (data ?? [])
+  return ((data ?? []) as unknown as AdminAiCoursePlanRow[])
     .map((plan) => ({
       ...plan,
       selected_items: Array.isArray(plan.selected_items) ? plan.selected_items : [],
@@ -1193,7 +1190,7 @@ export async function getAdminRewards(
   }
 
   let data: AdminRewardRow[] | null = null;
-  const { data: nextData, error } = await query.returns<AdminRewardRow[]>();
+  const { data: nextData, error } = await query;
 
   if (error) {
     if (!isMissingDistributionModeError(error)) {
@@ -1212,19 +1209,19 @@ export async function getAdminRewards(
           : legacyQuery.eq("campaign_id", filters.campaignId);
     }
 
-    const legacyResult = await legacyQuery.returns<LegacyAdminRewardRow[]>();
+    const legacyResult = await legacyQuery;
 
     if (legacyResult.error) {
       throw legacyResult.error;
     }
 
-    data = (legacyResult.data ?? [])
+    data = ((legacyResult.data ?? []) as LegacyAdminRewardRow[])
       .map(withDerivedDistributionMode)
       .filter((reward) =>
         filters.distributionMode ? reward.distribution_mode === filters.distributionMode : true,
       );
   } else {
-    data = (nextData ?? []).filter((reward) =>
+    data = ((nextData ?? []) as AdminRewardRow[]).filter((reward) =>
       filters.distributionMode ? reward.distribution_mode === filters.distributionMode : true,
     );
   }
@@ -1258,13 +1255,11 @@ export async function getAdminPerkPrograms(
     supabase
       .from("perk_bundle_prizes")
       .select("id, bundle_reward_id, is_enabled")
-      .in("bundle_reward_id", perkIds)
-      .returns<Array<{ id: string; bundle_reward_id: string; is_enabled: boolean }>>(),
+      .in("bundle_reward_id", perkIds),
     supabase
       .from("rewards")
       .select("id, fulfillment_config")
-      .in("id", perkIds)
-      .returns<Array<{ id: string; fulfillment_config: Record<string, unknown> | null }>>(),
+      .in("id", perkIds),
   ]);
 
   if (prizesResult.error) {
@@ -1278,7 +1273,7 @@ export async function getAdminPerkPrograms(
   const startOfTodayIso = getStartOfTodayInLagosIso();
   const prizeCounts = new Map<string, { total: number; enabled: number }>();
 
-  for (const prize of prizesResult.data ?? []) {
+  for (const prize of ((prizesResult.data ?? []) as Array<{ id: string; bundle_reward_id: string; is_enabled: boolean }>)) {
     const current = prizeCounts.get(prize.bundle_reward_id) ?? { total: 0, enabled: 0 };
     current.total += 1;
     if (prize.is_enabled) {
@@ -1288,7 +1283,7 @@ export async function getAdminPerkPrograms(
   }
 
   const fallbackConfigured = new Map<string, boolean>(
-    (fallbackResult.data ?? []).map((row) => {
+    ((fallbackResult.data ?? []) as Array<{ id: string; fulfillment_config: Record<string, unknown> | null }>).map((row) => {
       const config =
         row.fulfillment_config && typeof row.fulfillment_config === "object"
           ? row.fulfillment_config
@@ -1346,9 +1341,9 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     .from("rewards")
     .select(`${detailSelect}, distribution_mode`)
     .eq("id", rewardId)
-    .maybeSingle<AdminRewardDetail>();
+    .maybeSingle();
 
-  let resolvedReward: AdminRewardDetail | null = reward ?? null;
+  let resolvedReward: AdminRewardDetail | null = (reward as AdminRewardDetail | null) ?? null;
 
   if (error) {
     if (!isMissingDistributionModeError(error)) {
@@ -1359,13 +1354,15 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
       .from("rewards")
       .select(detailSelect)
       .eq("id", rewardId)
-      .maybeSingle<LegacyAdminRewardRow & Omit<AdminRewardDetail, keyof AdminRewardRow>>();
+      .maybeSingle();
 
     if (legacyResult.error) {
       throw legacyResult.error;
     }
 
-    resolvedReward = legacyResult.data ? withDerivedDistributionMode(legacyResult.data) : null;
+    resolvedReward = legacyResult.data
+      ? withDerivedDistributionMode(legacyResult.data as LegacyAdminRewardRow & Omit<AdminRewardDetail, keyof AdminRewardRow>)
+      : null;
   }
 
   if (!resolvedReward) {
@@ -1378,28 +1375,24 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
       .select("id, campaign_id, item_type, payload, status, available_from, expires_at, uploaded_at, assigned_at, redeemed_at, batch_label, partner_reference")
       .eq("reward_id", rewardId)
       .order("uploaded_at", { ascending: false })
-      .limit(50)
-      .returns<AdminInventoryItem[]>(),
+      .limit(50),
     supabase
       .from("reward_inventory_adjustments")
       .select("id, reward_id, campaign_id, delta, reason, created_at, batch_label, partner_reference")
       .eq("reward_id", rewardId)
       .order("created_at", { ascending: false })
-      .limit(25)
-      .returns<AdminInventoryAdjustment[]>(),
+      .limit(25),
     supabase
       .from("perk_bundle_prizes")
       .select("id, bundle_reward_id, prize_type, source_reward_id, title, thumbnail, config, weight, total_win_cap, daily_win_cap, available_from, expires_at, sort_order, is_enabled, created_at, updated_at")
       .eq("bundle_reward_id", rewardId)
       .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true })
-      .returns<AdminPerkPrizeRow[]>(),
+      .order("created_at", { ascending: true }),
     supabase
       .from("rewards")
       .select("id, title, fulfillment_type, visibility_mode, distribution_mode, status, is_enabled, total_available")
       .neq("id", rewardId)
-      .order("title", { ascending: true })
-      .returns<AdminRewardCandidateRow[]>(),
+      .order("title", { ascending: true }),
   ]);
 
   if (itemsResult.error) {
@@ -1414,7 +1407,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     throw perkPrizesResult.error;
   }
 
-  let perkRewardCandidates = perkRewardCandidatesResult.data ?? [];
+  let perkRewardCandidates = (perkRewardCandidatesResult.data ?? []) as AdminRewardCandidateRow[];
 
   if (perkRewardCandidatesResult.error) {
     if (!isMissingDistributionModeError(perkRewardCandidatesResult.error)) {
@@ -1425,14 +1418,13 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
       .from("rewards")
       .select("id, title, fulfillment_type, visibility_mode, status, is_enabled, total_available")
       .neq("id", rewardId)
-      .order("title", { ascending: true })
-      .returns<LegacyAdminRewardRow[]>();
+      .order("title", { ascending: true });
 
     if (legacyCandidatesResult.error) {
       throw legacyCandidatesResult.error;
     }
 
-    perkRewardCandidates = (legacyCandidatesResult.data ?? [])
+    perkRewardCandidates = ((legacyCandidatesResult.data ?? []) as LegacyAdminRewardRow[])
       .map(withDerivedDistributionMode)
       .filter((candidate) => candidate.distribution_mode !== "perk_bundle");
   } else {
@@ -1445,8 +1437,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     const assignmentCountsResult = await supabase
       .rpc("admin_reward_assignment_counts", {
         p_reward_ids: perkRewardCandidates.map((candidate) => candidate.id),
-      })
-      .returns<AdminRewardAssignmentCountRow[]>();
+      });
 
     if (assignmentCountsResult.error && !isMissingPerkPrizeInventoryAssignmentError(assignmentCountsResult.error)) {
       throw assignmentCountsResult.error;
@@ -1474,8 +1465,9 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
   const sourceRewards = new Map(
     allPerkRewardCandidates.map((candidate) => [candidate.id, candidate]),
   );
+  const perkPrizeRows = (perkPrizesResult.data ?? []) as AdminPerkPrizeRow[];
   const existingRewardPrizeIds = new Set(
-    (perkPrizesResult.data ?? [])
+    perkPrizeRows
       .filter((prize) => prize.prize_type === "reward" && Boolean(prize.source_reward_id))
       .map((prize) => prize.source_reward_id as string),
   );
@@ -1501,7 +1493,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
 
   if (isPerk) {
     const startOfTodayIso = getStartOfTodayInLagosIso();
-    const prizeRows = perkPrizesResult.data ?? [];
+    const prizeRows = perkPrizeRows;
     const trendStartDate = new Date();
     trendStartDate.setUTCDate(trendStartDate.getUTCDate() - 13);
     trendStartDate.setUTCHours(0, 0, 0, 0);
@@ -1523,8 +1515,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
           .select("id, bundle_reward_id, user_id, redemption_id, prize_id, awarded_reward_id, awarded_fulfillment_type, awarded_title, awarded_thumbnail, awarded_payload, award_status, created_at")
           .eq("bundle_reward_id", rewardId)
           .order("created_at", { ascending: false })
-          .limit(25)
-          .returns<AdminPerkDrawRow[]>(),
+          .limit(25),
         supabase
           .from("perk_bundle_draws")
           .select("id", { count: "exact", head: true })
@@ -1550,20 +1541,17 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
           .select("id, prize_id, created_at")
           .eq("bundle_reward_id", rewardId)
           .gte("created_at", trendStartIso)
-          .order("created_at", { ascending: true })
-          .returns<Array<{ id: string; prize_id: string | null; created_at: string }>>(),
+          .order("created_at", { ascending: true }),
         supabase
           .from("perk_prize_release_buckets")
           .select("id, prize_id, label, starts_at, ends_at, release_cap, sort_order, is_enabled, created_at, updated_at")
           .in("prize_id", prizeRows.map((prize) => prize.id))
           .order("sort_order", { ascending: true })
-          .order("starts_at", { ascending: true })
-          .returns<AdminPerkPrizeReleaseBucketRow[]>(),
+          .order("starts_at", { ascending: true }),
         supabase
           .rpc("admin_perk_prize_assignment_counts", {
             p_prize_ids: prizeRows.map((prize) => prize.id),
-          })
-          .returns<AdminPerkPrizeAssignmentCountRow[]>(),
+          }),
       ]);
 
     if (recentDrawsResult.error) throw recentDrawsResult.error;
@@ -1623,17 +1611,18 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
 
     perkPrizePerformance = new Map(performanceRows.map((row) => [row.prizeId, row]));
 
-    const bucketRows = releaseBucketsResult.data ?? [];
+    const bucketRows = (releaseBucketsResult.data ?? []) as AdminPerkPrizeReleaseBucketRow[];
+    const trendDrawRows = (trendDrawsResult.data ?? []) as Array<{ id: string; prize_id: string | null; created_at: string }>;
     const bucketsByPrize = new Map<string, AdminPerkPrizeReleaseBucketRow[]>();
 
     for (const bucket of bucketRows) {
-      const drawsInBucket = trendDrawsResult.data?.filter((draw) => {
+      const drawsInBucket = trendDrawRows.filter((draw) => {
         if (draw.prize_id !== bucket.prize_id) return false;
         const createdAt = new Date(draw.created_at).getTime();
         const startsAt = new Date(bucket.starts_at).getTime();
         const endsAt = bucket.ends_at ? new Date(bucket.ends_at).getTime() : null;
         return createdAt >= startsAt && (endsAt === null || createdAt < endsAt);
-      }).length ?? 0;
+      }).length;
 
       const nextBucket = {
         ...bucket,
@@ -1648,7 +1637,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
 
     perkPrizeReleaseBuckets = bucketsByPrize;
 
-    const recentDraws = recentDrawsResult.data ?? [];
+    const recentDraws = (recentDrawsResult.data ?? []) as AdminPerkDrawRow[];
     const [profiles, awardedRewards] = await Promise.all([
       getProfilesByIds(
         supabase,
@@ -1670,7 +1659,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     const drawsToday = todayDrawsResult.count ?? 0;
     const fallbackDrawsTotal = fallbackTotalResult.count ?? 0;
     const fallbackDrawsToday = fallbackTodayResult.count ?? 0;
-    const trendDraws = trendDrawsResult.data ?? [];
+    const trendDraws = trendDrawRows;
     const trendMap = new Map<string, { draws: number; fallbackDraws: number }>();
 
     for (let offset = 13; offset >= 0; offset -= 1) {
@@ -1730,7 +1719,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
       fallbackRateToday: drawsToday > 0 ? fallbackDrawsToday / drawsToday : 0,
     };
 
-    perkPrizesResult.data = prizeRows.map((prize) => ({
+    const decoratedPrizeRows = prizeRows.map((prize) => ({
       ...prize,
       assigned_available: Number(prizeAssignmentCounts.get(prize.id) ?? 0),
       source_reward_direct_available: prize.source_reward_id
@@ -1743,6 +1732,7 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
         ? Number(sourceRewards.get(prize.source_reward_id)?.assigned_available ?? 0)
         : 0,
     }));
+    perkPrizeRows.splice(0, perkPrizeRows.length, ...decoratedPrizeRows);
   }
 
   return {
@@ -1752,9 +1742,9 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
         ? (await getCampaignsByIds(supabase, [resolvedReward.campaign_id])).get(resolvedReward.campaign_id) ?? null
         : null,
     },
-    inventoryItems: itemsResult.data ?? [],
-    adjustments: adjustmentsResult.data ?? [],
-    perkPrizes: (perkPrizesResult.data ?? []).map((prize) => ({
+    inventoryItems: (itemsResult.data ?? []) as AdminInventoryItem[],
+    adjustments: (adjustmentsResult.data ?? []) as AdminInventoryAdjustment[],
+    perkPrizes: perkPrizeRows.map((prize) => ({
       ...prize,
       source_reward: prize.source_reward_id ? sourceRewards.get(prize.source_reward_id) ?? null : null,
       performance: perkPrizePerformance.get(prize.id) ?? null,
@@ -1778,14 +1768,13 @@ export async function getAdminPerkDraws(
     .select("id, bundle_reward_id, user_id, redemption_id, prize_id, awarded_reward_id, awarded_fulfillment_type, awarded_title, awarded_thumbnail, awarded_payload, award_status, created_at")
     .eq("bundle_reward_id", rewardId)
     .order("created_at", { ascending: false })
-    .limit(limit)
-    .returns<AdminPerkDrawRow[]>();
+    .limit(limit);
 
   if (error) {
     throw error;
   }
 
-  const draws = data ?? [];
+  const draws = (data ?? []) as AdminPerkDrawRow[];
   const [profiles, awardedRewards] = await Promise.all([
     getProfilesByIds(
       supabase,
@@ -1836,13 +1825,13 @@ export async function getAdminRedemptions(
     query = query.lte("requested_at", filters.dateTo);
   }
 
-  const { data, error } = await query.limit(limit).returns<AdminRedemptionRow[]>();
+  const { data, error } = await query.limit(limit);
 
   if (error) {
     throw error;
   }
 
-  let redemptions = data ?? [];
+  let redemptions = (data ?? []) as AdminRedemptionRow[];
 
   const [profiles, rewards] = await Promise.all([
     getProfilesByIds(
@@ -1883,10 +1872,9 @@ async function getRewardsByIds(supabase: SupabaseClient, rewardIds: string[]) {
   const { data, error } = await supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)
-    .in("id", uniqueIds)
-    .returns<AdminRewardRow[]>();
+    .in("id", uniqueIds);
 
-  let resolvedData: AdminRewardRow[] | null = data ?? null;
+  let resolvedData: AdminRewardRow[] | null = data ? (data as AdminRewardRow[]) : null;
 
   if (error) {
     if (!isMissingDistributionModeError(error)) {
@@ -1896,14 +1884,13 @@ async function getRewardsByIds(supabase: SupabaseClient, rewardIds: string[]) {
     const legacyResult = await supabase
       .from("rewards")
       .select(baseSelect)
-      .in("id", uniqueIds)
-      .returns<LegacyAdminRewardRow[]>();
+      .in("id", uniqueIds);
 
     if (legacyResult.error) {
       throw legacyResult.error;
     }
 
-    resolvedData = (legacyResult.data ?? []).map(withDerivedDistributionMode);
+    resolvedData = ((legacyResult.data ?? []) as LegacyAdminRewardRow[]).map(withDerivedDistributionMode);
   }
 
   return new Map((resolvedData ?? []).map((reward) => [reward.id, reward]));
@@ -1918,14 +1905,13 @@ export async function getAdminCampaignAnalytics(
     .select(
       "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, offer_expires_at, updated_at",
     )
-    .eq("campaign_id", campaignId)
-    .returns<AdminRewardRow[]>();
+    .eq("campaign_id", campaignId);
 
   if (rewardsError) {
     throw rewardsError;
   }
 
-  const rewardRows = rewards ?? [];
+  const rewardRows = (rewards ?? []) as AdminRewardRow[];
   const rewardIds = rewardRows.map((reward) => reward.id);
 
   if (rewardIds.length === 0) {
@@ -1949,29 +1935,28 @@ export async function getAdminCampaignAnalytics(
     supabase
       .from("reward_redemptions")
       .select("id, reward_id, claim_state, xp_cost_at_redemption, fulfillment_type")
-      .in("reward_id", rewardIds)
-      .returns<Array<{
+      .in("reward_id", rewardIds),
+    supabase
+      .from("reward_inventory_reallocations")
+      .select("quantity")
+      .eq("to_campaign_id", campaignId),
+    supabase
+      .from("reward_inventory_reallocations")
+      .select("quantity")
+      .eq("from_campaign_id", campaignId),
+  ]);
+
+  if (redemptionsResult.error) throw redemptionsResult.error;
+
+  type CampaignRedemptionMetricRow = {
         id: string;
         reward_id: string;
         claim_state: string;
         xp_cost_at_redemption: number | null;
         fulfillment_type: string | null;
-      }>>(),
-    supabase
-      .from("reward_inventory_reallocations")
-      .select("quantity")
-      .eq("to_campaign_id", campaignId)
-      .returns<Array<{ quantity: number }>>(),
-    supabase
-      .from("reward_inventory_reallocations")
-      .select("quantity")
-      .eq("from_campaign_id", campaignId)
-      .returns<Array<{ quantity: number }>>(),
-  ]);
+  };
 
-  if (redemptionsResult.error) throw redemptionsResult.error;
-
-  const redemptions = redemptionsResult.data ?? [];
+  const redemptions = (redemptionsResult.data ?? []) as CampaignRedemptionMetricRow[];
   const redemptionsByReward = new Map<string, typeof redemptions>();
 
   for (const redemption of redemptions) {
@@ -2019,10 +2004,10 @@ export async function getAdminCampaignAnalytics(
     ).length,
     reallocatedIn: reallocationsInResult.error
       ? 0
-      : (reallocationsInResult.data ?? []).reduce((sum, item) => sum + item.quantity, 0),
+      : ((reallocationsInResult.data ?? []) as Array<{ quantity: number }>).reduce((sum, item) => sum + item.quantity, 0),
     reallocatedOut: reallocationsOutResult.error
       ? 0
-      : (reallocationsOutResult.data ?? []).reduce((sum, item) => sum + item.quantity, 0),
+      : ((reallocationsOutResult.data ?? []) as Array<{ quantity: number }>).reduce((sum, item) => sum + item.quantity, 0),
     rewardMetrics,
   };
 }
@@ -2033,14 +2018,13 @@ export async function getAdminMissions(supabase: SupabaseClient) {
     .select(
       "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
-    .order("sort_order", { ascending: true })
-    .returns<AdminMissionRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []) as unknown as AdminMissionRow[];
 }
 
 export async function getAdminMission(supabase: SupabaseClient, missionId: string) {
@@ -2050,27 +2034,26 @@ export async function getAdminMission(supabase: SupabaseClient, missionId: strin
       "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
     .eq("id", missionId)
-    .maybeSingle<AdminMissionRow>();
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return data as unknown as AdminMissionRow | null;
 }
 
 export async function getAdminValueDimensions(supabase: SupabaseClient): Promise<ValueDimension[]> {
   const { data, error } = await supabase
     .from("value_dimensions")
     .select("id, label, description, sort_order, status")
-    .order("sort_order", { ascending: true })
-    .returns<AdminValueDimensionRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []).map((dimension) => ({
+  return ((data ?? []) as AdminValueDimensionRow[]).map((dimension) => ({
     id: dimension.id,
     label: dimension.label,
     description: dimension.description,
@@ -2089,14 +2072,13 @@ export async function getAdminContentValueTags(
     .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
     .eq("content_type", contentType)
     .eq("content_id", contentId)
-    .order("created_at", { ascending: true })
-    .returns<AdminContentValueTagRow[]>();
+    .order("created_at", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []).map((tag) => ({
+  return ((data ?? []) as AdminContentValueTagRow[]).map((tag) => ({
     id: tag.id,
     contentType: tag.content_type,
     contentId: tag.content_id,
@@ -2113,8 +2095,7 @@ export async function getAdminMissionRewardCandidates(supabase: SupabaseClient) 
   const candidatesResult = await supabase
     .from("rewards")
     .select("id, title, fulfillment_type, visibility_mode, distribution_mode, status, is_enabled, total_available")
-    .order("title", { ascending: true })
-    .returns<AdminRewardCandidateRow[]>();
+    .order("title", { ascending: true });
 
   if (candidatesResult.error) {
     if (!isMissingDistributionModeError(candidatesResult.error)) {
@@ -2124,19 +2105,18 @@ export async function getAdminMissionRewardCandidates(supabase: SupabaseClient) 
     const legacyCandidatesResult = await supabase
       .from("rewards")
       .select("id, title, fulfillment_type, visibility_mode, status, is_enabled, total_available")
-      .order("title", { ascending: true })
-      .returns<LegacyAdminRewardRow[]>();
+      .order("title", { ascending: true });
 
     if (legacyCandidatesResult.error) {
       throw legacyCandidatesResult.error;
     }
 
-    return (legacyCandidatesResult.data ?? [])
+    return ((legacyCandidatesResult.data ?? []) as LegacyAdminRewardRow[])
       .map(withDerivedDistributionMode)
       .filter((candidate) => candidate.distribution_mode !== "perk_bundle");
   }
 
-  return (candidatesResult.data ?? []).filter(
+  return ((candidatesResult.data ?? []) as AdminRewardCandidateRow[]).filter(
     (candidate) => candidate.distribution_mode !== "perk_bundle",
   );
 }
@@ -2149,13 +2129,11 @@ export async function getAdminRecommendationSections(
       .from("recommendation_sections")
       .select("id, slug, placement, eyebrow, title, subtitle, status, sort_order, starts_at, ends_at, created_at, updated_at")
       .eq("placement", "dashboard")
-      .order("sort_order", { ascending: true })
-      .returns<AdminRecommendationSectionRow[]>(),
+      .order("sort_order", { ascending: true }),
     supabase
       .from("recommendation_items")
       .select("id, section_id, item_type, item_id, sort_order, created_at")
-      .order("sort_order", { ascending: true })
-      .returns<AdminRecommendationItemRow[]>(),
+      .order("sort_order", { ascending: true }),
     getAdminCourses(supabase),
     getAdminLessons(supabase),
   ]);
@@ -2171,14 +2149,16 @@ export async function getAdminRecommendationSections(
   const courseMap = new Map(courses.map((course) => [course.id, course]));
   const lessonMap = new Map(lessons.map((lesson) => [lesson.id, lesson]));
   const itemsBySection = new Map<string, AdminRecommendationItemRow[]>();
+  const recommendationItems = (itemsResult.data ?? []) as AdminRecommendationItemRow[];
+  const recommendationSections = (sectionsResult.data ?? []) as AdminRecommendationSectionRow[];
 
-  for (const item of itemsResult.data ?? []) {
+  for (const item of recommendationItems) {
     const current = itemsBySection.get(item.section_id) ?? [];
     current.push(item);
     itemsBySection.set(item.section_id, current);
   }
 
-  return (sectionsResult.data ?? []).map((section) => ({
+  return recommendationSections.map((section) => ({
     ...section,
     items: (itemsBySection.get(section.id) ?? []).map((item) => {
       if (item.item_type === "course") {
@@ -2207,14 +2187,13 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient) {
       "id, user_id, mission_id, award_scope, proof_type, value, status, rejection_reason, created_at, reviewed_at",
     )
     .order("created_at", { ascending: false })
-    .limit(200)
-    .returns<AdminProofRow[]>();
+    .limit(200);
 
   if (error) {
     throw error;
   }
 
-  const proofs = data ?? [];
+  const proofs = (data ?? []) as AdminProofRow[];
   const [profiles, missions] = await Promise.all([
     getProfilesByIds(
       supabase,
@@ -2289,14 +2268,13 @@ export async function getAdminUsers(supabase: SupabaseClient) {
       "id, display_name, referral_code, xp_balance_cached, role, created_at, redemption_unlocked_at, fraud_review_status",
     )
     .order("created_at", { ascending: false })
-    .limit(100)
-    .returns<AdminProfileRow[]>();
+    .limit(100);
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []) as AdminProfileRow[];
 }
 
 export async function getAdminXpSettings(supabase: SupabaseClient) {
@@ -2304,13 +2282,13 @@ export async function getAdminXpSettings(supabase: SupabaseClient) {
     .from("xp_settings")
     .select("id, default_daily_quiz_xp_limit, admin_manual_grant_daily_limit, updated_at")
     .eq("id", 1)
-    .maybeSingle<AdminXpSettingsRow>();
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return data as AdminXpSettingsRow | null;
 }
 
 export async function getAdminManualXpGrantStatus(supabase: SupabaseClient) {
@@ -2344,14 +2322,13 @@ export async function getAdminXpLedger(
           `id.ilike.%${userQuery}%`,
         ].join(","),
       )
-      .limit(100)
-      .returns<AdminProfileRow[]>();
+      .limit(100);
 
     if (profilesError) {
       throw profilesError;
     }
 
-    userIds = (matchedProfiles ?? []).map((profile) => profile.id);
+    userIds = ((matchedProfiles ?? []) as AdminProfileRow[]).map((profile) => profile.id);
     if (userIds.length === 0) {
       return [];
     }
@@ -2383,18 +2360,19 @@ export async function getAdminXpLedger(
     query = query.lte("created_at", `${filters.dateTo}T23:59:59.999Z`);
   }
 
-  const { data, error } = await query.returns<AdminXpTransactionRow[]>();
+  const { data, error } = await query;
 
   if (error) {
     throw error;
   }
 
+  const transactions = (data ?? []) as AdminXpTransactionRow[];
   const profiles = await getProfilesByIds(
     supabase,
-    (data ?? []).map((transaction) => transaction.user_id),
+    transactions.map((transaction) => transaction.user_id),
   );
 
-  return (data ?? []).map((transaction) => ({
+  return transactions.map((transaction) => ({
     ...transaction,
     profile: profiles.get(transaction.user_id),
   }));

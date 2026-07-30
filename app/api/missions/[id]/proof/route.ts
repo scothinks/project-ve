@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import type { MissionProof } from "@/lib/missions";
+import {
+  getArrayField,
+  getEnumField,
+  getStringField,
+  isJsonObject,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { submitSupabaseMissionProof } from "@/lib/supabase-missions";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
@@ -7,22 +16,43 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-type ProofBody = {
-  proof?: Array<{
-    type: MissionProof["type"];
-    value: string;
-  }>;
-};
-
 export async function POST(request: Request, { params }: RouteContext) {
   const { id } = await params;
-  const body = (await request.json()) as ProofBody;
-  const proof = (body.proof ?? []).filter(
-    (item) => item && typeof item.type === "string" && typeof item.value === "string" && item.value.trim().length > 0,
-  );
+  const bodyResult = await readJsonObject(request);
+
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const rawProof = getArrayField(bodyResult.data, "proof", issues, { required: false }) ?? [];
+  const proof: Array<{ type: MissionProof["type"]; value: string }> = [];
+
+  rawProof.forEach((item, index) => {
+    if (!isJsonObject(item)) {
+      issues.push({ path: `proof.${index}`, message: "Expected an object." });
+      return;
+    }
+
+    const type = getEnumField(
+      item,
+      "type",
+      ["image", "video", "text", "link", "location"],
+      issues,
+    );
+    const value = getStringField(item, "value", issues);
+
+    if (type && value) {
+      proof.push({ type, value });
+    }
+  });
+
+  if (issues.length > 0) {
+    return validationErrorResponse(issues);
+  }
 
   if (!proof.length) {
-    return NextResponse.json({ error: "Proof is required." }, { status: 400 });
+    return validationErrorResponse([{ path: "proof", message: "Must include at least one item." }]);
   }
 
   try {

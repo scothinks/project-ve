@@ -42,8 +42,7 @@ async function setLinkedRewardsEnabled(
   const { data: rewards, error } = await supabase
     .from("rewards")
     .select("id")
-    .eq("campaign_id", campaignId)
-    .returns<{ id: string }[]>();
+    .eq("campaign_id", campaignId);
 
   if (error) {
     throw new Error(error.message);
@@ -112,16 +111,7 @@ export async function setCampaignEnabled(formData: FormData) {
       .from("campaigns")
       .select("id, slug, name, description, starts_at, ends_at, budget_label, budget_amount")
       .eq("id", campaignId)
-      .maybeSingle<{
-        id: string;
-        slug: string;
-        name: string;
-        description: string | null;
-        starts_at: string | null;
-        ends_at: string | null;
-        budget_label: string | null;
-        budget_amount: number | null;
-      }>();
+      .maybeSingle();
 
     if (campaignError) {
       throw new Error(campaignError.message);

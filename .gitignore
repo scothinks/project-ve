@@ -5,7 +5,11 @@ dist
 .DS_Store
 coverage
 *.tsbuildinfo
-supabase/.temp
+supabase/.branches/
+supabase/.temp/
+
+# Schema is generated from migrations/types workflows, not hand-maintained.
+supabase/schema.sql
 
 # Local environment and secrets
 .env*
