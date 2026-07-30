@@ -2001,6 +2001,29 @@ function getPromptBoolean(prompt: Record<string, unknown>, key: string) {
   return prompt[key] === true;
 }
 
+type MediaJobMode = "course_media" | "lesson_media" | "single_media_asset";
+
+function getMediaJobMode(prompt: Record<string, unknown>): MediaJobMode | "" {
+  const mode = getPromptString(prompt, "mode");
+  if (mode === "course_media" || mode === "lesson_media" || mode === "single_media_asset") {
+    return mode;
+  }
+
+  if (getPromptString(prompt, "assetId")) {
+    return "single_media_asset";
+  }
+
+  if (getPromptString(prompt, "lessonId")) {
+    return "lesson_media";
+  }
+
+  if (getPromptString(prompt, "courseId")) {
+    return "course_media";
+  }
+
+  return "";
+}
+
 function getPromptInput(prompt: Record<string, unknown>): AiCourseGenerationInput {
   return clampAiGenerationRequest({
     audience: getPromptString(prompt, "audience"),
@@ -2027,6 +2050,24 @@ async function callAdminRpc<T>(
   const { data, error } = await (supabase as unknown as AdminRpcClient).rpc(functionName, args);
   if (error) throw new Error(error.message);
   return data as T;
+}
+
+async function getJobActorUserId(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  jobId: string,
+) {
+  const { data, error } = await supabase
+    .from("ai_generation_jobs")
+    .select("created_by")
+    .eq("id", jobId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  const createdBy = (data as { created_by?: string | null } | null)?.created_by;
+  return typeof createdBy === "string" ? createdBy : "";
 }
 
 async function enqueueCourseTextJob(
@@ -3041,6 +3082,37 @@ async function processSingleMediaAssetJob(
   };
 }
 
+async function normalizeMediaAssetsJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+): Promise<AiGenerationClaim> {
+  const mode = getMediaJobMode(job.prompt);
+  const actorUserId = getPromptString(job.prompt, "actorUserId");
+  const courseId = getPromptString(job.prompt, "courseId") || job.entity_id || "";
+  const mediaFeedback = getPromptString(job.prompt, "mediaFeedback").trim();
+
+  if (
+    mode === getPromptString(job.prompt, "mode")
+    && actorUserId
+    && (courseId === getPromptString(job.prompt, "courseId") || !job.entity_id)
+  ) {
+    return job;
+  }
+
+  return {
+    ...job,
+    prompt: {
+      ...job.prompt,
+      ...(mode ? { mode } : {}),
+      ...(courseId ? { courseId } : {}),
+      ...(typeof job.prompt.applyMediaFeedback === "boolean" || !mediaFeedback
+        ? {}
+        : { applyMediaFeedback: true }),
+      actorUserId: actorUserId || await getJobActorUserId(supabase, job.id),
+    },
+  };
+}
+
 export async function processNextAiGenerationJob(workerId: string) {
   const supabase = createSupabaseAdminClient();
   const job = await claimNextAiGenerationJob(supabase, workerId);
@@ -3054,14 +3126,15 @@ export async function processNextAiGenerationJob(workerId: string) {
 
   try {
     if (job.job_type === "media_assets") {
-      const mode = getPromptString(job.prompt, "mode");
+      const mediaJob = await normalizeMediaAssetsJob(supabase, job);
+      const mode = getMediaJobMode(mediaJob.prompt);
       const result =
         mode === "course_media"
-          ? await processCourseMediaAssetsJob(supabase, job)
+          ? await processCourseMediaAssetsJob(supabase, mediaJob)
           : mode === "lesson_media"
-            ? await processLessonMediaAssetsJob(supabase, job)
+            ? await processLessonMediaAssetsJob(supabase, mediaJob)
             : mode === "single_media_asset"
-              ? await processSingleMediaAssetJob(supabase, job)
+              ? await processSingleMediaAssetJob(supabase, mediaJob)
             : (() => {
                 throw new ValidationError(`Unsupported AI media job mode: ${mode}`);
               })();
