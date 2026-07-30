@@ -1179,13 +1179,17 @@ Initial durable course-text worker pass is implemented:
 * `public.replace_ai_course_text_job(...)` transactionally replaces an
   unpublished AI course's generated text tree and media seed rows, then marks
   the running job completed through the existing materialization primitive.
+* Course media, lesson media, and individual media-slot generation now enqueue
+  `media_assets` jobs and run through the worker instead of generating images
+  inside admin server actions;
+* media worker execution selects targets deterministically, skips unsupported
+  or duplicate targets before generation, and runs image calls with bounded
+  concurrency.
 
 Remaining VE-AI-001 work:
 
 * deploy the cron route changes and confirm Vercel sends
   `Authorization: Bearer $CRON_SECRET` to `/api/admin/ai/jobs/process`;
-* move course and lesson media generation onto queued worker execution with
-  bounded concurrency;
 * add worker-level tests for stale lease recovery, simultaneous claim exclusion,
   retry behavior, and no-partial-materialization failure cases.
 

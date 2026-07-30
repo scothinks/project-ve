@@ -38,6 +38,7 @@ import { formatValidationIssues } from "@/lib/form-data-validation";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 import type { ValidationResult } from "@/lib/request-validation";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import type { Database, Json } from "@/types/database";
 
 type WorkflowCourseRow = {
   id: string;
@@ -136,6 +137,8 @@ type MediaTarget =
   | { kind: "lesson_thumbnail"; key: string; pageId?: undefined }
   | { kind: "page_block"; key: string; pageId: string }
   | { kind: "page_cover"; key: string; pageId: string };
+
+type LearningMediaAssetInsert = Database["public"]["Tables"]["learning_media_assets"]["Insert"];
 
 function asRecord(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -1526,6 +1529,137 @@ async function clearAssetTarget(
   }
 }
 
+const MEDIA_GENERATION_CONCURRENCY = 2;
+
+type MediaGenerationWorkItem = {
+  asset: WorkflowMediaAssetRow;
+  context: LearningMediaGenerationContext;
+  target: MediaTarget;
+};
+
+type MediaGenerationCounts = {
+  failedCount: number;
+  generatedCount: number;
+  reusedCount: number;
+  skippedCount: number;
+};
+
+type MediaGenerationOutcome = keyof Omit<MediaGenerationCounts, "skippedCount">;
+
+async function runWithBoundedConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<R>,
+) {
+  const results: R[] = [];
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(limit, 1), items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const item = items[nextIndex];
+        nextIndex += 1;
+        results.push(await worker(item));
+      }
+    }),
+  );
+
+  return results;
+}
+
+function summarizeMediaOutcomes(
+  outcomes: MediaGenerationOutcome[],
+  skippedCount: number,
+): MediaGenerationCounts {
+  return outcomes.reduce<MediaGenerationCounts>(
+    (counts, outcome) => ({
+      ...counts,
+      [outcome]: counts[outcome] + 1,
+    }),
+    {
+      failedCount: 0,
+      generatedCount: 0,
+      reusedCount: 0,
+      skippedCount,
+    },
+  );
+}
+
+async function processMediaGenerationWorkItem(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  item: MediaGenerationWorkItem,
+  replaceExisting: boolean,
+): Promise<MediaGenerationOutcome> {
+  const { asset, context, target } = item;
+
+  try {
+    const result = await generateLearningMediaImage({
+      asset: asset as LearningMediaAssetForGeneration,
+      context,
+      replaceExisting,
+    });
+
+    const updatedAsset: WorkflowMediaAssetRow = {
+      ...asset,
+      url: result.url,
+      storage_path: result.storagePath,
+      provider: result.provider,
+      model: result.model,
+      generation_status: "completed",
+      generation_error: null,
+      metadata: {
+        ...asRecord(asset.metadata),
+        generatedAt: result.generatedAt,
+        revisedPrompt: result.revisedPrompt,
+        targetKind: target.kind,
+        targetPageId: target.kind === "page_cover" ? target.pageId : null,
+      },
+    };
+
+    if (result.status === "skipped") {
+      const { error } = await supabase
+        .from("learning_media_assets")
+        .update({
+          generation_status: "completed",
+          generation_error: null,
+          metadata: updatedAsset.metadata as Json,
+        })
+        .eq("id", asset.id);
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    await applyAssetTarget(supabase, updatedAsset, target);
+    return result.status === "generated" ? "generatedCount" : "reusedCount";
+  } catch (error) {
+    await updateAssetForSkip(
+      supabase,
+      asset.id,
+      "failed",
+      error instanceof Error ? error.message : "Image generation failed.",
+    ).catch(() => undefined);
+    return "failedCount";
+  }
+}
+
+async function processMediaGenerationWorkItems(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workItems: MediaGenerationWorkItem[],
+  replaceExisting: boolean,
+  skippedCount: number,
+) {
+  const outcomes = await runWithBoundedConcurrency(
+    workItems,
+    MEDIA_GENERATION_CONCURRENCY,
+    (item) => processMediaGenerationWorkItem(supabase, item, replaceExisting),
+  );
+
+  return summarizeMediaOutcomes(outcomes, skippedCount);
+}
+
 function getContinuityInstruction(formData: FormData) {
   return sanitizePlainTextInput(String(formData.get("continuityInstruction") ?? ""), 1000);
 }
@@ -1863,6 +1997,10 @@ function getPromptNumber(prompt: Record<string, unknown>, key: string, fallback:
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function getPromptBoolean(prompt: Record<string, unknown>, key: string) {
+  return prompt[key] === true;
+}
+
 function getPromptInput(prompt: Record<string, unknown>): AiCourseGenerationInput {
   return clampAiGenerationRequest({
     audience: getPromptString(prompt, "audience"),
@@ -1899,6 +2037,18 @@ async function enqueueCourseTextJob(
   entityId?: string | null,
 ) {
   return createJob(supabase, actorUserId, "course_text", prompt, {
+    entityId,
+    status: "queued",
+  });
+}
+
+async function enqueueMediaAssetsJob(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  actorUserId: string,
+  prompt: Record<string, unknown>,
+  entityId: string,
+) {
+  return createJob(supabase, actorUserId, "media_assets", prompt, {
     entityId,
     status: "queued",
   });
@@ -2360,6 +2510,538 @@ async function processReviseCourseTextJob(
   };
 }
 
+async function processCourseMediaAssetsJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const courseId = getPromptString(job.prompt, "courseId");
+  const actorUserId = getPromptString(job.prompt, "actorUserId");
+  const replaceExisting = getPromptBoolean(job.prompt, "replaceExisting");
+  const applyMediaFeedback = getPromptBoolean(job.prompt, "applyMediaFeedback");
+  const mediaFeedback = getPromptString(job.prompt, "mediaFeedback").trim();
+  const mediaConfig = getAiMediaConfig();
+
+  if (!courseId) {
+    throw new ValidationError("AI course media job is missing a course id.");
+  }
+
+  if (!actorUserId) {
+    throw new ValidationError("AI course media job is missing an actor user id.");
+  }
+
+  if (!mediaConfig.canGenerate) {
+    throw new ValidationError(
+      `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+    );
+  }
+
+  const { course, lessons, pages } = await getCourseWorkflowData(supabase, courseId);
+  ensureAiCourse(course);
+
+  if (course.ai_text_status !== "approved") {
+    throw new ValidationError("Approve the course text before generating media.");
+  }
+
+  if (applyMediaFeedback && !mediaFeedback) {
+    throw new ValidationError("AI course media job is missing requested media changes.");
+  }
+
+  const lessonIds = lessons.map((lesson) => lesson.id);
+  const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(course.ai_generation_notes));
+  const { data: existingAssets, error: assetsError } = await supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (assetsError) throw assetsError;
+
+  const typedExistingAssets = (existingAssets ?? []) as WorkflowMediaAssetRow[];
+  const seedRows = createCourseMediaSeedRows(course, lessons, pages, typedExistingAssets, job.id);
+  if (seedRows.length > 0) {
+    const { error } = await supabase
+      .from("learning_media_assets")
+      .insert(seedRows as LearningMediaAssetInsert[]);
+    if (error) throw error;
+  }
+
+  const { data: refreshedAssetsData, error: refreshedAssetsError } = await supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (refreshedAssetsError) throw refreshedAssetsError;
+
+  const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>();
+  for (const page of pages) {
+    const current = pagesByLessonId.get(page.lesson_id) ?? [];
+    current.push(page);
+    pagesByLessonId.set(page.lesson_id, current);
+  }
+
+  const imageAssets = ((refreshedAssetsData ?? []) as WorkflowMediaAssetRow[]).filter(isImageMediaAsset);
+  const usedTargetKeys = new Set<string>();
+  const usedPageIds = new Set<string>();
+  const workItems: MediaGenerationWorkItem[] = [];
+  let skippedCount = 0;
+
+  for (const asset of imageAssets) {
+    if (isGenerationExcludedMediaAsset(asset)) {
+      skippedCount += 1;
+      continue;
+    }
+
+    const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
+    if (!target) {
+      skippedCount += 1;
+      await updateAssetForSkip(
+        supabase,
+        asset.id,
+        "skipped",
+        "Skipped because no supported lesson page target could be resolved for this asset.",
+      );
+      continue;
+    }
+
+    if (usedTargetKeys.has(target.key)) {
+      skippedCount += 1;
+      await updateAssetForSkip(
+        supabase,
+        asset.id,
+        "skipped",
+        "Skipped because this run only generates one image for each supported course, lesson, or page target.",
+      );
+      continue;
+    }
+
+    usedTargetKeys.add(target.key);
+    if (target.kind === "page_cover") {
+      usedPageIds.add(target.pageId);
+    }
+
+    const lesson = asset.lesson_id ? lessons.find((row) => row.id === asset.lesson_id) ?? null : null;
+    const page = target.kind === "page_cover" || target.kind === "page_block"
+      ? pages.find((row) => row.id === target.pageId) ?? null
+      : null;
+
+    workItems.push({
+      asset,
+      target,
+      context: {
+        courseId: course.id,
+        courseTitle: course.title,
+        courseDescription: course.description,
+        courseCategory: course.category,
+        lessonId: lesson?.id ?? null,
+        lessonTitle: lesson?.title ?? null,
+        lessonDescription: lesson?.description ?? null,
+        pageId: page?.id ?? null,
+        pageTitle: page?.title ?? null,
+        pageSubtitle: page?.subtitle ?? null,
+        placementLabel: asset.placement,
+        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
+        targetKind: target.kind,
+      },
+    });
+  }
+
+  const counts = await processMediaGenerationWorkItems(supabase, workItems, replaceExisting, skippedCount);
+
+  const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
+    p_course_id: courseId,
+    p_media_status: "draft",
+  });
+
+  if (mediaStatusError) throw mediaStatusError;
+
+  if (applyMediaFeedback && mediaFeedback) {
+    const nextNotes = appendMediaRevisionFeedback(asRecord(course.ai_generation_notes), {
+      kind: "applied",
+      feedback: mediaFeedback,
+      requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
+      requestedBy: storedMediaFeedback?.requestedBy ?? actorUserId,
+      revisedAt: new Date().toISOString(),
+      revisedBy: actorUserId,
+      jobId: job.id,
+    });
+
+    const { error } = await supabase
+      .from("courses")
+      .update({ ai_generation_notes: nextNotes })
+      .eq("id", courseId);
+
+    if (error) throw error;
+  }
+
+  const jobStatus = counts.generatedCount > 0 || counts.reusedCount > 0 || counts.skippedCount > 0
+    ? "completed"
+    : "failed";
+
+  const result = {
+    courseId,
+    imageAssetCount: imageAssets.length,
+    lessonCount: lessons.length,
+    mediaFeedbackApplied: applyMediaFeedback,
+    replaceExisting,
+    ...counts,
+  };
+
+  await updateJob(supabase, job.id, {
+    entity_id: courseId,
+    status: jobStatus,
+    result,
+    error: jobStatus === "failed" ? "No media images were generated successfully." : null,
+  });
+
+  await insertAuditEvent(supabase, actorUserId, "ai_course_media_assets_generated", "course", courseId, {
+    jobId: job.id,
+    ...counts,
+    replaceExisting,
+    mediaFeedbackApplied: applyMediaFeedback,
+  });
+
+  revalidateLearningPaths(courseId, lessonIds);
+
+  return {
+    mode: "course_media",
+    status: jobStatus,
+    ...result,
+  };
+}
+
+async function processLessonMediaAssetsJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const courseId = getPromptString(job.prompt, "courseId");
+  const lessonId = getPromptString(job.prompt, "lessonId");
+  const actorUserId = getPromptString(job.prompt, "actorUserId");
+  const replaceExisting = getPromptBoolean(job.prompt, "replaceExisting");
+  const applyMediaFeedback = getPromptBoolean(job.prompt, "applyMediaFeedback");
+  const mediaFeedback = getPromptString(job.prompt, "mediaFeedback").trim();
+  const mediaConfig = getAiMediaConfig();
+
+  if (!courseId) {
+    throw new ValidationError("AI lesson media job is missing a course id.");
+  }
+
+  if (!lessonId) {
+    throw new ValidationError("AI lesson media job is missing a lesson id.");
+  }
+
+  if (!actorUserId) {
+    throw new ValidationError("AI lesson media job is missing an actor user id.");
+  }
+
+  if (!mediaConfig.canGenerate) {
+    throw new ValidationError(
+      `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+    );
+  }
+
+  const workflow = await getLessonWorkflowData(supabase, lessonId);
+  const { course, lesson, lessonPages, lessons } = workflow;
+  ensureAiCourse(course);
+  ensureAiLesson(lesson);
+
+  if (course.id !== courseId) {
+    throw new ValidationError("AI lesson media job course id does not match the lesson.");
+  }
+
+  if (lesson.ai_text_status !== "approved") {
+    throw new ValidationError("Approve this lesson's text before generating lesson media.");
+  }
+
+  if (applyMediaFeedback && !mediaFeedback) {
+    throw new ValidationError("AI lesson media job is missing requested media changes.");
+  }
+
+  const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(lesson.ai_generation_notes));
+  const lessonIds = lessons.map((item) => item.id);
+  const courseAssets = await getCourseMediaAssets(supabase, course.id);
+  const existingLessonAssets = courseAssets.filter((asset) => asset.lesson_id === lessonId);
+  const seedRows = createLessonMediaSeedRows(course, lesson, lessonPages, existingLessonAssets, job.id);
+
+  if (seedRows.length > 0) {
+    const { error } = await supabase
+      .from("learning_media_assets")
+      .insert(seedRows as LearningMediaAssetInsert[]);
+    if (error) throw error;
+  }
+
+  const lessonAssets = (await getCourseMediaAssets(supabase, course.id))
+    .filter((asset) => asset.lesson_id === lessonId);
+  const imageAssets = lessonAssets.filter(isImageMediaAsset);
+  const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>([[lessonId, lessonPages]]);
+  const usedTargetKeys = new Set<string>();
+  const usedPageIds = new Set<string>();
+  const workItems: MediaGenerationWorkItem[] = [];
+  let skippedCount = 0;
+
+  for (const asset of imageAssets) {
+    if (isGenerationExcludedMediaAsset(asset)) {
+      skippedCount += 1;
+      continue;
+    }
+
+    const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
+    if (!target) {
+      skippedCount += 1;
+      await updateAssetForSkip(
+        supabase,
+        asset.id,
+        "skipped",
+        "Skipped because no supported lesson page target could be resolved for this asset.",
+      );
+      continue;
+    }
+
+    if (usedTargetKeys.has(target.key)) {
+      skippedCount += 1;
+      await updateAssetForSkip(
+        supabase,
+        asset.id,
+        "skipped",
+        "Skipped because this run only generates one image for each supported lesson target.",
+      );
+      continue;
+    }
+
+    usedTargetKeys.add(target.key);
+    if (target.kind === "page_cover") {
+      usedPageIds.add(target.pageId);
+    }
+
+    const page = target.kind === "page_cover" || target.kind === "page_block"
+      ? lessonPages.find((row) => row.id === target.pageId) ?? null
+      : null;
+
+    workItems.push({
+      asset,
+      target,
+      context: {
+        courseId: course.id,
+        courseTitle: course.title,
+        courseDescription: course.description,
+        courseCategory: course.category,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        lessonDescription: lesson.description,
+        pageId: page?.id ?? null,
+        pageTitle: page?.title ?? null,
+        pageSubtitle: page?.subtitle ?? null,
+        placementLabel: asset.placement,
+        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
+        targetKind: target.kind,
+      },
+    });
+  }
+
+  const counts = await processMediaGenerationWorkItems(supabase, workItems, replaceExisting, skippedCount);
+
+  const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
+    p_course_id: course.id,
+    p_lesson_id: lessonId,
+    p_media_status: "draft",
+  });
+
+  if (mediaStatusError) throw mediaStatusError;
+
+  if (applyMediaFeedback && mediaFeedback) {
+    const nextNotes = appendMediaRevisionFeedback(asRecord(lesson.ai_generation_notes), {
+      kind: "applied",
+      feedback: mediaFeedback,
+      requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
+      requestedBy: storedMediaFeedback?.requestedBy ?? actorUserId,
+      revisedAt: new Date().toISOString(),
+      revisedBy: actorUserId,
+      jobId: job.id,
+    });
+
+    const { error } = await supabase
+      .from("lessons")
+      .update({ ai_generation_notes: nextNotes })
+      .eq("id", lessonId);
+
+    if (error) throw error;
+  }
+
+  const jobStatus = counts.generatedCount > 0 || counts.reusedCount > 0 || counts.skippedCount > 0
+    ? "completed"
+    : "failed";
+  const aggregate = await recomputeCourseAiStatuses(supabase, course.id, actorUserId);
+  const result = {
+    courseId: course.id,
+    imageAssetCount: imageAssets.length,
+    lessonId,
+    mediaFeedbackApplied: applyMediaFeedback,
+    replaceExisting,
+    ...counts,
+  };
+
+  await updateJob(supabase, job.id, {
+    entity_id: course.id,
+    status: jobStatus,
+    result,
+    error: jobStatus === "failed" ? "No lesson media images were generated successfully." : null,
+  });
+
+  await insertAuditEvent(supabase, actorUserId, "ai_lesson_media_assets_generated", "lesson", lessonId, {
+    courseId: course.id,
+    jobId: job.id,
+    ...counts,
+    replaceExisting,
+    mediaFeedbackApplied: applyMediaFeedback,
+    courseMediaStatus: aggregate.nextMediaStatus,
+  });
+
+  revalidateLearningPaths(course.id, lessonIds);
+
+  return {
+    mode: "lesson_media",
+    status: jobStatus,
+    ...result,
+  };
+}
+
+async function processSingleMediaAssetJob(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  job: AiGenerationClaim,
+) {
+  const actorUserId = getPromptString(job.prompt, "actorUserId");
+  const assetId = getPromptString(job.prompt, "assetId");
+  const courseId = getPromptString(job.prompt, "courseId");
+  const mediaConfig = getAiMediaConfig();
+
+  if (!actorUserId) {
+    throw new ValidationError("AI media asset job is missing an actor user id.");
+  }
+
+  if (!assetId) {
+    throw new ValidationError("AI media asset job is missing an asset id.");
+  }
+
+  if (!courseId) {
+    throw new ValidationError("AI media asset job is missing a course id.");
+  }
+
+  if (!mediaConfig.canGenerate) {
+    throw new ValidationError(
+      `Media generation is unavailable until these server settings are added: ${mediaConfig.missingRequirements.join(", ")}.`,
+    );
+  }
+
+  const workflow = await getCourseWorkflowData(supabase, courseId);
+  const { course, lessons, pages } = workflow;
+  ensureAiCourse(course);
+
+  const asset = await getLearningMediaAssetById(supabase, assetId);
+  if (asset.course_id !== courseId) {
+    throw new ValidationError("This media asset does not belong to this course.");
+  }
+
+  if (!isImageMediaAsset(asset)) {
+    throw new ValidationError("This media slot is not an image-based media type yet.");
+  }
+
+  if (isGenerationExcludedMediaAsset(asset)) {
+    throw new ValidationError("This optional media slot is excluded from generation.");
+  }
+
+  const lesson = asset.lesson_id
+    ? lessons.find((item) => item.id === asset.lesson_id) ?? null
+    : null;
+
+  if (asset.lesson_id) {
+    if (!lesson) {
+      throw new ValidationError("Media asset lesson not found.");
+    }
+    ensureAiLesson(lesson);
+    if (lesson.ai_text_status !== "approved") {
+      throw new ValidationError("Approve this lesson's text before generating this media.");
+    }
+  } else if (course.ai_text_status !== "approved") {
+    throw new ValidationError("Approve the course text before generating this media.");
+  }
+
+  const target = resolveMediaTarget(asset, buildPagesByLessonId(pages), new Set<string>());
+  if (!target) {
+    throw new ValidationError("This media slot does not have a supported target.");
+  }
+
+  const page = target.kind === "page_cover" || target.kind === "page_block"
+    ? pages.find((row) => row.id === target.pageId) ?? null
+    : null;
+
+  const counts = await processMediaGenerationWorkItems(
+    supabase,
+    [
+      {
+        asset,
+        target,
+        context: {
+          courseId: course.id,
+          courseTitle: course.title,
+          courseDescription: course.description,
+          courseCategory: course.category,
+          lessonId: lesson?.id ?? null,
+          lessonTitle: lesson?.title ?? null,
+          lessonDescription: lesson?.description ?? null,
+          pageId: page?.id ?? null,
+          pageTitle: page?.title ?? null,
+          pageSubtitle: page?.subtitle ?? null,
+          placementLabel: asset.placement,
+          revisionFeedback: null,
+          targetKind: target.kind,
+        },
+      },
+    ],
+    true,
+    0,
+  );
+
+  await resetMediaApprovalAfterAssetChange(supabase, courseId, asset.lesson_id);
+  const aggregate = await recomputeCourseAiStatuses(supabase, courseId, actorUserId);
+  const jobStatus = counts.generatedCount > 0 || counts.reusedCount > 0 ? "completed" : "failed";
+  const result = {
+    assetId,
+    courseId,
+    lessonId: asset.lesson_id,
+    mediaFeedbackApplied: false,
+    replaceExisting: true,
+    targetKind: target.kind,
+    ...counts,
+  };
+
+  await updateJob(supabase, job.id, {
+    entity_id: courseId,
+    status: jobStatus,
+    result,
+    error: jobStatus === "failed" ? "Media generation failed." : null,
+  });
+
+  await insertAuditEvent(supabase, actorUserId, "learning_media_asset_generated", "media_asset", assetId, {
+    courseId,
+    lessonId: asset.lesson_id,
+    jobId: job.id,
+    targetKind: target.kind,
+    courseMediaStatus: aggregate.nextMediaStatus,
+    replacedExisting: true,
+    ...counts,
+  });
+
+  revalidateLearningPaths(courseId, asset.lesson_id ? [asset.lesson_id] : []);
+
+  return {
+    mode: "single_media_asset",
+    status: jobStatus,
+    ...result,
+  };
+}
+
 export async function processNextAiGenerationJob(workerId: string) {
   const supabase = createSupabaseAdminClient();
   const job = await claimNextAiGenerationJob(supabase, workerId);
@@ -2372,6 +3054,27 @@ export async function processNextAiGenerationJob(workerId: string) {
   }
 
   try {
+    if (job.job_type === "media_assets") {
+      const mode = getPromptString(job.prompt, "mode");
+      const result =
+        mode === "course_media"
+          ? await processCourseMediaAssetsJob(supabase, job)
+          : mode === "lesson_media"
+            ? await processLessonMediaAssetsJob(supabase, job)
+            : mode === "single_media_asset"
+              ? await processSingleMediaAssetJob(supabase, job)
+            : (() => {
+                throw new ValidationError(`Unsupported AI media job mode: ${mode}`);
+              })();
+
+      return {
+        jobId: job.id,
+        processed: true,
+        result,
+        status: result.status === "failed" ? "failed" as const : "completed" as const,
+      };
+    }
+
     if (job.job_type !== "course_text") {
       throw new ValidationError(`Unsupported AI generation job type: ${job.job_type}`);
     }
@@ -2730,7 +3433,7 @@ export async function generateCourseMediaAssets(formData: FormData) {
     );
   }
 
-  const { course, lessons, pages } = await getCourseWorkflowData(supabase, courseId);
+  const { course } = await getCourseWorkflowData(supabase, courseId);
   ensureAiCourse(course);
   const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(course.ai_generation_notes));
   const requestedMediaFeedback = sanitizePlainTextInput(String(formData.get("mediaRevisionRequest") ?? ""), 3000).trim();
@@ -2744,249 +3447,27 @@ export async function generateCourseMediaAssets(formData: FormData) {
     throw new Error("Add the requested media changes before regenerating with AI.");
   }
 
-  const lessonIds = lessons.map((lesson) => lesson.id);
-  const { data: existingAssets, error: assetsError } = await supabase
-    .from("learning_media_assets")
-    .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
-    .eq("course_id", courseId)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (assetsError) throw assetsError;
-
-  let jobId: string | null = null;
-  try {
-    jobId = await createJob(supabase, profile.id, "media_assets", {
+  const jobId = await enqueueMediaAssetsJob(
+    supabase,
+    profile.id,
+    {
+      actorUserId: profile.id,
       courseId,
+      mode: "course_media",
       replaceExisting,
+      applyMediaFeedback,
       mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
-    });
+    },
+    courseId,
+  );
 
-    const typedExistingAssets = (existingAssets ?? []) as WorkflowMediaAssetRow[];
-    const seedRows = createCourseMediaSeedRows(course, lessons, pages, typedExistingAssets, jobId);
-    if (seedRows.length > 0) {
-      const { error: insertError } = await supabase.from("learning_media_assets").insert(seedRows);
-      if (insertError) throw insertError;
-    }
-
-    const { data: assets, error: refreshedAssetsError } = await supabase
-      .from("learning_media_assets")
-      .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order")
-      .eq("course_id", courseId)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
-
-    if (refreshedAssetsError) throw refreshedAssetsError;
-
-    const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>();
-    for (const page of pages) {
-      const current = pagesByLessonId.get(page.lesson_id) ?? [];
-      current.push(page);
-      pagesByLessonId.set(page.lesson_id, current);
-    }
-
-    const refreshedAssets = (assets ?? []) as WorkflowMediaAssetRow[];
-    const imageAssets = refreshedAssets.filter(isImageMediaAsset);
-    const usedTargetKeys = new Set<string>();
-    const usedPageIds = new Set<string>();
-    let generatedCount = 0;
-    let reusedCount = 0;
-    let failedCount = 0;
-    let skippedCount = 0;
-
-    for (const asset of imageAssets) {
-      if (isGenerationExcludedMediaAsset(asset)) {
-        skippedCount += 1;
-        continue;
-      }
-
-      const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
-      if (!target) {
-        skippedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "skipped",
-          "Skipped because no supported lesson page target could be resolved for this asset.",
-        );
-        continue;
-      }
-
-      if (usedTargetKeys.has(target.key)) {
-        skippedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "skipped",
-          "Skipped because this run only generates one image for each supported course, lesson, or page target.",
-        );
-        continue;
-      }
-
-      usedTargetKeys.add(target.key);
-      if (target.kind === "page_cover") {
-        usedPageIds.add(target.pageId);
-      }
-
-      const lesson = asset.lesson_id ? lessons.find((row) => row.id === asset.lesson_id) ?? null : null;
-      const page = target.kind === "page_cover" || target.kind === "page_block"
-        ? pages.find((row) => row.id === target.pageId) ?? null
-        : null;
-
-      const context: LearningMediaGenerationContext = {
-        courseId: course.id,
-        courseTitle: course.title,
-        courseDescription: course.description,
-        courseCategory: course.category,
-        lessonId: lesson?.id ?? null,
-        lessonTitle: lesson?.title ?? null,
-        lessonDescription: lesson?.description ?? null,
-        pageId: page?.id ?? null,
-        pageTitle: page?.title ?? null,
-        pageSubtitle: page?.subtitle ?? null,
-        placementLabel: asset.placement,
-        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
-        targetKind: target.kind,
-      };
-
-      try {
-        const result = await generateLearningMediaImage({
-          asset: asset as LearningMediaAssetForGeneration,
-          context,
-          replaceExisting,
-        });
-
-        const updatedAsset: WorkflowMediaAssetRow = {
-          ...asset,
-          url: result.url,
-          storage_path: result.storagePath,
-          provider: result.provider,
-          model: result.model,
-          generation_status: "completed",
-          generation_error: null,
-          metadata: {
-            ...asRecord(asset.metadata),
-            generatedAt: result.generatedAt,
-            revisedPrompt: result.revisedPrompt,
-            targetKind: target.kind,
-            targetPageId: target.kind === "page_cover" ? target.pageId : null,
-          },
-        };
-
-        if (result.status === "skipped") {
-          const { error: reusedAssetError } = await supabase
-            .from("learning_media_assets")
-            .update({
-              generation_status: "completed",
-              generation_error: null,
-              metadata: updatedAsset.metadata,
-            })
-            .eq("id", asset.id);
-
-          if (reusedAssetError) {
-            throw reusedAssetError;
-          }
-        }
-
-        await applyAssetTarget(supabase, updatedAsset, target);
-        if (result.status === "generated") {
-          generatedCount += 1;
-        } else {
-          reusedCount += 1;
-        }
-      } catch (error) {
-        failedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "failed",
-          error instanceof Error ? error.message : "Image generation failed.",
-        ).catch(() => undefined);
-      }
-    }
-
-    const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
-      p_course_id: courseId,
-      p_lesson_id: null,
-      p_media_status: "draft",
-    });
-
-    if (mediaStatusError) throw mediaStatusError;
-
-    if (applyMediaFeedback && mediaFeedback) {
-      const nextNotes = appendMediaRevisionFeedback(asRecord(course.ai_generation_notes), {
-        kind: "applied",
-        feedback: mediaFeedback,
-        requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
-        requestedBy: storedMediaFeedback?.requestedBy ?? profile.id,
-        revisedAt: new Date().toISOString(),
-        revisedBy: profile.id,
-        jobId,
-      });
-
-      const { error: notesError } = await supabase
-        .from("courses")
-        .update({ ai_generation_notes: nextNotes })
-        .eq("id", courseId);
-
-      if (notesError) throw notesError;
-    }
-
-    const jobStatus = generatedCount > 0 || reusedCount > 0 || skippedCount > 0
-      ? "completed"
-      : "failed";
-
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: courseId,
-        status: jobStatus,
-        result: {
-          courseId,
-          lessonCount: lessons.length,
-          imageAssetCount: imageAssets.length,
-          generatedCount,
-          reusedCount,
-          failedCount,
-          skippedCount,
-          replaceExisting,
-          mediaFeedbackApplied: applyMediaFeedback,
-        },
-        error: jobStatus === "failed"
-          ? "No media images were generated successfully."
-          : null,
-      });
-    }
-
-    await insertAuditEvent(supabase, profile.id, "ai_course_media_assets_generated", "course", courseId, {
-      jobId,
-      generatedCount,
-      reusedCount,
-      failedCount,
-      skippedCount,
-      replaceExisting,
-      mediaFeedbackApplied: applyMediaFeedback,
-    });
-
-    revalidateLearningPaths(courseId, lessonIds);
-    redirect(
-      appendAdminNotice(
-        redirectTo,
-        applyMediaFeedback
-          ? `Media regeneration with feedback finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`
-          : `Media generation finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`,
-      ),
-    );
-  } catch (error) {
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: courseId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Media generation failed.",
-      }).catch(() => undefined);
-    }
-
-    throw error;
-  }
+  revalidatePath(`/admin/courses/${courseId}`);
+  redirect(
+    appendAdminNotice(
+      redirectTo,
+      `AI media generation queued. Job ${jobId} will generate course media when the worker runs.`,
+    ),
+  );
 }
 
 export async function generateCourseMediaDrafts(formData: FormData) {
@@ -3244,7 +3725,7 @@ export async function generateLessonMediaAssets(formData: FormData) {
   }
 
   const workflow = await getLessonWorkflowData(supabase, lessonId);
-  const { course, lesson, lessonPages, lessons } = workflow;
+  const { course, lesson } = workflow;
   ensureAiCourse(course);
   ensureAiLesson(lesson);
   const storedMediaFeedback = getLatestMediaRevisionFeedback(asRecord(lesson.ai_generation_notes));
@@ -3259,230 +3740,28 @@ export async function generateLessonMediaAssets(formData: FormData) {
     throw new Error("Add the requested media changes before regenerating with AI.");
   }
 
-  let jobId: string | null = null;
-  const lessonIds = lessons.map((item) => item.id);
-
-  try {
-    jobId = await createJob(supabase, profile.id, "media_assets", {
+  const jobId = await enqueueMediaAssetsJob(
+    supabase,
+    profile.id,
+    {
+      actorUserId: profile.id,
       courseId: course.id,
       lessonId,
+      mode: "lesson_media",
       replaceExisting,
+      applyMediaFeedback,
       mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
-    });
+    },
+    course.id,
+  );
 
-    const courseAssets = await getCourseMediaAssets(supabase, course.id);
-    const existingLessonAssets = courseAssets.filter((asset) => asset.lesson_id === lessonId);
-    const seedRows = createLessonMediaSeedRows(course, lesson, lessonPages, existingLessonAssets, jobId);
-
-    if (seedRows.length > 0) {
-      const { error: insertError } = await supabase.from("learning_media_assets").insert(seedRows);
-      if (insertError) throw insertError;
-    }
-
-    const lessonAssets = (await getCourseMediaAssets(supabase, course.id))
-      .filter((asset) => asset.lesson_id === lessonId);
-
-    const pagesByLessonId = new Map<string, WorkflowLessonPageRow[]>([[lessonId, lessonPages]]);
-    const imageAssets = lessonAssets.filter(isImageMediaAsset);
-    const usedTargetKeys = new Set<string>();
-    const usedPageIds = new Set<string>();
-    let generatedCount = 0;
-    let reusedCount = 0;
-    let failedCount = 0;
-    let skippedCount = 0;
-
-    for (const asset of imageAssets) {
-      if (isGenerationExcludedMediaAsset(asset)) {
-        skippedCount += 1;
-        continue;
-      }
-
-      const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
-      if (!target) {
-        skippedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "skipped",
-          "Skipped because no supported lesson page target could be resolved for this asset.",
-        );
-        continue;
-      }
-
-      if (usedTargetKeys.has(target.key)) {
-        skippedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "skipped",
-          "Skipped because this run only generates one image for each supported lesson target.",
-        );
-        continue;
-      }
-
-      usedTargetKeys.add(target.key);
-      if (target.kind === "page_cover") {
-        usedPageIds.add(target.pageId);
-      }
-
-      const page = target.kind === "page_cover" || target.kind === "page_block"
-        ? lessonPages.find((row) => row.id === target.pageId) ?? null
-        : null;
-
-      const context: LearningMediaGenerationContext = {
-        courseId: course.id,
-        courseTitle: course.title,
-        courseDescription: course.description,
-        courseCategory: course.category,
-        lessonId: lesson.id,
-        lessonTitle: lesson.title,
-        lessonDescription: lesson.description,
-        pageId: page?.id ?? null,
-        pageTitle: page?.title ?? null,
-        pageSubtitle: page?.subtitle ?? null,
-        placementLabel: asset.placement,
-        revisionFeedback: applyMediaFeedback ? mediaFeedback : null,
-        targetKind: target.kind,
-      };
-
-      try {
-        const result = await generateLearningMediaImage({
-          asset: asset as LearningMediaAssetForGeneration,
-          context,
-          replaceExisting,
-        });
-
-        const updatedAsset: WorkflowMediaAssetRow = {
-          ...asset,
-          url: result.url,
-          storage_path: result.storagePath,
-          provider: result.provider,
-          model: result.model,
-          generation_status: "completed",
-          generation_error: null,
-          metadata: {
-            ...asRecord(asset.metadata),
-            generatedAt: result.generatedAt,
-            revisedPrompt: result.revisedPrompt,
-            targetKind: target.kind,
-            targetPageId: target.kind === "page_cover" ? target.pageId : null,
-          },
-        };
-
-        if (result.status === "skipped") {
-          const { error: reusedAssetError } = await supabase
-            .from("learning_media_assets")
-            .update({
-              generation_status: "completed",
-              generation_error: null,
-              metadata: updatedAsset.metadata,
-            })
-            .eq("id", asset.id);
-
-          if (reusedAssetError) {
-            throw reusedAssetError;
-          }
-        }
-
-        await applyAssetTarget(supabase, updatedAsset, target);
-        if (result.status === "generated") {
-          generatedCount += 1;
-        } else {
-          reusedCount += 1;
-        }
-      } catch (error) {
-        failedCount += 1;
-        await updateAssetForSkip(
-          supabase,
-          asset.id,
-          "failed",
-          error instanceof Error ? error.message : "Image generation failed.",
-        ).catch(() => undefined);
-      }
-    }
-
-    const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
-      p_course_id: course.id,
-      p_lesson_id: lessonId,
-      p_media_status: "draft",
-    });
-
-    if (mediaStatusError) throw mediaStatusError;
-
-    if (applyMediaFeedback && mediaFeedback) {
-      const nextNotes = appendMediaRevisionFeedback(asRecord(lesson.ai_generation_notes), {
-        kind: "applied",
-        feedback: mediaFeedback,
-        requestedAt: storedMediaFeedback?.requestedAt ?? new Date().toISOString(),
-        requestedBy: storedMediaFeedback?.requestedBy ?? profile.id,
-        revisedAt: new Date().toISOString(),
-        revisedBy: profile.id,
-        jobId,
-      });
-
-      const { error: notesError } = await supabase
-        .from("lessons")
-        .update({ ai_generation_notes: nextNotes })
-        .eq("id", lessonId);
-
-      if (notesError) throw notesError;
-    }
-
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: course.id,
-        status: generatedCount > 0 || reusedCount > 0 || skippedCount > 0 ? "completed" : "failed",
-        result: {
-          courseId: course.id,
-          lessonId,
-          imageAssetCount: imageAssets.length,
-          generatedCount,
-          reusedCount,
-          failedCount,
-          skippedCount,
-          replaceExisting,
-          mediaFeedbackApplied: applyMediaFeedback,
-        },
-        error: generatedCount > 0 || reusedCount > 0 || skippedCount > 0
-          ? null
-          : "No lesson media images were generated successfully.",
-      });
-    }
-
-    const aggregate = await recomputeCourseAiStatuses(supabase, course.id, profile.id);
-
-    await insertAuditEvent(supabase, profile.id, "ai_lesson_media_assets_generated", "lesson", lessonId, {
-      courseId: course.id,
-      jobId,
-      generatedCount,
-      reusedCount,
-      failedCount,
-      skippedCount,
-      replaceExisting,
-      mediaFeedbackApplied: applyMediaFeedback,
-      courseMediaStatus: aggregate.nextMediaStatus,
-    });
-
-    revalidateLearningPaths(course.id, lessonIds);
-    redirect(
-      appendAdminNotice(
-        redirectTo,
-        applyMediaFeedback
-          ? `Lesson media regeneration with feedback finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`
-          : `Lesson media generation finished: ${generatedCount} new, ${reusedCount} reused, ${failedCount} failed, ${skippedCount} skipped.`,
-      ),
-    );
-  } catch (error) {
-    if (jobId) {
-      await updateJob(supabase, jobId, {
-        entity_id: course.id,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Lesson media generation failed.",
-      }).catch(() => undefined);
-    }
-
-    throw error;
-  }
+  revalidatePath(`/admin/courses/lessons/${lessonId}`);
+  redirect(
+    appendAdminNotice(
+      redirectTo,
+      `AI lesson media generation queued. Job ${jobId} will generate lesson media when the worker runs.`,
+    ),
+  );
 }
 
 export async function approveLessonMedia(formData: FormData) {
@@ -3817,45 +4096,25 @@ export async function generateLearningMediaAsset(formData: FormData) {
     throw new Error("This media slot does not have a supported target.");
   }
 
-  const page = target.kind === "page_cover" || target.kind === "page_block"
-    ? pages.find((row) => row.id === target.pageId) ?? null
-    : null;
-
-  const result = await generateLearningMediaImage({
-    asset: asset as LearningMediaAssetForGeneration,
-    context: {
-      courseId: course.id,
-      courseTitle: course.title,
-      courseDescription: course.description,
-      courseCategory: course.category,
-      lessonId: lesson?.id ?? null,
-      lessonTitle: lesson?.title ?? null,
-      lessonDescription: lesson?.description ?? null,
-      pageId: page?.id ?? null,
-      pageTitle: page?.title ?? null,
-      pageSubtitle: page?.subtitle ?? null,
-      placementLabel: asset.placement,
-      revisionFeedback: null,
-      targetKind: target.kind,
-    } satisfies LearningMediaGenerationContext,
-    replaceExisting: true,
-  });
-
-  const updatedAsset = await getLearningMediaAssetById(supabase, assetId);
-  await applyAssetTarget(supabase, updatedAsset, target);
-  await resetMediaApprovalAfterAssetChange(supabase, courseId, asset.lesson_id);
-  await recomputeCourseAiStatuses(supabase, courseId, profile.id);
-
-  await insertAuditEvent(supabase, profile.id, "learning_media_asset_generated", "media_asset", assetId, {
+  const jobId = await enqueueMediaAssetsJob(
+    supabase,
+    profile.id,
+    {
+      actorUserId: profile.id,
+      assetId,
+      courseId,
+      mode: "single_media_asset",
+    },
     courseId,
-    lessonId: asset.lesson_id,
-    targetKind: target.kind,
-    status: result.status,
-    replacedExisting: result.replacedExisting,
-  });
+  );
 
-  revalidateLearningPaths(courseId, asset.lesson_id ? [asset.lesson_id] : []);
-  redirect(appendAdminNotice(redirectTo, result.status === "generated" ? "Media generated." : "Existing media reused."));
+  revalidatePath(lessonId ? `/admin/courses/lessons/${lessonId}` : `/admin/courses/${courseId}`);
+  redirect(
+    appendAdminNotice(
+      redirectTo,
+      `Media generation queued. Job ${jobId} will generate this media slot when the worker runs.`,
+    ),
+  );
 }
 
 export async function approveLearningMediaAsset(formData: FormData) {
