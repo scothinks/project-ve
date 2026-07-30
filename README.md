@@ -95,7 +95,10 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Apply Supabase migrations to your target project.
+3. Start/reset Supabase from migrations, or apply migrations to your linked project.
+
+See [docs/database.md](/Users/scoteritemu/Nu-Project-VE/docs/database.md) for
+the local reset, type generation, and DB test workflow.
 
 4. Start the app:
 
@@ -134,6 +137,7 @@ This app depends on Supabase for authenticated learner progress, admin operation
 - Some read-only views still fall back to seeded/demo data when Supabase is unavailable
 - authenticated write flows do not rely on demo fallbacks
 - migration history in [supabase/migrations](/Users/scoteritemu/Nu-Project-VE/supabase/migrations) is the source of truth
+- do not use or recreate a hand-maintained `supabase/schema.sql`
 
 If learner-facing data looks inconsistent with admin totals, check publication state first. A common example is published lesson content with a quiz that is still in draft, which suppresses learner XP until the quiz is also published.
 

@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseUrl } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 
 export function getSupabaseAdminConfig() {
   return {
@@ -11,7 +12,7 @@ export function getSupabaseAdminConfig() {
   };
 }
 
-export function createSupabaseAdminClient(): SupabaseClient {
+export function createSupabaseAdminClient(): SupabaseClient<Database> {
   const config = getSupabaseAdminConfig();
   const url = supabaseUrl;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,7 +27,7 @@ export function createSupabaseAdminClient(): SupabaseClient {
     );
   }
 
-  return createClient(url, serviceRoleKey, {
+  return createClient<Database>(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

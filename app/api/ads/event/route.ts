@@ -1,24 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRiskContext, hashRiskValue } from "@/lib/auth-risk";
+import {
+  getEnumField,
+  getObjectField,
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-
-type AdEventBody = {
-  eventType?: "impression" | "viewable_impression";
-  decisionId?: string;
-  eventDedupeKey?: string;
-  clientEventTime?: string;
-  metadata?: Record<string, unknown>;
-};
+import { asSupabaseJson, nullableRpcText } from "@/lib/supabase-rpc";
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as AdEventBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (body.eventType !== "impression" && body.eventType !== "viewable_impression") {
-    return NextResponse.json({ error: "Unsupported ad event type." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
   }
 
-  if (!body.decisionId) {
-    return NextResponse.json({ error: "decisionId is required." }, { status: 400 });
+  const issues: ValidationIssue[] = [];
+  const eventType = getEnumField(
+    bodyResult.data,
+    "eventType",
+    ["impression", "viewable_impression"],
+    issues,
+  );
+  const decisionId = getStringField(bodyResult.data, "decisionId", issues);
+  const eventDedupeKey = getOptionalStringField(bodyResult.data, "eventDedupeKey", issues);
+  const clientEventTime = getOptionalStringField(bodyResult.data, "clientEventTime", issues);
+  const metadata = getObjectField(bodyResult.data, "metadata", issues, { required: false }) ?? {};
+
+  if (issues.length > 0 || !eventType || !decisionId) {
+    return validationErrorResponse(issues);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -30,14 +44,14 @@ export async function POST(request: NextRequest) {
   const { ipHash, deviceHash } = getRiskContext(request);
   const userAgentHash = hashRiskValue(request.headers.get("user-agent"));
   const { data, error } = await supabase.rpc("record_ad_event", {
-    p_event_type: body.eventType,
-    p_decision_id: body.decisionId,
-    p_event_dedupe_key: body.eventDedupeKey ?? null,
-    p_client_event_time: body.clientEventTime ?? null,
-    p_ip_hash: ipHash,
-    p_device_hash: deviceHash,
-    p_user_agent_hash: userAgentHash,
-    p_metadata: body.metadata ?? {},
+    p_event_type: eventType,
+    p_decision_id: decisionId,
+    p_event_dedupe_key: nullableRpcText(eventDedupeKey),
+    p_client_event_time: nullableRpcText(clientEventTime),
+    p_ip_hash: nullableRpcText(ipHash),
+    p_device_hash: nullableRpcText(deviceHash),
+    p_user_agent_hash: nullableRpcText(userAgentHash),
+    p_metadata: asSupabaseJson(metadata),
   });
 
   if (error) {

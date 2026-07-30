@@ -1,22 +1,31 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
-
-type DeleteBlockBody = {
-  pageId?: string;
-  blockId?: string;
-};
+import {
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 
 export async function DELETE(request: Request) {
-  const body = (await request.json()) as DeleteBlockBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (!body.pageId || !body.blockId) {
-    return NextResponse.json({ error: "pageId and blockId are required." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const pageId = getStringField(bodyResult.data, "pageId", issues);
+  const blockId = getStringField(bodyResult.data, "blockId", issues);
+
+  if (issues.length > 0 || !pageId || !blockId) {
+    return validationErrorResponse(issues);
   }
 
   const { supabase } = await requireAdmin();
   const { error } = await supabase.rpc("admin_delete_lesson_block", {
-    p_page_id: body.pageId,
-    p_block_id: body.blockId,
+    p_page_id: pageId,
+    p_block_id: blockId,
   });
 
   if (error) {

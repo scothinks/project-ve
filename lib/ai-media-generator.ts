@@ -3,6 +3,7 @@ import "server-only";
 import { Buffer } from "node:buffer";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
+import { asSupabaseJson } from "@/lib/supabase-rpc";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -385,7 +386,7 @@ export async function generateLearningMediaImage(
         model,
         generation_status: "completed",
         generation_error: null,
-        metadata: nextMetadata,
+        metadata: asSupabaseJson(nextMetadata),
       })
       .eq("id", asset.id);
 

@@ -461,7 +461,7 @@ begin
     reward_thumbnail_snapshot,
     claim_steps_snapshot,
     fulfillment_config_snapshot,
-    redemption_expires_at,
+    redemption_expires_at
   )
   values (
     v_redemption_id,
@@ -489,7 +489,7 @@ begin
     v_awarded_thumbnail,
     v_awarded_claim_steps,
     v_awarded_fulfillment_config,
-    v_redemption_expires_at,
+    v_redemption_expires_at
   );
 
   if v_awarded_quantity_allocation.id is not null then

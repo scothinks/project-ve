@@ -197,7 +197,7 @@ async function hasMissionAward(
     .eq("user_id", userId)
     .eq("mission_id", missionId)
     .eq("award_scope", awardScope)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle();
 
   if (error) {
     throw error;
@@ -754,14 +754,14 @@ export async function submitSupabaseMissionProof({
       "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, starts_at, ends_at, rewards:rewards!missions_reward_id_fkey(id, title, fulfillment_type, fulfillment_config)",
     )
     .eq("id", missionId)
-    .maybeSingle<DbMission>();
+    .maybeSingle();
 
   if (missionError || !mission) {
     throw missionError ?? new Error("Mission not found.");
   }
 
   const normalizedMission = {
-    ...mission,
+    ...(mission as unknown as DbMission),
     rewards: normalizeMissionReward((mission as { rewards?: unknown }).rewards),
   } as DbMission;
 

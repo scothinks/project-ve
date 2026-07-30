@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
+import {
+  getStringArrayField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { answerSupabaseQuizQuestion } from "@/lib/supabase-quiz";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-type AnswerQuizBody = {
-  attemptId?: string;
-  questionId?: string;
-  selectedOptionIds?: string[];
-};
-
 export async function POST(request: Request) {
-  const body = (await request.json()) as AnswerQuizBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (!body.attemptId || !body.questionId || !Array.isArray(body.selectedOptionIds)) {
-    return NextResponse.json(
-      { error: "attemptId, questionId and selectedOptionIds are required" },
-      { status: 400 },
-    );
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const attemptId = getStringField(bodyResult.data, "attemptId", issues);
+  const questionId = getStringField(bodyResult.data, "questionId", issues);
+  const selectedOptionIds = getStringArrayField(bodyResult.data, "selectedOptionIds", issues);
+
+  if (issues.length > 0 || !attemptId || !questionId || !selectedOptionIds) {
+    return validationErrorResponse(issues);
   }
 
   try {
@@ -42,9 +49,9 @@ export async function POST(request: Request) {
     return NextResponse.json(
       await answerSupabaseQuizQuestion({
         supabase,
-        attemptId: body.attemptId,
-        questionId: body.questionId,
-        selectedOptionIds: body.selectedOptionIds,
+        attemptId,
+        questionId,
+        selectedOptionIds,
       }),
     );
   } catch (error) {

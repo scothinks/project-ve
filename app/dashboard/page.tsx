@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { logAppError } from "@/lib/app-errors";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import {
   getMissionRewardLabel,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/progress";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { resolveDashboardXpBalance } from "@/lib/observability";
 import { measureAsync } from "@/lib/performance";
 import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getLearningCatalog } from "@/lib/supabase-learning";
@@ -46,6 +48,25 @@ function buildRequestOrigin(headerMap: Headers) {
   const proto = headerMap.get("x-forwarded-proto") ?? "https";
   const host = headerMap.get("x-forwarded-host") ?? headerMap.get("host");
   return host ? `${proto}://${host}` : "http://localhost:3000";
+}
+
+async function withLoggedDashboardFallback<T>({
+  fallback,
+  operation,
+  promise,
+  userId,
+}: {
+  fallback: T;
+  operation: string;
+  promise: Promise<T>;
+  userId?: string | null;
+}) {
+  try {
+    return await promise;
+  } catch (error) {
+    logAppError(error, { operation, userId });
+    return fallback;
+  }
 }
 
 function ContinueLearningCard({
@@ -398,7 +419,12 @@ export default async function DashboardPage() {
   const hasRealName = Boolean(rawDisplayName && !rawDisplayName.includes("@"));
   const displayName = hasRealName ? rawDisplayName : "Learner";
   const firstName = displayName.split(/\s+/)[0] || "Learner";
-  const xpBalance = profile?.xp_balance_cached ?? 45232;
+
+  const xpBalance = resolveDashboardXpBalance({
+    isConfigured: isSupabaseConfigured,
+    profile,
+    userId: user?.id,
+  });
   const [
     lessonProgress,
     recommendationSections,
@@ -410,20 +436,40 @@ export default async function DashboardPage() {
     isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
     getDashboardRecommendationSections(supabase, catalog),
     isSupabaseConfigured && user && supabase
-      ? getRewardStoreSnapshot(supabase, user.id, xpBalance).catch(() => null)
+      ? withLoggedDashboardFallback({
+          fallback: null,
+          operation: "dashboard.reward_store.load",
+          promise: getRewardStoreSnapshot(supabase, user.id, xpBalance),
+          userId: user.id,
+        })
       : Promise.resolve(demoRewardStoreSnapshot),
     isSupabaseConfigured && user && supabase
-      ? getUnreadNotificationCount(supabase, user.id).catch(() => 0)
+      ? withLoggedDashboardFallback({
+          fallback: 0,
+          operation: "dashboard.notifications.unread_count",
+          promise: getUnreadNotificationCount(supabase, user.id),
+          userId: user.id,
+        })
       : Promise.resolve(0),
     isSupabaseConfigured && user && supabase
-      ? getSupabaseMissionSummaries({
-          supabase,
+      ? withLoggedDashboardFallback({
+          fallback: [],
+          operation: "dashboard.missions.load",
+          promise: getSupabaseMissionSummaries({
+            supabase,
+            userId: user.id,
+            referralCode: profile?.referral_code ?? null,
+            origin,
+          }),
           userId: user.id,
-          referralCode: profile?.referral_code ?? null,
-          origin,
-        }).catch(() => [])
+        })
       : Promise.resolve([]),
-    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+    withLoggedDashboardFallback({
+      fallback: [],
+      operation: "dashboard.ads.segments",
+      promise: getLearnerAdSegments(supabase, user?.id),
+      userId: user?.id,
+    }),
   ]));
   const completedLessonIds = getCompletedLessonIds(
     lessonProgress,
@@ -463,13 +509,18 @@ export default async function DashboardPage() {
         })
       : Promise.resolve(null),
     isSupabaseConfigured && user && supabase
-      ? getPersonalizedDashboardRecommendations({
-          supabase,
+      ? withLoggedDashboardFallback({
+          fallback: { sections: [], userProfile: null, userScores: [] },
+          operation: "dashboard.personalized_recommendations.load",
+          promise: getPersonalizedDashboardRecommendations({
+            supabase,
+            userId: user.id,
+            catalog,
+            lessonProgress,
+            missions: missionRecommendations,
+          }),
           userId: user.id,
-          catalog,
-          lessonProgress,
-          missions: missionRecommendations,
-        }).catch(() => ({ sections: [], userProfile: null, userScores: [] }))
+        })
       : Promise.resolve({ sections: [], userProfile: null, userScores: [] }),
     getAdDecision(supabase, {
       placementKey: "home_feed_card",

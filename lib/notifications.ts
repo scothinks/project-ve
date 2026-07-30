@@ -1,5 +1,5 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AppSupabaseClient } from "@/lib/supabase";
 
 export type UserNotification = {
   id: string;
@@ -34,15 +34,6 @@ type DbUserNotification = {
   created_at: string;
 };
 
-type DbNotificationPreferences = {
-  in_app_enabled: boolean;
-  web_push_enabled: boolean;
-  rewards_enabled: boolean;
-  missions_enabled: boolean;
-  account_enabled: boolean;
-  system_enabled: boolean;
-};
-
 function mapNotification(row: DbUserNotification): UserNotification {
   return {
     id: row.id,
@@ -58,7 +49,7 @@ function mapNotification(row: DbUserNotification): UserNotification {
 }
 
 export async function getUserNotifications(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   userId: string,
   limit = 25,
 ) {
@@ -67,18 +58,17 @@ export async function getUserNotifications(
     .select("id, category, event_type, title, body, cta_href, cta_label, read_at, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(limit)
-    .returns<DbUserNotification[]>();
+    .limit(limit);
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []).map(mapNotification);
+  return ((data ?? []) as DbUserNotification[]).map(mapNotification);
 }
 
 export async function getUnreadNotificationCount(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   userId: string,
 ) {
   const { count, error } = await supabase
@@ -95,14 +85,14 @@ export async function getUnreadNotificationCount(
 }
 
 export async function getNotificationPreferences(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   userId: string,
 ): Promise<NotificationPreferences> {
   const { data, error } = await supabase
     .from("notification_preferences")
     .select("in_app_enabled, web_push_enabled, rewards_enabled, missions_enabled, account_enabled, system_enabled")
     .eq("user_id", userId)
-    .maybeSingle<DbNotificationPreferences>();
+    .maybeSingle();
 
   if (error) {
     throw error;

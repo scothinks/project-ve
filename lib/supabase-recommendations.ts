@@ -1,22 +1,7 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { logAppError } from "@/lib/app-errors";
+import type { AppSupabaseClient } from "@/lib/supabase";
 import type { Course, Lesson } from "@/lib/lessons";
-
-type RecommendationSectionRow = {
-  id: string;
-  eyebrow: string | null;
-  title: string;
-  subtitle: string | null;
-  sort_order: number;
-};
-
-type RecommendationItemRow = {
-  id: string;
-  section_id: string;
-  item_type: "course" | "lesson";
-  item_id: string;
-  sort_order: number;
-};
 
 export type DashboardRecommendationItem =
   | {
@@ -59,7 +44,7 @@ function indexCatalog(catalog: Course[]) {
 }
 
 export async function getDashboardRecommendationSections(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   catalog: Course[],
 ): Promise<DashboardRecommendationSection[]> {
   if (!supabase || catalog.length === 0) {
@@ -74,10 +59,13 @@ export async function getDashboardRecommendationSections(
       .select("id, eyebrow, title, subtitle, sort_order")
       .eq("placement", "dashboard")
       .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .returns<RecommendationSectionRow[]>();
+      .order("sort_order", { ascending: true });
 
-    if (sectionsError || !sections?.length) {
+    if (sectionsError) {
+      throw sectionsError;
+    }
+
+    if (!sections?.length) {
       return [];
     }
 
@@ -86,12 +74,9 @@ export async function getDashboardRecommendationSections(
       .from("recommendation_items")
       .select("id, section_id, item_type, item_id, sort_order")
       .in("section_id", sectionIds)
-      .order("sort_order", { ascending: true })
-      .returns<RecommendationItemRow[]>();
+      .order("sort_order", { ascending: true });
 
-    if (itemsError) {
-      return [];
-    }
+    if (itemsError) throw itemsError;
 
     const itemsBySection = new Map<string, DashboardRecommendationItem[]>();
 
@@ -135,7 +120,10 @@ export async function getDashboardRecommendationSections(
         ),
       }))
       .filter((section) => section.items.length > 0);
-  } catch {
+  } catch (error) {
+    logAppError(error, {
+      operation: "dashboard.recommendation_sections.load",
+    });
     return [];
   }
 }

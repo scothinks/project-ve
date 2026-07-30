@@ -3,13 +3,21 @@ import { MissionPanel } from "@/components/missions/MissionPanel";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
+import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 export default async function MissionsPage() {
   const supabase = await createSupabaseServerClient();
   const { user } = await getCurrentUserProfile(supabase);
-  const segmentKeys = await getLearnerAdSegments(supabase, user?.id).catch(() => []);
+  const segmentKeys = await withLoggedFallback({
+    context: {
+      operation: "missions.ads.segments",
+      userId: user?.id,
+    },
+    fallback: [],
+    promise: getLearnerAdSegments(supabase, user?.id),
+  });
   const missionsAd = await getAdDecision(supabase, {
     placementKey: "missions_card",
     route: "/missions",

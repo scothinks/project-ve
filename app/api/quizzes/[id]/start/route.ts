@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import {
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { startSupabaseQuizAttempt } from "@/lib/supabase-quiz";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
@@ -6,16 +12,19 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-type StartQuizBody = {
-  lessonId?: string;
-};
-
 export async function POST(request: Request, { params }: RouteContext) {
   const { id } = await params;
-  const body = (await request.json()) as StartQuizBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (!body.lessonId) {
-    return NextResponse.json({ error: "lessonId is required" }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const lessonId = getStringField(bodyResult.data, "lessonId", issues);
+
+  if (issues.length > 0 || !lessonId) {
+    return validationErrorResponse(issues);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -46,7 +55,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const result = await startSupabaseQuizAttempt({
       supabase,
       userId: user.id,
-      lessonId: body.lessonId,
+      lessonId,
       quizId: id,
     });
     const status = result.status === "blocked" ? 403 : 200;

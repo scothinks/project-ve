@@ -205,8 +205,7 @@ async function handleDispatch(request: NextRequest) {
     )
     .eq("status", "pending")
     .order("created_at", { ascending: true })
-    .limit(limit)
-    .returns<PendingDeliveryRow[]>();
+    .limit(limit);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
@@ -218,7 +217,7 @@ async function handleDispatch(request: NextRequest) {
   let skipped = 0;
   const validDeliveries: ValidPendingDeliveryRow[] = [];
 
-  for (const delivery of data ?? []) {
+  for (const delivery of ((data ?? []) as PendingDeliveryRow[])) {
     if (!delivery.notification || !delivery.subscription) {
       await markDeliveriesSkipped(
         adminSupabase,

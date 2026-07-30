@@ -1170,7 +1170,7 @@ lib/admin.ts
 app/admin/**
 ```
 
-The repository currently contains roughly 132:
+The repository initially contained roughly 132:
 
 ```ts
 .returns<SomeHandWrittenType>()
@@ -1179,6 +1179,19 @@ The repository currently contains roughly 132:
 calls.
 
 Supabase clients are not parameterized with a generated `Database` contract.
+
+Current cleanup status:
+
+* `types/database.ts` is generated from the linked `public` schema and committed.
+* Browser, server, plain, and admin Supabase client factories are parameterized with `Database`.
+* `db:types`, `db:types:check`, and `db:types:check:ci` scripts are available.
+* Runtime reward-redemption schema-version fallback has been removed.
+* Handwritten Supabase result overrides have been removed across `lib`, `app`, and `components`: no `.returns<T>()`, `maybeSingle<T>()`, or `single<T>()` call sites remain.
+* Converted modules include learner catalog/rewards/recommendations/notifications/value-profile/personalized-recommendations/XP settings, ad decision/reporting paths, admin read models, course admin workflows, and small notification dispatch/push prompt call sites.
+* CI wiring for linked Supabase type drift detection is in place through
+  `.github/workflows/ci.yml`.
+* Repository secret configuration required from the project owner:
+  `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF`.
 
 ### Required architecture
 
@@ -1302,6 +1315,69 @@ normalize
 call application use case
 ```
 
+### Current implementation status
+
+JSON API mutation routes now use a shared runtime request validator:
+
+```text
+lib/request-validation.ts
+```
+
+Covered API boundaries:
+
+```text
+app/api/admin/learning/blocks/route.ts
+app/api/admin/learning/builder/route.ts
+app/api/admin/learning/reorder/route.ts
+app/api/ads/event/route.ts
+app/api/ads/house-event/route.ts
+app/api/auth/oauth-signup/prepare/route.ts
+app/api/auth/signup/route.ts
+app/api/lesson-progress/route.ts
+app/api/missions/[id]/proof/route.ts
+app/api/notifications/push-subscription/route.ts
+app/api/quizzes/[id]/answer/route.ts
+app/api/quizzes/[id]/start/route.ts
+app/api/quizzes/[id]/submit/route.ts
+app/api/redemptions/[id]/claim/route.ts
+app/api/referrals/accept/route.ts
+app/api/referrals/visit/route.ts
+```
+
+Implemented behavior:
+
+* malformed JSON returns structured `400` responses;
+* non-object JSON request bodies are rejected;
+* required string/object/array fields are validated before domain calls;
+* event/proof/reorder enum values are rejected at the boundary;
+* integer/range validation is applied to admin learning builder numeric fields before RPC execution;
+* unsafe `request.json()` casts have been removed from `app/api`;
+* direct admin course catalog FormData actions now parse through
+  `lib/admin-course-validation.ts` before RPC execution, covering course,
+  lesson, lesson page/block, quiz settings, and quiz question mutations;
+* large admin FormData mutation surfaces now parse through explicit validators
+  before server-action domain/RPC execution:
+  `lib/admin-ad-validation.ts`, `lib/admin-ai-validation.ts`,
+  `lib/admin-inventory-validation.ts`, and
+  `lib/admin-reward-validation.ts`;
+* reward thumbnail validation now propagates nested URL issues into the parent
+  reward/perk prize mutation result instead of dropping them;
+* admin ad campaign/flight/billing and reward/inventory availability windows
+  reject inverted date ranges before domain calls;
+* unit coverage exists in `tests/unit/request-validation.test.mjs`.
+* FormData unit coverage exists in `tests/unit/admin-course-validation.test.mjs`
+  for required fields, enum rejection, numeric ranges, URL normalization, quiz
+  option rules, and canonical domain payloads.
+* Follow-up FormData unit coverage exists in:
+  `tests/unit/admin-ad-validation.test.mjs`,
+  `tests/unit/admin-ai-validation.test.mjs`,
+  `tests/unit/admin-inventory-validation.test.mjs`, and
+  `tests/unit/admin-reward-validation.test.mjs`.
+
+Remaining optional architecture follow-up:
+
+* decide whether to adopt a package validator such as Zod/Valibot once dependency changes are allowed, or keep the local zero-dependency validator.
+
 ### Acceptance tests
 
 * malformed JSON returns 400;
@@ -1399,6 +1475,30 @@ dependency failed
 resource not found
 unauthorized
 ```
+
+### Current implementation status
+
+Initial observability pass is implemented:
+
+```text
+lib/app-errors.ts
+tests/unit/app-errors.test.mjs
+```
+
+Implemented behavior:
+
+* application error taxonomy now includes validation, dependency-unavailable, and invariant-violation errors;
+* structured server logs include error type/code/status, operation, user/resource context where supplied, metadata, and underlying error details;
+* structured logs intentionally route to JSON `console.error`; deployed runtime log capture is the sink for now, with no custom external endpoint added in application code;
+* `lib/supabase-learning.ts` no longer converts Supabase failures into empty catalogs or `null` detail results; valid empty published-content results still return empty arrays/null;
+* dashboard live XP fallback now uses `0` when a configured user profile is missing, and logs the missing profile invariant;
+* optional dashboard, notifications, profile, XP store, missions, course, and lesson modules degrade with explicit logged fallbacks rather than silent `.catch(() => [])` / `.catch(() => 0)` / `.catch(() => null)`;
+* notifications page now distinguishes a real empty inbox from a notification-load failure with a safe client message;
+* learning-dependent API routes return safe `503` messages instead of leaking underlying dependency details.
+* admin course planner hidden JSON FormData parsing now fails closed as validation errors instead of silently falling back;
+* invalid stored AI course plans and cleanup rollback failures under `app/admin/courses/*` are logged with operation and plan/course/job context.
+* profile loading now treats Supabase/auth query errors as dependency failures instead of collapsing them into a missing-profile state;
+* dashboard missing-profile XP fallback and notification page load-state decisions are covered by unit tests, including the "zero XP, logged invariant" and "load failed, not empty inbox" cases.
 
 ### Acceptance tests
 
@@ -1622,6 +1722,47 @@ run DB tests
 ```
 
 without consulting `supabase/schema.sql`.
+
+### Current implementation status
+
+Implemented:
+
+* removed the stale hand-maintained `supabase/schema.sql`;
+* added `supabase/config.toml` so local Supabase has a committed project config;
+* added `supabase/roles.sql` so local reset mirrors the linked project's
+  Supabase role/default privilege posture before migrations replay;
+* added `supabase/seed.sql` for the permanent pgTAP learner/admin users used by
+  local DB tests;
+* added local database scripts for start, reset, local type generation, local
+  type checking, and one-command local verification;
+* added normalized DB type checking so linked and direct local DB generation
+  compare schema contracts instead of generator metadata;
+* documented the database workflow in `docs/database.md`;
+* documented the local/linked DB test split in `docs/testing.md`;
+* updated README Supabase notes to make migrations the only checked-in schema
+  authority.
+* corrected two historical migration syntax errors that prevented clean local
+  migration replay. This was a replay-only source correction for invalid SQL
+  already applied on the linked project, not a pattern for implementing new
+  schema changes in historical migrations.
+
+Validation:
+
+```text
+npm run db:verify:local
+```
+
+This command intentionally resets the local Supabase database from migrations,
+checks generated public-schema TypeScript types, and runs local pgTAP tests. It
+does not use `supabase/schema.sql`.
+
+Latest result:
+
+```text
+All tests successful.
+Files=6, Tests=107
+Result: PASS
+```
 
 ---
 
@@ -1938,7 +2079,43 @@ Files=5, Tests=89
 Result: PASS
 ```
 
-Continue with Phase 1A, then Phase 1B.
+Phase 1A is complete and validated by the linked pgTAP gate:
+
+* `VE-TEST-001`: app CI, Node unit-test scaffolding, and testing command documentation added; pgTAP remains the linked database security gate.
+* `VE-AUTH-001`: production security-secret checks, metadata-trust hardening, and Supabase CAPTCHA configuration notes added.
+* `VE-NOTIF-002`: scoped notification mark-read RPCs added; generic learner notification updates removed.
+
+```text
+notification_security.sql .. ok
+p0_release_gate.sql ........ ok
+quiz_security.sql .......... ok
+rpc_security.sql ........... ok
+xp_ledger_security.sql ..... ok
+All tests successful.
+Files=5, Tests=96
+Result: PASS
+```
+
+Continue with Phase 1B.
+
+Phase 1B status:
+
+* `VE-PROGRESS-001`: complete and validated. Atomic `complete_lesson_page(...)` RPC, app callsite update, and progress pgTAP coverage are in place.
+* `VE-DATA-001`: database type contract generated from the linked public schema, Supabase client factories parameterized with `Database`, `db:types`/`db:types:check`/`db:types:check:ci` scripts added, reward redemption schema-version fallback removed, handwritten Supabase result overrides removed across `lib`, `app`, and `components`, and GitHub Actions type-drift wiring added. Repository owner must configure `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` secrets for the CI job to enforce linked drift.
+* `VE-API-001`: JSON API mutation routes, direct admin course catalog FormData actions, reward/inventory/ads FormData actions, and AI generation/planner FormData actions use explicit runtime validation before domain/RPC execution. Remaining optional architecture decision: adopt Zod/Valibot later, or keep the local zero-dependency validators.
+* `VE-OBS-001`: explicit application error taxonomy, structured server logging, logged optional fallbacks, profile-load dependency failure handling, notification load-failure UI state, and unit coverage for missing-profile XP and notification failure states are in place.
+
+```text
+notification_security.sql .. ok
+p0_release_gate.sql ........ ok
+progress_security.sql ...... ok
+quiz_security.sql .......... ok
+rpc_security.sql ........... ok
+xp_ledger_security.sql ..... ok
+All tests successful.
+Files=6, Tests=107
+Result: PASS
+```
 
 ## Phase 0A: Stop direct privilege escalation
 

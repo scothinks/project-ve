@@ -1,8 +1,11 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import {
+  logAppError,
+  toDependencyUnavailableError,
+} from "@/lib/app-errors";
 import { parseImagePresentation } from "@/lib/image-presentation";
-import { createPlainSupabaseClient } from "@/lib/supabase";
+import { createPlainSupabaseClient, type AppSupabaseClient } from "@/lib/supabase";
 import {
   courses as seedCourses,
   lessons as seedLessons,
@@ -440,7 +443,7 @@ function findSeedQuiz(idOrLessonId: string) {
 }
 
 async function getPublishedCourseByIdOrSlug(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   idOrSlug: string,
 ): Promise<CourseRow | null> {
   const { data: byId, error: idError } = await supabase
@@ -448,24 +451,24 @@ async function getPublishedCourseByIdOrSlug(
     .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
     .eq("id", idOrSlug)
     .eq("status", "published")
-    .maybeSingle<CourseRow>();
+    .maybeSingle();
 
   if (idError) throw idError;
-  if (byId) return byId;
+  if (byId) return byId as CourseRow;
 
   const { data: bySlug, error: slugError } = await supabase
     .from("courses")
     .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
     .eq("slug", idOrSlug)
     .eq("status", "published")
-    .maybeSingle<CourseRow>();
+    .maybeSingle();
 
   if (slugError) throw slugError;
-  return bySlug ?? null;
+  return (bySlug as CourseRow | null) ?? null;
 }
 
 async function getPublishedLessonByIdOrSlug(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   idOrSlug: string,
 ): Promise<LessonRow | null> {
   const lessonSelect =
@@ -476,24 +479,24 @@ async function getPublishedLessonByIdOrSlug(
     .select(lessonSelect)
     .eq("id", idOrSlug)
     .eq("status", "published")
-    .maybeSingle<LessonRow>();
+    .maybeSingle();
 
   if (idError) throw idError;
-  if (byId) return byId;
+  if (byId) return byId as LessonRow;
 
   const { data: bySlug, error: slugError } = await supabase
     .from("lessons")
     .select(lessonSelect)
     .eq("slug", idOrSlug)
     .eq("status", "published")
-    .maybeSingle<LessonRow>();
+    .maybeSingle();
 
   if (slugError) throw slugError;
-  return bySlug ?? null;
+  return (bySlug as LessonRow | null) ?? null;
 }
 
 async function getPublishedQuizLessonId(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   idOrLessonId: string,
 ): Promise<string | null> {
   const { data: byLessonId, error: lessonError } = await supabase
@@ -501,7 +504,7 @@ async function getPublishedQuizLessonId(
     .select("lesson_id")
     .eq("lesson_id", idOrLessonId)
     .eq("status", "published")
-    .maybeSingle<{ lesson_id: string }>();
+    .maybeSingle();
 
   if (lessonError) throw lessonError;
   if (byLessonId?.lesson_id) return byLessonId.lesson_id;
@@ -511,14 +514,14 @@ async function getPublishedQuizLessonId(
     .select("lesson_id")
     .eq("id", idOrLessonId)
     .eq("status", "published")
-    .maybeSingle<{ lesson_id: string }>();
+    .maybeSingle();
 
   if (quizError) throw quizError;
   return byQuizId?.lesson_id ?? null;
 }
 
 async function loadMappedPublishedCourses(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   courses: CourseRow[],
 ): Promise<Course[]> {
   if (courses.length === 0) return [];
@@ -529,13 +532,12 @@ async function loadMappedPublishedCourses(
     .select("id, course_id, lesson_id, placement, url, alt_text, caption, metadata, sort_order")
     .in("course_id", courseIds)
     .is("lesson_id", null)
-    .order("sort_order", { ascending: true })
-    .returns<CourseCoverAssetRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (courseCoverAssetsResult.error) throw courseCoverAssetsResult.error;
 
   const courseCoverByCourseId = new Map<string, CourseCoverAssetRow>();
-  for (const asset of courseCoverAssetsResult.data ?? []) {
+  for (const asset of (courseCoverAssetsResult.data ?? []) as CourseCoverAssetRow[]) {
     const metadataTargetKind = getString(asset.metadata ?? {}, "targetKind");
     const isCourseCover = asset.placement === "course_cover" || metadataTargetKind === "course_cover";
     if (asset.course_id && asset.url && isCourseCover && !courseCoverByCourseId.has(asset.course_id)) {
@@ -548,12 +550,12 @@ async function loadMappedPublishedCourses(
     .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion")
     .in("course_id", courseIds)
     .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .returns<LessonRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (lessonsError) throw lessonsError;
 
-  const lessonIds = (lessons ?? []).map((lesson) => lesson.id);
+  const lessonRows = (lessons ?? []) as LessonRow[];
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
   if (lessonIds.length === 0) {
     return mapCatalog({
       courses,
@@ -572,21 +574,21 @@ async function loadMappedPublishedCourses(
       .from("lesson_pages")
       .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image")
       .in("lesson_id", lessonIds)
-      .order("page_number", { ascending: true })
-      .returns<PageRow[]>(),
+      .order("page_number", { ascending: true }),
     supabase
       .from("quizzes")
       .select("id, lesson_id, title, version")
       .in("lesson_id", lessonIds)
-      .eq("status", "published")
-      .returns<QuizRow[]>(),
+      .eq("status", "published"),
   ]);
 
   if (pagesResult.error) throw pagesResult.error;
   if (quizzesResult.error) throw quizzesResult.error;
 
-  const pageIds = (pagesResult.data ?? []).map((page) => page.id);
-  const quizIds = (quizzesResult.data ?? []).map((quiz) => quiz.id);
+  const pageRows = (pagesResult.data ?? []) as PageRow[];
+  const quizRows = (quizzesResult.data ?? []) as QuizRow[];
+  const pageIds = pageRows.map((page) => page.id);
+  const quizIds = quizRows.map((quiz) => quiz.id);
 
   const [blocksResult, questionsResult] = await Promise.all([
     pageIds.length > 0
@@ -595,7 +597,6 @@ async function loadMappedPublishedCourses(
           .select("id, page_id, block_type, sort_order, payload")
           .in("page_id", pageIds)
           .order("sort_order", { ascending: true })
-          .returns<BlockRow[]>()
       : Promise.resolve({ data: [], error: null }),
     quizIds.length > 0
       ? supabase
@@ -603,14 +604,15 @@ async function loadMappedPublishedCourses(
           .select("id, quiz_id, question_order, question_type, prompt, xp")
           .in("quiz_id", quizIds)
           .order("question_order", { ascending: true })
-          .returns<QuestionRow[]>()
       : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (blocksResult.error) throw blocksResult.error;
   if (questionsResult.error) throw questionsResult.error;
 
-  const questionIds = (questionsResult.data ?? []).map((question) => question.id);
+  const blockRows = (blocksResult.data ?? []) as BlockRow[];
+  const questionRows = (questionsResult.data ?? []) as QuestionRow[];
+  const questionIds = questionRows.map((question) => question.id);
   const optionsResult =
     questionIds.length > 0
       ? await supabase
@@ -618,25 +620,24 @@ async function loadMappedPublishedCourses(
           .select("id, question_id, option_order, label")
           .in("question_id", questionIds)
           .order("option_order", { ascending: true })
-          .returns<OptionRow[]>()
       : { data: [], error: null };
 
   if (optionsResult.error) throw optionsResult.error;
 
   return mapCatalog({
     courses,
-    lessons: lessons ?? [],
-    pages: pagesResult.data ?? [],
-    blocks: blocksResult.data ?? [],
-    quizzes: quizzesResult.data ?? [],
-    questions: questionsResult.data ?? [],
-    options: optionsResult.data ?? [],
+    lessons: lessonRows,
+    pages: pageRows,
+    blocks: blockRows,
+    quizzes: quizRows,
+    questions: questionRows,
+    options: (optionsResult.data ?? []) as OptionRow[],
     courseCoverByCourseId,
   });
 }
 
 async function loadMappedPublishedCourseSummaries(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   courses: CourseRow[],
 ): Promise<Course[]> {
   if (courses.length === 0) return [];
@@ -647,12 +648,12 @@ async function loadMappedPublishedCourseSummaries(
     .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion")
     .in("course_id", courseIds)
     .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .returns<LessonRow[]>();
+    .order("sort_order", { ascending: true });
 
   if (lessonsError) throw lessonsError;
 
-  const lessonIds = (lessons ?? []).map((lesson) => lesson.id);
+  const lessonRows = (lessons ?? []) as LessonRow[];
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
   const quizzesResult =
     lessonIds.length > 0
       ? await supabase
@@ -660,12 +661,12 @@ async function loadMappedPublishedCourseSummaries(
           .select("id, lesson_id, title, version")
           .in("lesson_id", lessonIds)
           .eq("status", "published")
-          .returns<QuizRow[]>()
       : { data: [], error: null };
 
   if (quizzesResult.error) throw quizzesResult.error;
 
-  const quizIds = (quizzesResult.data ?? []).map((quiz) => quiz.id);
+  const quizRows = (quizzesResult.data ?? []) as QuizRow[];
+  const quizIds = quizRows.map((quiz) => quiz.id);
   const questionsResult =
     quizIds.length > 0
       ? await supabase
@@ -673,24 +674,23 @@ async function loadMappedPublishedCourseSummaries(
           .select("id, quiz_id, question_order, question_type, prompt, xp")
           .in("quiz_id", quizIds)
           .order("question_order", { ascending: true })
-          .returns<QuestionRow[]>()
       : { data: [], error: null };
 
   if (questionsResult.error) throw questionsResult.error;
 
   return mapCatalog({
     courses,
-    lessons: lessons ?? [],
+    lessons: lessonRows,
     pages: [],
     blocks: [],
-    quizzes: quizzesResult.data ?? [],
-    questions: questionsResult.data ?? [],
+    quizzes: quizRows,
+    questions: (questionsResult.data ?? []) as QuestionRow[],
     options: [],
     courseCoverByCourseId: new Map(),
   });
 }
 
-export async function getLearningCatalog(supabase: SupabaseClient | null): Promise<Course[]> {
+export async function getLearningCatalog(supabase: AppSupabaseClient | null): Promise<Course[]> {
   if (!supabase) return seedCourses;
 
   try {
@@ -698,15 +698,32 @@ export async function getLearningCatalog(supabase: SupabaseClient | null): Promi
       .from("courses")
       .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .returns<CourseRow[]>();
+      .order("sort_order", { ascending: true });
 
     if (coursesError) throw coursesError;
     if (!courses || courses.length === 0) return [];
-    return loadMappedPublishedCourses(supabase, courses);
-  } catch {
-    return [];
+    return loadMappedPublishedCourses(supabase, courses as CourseRow[]);
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.catalog.load",
+    });
   }
+}
+
+function throwLoggedLearningDependencyError(
+  error: unknown,
+  context: {
+    operation: string;
+    resourceId?: string;
+  },
+): never {
+  const appError = toDependencyUnavailableError(
+    error,
+    "Learning content is temporarily unavailable.",
+  );
+
+  logAppError(appError, context);
+  throw appError;
 }
 
 function stripSeedCoursePages() {
@@ -716,7 +733,9 @@ function stripSeedCoursePages() {
   }));
 }
 
-export async function getLearningCourseSummaries(supabase: SupabaseClient | null): Promise<Course[]> {
+export async function getLearningCourseSummaries(
+  supabase: AppSupabaseClient | null,
+): Promise<Course[]> {
   if (!supabase) return stripSeedCoursePages();
 
   try {
@@ -724,14 +743,15 @@ export async function getLearningCourseSummaries(supabase: SupabaseClient | null
       .from("courses")
       .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .returns<CourseRow[]>();
+      .order("sort_order", { ascending: true });
 
     if (coursesError) throw coursesError;
     if (!courses || courses.length === 0) return [];
-    return loadMappedPublishedCourseSummaries(supabase, courses);
-  } catch {
-    return [];
+    return loadMappedPublishedCourseSummaries(supabase, courses as CourseRow[]);
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.course_summaries.load",
+    });
   }
 }
 
@@ -745,7 +765,7 @@ export const getCachedLearningCourseSummaries = unstable_cache(
 );
 
 export async function getLearningCourse(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   idOrSlug: string,
 ): Promise<Course | null> {
   if (!supabase) return findSeedCourse(idOrSlug);
@@ -755,13 +775,16 @@ export async function getLearningCourse(
     if (!course) return null;
     const courses = await loadMappedPublishedCourses(supabase, [course]);
     return courses[0] ?? null;
-  } catch {
-    return null;
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.course.load",
+      resourceId: idOrSlug,
+    });
   }
 }
 
 export async function getLearningLesson(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   idOrSlug: string,
 ): Promise<{ lesson: Lesson; course: Course } | null> {
   if (!supabase) return findSeedLesson(idOrSlug);
@@ -774,22 +797,25 @@ export async function getLearningLesson(
       .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("id", lessonRow.course_id)
       .eq("status", "published")
-      .maybeSingle<CourseRow>();
+      .maybeSingle();
 
     if (courseError) throw courseError;
     if (!courseRow) return null;
 
-    const courses = await loadMappedPublishedCourses(supabase, [courseRow]);
+    const courses = await loadMappedPublishedCourses(supabase, [courseRow as CourseRow]);
     const course = courses[0];
     const lesson = course?.lessons.find((item) => item.id === lessonRow.id) ?? null;
     return lesson && course ? { lesson, course } : null;
-  } catch {
-    return null;
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.lesson.load",
+      resourceId: idOrSlug,
+    });
   }
 }
 
 export async function getLearningQuiz(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   idOrLessonId: string,
 ): Promise<{ lesson: Lesson; quiz: Quiz } | null> {
   if (!supabase) return findSeedQuiz(idOrLessonId);
@@ -811,7 +837,10 @@ export async function getLearningQuiz(
     }
 
     return { lesson, quiz: lesson.quiz };
-  } catch {
-    return null;
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.quiz.load",
+      resourceId: idOrLessonId,
+    });
   }
 }

@@ -2,9 +2,24 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import {
+  parseBulkPerkRewardPrizesForm,
+  parsePerkInventoryMutationForm,
+  parsePerkPrizeIdForm,
+  parsePerkPrizeToggleForm,
+  parsePerkReleaseBucketDeleteForm,
+  parsePerkReleaseBucketForm,
+  parseRewardPayloadForm,
+  parseRewardStatusForm,
+  parseRewardToggleForm,
+  parseSavePerkPrizeForm,
+  type RewardMutationPayload,
+} from "@/lib/admin-reward-validation";
 import { requireAdmin } from "@/lib/admin";
-import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+import { ValidationError } from "@/lib/app-errors";
+import { formatValidationIssues } from "@/lib/form-data-validation";
 import { isRewardIconName } from "@/lib/reward-icons";
+import type { ValidationResult } from "@/lib/request-validation";
 
 export type RewardActionState = {
   ok: boolean;
@@ -16,71 +31,12 @@ const defaultActionState: RewardActionState = {
   message: "",
 };
 
-function parsePositiveInteger(value: FormDataEntryValue | null, fallback = 1) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function parseOptionalDate(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
-
-  if (!raw) {
-    return null;
+function requireValidForm<T>(validation: ValidationResult<T>) {
+  if (!validation.ok) {
+    throw new ValidationError(`Invalid reward form data. ${formatValidationIssues(validation.issues)}`);
   }
 
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
-
-function parseJsonObject(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
-
-  if (!raw) {
-    return {};
-  }
-
-  const parsed = JSON.parse(raw) as unknown;
-
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("JSON config must be an object.");
-  }
-
-  return parsed;
-}
-
-function parseClaimSteps(value: FormDataEntryValue | null) {
-  return String(value ?? "")
-    .split("\n")
-    .map((step) => sanitizePlainTextInput(step, 300).trim())
-    .filter(Boolean);
-}
-
-function parseOptionalText(value: FormDataEntryValue | null, maxLength = 120) {
-  const parsed = sanitizePlainTextInput(String(value ?? ""), maxLength).trim();
-  return parsed || null;
-}
-
-function parseThumbnailFields(formData: FormData) {
-  const url = sanitizeUrlInput(String(formData.get("thumbnailUrl") ?? ""), 1000) || undefined;
-  const color = sanitizePlainTextInput(String(formData.get("thumbnailColor") ?? ""), 32).trim() || undefined;
-  const iconSetRaw = sanitizePlainTextInput(String(formData.get("thumbnailIconSet") ?? ""), 24).trim();
-  const iconNameRaw = sanitizePlainTextInput(String(formData.get("thumbnailIconName") ?? ""), 40).trim();
-  const legacyIcon = sanitizePlainTextInput(String(formData.get("thumbnailLegacyIcon") ?? ""), 24).trim() || undefined;
-  const useLegacyIcon = formData.get("thumbnailUseLegacyIcon") === "true";
-  const iconName = isRewardIconName(iconNameRaw) ? iconNameRaw : undefined;
-
-  return {
-    url,
-    icon: useLegacyIcon ? legacyIcon : undefined,
-    iconSet: iconSetRaw === "tabler" && iconName ? "tabler" : undefined,
-    iconName: iconSetRaw === "tabler" ? iconName : undefined,
-    color,
-  };
+  return validation.data;
 }
 
 function getStoredThumbnail(thumbnail: unknown) {
@@ -101,14 +57,16 @@ function getStoredThumbnail(thumbnail: unknown) {
     iconName?: unknown;
     color?: unknown;
   };
+  const iconSetRaw = record.iconSet;
+  const iconNameRaw = typeof record.iconName === "string" ? record.iconName : "";
+  const legacyIcon = typeof record.icon === "string" ? record.icon : undefined;
+  const iconName = isRewardIconName(iconNameRaw) ? iconNameRaw : undefined;
 
   return {
     url: typeof record.url === "string" ? record.url : undefined,
-    icon: typeof record.icon === "string" ? record.icon : undefined,
-    iconSet: record.iconSet === "tabler" ? "tabler" : undefined,
-    iconName: typeof record.iconName === "string" && isRewardIconName(record.iconName)
-      ? record.iconName
-      : undefined,
+    icon: legacyIcon,
+    iconSet: iconSetRaw === "tabler" && iconName ? "tabler" : undefined,
+    iconName: iconSetRaw === "tabler" ? iconName : undefined,
     color: typeof record.color === "string" ? record.color : undefined,
   };
 }
@@ -134,7 +92,7 @@ async function getUniqueRewardId(supabase: Awaited<ReturnType<typeof requireAdmi
       .from("rewards")
       .select("id")
       .eq("id", candidate)
-      .maybeSingle<{ id: string }>();
+      .maybeSingle();
 
     if (error) {
       throw error;
@@ -150,44 +108,6 @@ async function getUniqueRewardId(supabase: Awaited<ReturnType<typeof requireAdmi
   return `${baseId}-${Date.now().toString(36)}`;
 }
 
-function parseRewardPayload(formData: FormData) {
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const distributionMode = String(formData.get("distributionMode") ?? "direct");
-  const limitPeriod = String(formData.get("limitPeriod") ?? "lifetime");
-  const thumbnail = parseThumbnailFields(formData);
-
-  return {
-    rewardId,
-    title: sanitizePlainTextInput(String(formData.get("title") ?? ""), 140),
-    description: sanitizePlainTextInput(String(formData.get("description") ?? ""), 500),
-    costXp: parsePositiveInteger(formData.get("costXp")),
-    status: String(formData.get("status") ?? "draft"),
-    isEnabled: formData.get("isEnabled") === "on",
-    thumbnail,
-    offerExpiresAt: parseOptionalDate(formData.get("offerExpiresAt")),
-    terms: sanitizePlainTextInput(String(formData.get("terms") ?? ""), 1000),
-    claimSteps: parseClaimSteps(formData.get("claimSteps")),
-    distributionMode,
-    fulfillmentType: String(formData.get("fulfillmentType") ?? "manual"),
-    visibilityMode: String(
-      formData.get("visibilityMode")
-      ?? (String(formData.get("fulfillmentType") ?? "manual") === "native" ? "system_only" : "store"),
-    ),
-    fulfillmentConfig: parseJsonObject(formData.get("fulfillmentConfig")),
-    perUserLimit:
-      limitPeriod === "none" ? 1 : parsePositiveInteger(formData.get("perUserLimit")),
-    limitPeriod,
-    redemptionWindowDays: String(formData.get("redemptionWindowDays") ?? "").trim()
-      ? parsePositiveInteger(formData.get("redemptionWindowDays"))
-      : null,
-    sortOrder: parseInteger(formData.get("sortOrder")),
-    campaignId: parseOptionalText(formData.get("campaignId"), 120),
-    totalAvailable: String(formData.get("totalAvailable") ?? "").trim()
-      ? Math.max(0, parseInteger(formData.get("totalAvailable")))
-      : 0,
-  };
-}
-
 function isMissingDistributionModeRpc(error: unknown) {
   return (
     !!error
@@ -201,7 +121,7 @@ function isMissingDistributionModeRpc(error: unknown) {
 async function callRewardMutationRpc(
   supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
   rpcName: "admin_update_reward" | "admin_create_reward",
-  payload: ReturnType<typeof parseRewardPayload>,
+  payload: RewardMutationPayload,
   rewardIdOverride?: string,
 ) {
   const nextFulfillmentType =
@@ -251,7 +171,7 @@ export async function updateReward(
   formData: FormData,
 ): Promise<RewardActionState> {
   void previousState;
-  const payload = parseRewardPayload(formData);
+  const payload = requireValidForm(parseRewardPayloadForm(formData));
   const { supabase } = await requireAdmin();
   const { error } = await callRewardMutationRpc(supabase, "admin_update_reward", payload);
 
@@ -274,7 +194,7 @@ export async function createReward(
   formData: FormData,
 ): Promise<RewardActionState> {
   void previousState;
-  const payload = parseRewardPayload(formData);
+  const payload = requireValidForm(parseRewardPayloadForm(formData));
   const { supabase } = await requireAdmin();
   const rewardId = await getUniqueRewardId(supabase, payload.title);
   const { data, error } = await callRewardMutationRpc(
@@ -302,9 +222,7 @@ export async function createReward(
 }
 
 export async function toggleRewardEnabled(formData: FormData) {
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const isEnabled = String(formData.get("isEnabled") ?? "") === "true";
-  const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/rewards"), 400);
+  const { isEnabled, redirectTo, rewardId } = requireValidForm(parseRewardToggleForm(formData));
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_set_reward_enabled", {
@@ -331,10 +249,7 @@ export async function toggleRewardEnabled(formData: FormData) {
 }
 
 export async function setRewardStatus(formData: FormData) {
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const status = sanitizePlainTextInput(String(formData.get("status") ?? "draft"), 24);
-  const isEnabled = status === "published";
-  const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/rewards/perks"), 400);
+  const { isEnabled, redirectTo, rewardId, status } = requireValidForm(parseRewardStatusForm(formData));
   const { supabase } = await requireAdmin();
 
   const { data: existingReward, error: existingRewardError } = await supabase
@@ -403,25 +318,6 @@ export async function setRewardStatus(formData: FormData) {
   );
 }
 
-function parseOptionalPositiveInteger(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function parseOptionalTimestamp(value: FormDataEntryValue | null) {
-  return parseOptionalDate(value);
-}
-
-function parseRequiredTimestamp(value: FormDataEntryValue | null, label: string) {
-  const parsed = parseOptionalDate(value);
-  if (!parsed) {
-    throw new Error(`${label} is required.`);
-  }
-  return parsed;
-}
-
 function appendNotice(redirectTo: string, notice: string) {
   const separator = redirectTo.includes("?") ? "&" : "?";
   return `${redirectTo}${separator}notice=${encodeURIComponent(notice)}`;
@@ -433,45 +329,45 @@ function appendQueryValue(redirectTo: string, key: string, value: string) {
 }
 
 export async function savePerkPrize(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? ""), 400);
-  const prizeIdRaw = String(formData.get("prizeId") ?? "").trim();
-  const prizeType = sanitizePlainTextInput(String(formData.get("prizeType") ?? "native_xp"), 32);
-  let sourceRewardId = parseOptionalText(formData.get("sourceRewardId"), 120);
-  const title = parseOptionalText(formData.get("title"), 140);
-  const thumbnail = parseThumbnailFields(formData);
-  const weight = parsePositiveInteger(formData.get("weight"));
-  const parsedTotalWinCap = parseOptionalPositiveInteger(formData.get("totalWinCap"));
-  const dailyWinCap = parseOptionalPositiveInteger(formData.get("dailyWinCap"));
-  const parsedAvailableFrom = parseOptionalTimestamp(formData.get("availableFrom"));
-  const parsedExpiresAt = parseOptionalTimestamp(formData.get("expiresAt"));
-  const sortOrder = parseInteger(formData.get("sortOrder"));
-  const isEnabled = formData.get("isEnabled") === "on";
+  const input = requireValidForm(parseSavePerkPrizeForm(formData));
+  const {
+    bundleRewardId,
+    dailyWinCap,
+    isEnabled,
+    prizeType,
+    redirectTo,
+    sortOrder,
+    thumbnail,
+    title,
+    weight,
+  } = input;
+  const prizeIdRaw = input.prizeId;
+  let sourceRewardId = input.sourceRewardId;
 
   let config: Record<string, unknown> = {};
   if (prizeType === "native_xp") {
     config = {
-      amount: parsePositiveInteger(formData.get("amount")),
+      amount: input.amount,
     };
   } else if (prizeType === "xp_boost") {
     config = {
-      multiplier: Math.max(1.1, Number(formData.get("multiplier") ?? 2)),
-      durationHours: parsePositiveInteger(formData.get("durationHours"), 24),
-      uses: parsePositiveInteger(formData.get("uses"), 1),
+      multiplier: input.multiplier,
+      durationHours: input.durationHours,
+      uses: input.uses,
     };
   }
 
   const { supabase } = await requireAdmin();
-  const totalWinCap = prizeType === "reward" ? null : parsedTotalWinCap;
-  const availableFrom = prizeType === "reward" ? null : parsedAvailableFrom;
-  const expiresAt = prizeType === "reward" ? null : parsedExpiresAt;
+  const totalWinCap = prizeType === "reward" ? null : input.totalWinCap;
+  const availableFrom = prizeType === "reward" ? null : input.availableFrom;
+  const expiresAt = prizeType === "reward" ? null : input.expiresAt;
 
   if (prizeIdRaw && prizeType === "reward" && !sourceRewardId) {
     const { data: existingPrize, error: existingPrizeError } = await supabase
       .from("perk_bundle_prizes")
       .select("source_reward_id")
       .eq("id", prizeIdRaw)
-      .maybeSingle<{ source_reward_id: string | null }>();
+      .maybeSingle();
 
     if (existingPrizeError) {
       throw existingPrizeError;
@@ -487,7 +383,7 @@ export async function savePerkPrize(formData: FormData) {
       .eq("bundle_reward_id", bundleRewardId)
       .eq("prize_type", "reward")
       .eq("source_reward_id", sourceRewardId)
-      .maybeSingle<{ id: string }>();
+      .maybeSingle();
 
     if (existingPrizeError) {
       throw existingPrizeError;
@@ -540,13 +436,7 @@ export async function savePerkPrize(formData: FormData) {
 }
 
 export async function setPerkPrizeEnabled(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const prizeId = sanitizePlainTextInput(String(formData.get("prizeId") ?? ""), 120);
-  const isEnabled = String(formData.get("isEnabled") ?? "") === "true";
-  const redirectTo = sanitizePlainTextInput(
-    String(formData.get("redirectTo") ?? `/admin/rewards/perks/${bundleRewardId}`),
-    400,
-  );
+  const { bundleRewardId, isEnabled, prizeId, redirectTo } = requireValidForm(parsePerkPrizeToggleForm(formData));
   const { supabase } = await requireAdmin();
 
   const { data: existingPrize, error: existingPrizeError } = await supabase
@@ -555,21 +445,7 @@ export async function setPerkPrizeEnabled(formData: FormData) {
       "id, bundle_reward_id, prize_type, source_reward_id, title, thumbnail, config, weight, total_win_cap, daily_win_cap, available_from, expires_at, sort_order",
     )
     .eq("id", prizeId)
-    .maybeSingle<{
-      id: string;
-      bundle_reward_id: string;
-      prize_type: string;
-      source_reward_id: string | null;
-      title: string | null;
-      thumbnail: Record<string, unknown> | null;
-      config: Record<string, unknown> | null;
-      weight: number;
-      total_win_cap: number | null;
-      daily_win_cap: number | null;
-      available_from: string | null;
-      expires_at: string | null;
-      sort_order: number;
-    }>();
+    .maybeSingle();
 
   if (existingPrizeError) {
     throw existingPrizeError;
@@ -579,20 +455,36 @@ export async function setPerkPrizeEnabled(formData: FormData) {
     throw new Error("Prize not found.");
   }
 
+  const prize = existingPrize as {
+    id: string;
+    bundle_reward_id: string;
+    prize_type: string;
+    source_reward_id: string | null;
+    title: string | null;
+    thumbnail: Record<string, unknown> | null;
+    config: Record<string, unknown> | null;
+    weight: number;
+    total_win_cap: number | null;
+    daily_win_cap: number | null;
+    available_from: string | null;
+    expires_at: string | null;
+    sort_order: number;
+  };
+
   const { error } = await supabase.rpc("admin_upsert_perk_bundle_prize", {
-    p_prize_id: existingPrize.id,
-    p_bundle_reward_id: existingPrize.bundle_reward_id,
-    p_prize_type: existingPrize.prize_type,
-    p_source_reward_id: existingPrize.source_reward_id,
-    p_title: existingPrize.title,
-    p_thumbnail: existingPrize.thumbnail ?? {},
-    p_config: existingPrize.config ?? {},
-    p_weight: existingPrize.weight,
-    p_total_win_cap: existingPrize.total_win_cap,
-    p_daily_win_cap: existingPrize.daily_win_cap,
-    p_available_from: existingPrize.available_from,
-    p_expires_at: existingPrize.expires_at,
-    p_sort_order: existingPrize.sort_order,
+    p_prize_id: prize.id,
+    p_bundle_reward_id: prize.bundle_reward_id,
+    p_prize_type: prize.prize_type,
+    p_source_reward_id: prize.source_reward_id,
+    p_title: prize.title,
+    p_thumbnail: prize.thumbnail ?? {},
+    p_config: prize.config ?? {},
+    p_weight: prize.weight,
+    p_total_win_cap: prize.total_win_cap,
+    p_daily_win_cap: prize.daily_win_cap,
+    p_available_from: prize.available_from,
+    p_expires_at: prize.expires_at,
+    p_sort_order: prize.sort_order,
     p_is_enabled: isEnabled,
   });
 
@@ -613,38 +505,31 @@ export async function setPerkPrizeEnabled(formData: FormData) {
 }
 
 export async function saveBulkPerkRewardPrizes(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? ""), 400);
-  const sourceRewardIds = Array.from(new Set(formData
-    .getAll("sourceRewardIds")
-    .map((value) => sanitizePlainTextInput(String(value ?? ""), 120))
-    .filter(Boolean)));
-  const baseWeight = parsePositiveInteger(formData.get("weight"));
-  const totalWinCap = parseOptionalPositiveInteger(formData.get("totalWinCap"));
-  const dailyWinCap = parseOptionalPositiveInteger(formData.get("dailyWinCap"));
-  const availableFrom = parseOptionalTimestamp(formData.get("availableFrom"));
-  const expiresAt = parseOptionalTimestamp(formData.get("expiresAt"));
-  const baseSortOrder = parseInteger(formData.get("sortOrder"));
-  const isEnabled = String(formData.get("isEnabled") ?? "on") === "on";
-
-  if (sourceRewardIds.length === 0) {
-    throw new Error("Select at least one reward to add.");
-  }
-
+  const {
+    availableFrom,
+    baseSortOrder,
+    baseWeight,
+    bundleRewardId,
+    dailyWinCap,
+    expiresAt,
+    isEnabled,
+    redirectTo,
+    sourceRewardIds,
+    totalWinCap,
+  } = requireValidForm(parseBulkPerkRewardPrizesForm(formData));
   const { supabase } = await requireAdmin();
   const { data: existingPrizes, error: existingPrizesError } = await supabase
     .from("perk_bundle_prizes")
     .select("source_reward_id")
     .eq("bundle_reward_id", bundleRewardId)
-    .eq("prize_type", "reward")
-    .returns<Array<{ source_reward_id: string | null }>>();
+    .eq("prize_type", "reward");
 
   if (existingPrizesError) {
     throw existingPrizesError;
   }
 
   const existingRewardIds = new Set(
-    (existingPrizes ?? [])
+    ((existingPrizes ?? []) as Array<{ source_reward_id: string | null }>)
       .map((row) => row.source_reward_id)
       .filter((value): value is string => Boolean(value)),
   );
@@ -685,8 +570,7 @@ export async function saveBulkPerkRewardPrizes(formData: FormData) {
 }
 
 export async function deletePerkPrize(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const prizeId = String(formData.get("prizeId") ?? "").trim();
+  const { bundleRewardId, prizeId } = requireValidForm(parsePerkPrizeIdForm(formData));
   const { supabase } = await requireAdmin();
   const { error } = await supabase.rpc("admin_delete_perk_bundle_prize", {
     p_prize_id: prizeId,
@@ -702,12 +586,9 @@ export async function deletePerkPrize(formData: FormData) {
 }
 
 export async function assignPerkPrizeInventory(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const prizeId = sanitizePlainTextInput(String(formData.get("prizeId") ?? ""), 120);
-  const quantity = parsePositiveInteger(formData.get("quantity"));
-  const reason = parseOptionalText(formData.get("reason"), 160);
-  const availableFrom = parseOptionalTimestamp(formData.get("availableFrom"));
-  const expiresAt = parseOptionalTimestamp(formData.get("expiresAt"));
+  const { availableFrom, bundleRewardId, expiresAt, prizeId, quantity, reason } = requireValidForm(
+    parsePerkInventoryMutationForm(formData, "Inventory assignment"),
+  );
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_assign_reward_stock_to_perk_prize", {
@@ -730,10 +611,9 @@ export async function assignPerkPrizeInventory(formData: FormData) {
 }
 
 export async function releasePerkPrizeInventory(formData: FormData) {
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const prizeId = sanitizePlainTextInput(String(formData.get("prizeId") ?? ""), 120);
-  const quantity = parsePositiveInteger(formData.get("quantity"));
-  const reason = parseOptionalText(formData.get("reason"), 160);
+  const { bundleRewardId, prizeId, quantity, reason } = requireValidForm(
+    parsePerkInventoryMutationForm(formData, "Inventory release"),
+  );
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_release_reward_stock_from_perk_prize", {
@@ -754,15 +634,17 @@ export async function releasePerkPrizeInventory(formData: FormData) {
 }
 
 export async function savePerkReleaseBucket(formData: FormData) {
-  const prizeId = sanitizePlainTextInput(String(formData.get("prizeId") ?? ""), 120);
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
-  const bucketId = String(formData.get("bucketId") ?? "").trim();
-  const label = parseOptionalText(formData.get("label"), 120);
-  const startsAt = parseRequiredTimestamp(formData.get("startsAt"), "Bucket start");
-  const endsAt = parseOptionalTimestamp(formData.get("endsAt"));
-  const releaseCap = parsePositiveInteger(formData.get("releaseCap"));
-  const sortOrder = parseInteger(formData.get("sortOrder"));
-  const isEnabled = formData.get("isEnabled") === "on";
+  const {
+    bucketId,
+    bundleRewardId,
+    endsAt,
+    isEnabled,
+    label,
+    prizeId,
+    releaseCap,
+    sortOrder,
+    startsAt,
+  } = requireValidForm(parsePerkReleaseBucketForm(formData));
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_upsert_perk_prize_release_bucket", {
@@ -786,8 +668,7 @@ export async function savePerkReleaseBucket(formData: FormData) {
 }
 
 export async function deletePerkReleaseBucket(formData: FormData) {
-  const bucketId = String(formData.get("bucketId") ?? "").trim();
-  const bundleRewardId = sanitizePlainTextInput(String(formData.get("bundleRewardId") ?? ""), 120);
+  const { bucketId, bundleRewardId } = requireValidForm(parsePerkReleaseBucketDeleteForm(formData));
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_delete_perk_prize_release_bucket", {

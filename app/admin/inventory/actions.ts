@@ -2,8 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  parseInventoryBatchForm,
+  parseReallocateInventoryForm,
+  parseSetInventoryQuantityForm,
+} from "@/lib/admin-inventory-validation";
 import { requireAdmin } from "@/lib/admin";
+import { ValidationError } from "@/lib/app-errors";
+import { formatValidationIssues } from "@/lib/form-data-validation";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+import type { ValidationResult } from "@/lib/request-validation";
 
 export type InventoryBatchDryRunState = {
   ok: boolean;
@@ -47,30 +55,12 @@ type InventoryBatchValidation = InventoryBatchDryRunState & {
   values: string[];
 };
 
-function parseOptionalDateString(value: string | null | undefined) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
+function requireValidForm<T>(validation: ValidationResult<T>) {
+  if (!validation.ok) {
+    throw new ValidationError(`Invalid inventory form data. ${formatValidationIssues(validation.issues)}`);
+  }
 
-function isInvalidDateInput(rawValue: string | null | undefined) {
-  const raw = String(rawValue ?? "").trim();
-  return Boolean(raw) && Number.isNaN(new Date(raw).getTime());
-}
-
-function parseOptionalDate(value: FormDataEntryValue | null) {
-  return parseOptionalDateString(String(value ?? ""));
-}
-
-function parseOptionalText(value: FormDataEntryValue | null, maxLength = 160) {
-  const parsed = sanitizePlainTextInput(String(value ?? ""), maxLength).trim();
-  return parsed || null;
-}
-
-function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  return validation.data;
 }
 
 function parseCsvLine(line: string) {
@@ -158,43 +148,48 @@ async function findExistingValues(
 }
 
 async function validateInventoryBatch(formData: FormData): Promise<InventoryBatchValidation> {
+  const formValidation = parseInventoryBatchForm(formData);
+  if (!formValidation.ok) {
+    return {
+      ...initialInventoryBatchDryRunState,
+      message: "Fix the batch issues before importing.",
+      errors: formValidation.issues.map((issue) => `${issue.path}: ${issue.message}`),
+      rewardId: "",
+      campaignId: null,
+      batchLabel: null,
+      partnerReference: null,
+      source: "partner",
+      originalFileName: null,
+      availableFrom: null,
+      expiresAt: null,
+      values: [],
+    };
+  }
+
+  const input = formValidation.data;
   const { supabase } = await requireAdmin();
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const campaignId = parseOptionalText(formData.get("campaignId"), 120);
-  const batchLabel = parseOptionalText(formData.get("batchLabel"), 160);
-  const partnerReference = parseOptionalText(formData.get("partnerReference"), 160);
-  const source = sanitizePlainTextInput(String(formData.get("source") ?? "partner"), 40) || "partner";
-  const originalFileName = parseOptionalText(formData.get("originalFileName"), 240);
-  const availableFrom = parseOptionalDate(formData.get("availableFrom"));
-  const expiresAt = parseOptionalDate(formData.get("expiresAt"));
-  const rawInventory = String(formData.get("inventoryText") ?? "");
+  const {
+    availableFrom,
+    batchLabel,
+    campaignId,
+    expiresAt,
+    inventoryText: rawInventory,
+    originalFileName,
+    partnerReference,
+    rewardId,
+    source,
+  } = input;
   const errors: string[] = [];
   const warnings: string[] = [];
   let rewardTitle = "";
   let itemType = "";
-
-  if (!rewardId) {
-    errors.push("Select a reward before running validation.");
-  }
-
-  if (isInvalidDateInput(formData.get("availableFrom")?.toString())) {
-    errors.push("Available from is not a valid date.");
-  }
-
-  if (isInvalidDateInput(formData.get("expiresAt")?.toString())) {
-    errors.push("Expiry is not a valid date.");
-  }
-
-  if (availableFrom && expiresAt && new Date(expiresAt) <= new Date(availableFrom)) {
-    errors.push("Expiry must be after available from.");
-  }
 
   if (campaignId) {
     const { data: campaign, error } = await supabase
       .from("campaigns")
       .select("id")
       .eq("id", campaignId)
-      .maybeSingle<{ id: string }>();
+      .maybeSingle();
 
     if (error) {
       throw error;
@@ -210,7 +205,7 @@ async function validateInventoryBatch(formData: FormData): Promise<InventoryBatc
       .from("rewards")
       .select("id, title, fulfillment_type")
       .eq("id", rewardId)
-      .maybeSingle<{ id: string; title: string; fulfillment_type: string }>();
+      .maybeSingle();
 
     if (error) {
       throw error;
@@ -306,34 +301,18 @@ export async function dryRunInventoryBatch(
 }
 
 export async function setInventoryQuantity(formData: FormData) {
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const totalAvailable = Math.max(0, parseInteger(formData.get("totalAvailable")));
-  const availableFrom = parseOptionalDate(formData.get("availableFrom"));
-  const expiresAt = parseOptionalDate(formData.get("expiresAt"));
-
-  if (isInvalidDateInput(formData.get("availableFrom")?.toString())) {
-    throw new Error("Available from is not a valid date.");
-  }
-
-  if (isInvalidDateInput(formData.get("expiresAt")?.toString())) {
-    throw new Error("Expiry is not a valid date.");
-  }
-
-  if (availableFrom && expiresAt && new Date(expiresAt) <= new Date(availableFrom)) {
-    throw new Error("Expiry must be after available from.");
-  }
-
+  const input = requireValidForm(parseSetInventoryQuantityForm(formData));
   const { supabase } = await requireAdmin();
 
   const { error } = await supabase.rpc("admin_set_reward_quantity", {
-    p_reward_id: rewardId,
-    p_total_available: totalAvailable,
-    p_reason: sanitizePlainTextInput(String(formData.get("reason") ?? ""), 300) || "Inventory quantity allocation",
-    p_campaign_id: parseOptionalText(formData.get("campaignId")),
-    p_batch_label: parseOptionalText(formData.get("batchLabel")),
-    p_partner_reference: parseOptionalText(formData.get("partnerReference")),
-    p_available_from: availableFrom,
-    p_expires_at: expiresAt,
+    p_reward_id: input.rewardId,
+    p_total_available: input.totalAvailable,
+    p_reason: input.reason,
+    p_campaign_id: input.campaignId,
+    p_batch_label: input.batchLabel,
+    p_partner_reference: input.partnerReference,
+    p_available_from: input.availableFrom,
+    p_expires_at: input.expiresAt,
   });
 
   if (error) {
@@ -342,40 +321,22 @@ export async function setInventoryQuantity(formData: FormData) {
 
   revalidatePath("/admin/inventory/new");
   revalidatePath("/admin/rewards");
-  revalidatePath(`/admin/rewards/${rewardId}`);
+  revalidatePath(`/admin/rewards/${input.rewardId}`);
   revalidatePath("/xp-store");
-  redirect(`/admin/inventory/new?rewardId=${encodeURIComponent(rewardId)}&mode=quantity&saved=quantity`);
+  redirect(`/admin/inventory/new?rewardId=${encodeURIComponent(input.rewardId)}&mode=quantity&saved=quantity`);
 }
 
 export async function reallocateInventory(formData: FormData) {
-  const rewardId = sanitizePlainTextInput(String(formData.get("rewardId") ?? ""), 120);
-  const fromCampaignId = sanitizePlainTextInput(String(formData.get("fromCampaignId") ?? ""), 120);
-  const toCampaignId = sanitizePlainTextInput(String(formData.get("toCampaignId") ?? ""), 120);
-  const quantity = Math.max(0, parseInteger(formData.get("quantity")));
-  const availableFrom = parseOptionalDate(formData.get("availableFrom"));
-  const expiresAt = parseOptionalDate(formData.get("expiresAt"));
-
-  if (isInvalidDateInput(formData.get("availableFrom")?.toString())) {
-    throw new Error("Available from is not a valid date.");
-  }
-
-  if (isInvalidDateInput(formData.get("expiresAt")?.toString())) {
-    throw new Error("Expiry is not a valid date.");
-  }
-
-  if (availableFrom && expiresAt && new Date(expiresAt) <= new Date(availableFrom)) {
-    throw new Error("Expiry must be after available from.");
-  }
-
+  const input = requireValidForm(parseReallocateInventoryForm(formData));
   const { supabase } = await requireAdmin();
   const { error } = await supabase.rpc("admin_reallocate_reward_inventory", {
-    p_reward_id: rewardId,
-    p_from_campaign_id: fromCampaignId,
-    p_to_campaign_id: toCampaignId,
-    p_quantity: quantity,
-    p_available_from: availableFrom,
-    p_expires_at: expiresAt,
-    p_reason: sanitizePlainTextInput(String(formData.get("reason") ?? ""), 300) || "Inventory reallocation",
+    p_reward_id: input.rewardId,
+    p_from_campaign_id: input.fromCampaignId,
+    p_to_campaign_id: input.toCampaignId,
+    p_quantity: input.quantity,
+    p_available_from: input.availableFrom,
+    p_expires_at: input.expiresAt,
+    p_reason: input.reason,
   });
 
   if (error) {
@@ -385,7 +346,7 @@ export async function reallocateInventory(formData: FormData) {
   revalidatePath("/admin/inventory/new");
   revalidatePath("/admin/inventory/reallocate");
   revalidatePath("/admin/rewards");
-  revalidatePath(`/admin/rewards/${rewardId}`);
+  revalidatePath(`/admin/rewards/${input.rewardId}`);
   revalidatePath("/xp-store");
   redirect("/admin/inventory/reallocate?saved=1");
 }

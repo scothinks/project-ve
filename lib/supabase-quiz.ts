@@ -129,7 +129,7 @@ async function buildAttemptResult(
     .from("quiz_attempts")
     .select("id, quiz_id")
     .eq("id", attemptId)
-    .maybeSingle<{ id: string; quiz_id: string }>();
+    .maybeSingle();
 
   if (attemptError || !attempt) {
     throw attemptError ?? new Error("Attempt not found.");

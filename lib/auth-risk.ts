@@ -2,8 +2,7 @@ import "server-only";
 
 import { createHash } from "crypto";
 import type { NextRequest } from "next/server";
-
-const localRiskSalt = "project-ve-local-risk-salt";
+import { getFraudHashSalt, getTurnstileSecret } from "@/lib/security-env";
 
 export function getIpAddress(request: NextRequest) {
   return (
@@ -22,7 +21,7 @@ export function hashRiskValue(value: string | null | undefined) {
     return null;
   }
 
-  const salt = process.env.FRAUD_HASH_SALT ?? localRiskSalt;
+  const salt = getFraudHashSalt();
   return createHash("sha256").update(`${salt}:${value}`).digest("hex");
 }
 
@@ -39,7 +38,7 @@ export function getRiskContext(request: NextRequest) {
 }
 
 export async function verifyTurnstileToken(token: string | null | undefined, ipAddress: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const secret = getTurnstileSecret();
 
   if (!secret) {
     return true;

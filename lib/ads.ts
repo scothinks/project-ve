@@ -1,8 +1,9 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { hashRiskValue } from "@/lib/auth-risk";
+import { nullableRpcText } from "@/lib/supabase-rpc";
+import type { AppSupabaseClient } from "@/lib/supabase";
 
 export type AdPlacementKey =
   | "lesson_footer_card"
@@ -318,7 +319,7 @@ function getPacingScore(campaign: CampaignRow, counts: RuntimeCounts) {
   return 0;
 }
 
-function getAssetPublicUrl(supabase: SupabaseClient, asset: AssetRow | undefined) {
+function getAssetPublicUrl(supabase: AppSupabaseClient, asset: AssetRow | undefined) {
   if (!asset) return null;
   if (asset.public_url) return asset.public_url;
 
@@ -359,7 +360,7 @@ function buildHouseAd(
 }
 
 export async function getAdContentValueTags(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   input: {
     courseId?: string | null;
     lessonId?: string | null;
@@ -383,10 +384,9 @@ export async function getAdContentValueTags(
       .from("content_value_tags")
       .select("content_type, content_id, dimension_id, weight, recommended_level, outcome_type")
       .eq("content_type", filter.content_type)
-      .eq("content_id", filter.content_id)
-      .returns<ContentValueTagRow[]>();
+      .eq("content_id", filter.content_id);
 
-    rows.push(...(data ?? []));
+    rows.push(...((data ?? []) as ContentValueTagRow[]));
   }
 
   return Array.from(
@@ -401,7 +401,7 @@ export async function getAdContentValueTags(
 }
 
 export async function getLearnerAdSegments(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   userId: string | null | undefined,
 ) {
   if (!supabase || !userId) return ["anonymous_or_demo"];
@@ -413,14 +413,13 @@ export async function getLearnerAdSegments(
         .from("user_value_profiles")
         .select("assessment_completed_at, readiness_level, primary_dimension_id, secondary_dimension_id")
         .eq("user_id", userId)
-        .maybeSingle<UserValueProfileRow>(),
+        .maybeSingle(),
       supabase
         .from("user_value_dimension_scores")
         .select("dimension_id, score, confidence")
         .eq("user_id", userId)
         .order("score", { ascending: false })
-        .limit(3)
-        .returns<UserValueScoreRow[]>(),
+        .limit(3),
       supabase
         .from("lesson_progress")
         .select("lesson_id", { count: "exact", head: true })
@@ -428,25 +427,28 @@ export async function getLearnerAdSegments(
         .not("completed_at", "is", null),
     ]);
 
-  if (profile?.assessment_completed_at) {
+  const typedProfile = profile as UserValueProfileRow | null;
+  const typedScores = (scores ?? []) as UserValueScoreRow[];
+
+  if (typedProfile?.assessment_completed_at) {
     segments.add("values_assessment_completed");
   } else {
     segments.add("values_assessment_pending");
   }
 
-  if (profile?.readiness_level) {
-    segments.add(`readiness_${profile.readiness_level}`);
+  if (typedProfile?.readiness_level) {
+    segments.add(`readiness_${typedProfile.readiness_level}`);
   }
 
-  if (profile?.primary_dimension_id) {
-    segments.add(`primary_${profile.primary_dimension_id}`);
+  if (typedProfile?.primary_dimension_id) {
+    segments.add(`primary_${typedProfile.primary_dimension_id}`);
   }
 
-  if (profile?.secondary_dimension_id) {
-    segments.add(`secondary_${profile.secondary_dimension_id}`);
+  if (typedProfile?.secondary_dimension_id) {
+    segments.add(`secondary_${typedProfile.secondary_dimension_id}`);
   }
 
-  for (const score of scores ?? []) {
+  for (const score of typedScores) {
     if (score.score >= 60 && score.confidence >= 0.3) {
       segments.add(`values_${score.dimension_id}_high`);
     }
@@ -518,7 +520,7 @@ function getCompetitorKeys(campaign: CampaignRow, flight: FlightRow) {
 }
 
 async function passesFrequencyCaps(params: {
-  supabase: SupabaseClient;
+  supabase: AppSupabaseClient;
   sessionKeyHash: string | null;
   partner: PartnerRow;
   campaign: CampaignRow;
@@ -530,7 +532,7 @@ async function passesFrequencyCaps(params: {
     params;
   const caps = getFrequencyCaps(placement, flight);
   const { data } = await supabase.rpc("get_ad_runtime_counts", {
-    p_session_key_hash: sessionKeyHash,
+    p_session_key_hash: nullableRpcText(sessionKeyHash),
     p_partner_id: partner.id,
     p_campaign_id: campaign.id,
     p_creative_version_id: creativeVersion.id,
@@ -574,7 +576,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutValue: T) {
 }
 
 async function getPaidAdDecision(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   context: DirectAdDecisionContext,
 ): Promise<DirectAdCardModel | null> {
   const sessionKeyHash = await getSessionHash();
@@ -583,24 +585,26 @@ async function getPaidAdDecision(
       .from("ad_placements")
       .select("key, status, allowed_creative_formats, supports_video, supports_sequence, default_frequency_cap, house_fallback_enabled, house_fallback_eyebrow, house_fallback_headline, house_fallback_body, house_fallback_cta_label, house_fallback_cta_url")
       .eq("key", context.placementKey)
-      .maybeSingle<PlacementRow>(),
+      .maybeSingle(),
     supabase
       .from("ad_flights")
       .select("id, campaign_id, creative_id, creative_version_id, placement_key, status, starts_at, ends_at, priority, weight, targeting_rules, frequency_caps, sequence_rules, brand_safety_rules, competitor_exclusion_keys")
       .eq("placement_key", context.placementKey)
       .order("priority", { ascending: false })
-      .limit(25)
-      .returns<FlightRow[]>(),
+      .limit(25),
   ]);
 
-  if (!placement || placement.status !== "active") return null;
-  if (!flights?.length) return buildHouseAd(context, placement);
+  const typedPlacement = placement as PlacementRow | null;
+  const typedFlights = (flights ?? []) as FlightRow[];
 
-  const activeFlights = flights.filter(
+  if (!typedPlacement || typedPlacement.status !== "active") return null;
+  if (!typedFlights.length) return buildHouseAd(context, typedPlacement);
+
+  const activeFlights = typedFlights.filter(
     (flight) => activeStatuses.has(flight.status) && isActiveDateRange(flight.starts_at, flight.ends_at),
   );
 
-  if (!activeFlights.length) return buildHouseAd(context, placement);
+  if (!activeFlights.length) return buildHouseAd(context, typedPlacement);
 
   const campaignIds = Array.from(new Set(activeFlights.map((flight) => flight.campaign_id)));
   const creativeIds = Array.from(new Set(activeFlights.map((flight) => flight.creative_id)));
@@ -616,34 +620,33 @@ async function getPaidAdDecision(
 	    supabase
 	      .from("ad_campaigns")
 	      .select("id, partner_id, name, status, campaign_type, starts_at, ends_at, included_content_tags, excluded_content_tags, included_course_categories, excluded_course_categories, included_course_ids, excluded_course_ids, included_lesson_ids, excluded_lesson_ids, excluded_page_types, competitor_exclusion_keys, priority, pacing_mode, pricing_model, spend_cap_amount, allow_overspend, overspend_tolerance_percent, contracted_impressions, contracted_viewable_impressions")
-	      .in("id", campaignIds)
-	      .returns<CampaignRow[]>(),
+	      .in("id", campaignIds),
     supabase
       .from("ad_creatives")
       .select("id, campaign_id, status, creative_format, weight")
-      .in("id", creativeIds)
-      .returns<CreativeRow[]>(),
+      .in("id", creativeIds),
     supabase
       .from("ad_creative_versions")
       .select("id, creative_id, status, headline, body, eyebrow, image_asset_id, image_alt, logo_asset_id, cta_label, cta_url, sponsor_label, disclosure_label, legal_text, theme")
-      .in("id", creativeVersionIds)
-      .returns<CreativeVersionRow[]>(),
+      .in("id", creativeVersionIds),
   ]);
 
-  const campaignMap = new Map((campaigns ?? []).map((campaign) => [campaign.id, campaign]));
-  const creativeMap = new Map((creatives ?? []).map((creative) => [creative.id, creative]));
-  const versionMap = new Map((creativeVersions ?? []).map((version) => [version.id, version]));
-  const partnerIds = Array.from(new Set((campaigns ?? []).map((campaign) => campaign.partner_id)));
+  const typedCampaigns = (campaigns ?? []) as CampaignRow[];
+  const typedCreatives = (creatives ?? []) as CreativeRow[];
+  const typedCreativeVersions = (creativeVersions ?? []) as CreativeVersionRow[];
+  const campaignMap = new Map(typedCampaigns.map((campaign) => [campaign.id, campaign]));
+  const creativeMap = new Map(typedCreatives.map((creative) => [creative.id, creative]));
+  const versionMap = new Map(typedCreativeVersions.map((version) => [version.id, version]));
+  const partnerIds = Array.from(new Set(typedCampaigns.map((campaign) => campaign.partner_id)));
   const { data: partners } = await supabase
     .from("ad_partners")
     .select("id, name, status, terms_accepted_at")
-    .in("id", partnerIds)
-    .returns<PartnerRow[]>();
-  const partnerMap = new Map((partners ?? []).map((partner) => [partner.id, partner]));
+    .in("id", partnerIds);
+  const partnerMap = new Map(((partners ?? []) as PartnerRow[]).map((partner) => [partner.id, partner]));
 
   const assetIds = Array.from(
     new Set(
-      (creativeVersions ?? [])
+      typedCreativeVersions
         .flatMap((version) => [version.image_asset_id, version.logo_asset_id])
         .filter((assetId): assetId is string => Boolean(assetId)),
     ),
@@ -653,9 +656,8 @@ async function getPaidAdDecision(
         .from("ad_creative_assets")
         .select("id, storage_bucket, storage_path, public_url, asset_type, mime_type, status")
         .in("id", assetIds)
-        .returns<AssetRow[]>()
     : { data: [] as AssetRow[] };
-	  const assetMap = new Map((assets ?? []).map((asset) => [asset.id, asset]));
+	  const assetMap = new Map(((assets ?? []) as AssetRow[]).map((asset) => [asset.id, asset]));
 	  const { data: recentCompetitorKeysData } = sessionKeyHash
 	    ? await supabase.rpc("get_ad_session_competitor_keys", {
 	        p_session_key_hash: sessionKeyHash,
@@ -720,11 +722,11 @@ async function getPaidAdDecision(
       ineligibleReasons[flight.id] = "unsupported_creative_format";
       continue;
     }
-    if (!placement.allowed_creative_formats.includes(creative.creative_format)) {
+    if (!typedPlacement.allowed_creative_formats.includes(creative.creative_format)) {
       ineligibleReasons[flight.id] = "placement_format_incompatible";
       continue;
     }
-    if (creative.creative_format === "video_card" && !placement.supports_video) {
+    if (creative.creative_format === "video_card" && !typedPlacement.supports_video) {
       ineligibleReasons[flight.id] = "placement_video_not_supported";
       continue;
     }
@@ -764,7 +766,7 @@ async function getPaidAdDecision(
       partner,
       campaign,
       creativeVersion,
-      placement,
+      placement: typedPlacement,
       flight,
     });
 
@@ -798,7 +800,7 @@ async function getPaidAdDecision(
 
   const selected = candidates.sort((first, second) => second.score - first.score)[0];
 
-  if (!selected) return buildHouseAd(context, placement);
+  if (!selected) return buildHouseAd(context, typedPlacement);
 
   const imageAsset = selected.creativeVersion.image_asset_id
     ? assetMap.get(selected.creativeVersion.image_asset_id)
@@ -819,8 +821,8 @@ async function getPaidAdDecision(
     segmentKeys: context.segmentKeys ?? [],
   };
   const { data: decisionRow, error: decisionError } = await supabase.rpc("record_ad_decision", {
-    p_user_id: context.userId ?? null,
-    p_session_key_hash: sessionKeyHash,
+    p_user_id: nullableRpcText(context.userId),
+    p_session_key_hash: nullableRpcText(sessionKeyHash),
     p_partner_id: selected.partner.id,
     p_campaign_id: selected.campaign.id,
     p_flight_id: selected.flight.id,
@@ -837,12 +839,12 @@ async function getPaidAdDecision(
       sequenceScore: getSequenceScore(selected.flight, context.pageNumber),
       pacingScore: getPacingScore(selected.campaign, selected.counts),
     },
-    p_experiment_key: selected.experimentKey,
-    p_variant_key: selected.variantKey,
+    p_experiment_key: nullableRpcText(selected.experimentKey),
+    p_variant_key: nullableRpcText(selected.variantKey),
   });
   const decisionId = (decisionRow as { decisionId?: string } | null)?.decisionId;
 
-  if (decisionError || !decisionId) return buildHouseAd(context, placement);
+  if (decisionError || !decisionId) return buildHouseAd(context, typedPlacement);
 
   return {
     decisionId,
@@ -866,22 +868,24 @@ async function getPaidAdDecision(
 }
 
 async function getPlacementHouseAd(
-  supabase: SupabaseClient,
+  supabase: AppSupabaseClient,
   context: DirectAdDecisionContext,
 ): Promise<DirectAdCardModel | null> {
   const { data: placement } = await supabase
     .from("ad_placements")
     .select("key, status, allowed_creative_formats, supports_video, supports_sequence, default_frequency_cap, house_fallback_enabled, house_fallback_eyebrow, house_fallback_headline, house_fallback_body, house_fallback_cta_label, house_fallback_cta_url")
     .eq("key", context.placementKey)
-    .maybeSingle<PlacementRow>();
+    .maybeSingle();
 
-  if (!placement || placement.status !== "active") return null;
+  const typedPlacement = placement as PlacementRow | null;
 
-  return buildHouseAd(context, placement);
+  if (!typedPlacement || typedPlacement.status !== "active") return null;
+
+  return buildHouseAd(context, typedPlacement);
 }
 
 export async function getAdDecision(
-  supabase: SupabaseClient | null,
+  supabase: AppSupabaseClient | null,
   context: DirectAdDecisionContext,
 ) {
   if (!supabase) {

@@ -8,6 +8,49 @@ set local search_path = extensions, public, private;
 
 select extensions.plan(16);
 
+set local role service_role;
+
+create temp table test_quiz_fixture as
+select
+  q.id as quiz_id,
+  l.id as lesson_id,
+  qq.id as question_id,
+  (
+    select qo.id
+    from public.quiz_options qo
+    where qo.question_id = qq.id
+      and qo.is_correct
+    order by qo.option_order, qo.id
+    limit 1
+  ) as correct_option_id
+from public.quizzes q
+join public.lessons l
+  on l.id = q.lesson_id
+ and l.status = 'published'
+join public.courses c
+  on c.id = l.course_id
+ and c.status = 'published'
+join public.quiz_questions qq
+  on qq.quiz_id = q.id
+where q.status = 'published'
+  and exists (
+    select 1
+    from public.lesson_pages lp
+    where lp.lesson_id = l.id
+  )
+  and exists (
+    select 1
+    from public.quiz_options qo
+    where qo.question_id = qq.id
+      and qo.is_correct
+  )
+order by q.id, qq.question_order, qq.id
+limit 1;
+
+grant select on test_quiz_fixture to authenticated, service_role;
+
+reset role;
+
 select extensions.ok(
   not has_table_privilege('anon', 'private.quiz_answer_keys', 'select')
   and not has_table_privilege('authenticated', 'private.quiz_answer_keys', 'select'),
@@ -34,11 +77,10 @@ select extensions.ok(
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
-insert into public.lesson_page_completions (user_id, lesson_id, page_id)
-select :'TEST_LEARNER_USER_ID'::uuid, lp.lesson_id, lp.id
+select public.complete_lesson_page(lp.lesson_id, lp.id)
 from public.lesson_pages lp
-where lp.lesson_id = 'lesson-how-nigeria-is-organized-746c17'
-on conflict (user_id, lesson_id, page_id) do nothing;
+where lp.lesson_id = (select lesson_id from test_quiz_fixture)
+order by lp.page_number;
 
 reset role;
 
@@ -46,19 +88,24 @@ select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
 select extensions.is(
-  (select count(*)::integer from public.quiz_questions where quiz_id = 'quiz-how-nigeria-is-organized-746c17'),
+  (select count(*)::integer from public.quiz_questions where quiz_id = (select quiz_id from test_quiz_fixture)),
   0,
   'authenticated learner cannot read raw quiz_questions rows'
 );
 
 select extensions.is(
-  (select count(*)::integer from public.quiz_options qo join public.quiz_questions qq on qq.id = qo.question_id where qq.quiz_id = 'quiz-how-nigeria-is-organized-746c17'),
+  (
+    select count(*)::integer
+    from public.quiz_options qo
+    join public.quiz_questions qq on qq.id = qo.question_id
+    where qq.quiz_id = (select quiz_id from test_quiz_fixture)
+  ),
   0,
   'authenticated learner cannot read raw quiz_options rows'
 );
 
 select extensions.ok(
-  (select count(*)::integer from public.learner_quiz_questions where quiz_id = 'quiz-how-nigeria-is-organized-746c17') > 0,
+  (select count(*)::integer from public.learner_quiz_questions where quiz_id = (select quiz_id from test_quiz_fixture)) > 0,
   'authenticated learner can read sanitized quiz questions'
 );
 
@@ -67,7 +114,7 @@ select extensions.ok(
     select count(*)::integer
     from public.learner_quiz_options qo
     join public.learner_quiz_questions qq on qq.id = qo.question_id
-    where qq.quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+    where qq.quiz_id = (select quiz_id from test_quiz_fixture)
   ) > 0,
   'authenticated learner can read sanitized quiz options'
 );
@@ -88,8 +135,8 @@ select extensions.throws_ok(
     values (
       '00000000-0000-0000-0000-000000000601',
       %L::uuid,
-      'lesson-how-nigeria-is-organized-746c17',
-      'quiz-how-nigeria-is-organized-746c17',
+      (select lesson_id from test_quiz_fixture),
+      (select quiz_id from test_quiz_fixture),
       1,
       'earning',
       'in_progress',
@@ -108,7 +155,12 @@ select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
 select extensions.is(
-  (select public.start_quiz_attempt('quiz-how-nigeria-is-organized-746c17', 'lesson-how-nigeria-is-organized-746c17') ->> 'status'),
+  (
+    select public.start_quiz_attempt(
+      (select quiz_id from test_quiz_fixture),
+      (select lesson_id from test_quiz_fixture)
+    ) ->> 'status'
+  ),
   'started',
   'authenticated learner can start a valid quiz through server-authoritative RPC'
 );
@@ -129,13 +181,13 @@ select extensions.throws_ok(
         select id
         from public.quiz_attempts
         where user_id = %L::uuid
-          and quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+          and quiz_id = (select quiz_id from test_quiz_fixture)
         order by created_at desc
         limit 1
       ),
-      'question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845',
+      (select question_id from test_quiz_fixture),
       1,
-      '{"id":"question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845","prompt":"forged","xp":999}'::jsonb,
+      jsonb_build_object('id', (select question_id from test_quiz_fixture), 'prompt', 'forged', 'xp', 999),
       '[]'::jsonb,
       999
     )
@@ -155,7 +207,7 @@ select extensions.ok(
     select 1
     from public.quiz_attempts
     where user_id = :'TEST_LEARNER_USER_ID'::uuid
-      and quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+      and quiz_id = (select quiz_id from test_quiz_fixture)
   ),
   'start_quiz_attempt created the attempt row'
 );
@@ -166,7 +218,7 @@ select extensions.ok(
     from public.quiz_attempt_questions aq
     join public.quiz_attempts qa on qa.id = aq.attempt_id
     where qa.user_id = :'TEST_LEARNER_USER_ID'::uuid
-      and qa.quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+      and qa.quiz_id = (select quiz_id from test_quiz_fixture)
   ),
   'start_quiz_attempt created attempt question snapshots'
 );
@@ -177,7 +229,7 @@ select extensions.ok(
     from public.quiz_attempt_questions aq
     join public.quiz_attempts qa on qa.id = aq.attempt_id
     where qa.user_id = :'TEST_LEARNER_USER_ID'::uuid
-      and qa.quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+      and qa.quiz_id = (select quiz_id from test_quiz_fixture)
       and (
         aq.question_snapshot ? 'explanation'
         or aq.question_snapshot ? 'correctOptionIds'
@@ -199,12 +251,12 @@ select extensions.lives_ok(
         select id
         from public.quiz_attempts
         where user_id = %L::uuid
-          and quiz_id = 'quiz-how-nigeria-is-organized-746c17'
+          and quiz_id = (select quiz_id from test_quiz_fixture)
         order by created_at desc
         limit 1
       ),
-      'question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845',
-      array['question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845-option-2']
+      (select question_id from test_quiz_fixture),
+      array[(select correct_option_id from test_quiz_fixture)]
     )
   $$,
     :'TEST_LEARNER_USER_ID'
@@ -222,9 +274,9 @@ select extensions.is(
     from public.xp_transactions
     where user_id = :'TEST_LEARNER_USER_ID'::uuid
       and source_type = 'quiz_question'
-      and source_id = 'question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845'
+      and source_id = (select question_id from test_quiz_fixture)
   ),
-  (select xp from public.quiz_questions where id = 'question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845'),
+  (select xp from public.quiz_questions where id = (select question_id from test_quiz_fixture)),
   'quiz answer XP comes from canonical question configuration'
 );
 
@@ -234,7 +286,7 @@ select extensions.is(
     from public.profiles
     where id = :'TEST_LEARNER_USER_ID'::uuid
   ),
-  (select xp from public.quiz_questions where id = 'question-how-nigeria-is-organized-why-should-a-citizen-know-the-basic-parts-of-government-1f4845'),
+  (select xp from public.quiz_questions where id = (select question_id from test_quiz_fixture)),
   'cached XP balance matches canonical quiz XP after answer'
 );
 

@@ -275,13 +275,11 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         .from("lesson_pages")
         .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image, created_at, updated_at")
         .in("lesson_id", lessonIds)
-        .order("page_number", { ascending: true })
-        .returns<AdminLessonPageRow[]>(),
+        .order("page_number", { ascending: true }),
       supabase
         .from("quizzes")
         .select("id, lesson_id, title, version, status, ai_text_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by")
-        .in("lesson_id", lessonIds)
-        .returns<AdminQuizRow[]>(),
+        .in("lesson_id", lessonIds),
     ])
     : [
       { data: [] as AdminLessonPageRow[], error: null },
@@ -290,15 +288,17 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
 
   if (lessonPages.error) throw lessonPages.error;
   if (quizzes.error) throw quizzes.error;
-  const quizIds = (quizzes.data ?? []).map((quiz) => quiz.id);
+  const lessonPageRows = (lessonPages.data ?? []) as AdminLessonPageRow[];
+  const quizRows = (quizzes.data ?? []) as AdminQuizRow[];
+  const quizIds = quizRows.map((quiz) => quiz.id);
   const quizQuestions = quizIds.length > 0
     ? await supabase
       .from("quiz_questions")
       .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
       .in("quiz_id", quizIds)
-      .returns<AdminQuizQuestionRow[]>()
     : { data: [] as AdminQuizQuestionRow[], error: null };
   if (quizQuestions.error) throw quizQuestions.error;
+  const quizQuestionRows = (quizQuestions.data ?? []) as AdminQuizQuestionRow[];
 
   const resolvedCourseNotes = asRecord(course.ai_generation_notes);
   const resolvedPlannerPlanId =
@@ -350,14 +350,14 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
   const courseThumbnailAsset = findCourseShellMediaAsset(mediaAssets, "course_thumbnail");
   const courseCoverAsset = findCourseShellMediaAsset(mediaAssets, "course_cover");
   const pagesByLessonId = new Map<string, AdminLessonPageRow[]>();
-  for (const page of lessonPages.data ?? []) {
+  for (const page of lessonPageRows) {
     const existing = pagesByLessonId.get(page.lesson_id) ?? [];
     existing.push(page);
     pagesByLessonId.set(page.lesson_id, existing);
   }
-  const quizByLessonId = new Map((quizzes.data ?? []).map((quiz) => [quiz.lesson_id, quiz]));
+  const quizByLessonId = new Map(quizRows.map((quiz) => [quiz.lesson_id, quiz]));
   const questionCountByQuizId = new Map<string, number>();
-  for (const question of quizQuestions.data ?? []) {
+  for (const question of quizQuestionRows) {
     questionCountByQuizId.set(question.quiz_id, (questionCountByQuizId.get(question.quiz_id) ?? 0) + 1);
   }
   const mediaAssetsByLessonId = new Map<string, AdminLearningMediaAssetRow[]>();

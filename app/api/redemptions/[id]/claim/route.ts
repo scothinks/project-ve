@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  getObjectField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { asSupabaseJson } from "@/lib/supabase-rpc";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -8,9 +15,18 @@ type Params = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const { id } = await params;
-  const body = (await request.json().catch(() => ({}))) as {
-    claimData?: Record<string, unknown>;
-  };
+  const bodyResult = await readJsonObject(request);
+
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const claimData = getObjectField(bodyResult.data, "claimData", issues, { required: false }) ?? {};
+
+  if (issues.length > 0) {
+    return validationErrorResponse(issues);
+  }
 
   const supabase = await createSupabaseServerClient();
 
@@ -31,7 +47,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const { data, error } = await supabase.rpc("submit_manual_redemption_details", {
     p_redemption_id: id,
-    p_claim_data: body.claimData ?? {},
+    p_claim_data: asSupabaseJson(claimData),
   });
 
   if (error) {

@@ -3,6 +3,7 @@ import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { XPStore } from "@/components/rewards/XPStore";
+import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { demoRewardStoreSnapshot } from "@/lib/rewards";
 import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
@@ -17,9 +18,23 @@ export default async function XPStorePage() {
     redirect("/login");
   }
   const [segmentKeys, rewardSnapshot] = await Promise.all([
-    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+    withLoggedFallback({
+      context: {
+        operation: "xp_store.ads.segments",
+        userId: user?.id,
+      },
+      fallback: [],
+      promise: getLearnerAdSegments(supabase, user?.id),
+    }),
     supabase && user && profile
-      ? getRewardStoreSnapshot(supabase, user.id, profile.xp_balance_cached ?? 0).catch(() => null)
+      ? withLoggedFallback({
+          context: {
+            operation: "xp_store.reward_store.load",
+            userId: user.id,
+          },
+          fallback: null,
+          promise: getRewardStoreSnapshot(supabase, user.id, profile.xp_balance_cached ?? 0),
+        })
       : Promise.resolve(isSupabaseConfigured ? null : demoRewardStoreSnapshot),
   ]);
   const storeAd = await getAdDecision(supabase, {

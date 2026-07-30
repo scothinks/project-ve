@@ -1,35 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
 import { getRiskContext, verifyTurnstileToken } from "@/lib/auth-risk";
+import {
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
+import { assertRequiredSecurityEnv } from "@/lib/security-env";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createPlainSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
-
-type SignupBody = {
-  email?: string;
-  password?: string;
-  fullName?: string;
-  captchaToken?: string | null;
-};
+import { nullableRpcText } from "@/lib/supabase-rpc";
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as SignupBody;
-  const email = normalizeEmailInput(body.email ?? "");
-  const password = body.password ?? "";
-  const fullName = sanitizePlainTextInput(body.fullName ?? "", 120).trim();
+  assertRequiredSecurityEnv("password signup");
+
+  const bodyResult = await readJsonObject(request);
+
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const rawEmail = getStringField(bodyResult.data, "email", issues);
+  const password = getStringField(bodyResult.data, "password", issues, { minLength: 8 });
+  const rawFullName = getStringField(bodyResult.data, "fullName", issues, { minLength: 2 });
+  const captchaToken = getOptionalStringField(bodyResult.data, "captchaToken", issues);
+  const email = normalizeEmailInput(rawEmail ?? "");
+  const fullName = sanitizePlainTextInput(rawFullName ?? "", 120).trim();
 
   if (!email) {
-    return NextResponse.json({ error: "Email address is required." }, { status: 400 });
+    issues.push({ path: "email", message: "Expected a valid email address." });
   }
 
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: "Password must be at least 8 characters." },
-      { status: 400 },
-    );
-  }
-
-  if (fullName.length < 2) {
-    return NextResponse.json({ error: "Enter your name." }, { status: 400 });
+  if (issues.length > 0 || !password || !fullName) {
+    return validationErrorResponse(issues);
   }
 
   if (!isSupabaseConfigured) {
@@ -38,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   const { ipAddress, ipHash, deviceHash } = getRiskContext(request);
   const emailDomain = email.split("@")[1] ?? "";
-  const captchaPassed = await verifyTurnstileToken(body.captchaToken, ipAddress);
+  const captchaPassed = await verifyTurnstileToken(captchaToken, ipAddress);
 
   if (!captchaPassed) {
     return NextResponse.json(
@@ -56,8 +62,8 @@ export async function POST(request: NextRequest) {
 
   const { error: attemptError } = await plainSupabase.rpc("record_signup_attempt", {
     p_email_domain: emailDomain,
-    p_ip_hash: ipHash,
-    p_device_hash: deviceHash,
+    p_ip_hash: nullableRpcText(ipHash),
+    p_device_hash: nullableRpcText(deviceHash),
     p_captcha_passed: captchaPassed,
   });
 
@@ -69,6 +75,7 @@ export async function POST(request: NextRequest) {
     email,
     password,
     options: {
+      captchaToken: captchaToken ?? undefined,
       emailRedirectTo: `${request.nextUrl.origin}/auth/callback?next=${encodeURIComponent(
         "/login?confirmed=1",
       )}`,
@@ -76,9 +83,6 @@ export async function POST(request: NextRequest) {
         display_name: fullName,
         full_name: fullName,
         name: fullName,
-        captcha_passed: captchaPassed,
-        signup_device_hash: deviceHash,
-        signup_ip_hash: ipHash,
       },
     },
   });

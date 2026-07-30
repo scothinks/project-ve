@@ -7,6 +7,7 @@ import {
   readOAuthSignupProofCookie,
 } from "@/lib/oauth-signup-proof";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { nullableRpcText } from "@/lib/supabase-rpc";
 
 type ProfileFraudFlagsRow = {
   fraud_flags: Record<string, unknown> | null;
@@ -126,8 +127,9 @@ export async function GET(request: NextRequest) {
       .from("profiles")
       .select("fraud_flags")
       .eq("id", user.id)
-      .maybeSingle<ProfileFraudFlagsRow>();
-    const fraudFlags = profile?.fraud_flags ?? {};
+      .maybeSingle();
+    const typedProfile = profile as ProfileFraudFlagsRow | null;
+    const fraudFlags = typedProfile?.fraud_flags ?? {};
     const alreadyVerified = typeof fraudFlags.oauthGoogleSignupVerifiedAt === "string";
 
     if (!alreadyVerified && isLikelyFreshOAuthUser(user)) {
@@ -149,8 +151,8 @@ export async function GET(request: NextRequest) {
       const emailDomain = user.email?.split("@")[1] ?? "";
       const { error: attemptError } = await supabase.rpc("record_signup_attempt", {
         p_email_domain: emailDomain,
-        p_ip_hash: ipHash,
-        p_device_hash: deviceHash,
+        p_ip_hash: nullableRpcText(ipHash),
+        p_device_hash: nullableRpcText(deviceHash),
         p_captcha_passed: true,
       });
 
@@ -159,8 +161,8 @@ export async function GET(request: NextRequest) {
       }
 
       const { error: finalizeError } = await supabase.rpc("finalize_oauth_signup", {
-        p_ip_hash: ipHash,
-        p_device_hash: deviceHash,
+        p_ip_hash: nullableRpcText(ipHash),
+        p_device_hash: nullableRpcText(deviceHash),
         p_captcha_passed: true,
       });
 
@@ -180,17 +182,19 @@ export async function GET(request: NextRequest) {
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .maybeSingle<ProfileAccessRow>(),
+      .maybeSingle(),
     supabase
       .from("user_value_profiles")
       .select("assessment_completed_at")
       .eq("user_id", user.id)
-      .maybeSingle<UserValueProfileStatusRow>(),
+      .maybeSingle(),
   ]);
+  const typedProfile = profile as ProfileAccessRow | null;
+  const typedValueProfile = valueProfile as UserValueProfileStatusRow | null;
 
   const shouldRouteToAssessment =
-    profile?.role !== "admin"
-    && !valueProfile?.assessment_completed_at
+    typedProfile?.role !== "admin"
+    && !typedValueProfile?.assessment_completed_at
     && next !== "/onboarding/assessment";
 
   const destination = shouldRouteToAssessment ? "/onboarding/assessment" : next;

@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
@@ -46,11 +47,28 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
     data: { user },
   } = userResult;
   const [contentValueTags, segmentKeys] = await Promise.all([
-    getAdContentValueTags(supabase, {
-      courseId: course.id,
-      lessonId: lesson.id,
-    }).catch(() => []),
-    getLearnerAdSegments(supabase, user?.id).catch(() => []),
+    withLoggedFallback({
+      context: {
+        operation: "lesson.ads.content_value_tags",
+        resourceId: lesson.id,
+        userId: user?.id,
+        metadata: { courseId: course.id },
+      },
+      fallback: [],
+      promise: getAdContentValueTags(supabase, {
+        courseId: course.id,
+        lessonId: lesson.id,
+      }),
+    }),
+    withLoggedFallback({
+      context: {
+        operation: "lesson.ads.segments",
+        resourceId: lesson.id,
+        userId: user?.id,
+      },
+      fallback: [],
+      promise: getLearnerAdSegments(supabase, user?.id),
+    }),
   ]);
   const footerAd = await getAdDecision(supabase, {
     placementKey: "lesson_footer_card",

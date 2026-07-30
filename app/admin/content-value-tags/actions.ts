@@ -71,7 +71,7 @@ async function assertActiveDimension(
     .select("id")
     .eq("id", dimensionId)
     .eq("status", "active")
-    .maybeSingle<{ id: string }>();
+    .maybeSingle();
 
   if (error) {
     throw error;
@@ -97,7 +97,7 @@ async function assertContentExists(
     .from(table)
     .select("id")
     .eq("id", contentId)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle();
 
   if (error) {
     throw error;

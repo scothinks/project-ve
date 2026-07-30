@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import {
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
-
-function extractString(value: unknown) {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
-}
 
 export async function POST(request: Request) {
   const adminConfig = getSupabaseAdminConfig();
@@ -12,28 +15,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Supabase admin access is not configured." }, { status: 503 });
   }
 
-  const payload = await request.json().catch(() => null);
-  const code =
-    payload && typeof payload === "object"
-      ? extractString((payload as Record<string, unknown>).code)
-      : null;
-  const visitorKey =
-    payload && typeof payload === "object"
-      ? extractString((payload as Record<string, unknown>).visitorKey)
-      : null;
-  const userAgent =
-    payload && typeof payload === "object"
-      ? extractString((payload as Record<string, unknown>).userAgent)
-      : null;
+  const bodyResult = await readJsonObject(request);
 
-  if (!code || !visitorKey) {
-    return NextResponse.json({ error: "Invalid referral visit payload." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
+  }
+
+  const issues: ValidationIssue[] = [];
+  const code = getStringField(bodyResult.data, "code", issues);
+  const visitorKey = getStringField(bodyResult.data, "visitorKey", issues);
+  const userAgent = getOptionalStringField(bodyResult.data, "userAgent", issues);
+
+  if (issues.length > 0 || !code || !visitorKey) {
+    return validationErrorResponse(issues);
   }
 
   const adminSupabase = createSupabaseAdminClient();
   const { data, error } = await adminSupabase.rpc("track_referral_link_visit", {
     p_referral_code: code,
-    p_user_agent: userAgent,
+    p_user_agent: userAgent ?? undefined,
     p_visitor_key: visitorKey,
   });
 

@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRiskContext, hashRiskValue } from "@/lib/auth-risk";
+import {
+  getEnumField,
+  getObjectField,
+  getOptionalStringField,
+  getStringField,
+  readJsonObject,
+  validationErrorResponse,
+  type ValidationIssue,
+} from "@/lib/request-validation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-
-type HouseAdEventBody = {
-  eventType?: "impression" | "viewable_impression" | "click";
-  fallbackKey?: string;
-  placementKey?: string;
-  eventDedupeKey?: string;
-  clientEventTime?: string;
-  metadata?: Record<string, unknown>;
-};
+import { asSupabaseJson, nullableRpcText } from "@/lib/supabase-rpc";
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as HouseAdEventBody;
+  const bodyResult = await readJsonObject(request);
 
-  if (
-    body.eventType !== "impression" &&
-    body.eventType !== "viewable_impression" &&
-    body.eventType !== "click"
-  ) {
-    return NextResponse.json({ error: "Unsupported house ad event type." }, { status: 400 });
+  if (!bodyResult.ok) {
+    return validationErrorResponse(bodyResult.issues);
   }
 
-  if (!body.fallbackKey || !body.placementKey) {
-    return NextResponse.json(
-      { error: "fallbackKey and placementKey are required." },
-      { status: 400 },
-    );
+  const issues: ValidationIssue[] = [];
+  const eventType = getEnumField(
+    bodyResult.data,
+    "eventType",
+    ["impression", "viewable_impression", "click"],
+    issues,
+  );
+  const fallbackKey = getStringField(bodyResult.data, "fallbackKey", issues);
+  const placementKey = getStringField(bodyResult.data, "placementKey", issues);
+  const eventDedupeKey = getOptionalStringField(bodyResult.data, "eventDedupeKey", issues);
+  const clientEventTime = getOptionalStringField(bodyResult.data, "clientEventTime", issues);
+  const metadata = getObjectField(bodyResult.data, "metadata", issues, { required: false }) ?? {};
+
+  if (issues.length > 0 || !eventType || !fallbackKey || !placementKey) {
+    return validationErrorResponse(issues);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -38,15 +45,15 @@ export async function POST(request: NextRequest) {
   const { ipHash, deviceHash } = getRiskContext(request);
   const userAgentHash = hashRiskValue(request.headers.get("user-agent"));
   const { data, error } = await supabase.rpc("record_ad_house_fallback_event", {
-    p_event_type: body.eventType,
-    p_fallback_key: body.fallbackKey,
-    p_placement_key: body.placementKey,
-    p_event_dedupe_key: body.eventDedupeKey ?? null,
-    p_client_event_time: body.clientEventTime ?? null,
-    p_ip_hash: ipHash,
-    p_device_hash: deviceHash,
-    p_user_agent_hash: userAgentHash,
-    p_metadata: body.metadata ?? {},
+    p_event_type: eventType,
+    p_fallback_key: fallbackKey,
+    p_placement_key: placementKey,
+    p_event_dedupe_key: nullableRpcText(eventDedupeKey),
+    p_client_event_time: nullableRpcText(clientEventTime),
+    p_ip_hash: nullableRpcText(ipHash),
+    p_device_hash: nullableRpcText(deviceHash),
+    p_user_agent_hash: nullableRpcText(userAgentHash),
+    p_metadata: asSupabaseJson(metadata),
   });
 
   if (error) {

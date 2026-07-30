@@ -19,12 +19,9 @@ export async function markNotificationRead(formData: FormData) {
     return;
   }
 
-  await supabase
-    .from("user_notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("id", notificationId)
-    .eq("user_id", user.id)
-    .is("read_at", null);
+  await supabase.rpc("mark_notification_read", {
+    p_notification_id: notificationId,
+  });
 
   revalidatePath("/", "layout");
   revalidatePath("/notifications");
@@ -45,11 +42,7 @@ export async function markAllNotificationsRead() {
     return;
   }
 
-  await supabase
-    .from("user_notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("user_id", user.id)
-    .is("read_at", null);
+  await supabase.rpc("mark_all_notifications_read");
 
   revalidatePath("/", "layout");
   revalidatePath("/notifications");
