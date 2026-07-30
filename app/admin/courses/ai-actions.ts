@@ -3170,12 +3170,26 @@ export async function processNextAiGenerationJob(workerId: string) {
       status: "completed" as const,
     };
   } catch (error) {
-    await markAiGenerationJobFailed(supabase, job.id, error, job.attempt_count < 3).catch((failureError) => {
+    const retry = !(error instanceof ValidationError) && job.attempt_count < 3;
+    await markAiGenerationJobFailed(supabase, job.id, error, retry).catch((failureError) => {
       logAppError(failureError, {
         operation: "admin.ai_generation_job.fail",
         resourceId: job.id,
       });
     });
+
+    if (error instanceof ValidationError) {
+      return {
+        jobId: job.id,
+        processed: true,
+        result: {
+          error: error.message,
+          failureCode: "validation_error",
+          retry,
+        },
+        status: "failed" as const,
+      };
+    }
 
     throw error;
   }
