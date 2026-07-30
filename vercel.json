@@ -4,6 +4,10 @@
     {
       "path": "/api/notifications/dispatch",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/admin/ai/jobs/process",
+      "schedule": "30 8 * * *"
     }
   ]
 }

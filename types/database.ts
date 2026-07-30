@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       ad_audit_events: {
@@ -1436,41 +1431,71 @@ export type Database = {
       }
       ai_generation_jobs: {
         Row: {
+          attempt_count: number
+          available_at: string
+          completed_at: string | null
           created_at: string
           created_by: string | null
           entity_id: string | null
           entity_type: string
           error: string | null
+          failure_code: string | null
+          failure_detail: Json
+          heartbeat_at: string | null
           id: string
+          idempotency_key: string | null
           job_type: string
+          locked_at: string | null
+          locked_by: string | null
           prompt: Json
           result: Json
+          started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          attempt_count?: number
+          available_at?: string
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           entity_id?: string | null
           entity_type: string
           error?: string | null
+          failure_code?: string | null
+          failure_detail?: Json
+          heartbeat_at?: string | null
           id?: string
+          idempotency_key?: string | null
           job_type: string
+          locked_at?: string | null
+          locked_by?: string | null
           prompt?: Json
           result?: Json
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          attempt_count?: number
+          available_at?: string
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           entity_id?: string | null
           entity_type?: string
           error?: string | null
+          failure_code?: string | null
+          failure_detail?: Json
+          heartbeat_at?: string | null
           id?: string
+          idempotency_key?: string | null
           job_type?: string
+          locked_at?: string | null
+          locked_by?: string | null
           prompt?: Json
           result?: Json
+          started_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -5089,6 +5114,21 @@ export type Database = {
         Returns: Json
       }
       campaign_is_live: { Args: { p_campaign_id: string }; Returns: boolean }
+      claim_ai_generation_job: {
+        Args: {
+          p_lease_seconds?: number
+          p_max_attempts?: number
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          entity_id: string
+          entity_type: string
+          id: string
+          job_type: string
+          prompt: Json
+        }[]
+      }
       complete_lesson_page: {
         Args: { p_lesson_id: string; p_page_id: string }
         Returns: Json
@@ -5100,6 +5140,16 @@ export type Database = {
       create_ad_make_good_recommendations: { Args: never; Returns: Json }
       current_user_is_admin: { Args: never; Returns: boolean }
       email_domain: { Args: { email: string }; Returns: string }
+      fail_ai_generation_job: {
+        Args: {
+          p_error: string
+          p_failure_code?: string
+          p_failure_detail?: Json
+          p_job_id: string
+          p_retry?: boolean
+        }
+        Returns: undefined
+      }
       finalize_oauth_signup: {
         Args: {
           p_captcha_passed?: boolean
@@ -5157,6 +5207,23 @@ export type Database = {
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: boolean
+      }
+      materialize_ai_course_text_job: {
+        Args: {
+          p_block_rows: Json
+          p_course_row: Json
+          p_course_update: Json
+          p_entity_id: string
+          p_job_id: string
+          p_job_result: Json
+          p_lesson_rows: Json
+          p_media_rows: Json
+          p_option_rows: Json
+          p_page_rows: Json
+          p_question_rows: Json
+          p_quiz_rows: Json
+        }
+        Returns: undefined
       }
       mission_proof_fields_satisfy: {
         Args: {

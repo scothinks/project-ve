@@ -127,6 +127,7 @@ Defined in [.env.example](/Users/scoteritemu/Nu-Project-VE/.env.example):
 - `VAPID_PRIVATE_KEY`
 - `WEB_PUSH_SUBJECT`
 - `CRON_SECRET`
+- `AI_GENERATION_WORKER_SECRET`
 - `NOTIFICATION_DISPATCH_SECRET`
 - `NOTIFICATION_DISPATCH_LIMIT`
 
@@ -156,7 +157,7 @@ npm run typecheck
 The app is currently shaped for Vercel deployment.
 
 - cron config lives in [vercel.json](/Users/scoteritemu/Nu-Project-VE/vercel.json)
-- the current cron calls `/api/notifications/dispatch`
+- the current cron calls `/api/notifications/dispatch` and `/api/admin/ai/jobs/process`
 - on Vercel Hobby, the schedule must remain daily-compatible
 
 Typical build flow:
