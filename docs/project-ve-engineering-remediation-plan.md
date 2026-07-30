@@ -1185,13 +1185,19 @@ Initial durable course-text worker pass is implemented:
 * media worker execution selects targets deterministically, skips unsupported
   or duplicate targets before generation, and runs image calls with bounded
   concurrency.
+* production `GET /api/admin/ai/jobs/process` was verified with
+  `Authorization: Bearer $CRON_SECRET`; Vercel returned `200` and the worker
+  claimed and failed a stale invalid media job as a non-retryable validation
+  failure.
+* `supabase/tests/database/ai_generation_worker.sql` now covers stale lease
+  recovery, fresh-lock claim exclusion, retry versus permanent failure
+  handling, transactional no-partial-materialization rollback, and
+  service-role-only worker RPC privileges.
 
 Remaining VE-AI-001 work:
 
-* deploy the cron route changes and confirm Vercel sends
-  `Authorization: Bearer $CRON_SECRET` to `/api/admin/ai/jobs/process`;
-* add worker-level tests for stale lease recovery, simultaneous claim exclusion,
-  retry behavior, and no-partial-materialization failure cases.
+* none tracked in this remediation item after the current implementation and
+  linked pgTAP validation.
 
 ---
 
