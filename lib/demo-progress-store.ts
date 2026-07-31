@@ -16,94 +16,52 @@ import {
   type Mission,
   type MissionProof,
   type MissionProofField,
-  type MissionRepeatability,
   type UserMissionSummary,
   type UserMissionStatus,
 } from "@/lib/missions";
+import {
+  addHours,
+  buildDailyCapBlockedMessage,
+  buildDailyCapSavedMessage,
+  getDailyEarnedXp,
+  getDailyXpRemaining,
+  getNextDailyResetAt,
+  xpEarningPolicy,
+} from "@/features/progress/demo/xp-policy";
+import {
+  getLegacyMissionKey,
+  getMissionAvailableAgainAt,
+  getMissionClaimKey,
+  getMissionCompletionLabel,
+  getMissionPeriodScope,
+  getMissionStateKey,
+  normalizeMissionProgress,
+  normalizeProofFieldList,
+  type DemoMissionProgress,
+} from "@/features/progress/demo/mission-policy";
+import {
+  DEMO_USER_ID,
+  getStore,
+  key,
+  nowIso,
+  type AttemptEndReason,
+  type AttemptMode,
+  type DemoAttempt,
+  type QuestionResult,
+  type QuizAttemptSnapshot,
+  type ReferralAttribution,
+} from "@/features/progress/demo/store";
 
-export const DEMO_USER_ID = "demo-user";
+export {
+  DEMO_USER_ID,
+} from "@/features/progress/demo/store";
 
-export const xpEarningPolicy = {
-  dailyEarnableXpLimit: 50,
-  timezone: "Africa/Lagos",
-  capBehavior: "block_quiz_until_reset",
-} as const;
-
-type AttemptEndReason =
-  | "submitted"
-  | "daily_cap_reached"
-  | "practice_completed"
-  | "abandoned";
-
-type AttemptMode = "earning" | "practice";
-
-type QuizAttemptSnapshot = {
-  quizId: string;
-  quizVersion: number;
-  questions: QuizQuestion[];
-  publicQuestions: PublicQuizQuestion[];
-};
-
-type DemoAttempt = {
-  id: string;
-  userId: string;
-  lessonId: string;
-  quizId: string;
-  mode: AttemptMode;
-  snapshot: QuizAttemptSnapshot;
-  startedAt: string;
-  endedAt?: string;
-  endedReason?: AttemptEndReason;
-  answeredQuestionIds: string[];
-  questionResults: QuestionResult[];
-};
-
-type QuestionResult = {
-  questionId: string;
-  correct: boolean;
-  earnedXp: number;
-  status: "earned" | "missed" | "already_earned" | "daily_cap_deferred" | "practice";
-};
-
-type XpTransaction = {
-  id: string;
-  userId: string;
-  amount: number;
-  sourceType: "quiz_question" | "mission" | "reward_redemption" | "adjustment";
-  sourceId: string;
-  direction: "earn" | "spend";
-  createdAt: string;
-};
-
-type ReferralAttribution = {
-  id: string;
-  referralCode: string;
-  referrerUserId: string;
-  referredUserId: string;
-  createdAt: string;
-};
-
-type DemoProgressStore = {
-  pageCompletions: Record<string, string>;
-  attempts: DemoAttempt[];
-  awardedQuestionXp: Record<string, string>;
-  xpTransactions: XpTransaction[];
-  missionProofs: Record<string, MissionProof[]>;
-  missionClaims: Record<string, string>;
-  missionReviewStatuses: Record<string, "submitted" | "approved" | "rejected">;
-  referralLessonCompletions: Record<string, number>;
-  referralCodes: Record<string, string>;
-  referralAttributions: Record<string, ReferralAttribution>;
-};
-
-type DemoMissionProgress = {
-  progressCount: number;
-  targetCount: number;
-  valid: boolean;
-  proofRequiredFields?: MissionProofField[];
-  proofRequirementMode?: "all" | "any";
-  proofFieldStatuses?: Partial<Record<MissionProofField, "pending" | "submitted" | "approved" | "rejected">>;
-};
+export {
+  getDailyEarnedXp,
+  getDailyXpRemaining,
+  getNextDailyResetAt,
+  xpEarningPolicy,
+} from "@/features/progress/demo/xp-policy";
 
 type StartQuizResult =
   | {
@@ -157,164 +115,6 @@ export type QuizAttemptResult = {
   message?: string;
   nextResetAt?: string;
 };
-
-declare global {
-  var __projectVeDemoStore: DemoProgressStore | undefined;
-}
-
-const seededMissionCompletedAt = "2026-05-12T08:00:00.000Z";
-
-function getStore() {
-  globalThis.__projectVeDemoStore ??= {
-    pageCompletions: {},
-    attempts: [],
-    awardedQuestionXp: {},
-    xpTransactions: [
-      {
-        id: "xp-seed-mission-starter-budget",
-        userId: DEMO_USER_ID,
-        amount: 25,
-        sourceType: "mission",
-        sourceId: "mission-complete-starter-budget",
-        direction: "earn",
-        createdAt: seededMissionCompletedAt,
-      },
-    ],
-    missionProofs: {},
-    missionClaims: {
-      [`${DEMO_USER_ID}:mission-complete-starter-budget:lifetime`]: seededMissionCompletedAt,
-    },
-    missionReviewStatuses: {},
-    referralLessonCompletions: {
-      "demo-user:friend-ife": 1,
-    },
-    referralCodes: {
-      "ve-demouser": "demo-user",
-    },
-    referralAttributions: {},
-  };
-
-  globalThis.__projectVeDemoStore.missionProofs ??= {};
-  globalThis.__projectVeDemoStore.missionClaims ??= {};
-  globalThis.__projectVeDemoStore.missionReviewStatuses ??= {};
-  globalThis.__projectVeDemoStore.referralLessonCompletions ??= {
-    "demo-user:friend-ife": 1,
-  };
-  globalThis.__projectVeDemoStore.referralCodes ??= {
-    "ve-demouser": "demo-user",
-  };
-  globalThis.__projectVeDemoStore.referralAttributions ??= {};
-
-  return globalThis.__projectVeDemoStore;
-}
-
-function key(...parts: string[]) {
-  return parts.join(":");
-}
-
-function nowIso() {
-  return new Date().toISOString();
-}
-
-function normalizeProofFieldList(value: readonly MissionProofField[]) {
-  return value.length > 0 ? [...value] : (["text"] as MissionProofField[]);
-}
-
-function getUserDateParts(now = new Date()) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: xpEarningPolicy.timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(now);
-
-  return {
-    year: Number(year),
-    month: Number(month),
-    day: Number(day),
-    dateKey: `${year}-${month}-${day}`,
-  };
-}
-
-function getUserDateKey(now = new Date()) {
-  return getUserDateParts(now).dateKey;
-}
-
-function getUserWeekKey(now = new Date()) {
-  const { year, month, day } = getUserDateParts(now);
-  const localDate = new Date(Date.UTC(year, month - 1, day));
-  const dayOfWeek = localDate.getUTCDay() || 7;
-  localDate.setUTCDate(localDate.getUTCDate() - dayOfWeek + 1);
-
-  return localDate.toISOString().slice(0, 10);
-}
-
-function getNextWeeklyResetAt(now = new Date()) {
-  const weekStart = new Date(`${getUserWeekKey(now)}T00:00:00+01:00`);
-  return new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-}
-
-function addHours(date: Date, hours: number) {
-  return new Date(date.getTime() + hours * 60 * 60 * 1000);
-}
-
-function getStartOfUserDay(now = new Date()) {
-  const { dateKey } = getUserDateParts(now);
-
-  return new Date(`${dateKey}T00:00:00+01:00`);
-}
-
-export function getNextDailyResetAt(now = new Date()) {
-  const start = getStartOfUserDay(now);
-  return new Date(start.getTime() + 24 * 60 * 60 * 1000).toISOString();
-}
-
-function formatDailyResetAt(resetAtIso: string) {
-  const resetAt = new Date(resetAtIso);
-
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: xpEarningPolicy.timezone,
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZoneName: "short",
-  }).format(resetAt);
-}
-
-function buildDailyCapBlockedMessage(resetAtIso: string) {
-  return `You have reached today's quiz XP limit. Quiz XP unlocks at ${formatDailyResetAt(resetAtIso)}.`;
-}
-
-function buildDailyCapSavedMessage(resetAtIso: string) {
-  return `You have reached today's quiz XP limit. Your progress is saved. You can answer the remaining questions after ${formatDailyResetAt(resetAtIso)}.`;
-}
-
-export function getDailyEarnedXp(userId = DEMO_USER_ID) {
-  const store = getStore();
-  const start = getStartOfUserDay();
-  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-
-  return store.xpTransactions.reduce((total, transaction) => {
-    const createdAt = new Date(transaction.createdAt);
-    const countsForToday =
-      transaction.userId === userId &&
-      transaction.direction === "earn" &&
-      transaction.sourceType === "quiz_question" &&
-      transaction.createdAt &&
-      createdAt >= start &&
-      createdAt < end;
-
-    return countsForToday ? total + transaction.amount : total;
-  }, 0);
-}
-
-export function getDailyXpRemaining(userId = DEMO_USER_ID) {
-  return Math.max(0, xpEarningPolicy.dailyEarnableXpLimit - getDailyEarnedXp(userId));
-}
 
 export function markLessonPageCompleted(lessonId: string, pageId: string, userId = DEMO_USER_ID) {
   const store = getStore();
@@ -709,33 +509,6 @@ function getCompletedLessonIdsWithinDays(days: number, userId = DEMO_USER_ID) {
   return [...completedLessonIds];
 }
 
-function getMissionPeriodScope(repeatability: MissionRepeatability, mission: Mission) {
-  switch (repeatability) {
-    case "daily":
-      return `day:${getUserDateKey()}`;
-    case "weekly":
-      return `week:${getUserWeekKey()}`;
-    case "campaign":
-      return `campaign:${mission.startsAt ?? "open"}:${mission.endsAt ?? "open"}`;
-    case "per_referral":
-      return "referral";
-    case "once":
-      return "lifetime";
-  }
-}
-
-function getMissionClaimKey(mission: Mission, userId = DEMO_USER_ID, scope?: string) {
-  return key(userId, mission.id, scope ?? getMissionPeriodScope(mission.repeatability, mission));
-}
-
-function getMissionStateKey(mission: Mission, userId = DEMO_USER_ID) {
-  return getMissionClaimKey(mission, userId);
-}
-
-function getLegacyMissionKey(mission: Mission, userId = DEMO_USER_ID) {
-  return key(userId, mission.id);
-}
-
 function getReferralCode(userId = DEMO_USER_ID) {
   const store = getStore();
   const existingCode = Object.entries(store.referralCodes).find(
@@ -873,50 +646,6 @@ function getClaimableMissionScope(mission: Mission, userId = DEMO_USER_ID) {
 
   const scope = getMissionPeriodScope(mission.repeatability, mission);
   return hasMissionClaim(mission, userId, scope) ? null : scope;
-}
-
-function getMissionAvailableAgainAt(mission: Mission) {
-  switch (mission.repeatability) {
-    case "daily":
-      return getNextDailyResetAt();
-    case "weekly":
-      return getNextWeeklyResetAt();
-    default:
-      return undefined;
-  }
-}
-
-function getMissionCompletionLabel(mission: Mission) {
-  switch (mission.repeatability) {
-    case "daily":
-      return "Completed today";
-    case "weekly":
-      return "Completed this week";
-    case "campaign":
-      return "Completed for campaign";
-    case "once":
-      return "Completed";
-    case "per_referral":
-      return "Awarded";
-  }
-}
-
-function normalizeMissionProgress(
-  progress: { progressCount: number; targetCount: number; valid: boolean },
-  forceComplete = false,
-) {
-  const targetCount = Math.max(1, Math.floor(progress.targetCount));
-  const rawProgressCount = forceComplete ? targetCount : progress.progressCount;
-  const progressCount = Math.min(
-    targetCount,
-    Math.max(0, Math.floor(rawProgressCount)),
-  );
-
-  return {
-    progressCount,
-    targetCount,
-    valid: progress.valid && progressCount >= targetCount,
-  };
 }
 
 function awardMissionXp(mission: Mission, userId: string, claimScope: string) {

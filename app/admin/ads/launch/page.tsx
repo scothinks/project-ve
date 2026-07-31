@@ -10,7 +10,7 @@ import {
   listValue,
   primaryButtonClasses,
 } from "../components";
-import { loadAdsLaunchData } from "../data";
+import { loadAdsLaunchData } from "@/features/ads/admin/data";
 import type { AdsRouteProps } from "../types";
 import { saveAdCampaign, saveAdCreativeVersion, saveAdFlight, saveAdPartner } from "../actions";
 
