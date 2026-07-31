@@ -8,6 +8,8 @@ import {
 } from "@/lib/request-validation";
 import { answerSupabaseQuizQuestion } from "@/lib/supabase-quiz";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { isDemoMode } from "@/lib/app-mode";
+import { answerQuizQuestion } from "@/lib/demo-progress-store";
 
 export async function POST(request: Request) {
   const bodyResult = await readJsonObject(request);
@@ -27,6 +29,10 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createSupabaseServerClient();
+
+    if (isDemoMode) {
+      return NextResponse.json(answerQuizQuestion(attemptId, questionId, selectedOptionIds));
+    }
 
     if (!supabase) {
       return NextResponse.json(

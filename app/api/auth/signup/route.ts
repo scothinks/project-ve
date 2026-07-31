@@ -8,6 +8,7 @@ import {
   validationErrorResponse,
   type ValidationIssue,
 } from "@/lib/request-validation";
+import { isDemoMode } from "@/lib/app-mode";
 import { assertRequiredSecurityEnv } from "@/lib/security-env";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createPlainSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
@@ -38,8 +39,15 @@ export async function POST(request: NextRequest) {
     return validationErrorResponse(issues);
   }
 
-  if (!isSupabaseConfigured) {
+  if (isDemoMode) {
     return NextResponse.json({ email, sessionExists: true });
+  }
+
+  if (!isSupabaseConfigured) {
+    return NextResponse.json(
+      { error: "Account creation is unavailable until the live backend is configured." },
+      { status: 503 },
+    );
   }
 
   const { ipAddress, ipHash, deviceHash } = getRiskContext(request);

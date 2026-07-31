@@ -5,8 +5,8 @@ import {
   validationErrorResponse,
   type ValidationIssue,
 } from "@/lib/request-validation";
+import { isLiveMode } from "@/lib/app-mode";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
 import { asSupabaseJson } from "@/lib/supabase-rpc";
 
 type Params = {
@@ -30,10 +30,10 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const supabase = await createSupabaseServerClient();
 
-  if (!supabase) {
+  if (!isLiveMode || !supabase) {
     return NextResponse.json(
       { error: "Reward claim submission is unavailable until the live backend is configured." },
-      { status: isSupabaseConfigured ? 500 : 503 },
+      { status: 503 },
     );
   }
 

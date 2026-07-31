@@ -7,7 +7,7 @@ import {
   getCurrentUserProfile,
   type UserProfile,
 } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isLiveMode } from "@/lib/app-mode";
 
 type CountableTable =
   | "profiles"
@@ -24,14 +24,13 @@ export type AdminContext = {
 };
 
 export async function requireAdmin(): Promise<AdminContext> {
-  const [supabase, { user, profile }] = await Promise.all([
-    createSupabaseServerClient(),
-    getCurrentUserProfile(),
-  ]);
+  const supabase = await createSupabaseServerClient();
 
-  if (!isSupabaseConfigured || !supabase) {
+  if (!isLiveMode || !supabase) {
     redirect("/login");
   }
+
+  const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (!user) {
     redirect("/login");

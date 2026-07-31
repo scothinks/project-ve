@@ -7,6 +7,8 @@ import {
 } from "@/lib/request-validation";
 import { startSupabaseQuizAttempt } from "@/lib/supabase-quiz";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { isDemoMode } from "@/lib/app-mode";
+import { startQuizAttempt } from "@/lib/demo-progress-store";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -28,6 +30,12 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const supabase = await createSupabaseServerClient();
+
+  if (isDemoMode) {
+    const result = startQuizAttempt(lessonId, id);
+    const status = result.status === "blocked" ? 403 : 200;
+    return NextResponse.json(result, { status });
+  }
 
   if (!supabase) {
     return NextResponse.json(

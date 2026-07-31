@@ -2,24 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase";
 
-function shouldRefreshAuthSession(pathname: string) {
-  return (
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/notifications") ||
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/admin") ||
-    pathname.startsWith("/api/notifications") ||
-    pathname.startsWith("/api/rewards") ||
-    pathname.startsWith("/api/quizzes") ||
-    pathname.startsWith("/api/missions") ||
-    pathname.startsWith("/api/lesson-progress")
-  );
-}
-
 function ensureDeviceCookie(request: NextRequest, response: NextResponse) {
   const deviceCookieName = "project-ve-device-id";
 
@@ -42,11 +24,6 @@ export async function middleware(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
-
-  if (!shouldRefreshAuthSession(request.nextUrl.pathname)) {
-    ensureDeviceCookie(request, response);
-    return response;
-  }
 
   const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
     cookies: {

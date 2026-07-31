@@ -121,6 +121,58 @@ export function markLessonPageCompleted(lessonId: string, pageId: string, userId
   store.pageCompletions[key(userId, lessonId, pageId)] = nowIso();
 }
 
+export function getDemoLessonProgress(userId = DEMO_USER_ID) {
+  const store = getStore();
+
+  return courses
+    .flatMap((course) => course.lessons)
+    .map((lesson) => {
+      const completedPages = lesson.pages
+        .filter((page) => Boolean(store.pageCompletions[key(userId, lesson.id, page.id)]))
+        .map((page) => page.id);
+      const latestEndedAttempt = [...store.attempts]
+        .reverse()
+        .find((attempt) => attempt.userId === userId && attempt.lessonId === lesson.id && attempt.endedAt);
+
+      if (completedPages.length === 0 && !latestEndedAttempt) {
+        return null;
+      }
+
+      const quizScore = latestEndedAttempt
+        ? Math.round(
+            (latestEndedAttempt.questionResults.filter((result) => result.correct).length /
+              Math.max(1, latestEndedAttempt.snapshot.questions.length)) *
+              100,
+          )
+        : null;
+      const hasCompletedAllPages =
+        lesson.pages.length > 0 &&
+        lesson.pages.every((page) => completedPages.includes(page.id));
+      const completedAt =
+        hasCompletedAllPages && latestEndedAttempt?.endedAt
+          ? latestEndedAttempt.endedAt
+          : null;
+      const updatedAt =
+        latestEndedAttempt?.endedAt ??
+        completedPages
+          .map((pageId) => store.pageCompletions[key(userId, lesson.id, pageId)])
+          .filter(Boolean)
+          .sort()
+          .at(-1) ??
+        null;
+
+      return {
+        lesson_id: lesson.id,
+        completed_pages: completedPages,
+        completed_modules: completedPages,
+        quiz_score: quizScore,
+        completed_at: completedAt,
+        updated_at: updatedAt,
+      };
+    })
+    .filter((record): record is NonNullable<typeof record> => Boolean(record));
+}
+
 function getLastEndedAttempt(lessonId: string, userId = DEMO_USER_ID) {
   const store = getStore();
   return [...store.attempts]

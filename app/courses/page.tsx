@@ -2,30 +2,35 @@ import { CourseLibrary } from "@/components/course/CourseLibrary";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { createLearningRepository } from "@/features/app/repositories/learning";
+import { createProgressRepository } from "@/features/app/repositories/progress";
 import {
   getCompletedLessonIds,
-  getLessonProgress,
   type LessonProgressRecord,
 } from "@/lib/progress";
-import { getCachedLearningCourseSummaries } from "@/lib/supabase-learning";
 import {
   createSupabaseServerClient,
   getCurrentUserProfile,
   hasSupabaseAuthCookies,
 } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isDemoMode, isLiveMode } from "@/lib/app-mode";
+import { DEMO_USER_ID } from "@/lib/demo-progress-store";
 
 export default async function CoursesPage() {
+  const supabase = await createSupabaseServerClient();
+  const learningRepository = createLearningRepository(supabase);
+  const progressRepository = createProgressRepository(supabase);
   const [catalog, hasAuthCookies] = await Promise.all([
-    getCachedLearningCourseSummaries(),
+    learningRepository.getCourseSummaries(),
     hasSupabaseAuthCookies(),
   ]);
   let lessonProgress: LessonProgressRecord[] = [];
 
-  if (isSupabaseConfigured && hasAuthCookies) {
-    const supabase = await createSupabaseServerClient();
+  if (isDemoMode) {
+    lessonProgress = await progressRepository.getLessonProgress(DEMO_USER_ID);
+  } else if (isLiveMode && hasAuthCookies) {
     const { user } = await getCurrentUserProfile(supabase);
-    lessonProgress = user && supabase ? await getLessonProgress(supabase, user.id) : [];
+    lessonProgress = user ? await progressRepository.getLessonProgress(user.id) : [];
   }
 
   const completedLessonIds = Array.from(

@@ -7,19 +7,20 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
+import { createLearningRepository } from "@/features/app/repositories/learning";
+import { createProgressRepository } from "@/features/app/repositories/progress";
 import { withLoggedFallback } from "@/lib/app-errors";
+import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getCourseXP } from "@/lib/lessons";
 import {
   getCompletedLessonIds,
   getCourseProgress,
   getCourseResumeTarget,
-  getLessonProgress,
 } from "@/lib/progress";
-import { getLearningCourse } from "@/lib/supabase-learning";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
 import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
+import { DEMO_USER_ID } from "@/lib/demo-progress-store";
 
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -31,14 +32,20 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const { user } = await getCurrentUserProfile(supabase);
-  const course = await getLearningCourse(supabase, id);
+  const learningRepository = createLearningRepository(supabase);
+  const progressRepository = createProgressRepository(supabase);
+  const course = await learningRepository.getCourse(id);
 
   if (!course) {
     notFound();
   }
 
   const [lessonProgress, contentValueTags, segmentKeys] = await Promise.all([
-    isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
+    isDemoMode
+      ? progressRepository.getLessonProgress(DEMO_USER_ID)
+      : isLiveMode && user
+        ? progressRepository.getLessonProgress(user.id)
+        : Promise.resolve([]),
     withLoggedFallback({
       context: {
         operation: "course.ads.content_value_tags",

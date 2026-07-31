@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { demoRewardStoreSnapshot } from "@/lib/rewards";
-import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isDemoMode } from "@/lib/app-mode";
+import { createRewardRepository } from "@/features/app/repositories/rewards";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +13,6 @@ function getErrorMessage(error: unknown) {
   if (error && typeof error === "object") {
     const record = error as Record<string, unknown>;
     const message = typeof record.message === "string" ? record.message : "";
-    const details = typeof record.details === "string" ? record.details : "";
-
-    if (message && /visibility_mode|distribution_mode|perk_bundle_prizes|redeem_perk_bundle/i.test(message + details)) {
-      return "XP Store setup is incomplete. Apply the latest database migrations and reload.";
-    }
 
     if (message) {
       return message;
@@ -29,13 +23,15 @@ function getErrorMessage(error: unknown) {
 }
 
 export async function GET() {
-  if (!isSupabaseConfigured) {
-    return NextResponse.json(demoRewardStoreSnapshot, {
+  const supabase = await createSupabaseServerClient();
+  const rewardRepository = createRewardRepository(supabase);
+
+  if (isDemoMode) {
+    return NextResponse.json(await rewardRepository.getStoreSnapshot("demo-user", 0), {
       headers: { "Cache-Control": "no-store" },
     });
   }
 
-  const supabase = await createSupabaseServerClient();
   const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (!user || !profile || !supabase) {
@@ -43,8 +39,7 @@ export async function GET() {
   }
 
   try {
-    const snapshot = await getRewardStoreSnapshot(
-      supabase,
+    const snapshot = await rewardRepository.getStoreSnapshot(
       user.id,
       profile.xp_balance_cached ?? 0,
     );

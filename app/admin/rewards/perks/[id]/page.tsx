@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { PerkAnalyticsPanel } from "@/components/admin/PerkAnalyticsPanel";
 import { PerkPrizeManager } from "@/components/admin/PerkPrizeManager";
 import { PerkEditorForm } from "@/components/admin/PerkEditorForm";
@@ -160,37 +159,6 @@ function badgeTone(state: string) {
 
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
-}
-
-function CollapsibleSection({
-  title,
-  description,
-  children,
-  className = "",
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <details className={`rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] ${className}`}>
-      <summary className="cursor-pointer list-none px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-black">{title}</h2>
-            {description ? (
-              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">{description}</p>
-            ) : null}
-          </div>
-          <span className="rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-3 py-1 text-xs font-black text-[var(--ve-violet)]">
-            Open
-          </span>
-        </div>
-      </summary>
-      <div className="border-t border-[var(--ve-line-soft)] p-5">{children}</div>
-    </details>
-  );
 }
 
 export default async function AdminPerkDetailPage({ params, searchParams }: AdminPerkDetailPageProps) {

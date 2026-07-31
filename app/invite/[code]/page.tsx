@@ -1,7 +1,7 @@
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getLearningCatalog } from "@/lib/supabase-learning";
+import { createLearningRepository } from "@/features/app/repositories/learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 type InvitePageProps = {
@@ -11,7 +11,8 @@ type InvitePageProps = {
 export default async function InvitePage({ params }: InvitePageProps) {
   const { code } = await params;
   const supabase = await createSupabaseServerClient();
-  const catalog = await getLearningCatalog(supabase);
+  const learningRepository = createLearningRepository(supabase);
+  const catalog = await learningRepository.getCatalog();
   const starterLesson = catalog[0]?.lessons[0];
 
   return (

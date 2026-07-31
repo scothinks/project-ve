@@ -2458,14 +2458,13 @@ Files=5, Tests=96
 Result: PASS
 ```
 
-Continue with Phase 1B.
-
-Phase 1B status:
+Phase 1B is complete:
 
 * `VE-PROGRESS-001`: complete and validated. Atomic `complete_lesson_page(...)` RPC, app callsite update, and progress pgTAP coverage are in place.
 * `VE-DATA-001`: database type contract generated from the linked public schema, Supabase client factories parameterized with `Database`, `db:types`/`db:types:check`/`db:types:check:ci` scripts added, reward redemption schema-version fallback removed, handwritten Supabase result overrides removed across `lib`, `app`, and `components`, and GitHub Actions type-drift wiring added. Repository owner must configure `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` secrets for the CI job to enforce linked drift.
 * `VE-API-001`: JSON API mutation routes, direct admin course catalog FormData actions, reward/inventory/ads FormData actions, and AI generation/planner FormData actions use explicit runtime validation before domain/RPC execution. Remaining optional architecture decision: adopt Zod/Valibot later, or keep the local zero-dependency validators.
 * `VE-OBS-001`: explicit application error taxonomy, structured server logging, logged optional fallbacks, profile-load dependency failure handling, notification load-failure UI state, and unit coverage for missing-profile XP and notification failure states are in place.
+* `VE-DB-001`: stale `supabase/schema.sql` removed, migrations are the only checked-in schema authority, local Supabase config/roles/seed workflow is documented, linked/local type-drift checks are scripted, and `npm run db:verify:local` validates clean local replay, type generation, and pgTAP tests.
 
 ```text
 notification_security.sql .. ok
@@ -2476,6 +2475,125 @@ rpc_security.sql ........... ok
 xp_ledger_security.sql ..... ok
 All tests successful.
 Files=6, Tests=107
+Result: PASS
+```
+
+Phase 1C is complete:
+
+* `VE-AI-001`: AI course text, revision, and media generation now run through durable `ai_generation_jobs`, service-role-only worker RPCs, transactional materialization/replacement functions, bounded media processing, worker cron/API authorization, and pgTAP coverage for leases, retries, rollback behavior, and RPC privileges.
+* `VE-ARCH-001`: major god-module hotspots have been split into feature data/application/domain/UI boundaries for AI generation, learning admin, planner, lesson builder, rewards/perks, XP store, demo progress, ads, and admin facades, with unit coverage for extracted business logic and a final acceptance pass against the remediation criteria.
+
+Latest app-side validation for Phase 1C:
+
+```text
+npm run ci
+Result: PASS
+
+npm run build
+Result: PASS
+
+git diff --check
+Result: PASS
+```
+
+Phase 2 remediation status:
+
+* `VE-DEMO-001`: cleaned up against the required architecture. Explicit
+  `APP_MODE=demo|live` configuration is centralized in `lib/app-mode.ts`;
+  learning, progress, mission, and reward repository contracts/adapters exist
+  under `features/app/repositories`; learner dashboard, course library, course
+  detail, lessons, quiz/results, invite, XP store, missions, rewards API, quiz
+  attempts, lesson progress, auth/profile UI, signup, redemptions, and admin
+  auth route through explicit demo/live mode instead of treating missing
+  Supabase env vars as an implicit demo switch. `lib/supabase-learning.ts` is
+  live-only; seed learning content is served by `DemoLearningRepository`.
+* `VE-DEMO-001` repository contract coverage now runs against both demo adapters
+  and live adapters backed by the local Supabase API via
+  `npm run test:repositories:local`.
+* `VE-REC-001`: cleaned up against the required scoring policy. Personalized
+  dashboard recommendations use deterministic v2 score components for dimension
+  fit, assessment confidence, readiness fit, content weight, progression
+  relevance, completion status, novelty/recent exposure, and editorial priority.
+  The dimension component now aggregates all content value tags with the
+  documented `score × confidence × content weight` shape instead of selecting a
+  single best tag or relying on primary/secondary labels as numeric shortcuts.
+  Returned recommendation items include `score_policy_version` and
+  `score_components`; recommendation reasons are built from the selected score
+  components.
+* `VE-HARD-001`: cleaned up against the hardening checklist. Next image remote
+  patterns are limited to Unsplash seed assets and configured Supabase Storage;
+  middleware now refreshes auth consistently for matched dynamic routes without
+  an expanding authenticated-route list; deprecated quiz submit and mission
+  claim APIs return explicit `410 Gone`; reward/admin schema compatibility
+  probes were removed so migrations define the supported schema; admin auth
+  reuses the existing Supabase client when loading the current profile; README
+  links are repository-relative.
+* Phase 2 cleanup is complete for `VE-DEMO-001`, `VE-REC-001`, and
+  `VE-HARD-001`.
+
+Latest app-side validation after Phase 2 cleanup:
+
+```text
+npm run typecheck
+Result: PASS
+
+npm run lint
+Result: PASS
+
+npm run test:unit
+Result: PASS, 116 tests
+
+npm run test:repositories:local
+Result: PASS against demo adapters and local Supabase live adapters
+
+npm run test:db
+Result: PASS, 7 files / 119 pgTAP tests
+
+npm run build
+Result: PASS
+
+git diff --check
+Result: PASS
+```
+
+Latest focused validation for `VE-REC-001` cleanup:
+
+```text
+node --experimental-strip-types --test tests/unit/recommendation-scoring.test.mjs
+Result: PASS, 9 tests
+
+npm run typecheck
+Result: PASS
+
+npm run lint
+Result: PASS
+
+npm run test:unit
+Result: PASS, 116 tests
+
+npm run build
+Result: PASS
+
+git diff --check
+Result: PASS
+```
+
+Latest focused validation for `VE-HARD-001` cleanup:
+
+```text
+npm run typecheck
+Result: PASS
+
+npm run lint
+Result: PASS
+
+node --experimental-strip-types --test --test-reporter=dot "tests/unit/**/*.test.mjs"
+Result: PASS
+
+npm run build
+Result: PASS
+
+git diff --check
 Result: PASS
 ```
 

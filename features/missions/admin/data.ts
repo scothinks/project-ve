@@ -21,8 +21,6 @@ export type AdminRewardCandidateRow = {
   assigned_available?: number;
 };
 
-type LegacyAdminRewardRow = Omit<AdminRewardCandidateRow, "distribution_mode">;
-
 export type AdminMissionRow = {
   id: string;
   title: string;
@@ -77,25 +75,6 @@ export type AdminProofSubmission = {
   profile?: AdminProofProfileRow;
   mission?: AdminMissionRow;
 };
-
-function withDerivedDistributionMode<T extends { fulfillment_type: string }>(
-  reward: T,
-): T & { distribution_mode: string; fulfillment_type: string } {
-  return {
-    ...reward,
-    distribution_mode: reward.fulfillment_type === "perk_bundle" ? "perk_bundle" : "direct",
-    fulfillment_type: reward.fulfillment_type === "perk_bundle" ? "manual" : reward.fulfillment_type,
-  };
-}
-
-function isMissingDistributionModeError(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const record = error as Record<string, unknown>;
-  return /distribution_mode/i.test(String(record.message ?? ""));
-}
 
 async function getProfilesByIds(
   supabase: SupabaseClient,
@@ -161,22 +140,7 @@ export async function getAdminMissionRewardCandidates(supabase: SupabaseClient) 
     .order("title", { ascending: true });
 
   if (candidatesResult.error) {
-    if (!isMissingDistributionModeError(candidatesResult.error)) {
-      throw candidatesResult.error;
-    }
-
-    const legacyCandidatesResult = await supabase
-      .from("rewards")
-      .select("id, title, fulfillment_type, visibility_mode, status, is_enabled, total_available")
-      .order("title", { ascending: true });
-
-    if (legacyCandidatesResult.error) {
-      throw legacyCandidatesResult.error;
-    }
-
-    return ((legacyCandidatesResult.data ?? []) as LegacyAdminRewardRow[])
-      .map(withDerivedDistributionMode)
-      .filter((candidate) => candidate.distribution_mode !== "perk_bundle");
+    throw candidatesResult.error;
   }
 
   return ((candidatesResult.data ?? []) as AdminRewardCandidateRow[]).filter(

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { QuizOptions } from "@/components/quiz/QuizOptions";
+import { createLearningRepository } from "@/features/app/repositories/learning";
 import { getPublicQuiz, getQuizXP } from "@/lib/lessons";
-import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { formatXpLabel } from "@/lib/xp-format";
 
@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 export default async function QuizPage({ params }: QuizPageProps) {
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
-  const detail = await getLearningLesson(supabase, id);
+  const learningRepository = createLearningRepository(supabase);
+  const detail = await learningRepository.getLesson(id);
 
   if (!detail || detail.lesson.quiz.questions.length === 0) {
     notFound();

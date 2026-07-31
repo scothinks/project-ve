@@ -174,27 +174,6 @@ export type AdminInventoryAdjustment = {
   partner_reference: string | null;
 };
 
-type LegacyAdminRewardRow = Omit<AdminRewardRow, "distribution_mode">;
-
-function withDerivedDistributionMode<T extends { fulfillment_type: string }>(
-  reward: T,
-): T & { distribution_mode: string; fulfillment_type: string } {
-  return {
-    ...reward,
-    distribution_mode: reward.fulfillment_type === "perk_bundle" ? "perk_bundle" : "direct",
-    fulfillment_type: reward.fulfillment_type === "perk_bundle" ? "manual" : reward.fulfillment_type,
-  };
-}
-
-function isMissingDistributionModeError(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const record = error as Record<string, unknown>;
-  return /distribution_mode/i.test(String(record.message ?? ""));
-}
-
 function isMissingPerkReleaseBucketError(error: unknown) {
   if (!error || typeof error !== "object") {
     return false;
@@ -328,27 +307,11 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     .eq("id", rewardId)
     .maybeSingle();
 
-  let resolvedReward: AdminRewardDetail | null = (reward as AdminRewardDetail | null) ?? null;
-
   if (error) {
-    if (!isMissingDistributionModeError(error)) {
-      throw error;
-    }
-
-    const legacyResult = await supabase
-      .from("rewards")
-      .select(detailSelect)
-      .eq("id", rewardId)
-      .maybeSingle();
-
-    if (legacyResult.error) {
-      throw legacyResult.error;
-    }
-
-    resolvedReward = legacyResult.data
-      ? withDerivedDistributionMode(legacyResult.data as LegacyAdminRewardRow & Omit<AdminRewardDetail, keyof AdminRewardRow>)
-      : null;
+    throw error;
   }
+
+  const resolvedReward: AdminRewardDetail | null = (reward as AdminRewardDetail | null) ?? null;
 
   if (!resolvedReward) {
     return null;
@@ -392,31 +355,12 @@ export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: s
     throw perkPrizesResult.error;
   }
 
-  let perkRewardCandidates = (perkRewardCandidatesResult.data ?? []) as AdminRewardCandidateRow[];
-
   if (perkRewardCandidatesResult.error) {
-    if (!isMissingDistributionModeError(perkRewardCandidatesResult.error)) {
-      throw perkRewardCandidatesResult.error;
-    }
-
-    const legacyCandidatesResult = await supabase
-      .from("rewards")
-      .select("id, title, fulfillment_type, visibility_mode, status, is_enabled, total_available")
-      .neq("id", rewardId)
-      .order("title", { ascending: true });
-
-    if (legacyCandidatesResult.error) {
-      throw legacyCandidatesResult.error;
-    }
-
-    perkRewardCandidates = ((legacyCandidatesResult.data ?? []) as LegacyAdminRewardRow[])
-      .map(withDerivedDistributionMode)
-      .filter((candidate) => candidate.distribution_mode !== "perk_bundle");
-  } else {
-    perkRewardCandidates = perkRewardCandidates.filter(
-      (candidate) => candidate.distribution_mode !== "perk_bundle",
-    );
+    throw perkRewardCandidatesResult.error;
   }
+
+  let perkRewardCandidates = ((perkRewardCandidatesResult.data ?? []) as AdminRewardCandidateRow[])
+    .filter((candidate) => candidate.distribution_mode !== "perk_bundle");
 
   if (perkRewardCandidates.length > 0) {
     const assignmentCountsResult = await supabase

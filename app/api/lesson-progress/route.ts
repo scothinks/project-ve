@@ -6,9 +6,11 @@ import {
   validationErrorResponse,
   type ValidationIssue,
 } from "@/lib/request-validation";
+import { createLearningRepository } from "@/features/app/repositories/learning";
 import { markLessonPageCompletedInSupabase } from "@/lib/progress";
-import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { isDemoMode } from "@/lib/app-mode";
+import { markLessonPageCompleted } from "@/lib/demo-progress-store";
 
 export async function POST(request: Request) {
   const bodyResult = await readJsonObject(request);
@@ -27,6 +29,34 @@ export async function POST(request: Request) {
 
   const supabase = await createSupabaseServerClient();
 
+  if (isDemoMode) {
+    try {
+      const learningRepository = createLearningRepository(supabase);
+      const detail = await learningRepository.getLesson(lessonId);
+      const lesson = detail?.lesson;
+      const page = lesson?.pages.find((item) => item.id === pageId);
+
+      if (!lesson || !page) {
+        return NextResponse.json({ error: "Page not found for lesson" }, { status: 404 });
+      }
+
+      markLessonPageCompleted(lesson.id, page.id);
+
+      return NextResponse.json({
+        status: "completed",
+        lessonId: lesson.id,
+        pageId: page.id,
+        completedPages: [page.id],
+        lessonCompleted: false,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Lesson content is temporarily unavailable." },
+        { status: error instanceof AppError ? error.status : 503 },
+      );
+    }
+  }
+
   if (!supabase) {
     return NextResponse.json(
       { error: "Lesson progress sync is unavailable until the live backend is configured." },
@@ -34,36 +64,28 @@ export async function POST(request: Request) {
     );
   }
 
-  let detail: Awaited<ReturnType<typeof getLearningLesson>>;
+  const learningRepository = createLearningRepository(supabase);
 
   try {
-    detail = await getLearningLesson(supabase, lessonId);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Lesson content is temporarily unavailable." },
-      { status: error instanceof AppError ? error.status : 503 },
-    );
-  }
+    const detail = await learningRepository.getLesson(lessonId);
+    const lesson = detail?.lesson;
+    const page = lesson?.pages.find((item) => item.id === pageId);
 
-  const lesson = detail?.lesson;
-  const page = lesson?.pages.find((item) => item.id === pageId);
+    if (!lesson || !page) {
+      return NextResponse.json({ error: "Page not found for lesson" }, { status: 404 });
+    }
 
-  if (!lesson || !page) {
-    return NextResponse.json({ error: "Page not found for lesson" }, { status: 404 });
-  }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Create an account or log in to save lesson progress." },
+        { status: 401 },
+      );
+    }
 
-  if (!user) {
-    return NextResponse.json(
-      { error: "Create an account or log in to save lesson progress." },
-      { status: 401 },
-    );
-  }
-
-  try {
     const progress = await markLessonPageCompletedInSupabase({
       supabase,
       userId: user.id,
@@ -86,7 +108,7 @@ export async function POST(request: Request) {
             ? error.message
             : "Could not save lesson progress.",
       },
-      { status: 500 },
+      { status: error instanceof AppError ? error.status : 503 },
     );
   }
 }

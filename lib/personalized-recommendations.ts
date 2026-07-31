@@ -14,6 +14,12 @@ import type {
   UserValueProfile,
   ValueDimension,
 } from "@/lib/values-assessment";
+import {
+  buildRecommendationReason,
+  recommendationScoringPolicyVersion,
+  scoreRecommendationCandidate,
+  type RecommendationScoreComponents,
+} from "@/features/recommendations/domain/scoring";
 
 type ContentTagRow = {
   id: string;
@@ -67,6 +73,8 @@ export type PersonalizedRecommendationItem = {
   dimension_label: string | null;
   recommended_level: "beginner" | "intermediate" | "advanced" | null;
   score: number;
+  score_policy_version: typeof recommendationScoringPolicyVersion;
+  score_components: RecommendationScoreComponents;
   course?: Course;
   lesson?: Lesson;
   mission?: UserMissionSummary;
@@ -78,57 +86,6 @@ export type PersonalizedRecommendationSection = {
   subtitle: string;
   items: PersonalizedRecommendationItem[];
 };
-
-function buildReason(
-  slot: RecommendationSlot,
-  dimensionLabel: string | null,
-  hasProfile: boolean,
-) {
-  if (dimensionLabel) {
-    return `Recommended to help you build confidence with ${dimensionLabel}.`;
-  }
-
-  if (slot === "next_lesson") {
-    return hasProfile
-      ? "Suggested because it matches your Values Starter Check."
-      : "A good next step for your current learning path.";
-  }
-
-  if (slot === "mission") {
-    return hasProfile
-      ? "Suggested because it matches your Values Starter Check."
-      : "A practical next step you can take right away.";
-  }
-
-  return hasProfile
-    ? "A good next step based on your Values Starter Check."
-    : "A good next step for your current learning path.";
-}
-
-function scoreTag(params: {
-  tag: ContentValueTag;
-  readinessLevel: "beginner" | "intermediate" | "advanced" | null;
-  primaryDimensionId: string | null;
-  secondaryDimensionId: string | null;
-}) {
-  const { tag, readinessLevel, primaryDimensionId, secondaryDimensionId } = params;
-  let score = 0;
-
-  if (tag.dimensionId === primaryDimensionId) {
-    score += 50;
-  } else if (tag.dimensionId === secondaryDimensionId) {
-    score += 35;
-  }
-
-  if (tag.recommendedLevel && tag.recommendedLevel === readinessLevel) {
-    score += 20;
-  } else if (!tag.recommendedLevel) {
-    score += 10;
-  }
-
-  score += 10 * tag.weight;
-  return score;
-}
 
 function mapTag(row: ContentTagRow): ContentValueTag {
   return {
@@ -147,27 +104,74 @@ function mapTag(row: ContentTagRow): ContentValueTag {
 function pickBestTag(
   tags: ContentValueTag[],
   profile: UserValueProfile | null,
+  userScores: UserValueDimensionScore[],
+  options?: {
+    completed?: boolean;
+    recentlySeen?: boolean;
+    progressionRelevant?: boolean;
+    editorialPriority?: number;
+  },
 ) {
   if (tags.length === 0) {
     return null;
   }
 
-  let best: { tag: ContentValueTag; score: number } | null = null;
+  const aggregateComponents = scoreRecommendationCandidate({
+    tag: null,
+    tags,
+    profile,
+    userScores,
+    completed: options?.completed ?? false,
+    recentlySeen: options?.recentlySeen,
+    progressionRelevant: options?.progressionRelevant,
+    editorialPriority: options?.editorialPriority,
+  });
+  let bestTag: {
+    tag: ContentValueTag;
+    score: number;
+  } | null = null;
 
   for (const tag of tags) {
-    const score = scoreTag({
+    const components = scoreRecommendationCandidate({
       tag,
-      readinessLevel: profile?.readinessLevel ?? null,
-      primaryDimensionId: profile?.primaryDimensionId ?? null,
-      secondaryDimensionId: profile?.secondaryDimensionId ?? null,
+      profile,
+      userScores,
+      completed: options?.completed ?? false,
+      recentlySeen: options?.recentlySeen,
+      progressionRelevant: options?.progressionRelevant,
+      editorialPriority: options?.editorialPriority,
     });
+    const score = components.total;
 
-    if (!best || score > best.score) {
-      best = { tag, score };
+    if (!bestTag || score > bestTag.score) {
+      bestTag = { tag, score };
     }
   }
 
-  return best;
+  return bestTag
+    ? {
+        tag: bestTag.tag,
+        score: aggregateComponents.total,
+        components: aggregateComponents,
+      }
+    : null;
+}
+
+function scoreUntaggedCandidate(options?: {
+  completed?: boolean;
+  recentlySeen?: boolean;
+  progressionRelevant?: boolean;
+  editorialPriority?: number;
+}) {
+  return scoreRecommendationCandidate({
+    tag: null,
+    profile: null,
+    userScores: [],
+    completed: options?.completed ?? false,
+    recentlySeen: options?.recentlySeen,
+    progressionRelevant: options?.progressionRelevant,
+    editorialPriority: options?.editorialPriority,
+  });
 }
 
 async function loadProfileData(supabase: AppSupabaseClient, userId: string) {
@@ -300,6 +304,33 @@ function makeSection(
   };
 }
 
+function buildFallbackScore() {
+  return scoreUntaggedCandidate({
+    progressionRelevant: false,
+    recentlySeen: false,
+  });
+}
+
+function getFallbackReason(slot: RecommendationSlot) {
+  return slot === "mission"
+    ? "A practical next step you can take right away."
+    : "A good next step for your current learning path.";
+}
+
+function reasonForRecommendation(params: {
+  slot: RecommendationSlot;
+  dimensionLabel: string | null;
+  components: RecommendationScoreComponents;
+  hasProfile: boolean;
+}) {
+  return buildRecommendationReason({
+    dimensionLabel: params.dimensionLabel,
+    components: params.components,
+    hasProfile: params.hasProfile,
+    fallbackReason: getFallbackReason(params.slot),
+  });
+}
+
 export async function getPersonalizedDashboardRecommendations({
   supabase,
   userId,
@@ -350,19 +381,71 @@ export async function getPersonalizedDashboardRecommendations({
 
   const hasProfile = Boolean(userProfile?.assessmentCompletedAt);
   const seenCourseIds = new Set<string>();
+  const courseById = new Map(catalog.map((course) => [course.id, course]));
+  const progressByLessonId = new Map(lessonProgress.map((progress) => [progress.lesson_id, progress]));
+
+  function lessonHasExposure(lesson: Lesson) {
+    const progress = progressByLessonId.get(lesson.id);
+    return Boolean(progress && ((progress.completed_pages?.length ?? 0) > 0 || progress.completed_at));
+  }
+
+  function lessonIsProgressionRelevant(lesson: Lesson) {
+    if (lessonHasExposure(lesson)) {
+      return true;
+    }
+
+    const course = courseById.get(lesson.courseId);
+    if (!course) {
+      return false;
+    }
+
+    const lessonIndex = course.lessons.findIndex((item) => item.id === lesson.id);
+    if (lessonIndex <= 0) {
+      return true;
+    }
+
+    return course.lessons
+      .slice(0, lessonIndex)
+      .some((previousLesson) => completedLessonIds.has(previousLesson.id));
+  }
+
+  function courseHasExposure(course: Course) {
+    return course.lessons.some((lesson) => lessonHasExposure(lesson) || completedLessonIds.has(lesson.id));
+  }
+
+  function courseIsProgressionRelevant(course: Course) {
+    return course.lessons.length > 0 && !completedCourseIds.has(course.id);
+  }
 
   const lessonCandidates = allLessons
     .filter((lesson) => !completedLessonIds.has(lesson.id))
     .map((lesson) => {
-      const best = pickBestTag(tagsByKey.get(`lesson:${lesson.id}`) ?? [], userProfile);
-      const baseScore =
-        best?.score
-        ?? (lesson.status === "completed" ? -100 : lesson.courseId ? 12 : 10);
+      const best = pickBestTag(
+        tagsByKey.get(`lesson:${lesson.id}`) ?? [],
+        userProfile,
+        userScores,
+        {
+          completed: completedLessonIds.has(lesson.id),
+          progressionRelevant: lessonIsProgressionRelevant(lesson),
+          recentlySeen: lessonHasExposure(lesson),
+        },
+      );
+      const fallbackComponents = scoreUntaggedCandidate({
+        completed: completedLessonIds.has(lesson.id),
+        progressionRelevant: lessonIsProgressionRelevant(lesson),
+        recentlySeen: lessonHasExposure(lesson),
+      });
+      const baseScore = best?.score ?? fallbackComponents.total;
       const duplicatePenalty = seenCourseIds.has(lesson.courseId) ? -30 : 0;
+      const components = best?.components ?? fallbackComponents;
 
       return {
         lesson,
         bestTag: best?.tag ?? null,
+        components: {
+          ...components,
+          total: Number((components.total + duplicatePenalty).toFixed(2)),
+        },
         score: baseScore + duplicatePenalty,
       };
     })
@@ -376,13 +459,27 @@ export async function getPersonalizedDashboardRecommendations({
   const missionCandidates = missions
     .filter((mission) => mission.status !== "completed")
     .map((mission) => {
-      const best = pickBestTag(tagsByKey.get(`mission:${mission.id}`) ?? [], userProfile);
-      const baseScore = best?.score ?? 8;
+      const best = pickBestTag(
+        tagsByKey.get(`mission:${mission.id}`) ?? [],
+        userProfile,
+        userScores,
+        {
+          completed: false,
+          progressionRelevant: true,
+          recentlySeen: mission.status !== "not_started",
+        },
+      );
+      const fallbackComponents = scoreUntaggedCandidate({
+        progressionRelevant: true,
+        recentlySeen: mission.status !== "not_started",
+      });
+      const components = best?.components ?? fallbackComponents;
 
       return {
         mission,
         bestTag: best?.tag ?? null,
-        score: baseScore,
+        components,
+        score: components.total,
       };
     })
     .sort((first, second) => second.score - first.score || first.mission.title.localeCompare(second.mission.title));
@@ -390,12 +487,33 @@ export async function getPersonalizedDashboardRecommendations({
   const courseCandidates = catalog
     .filter((course) => !completedCourseIds.has(course.id))
     .map((course) => {
-      const best = pickBestTag(tagsByKey.get(`course:${course.id}`) ?? [], userProfile);
-      const baseScore = best?.score ?? (course.level === "beginner" ? 14 : 10);
+      const best = pickBestTag(
+        tagsByKey.get(`course:${course.id}`) ?? [],
+        userProfile,
+        userScores,
+        {
+          completed: completedCourseIds.has(course.id),
+          progressionRelevant: courseIsProgressionRelevant(course),
+          recentlySeen: courseHasExposure(course),
+          editorialPriority: course.level === "beginner" ? 3 : 0,
+        },
+      );
+      const fallbackComponents = scoreUntaggedCandidate({
+        completed: completedCourseIds.has(course.id),
+        progressionRelevant: courseIsProgressionRelevant(course),
+        recentlySeen: courseHasExposure(course),
+        editorialPriority: course.level === "beginner" ? 3 : 0,
+      });
+      const baseScore = best?.score ?? fallbackComponents.total;
       const duplicatePenalty = seenCourseIds.has(course.id) ? -30 : 0;
+      const components = best?.components ?? fallbackComponents;
       return {
         course,
         bestTag: best?.tag ?? null,
+        components: {
+          ...components,
+          total: Number((components.total + duplicatePenalty).toFixed(2)),
+        },
         score: baseScore + duplicatePenalty,
       };
     })
@@ -415,18 +533,21 @@ export async function getPersonalizedDashboardRecommendations({
           title: selectedLessonCandidate.lesson.title,
           description: selectedLessonCandidate.lesson.summary,
           href: `/lessons/${selectedLessonCandidate.lesson.id}`,
-          reason: buildReason(
-            "next_lesson",
-            selectedLessonCandidate.bestTag
+          reason: reasonForRecommendation({
+            slot: "next_lesson",
+            dimensionLabel: selectedLessonCandidate.bestTag
               ? (dimensionLabels.get(selectedLessonCandidate.bestTag.dimensionId) ?? null)
               : null,
+            components: selectedLessonCandidate.components,
             hasProfile,
-          ),
+          }),
           dimension_label: selectedLessonCandidate.bestTag
             ? (dimensionLabels.get(selectedLessonCandidate.bestTag.dimensionId) ?? null)
             : null,
           recommended_level: selectedLessonCandidate.bestTag?.recommendedLevel ?? null,
           score: Number(selectedLessonCandidate.score.toFixed(2)),
+          score_policy_version: recommendationScoringPolicyVersion,
+          score_components: selectedLessonCandidate.components,
           lesson: selectedLessonCandidate.lesson,
         }
       : fallbackLesson
@@ -440,6 +561,8 @@ export async function getPersonalizedDashboardRecommendations({
             dimension_label: null,
             recommended_level: null,
             score: 0,
+            score_policy_version: recommendationScoringPolicyVersion,
+            score_components: buildFallbackScore(),
             lesson: fallbackLesson,
           }
         : null;
@@ -452,18 +575,21 @@ export async function getPersonalizedDashboardRecommendations({
           title: missionCandidates[0].mission.title,
           description: missionCandidates[0].mission.description,
           href: "/missions",
-          reason: buildReason(
-            "mission",
-            missionCandidates[0].bestTag
+          reason: reasonForRecommendation({
+            slot: "mission",
+            dimensionLabel: missionCandidates[0].bestTag
               ? (dimensionLabels.get(missionCandidates[0].bestTag.dimensionId) ?? null)
               : null,
+            components: missionCandidates[0].components,
             hasProfile,
-          ),
+          }),
           dimension_label: missionCandidates[0].bestTag
             ? (dimensionLabels.get(missionCandidates[0].bestTag.dimensionId) ?? null)
             : null,
           recommended_level: missionCandidates[0].bestTag?.recommendedLevel ?? null,
           score: Number(missionCandidates[0].score.toFixed(2)),
+          score_policy_version: recommendationScoringPolicyVersion,
+          score_components: missionCandidates[0].components,
           mission: missionCandidates[0].mission,
         }
       : fallbackMission
@@ -477,6 +603,8 @@ export async function getPersonalizedDashboardRecommendations({
             dimension_label: null,
             recommended_level: null,
             score: 0,
+            score_policy_version: recommendationScoringPolicyVersion,
+            score_components: buildFallbackScore(),
             mission: fallbackMission,
           }
         : null;
@@ -489,18 +617,21 @@ export async function getPersonalizedDashboardRecommendations({
           title: selectedCourseCandidate.course.title,
           description: selectedCourseCandidate.course.description,
           href: `/courses/${selectedCourseCandidate.course.id}`,
-          reason: buildReason(
-            "course",
-            selectedCourseCandidate.bestTag
+          reason: reasonForRecommendation({
+            slot: "course",
+            dimensionLabel: selectedCourseCandidate.bestTag
               ? (dimensionLabels.get(selectedCourseCandidate.bestTag.dimensionId) ?? null)
               : null,
+            components: selectedCourseCandidate.components,
             hasProfile,
-          ),
+          }),
           dimension_label: selectedCourseCandidate.bestTag
             ? (dimensionLabels.get(selectedCourseCandidate.bestTag.dimensionId) ?? null)
             : null,
           recommended_level: selectedCourseCandidate.bestTag?.recommendedLevel ?? null,
           score: Number(selectedCourseCandidate.score.toFixed(2)),
+          score_policy_version: recommendationScoringPolicyVersion,
+          score_components: selectedCourseCandidate.components,
           course: selectedCourseCandidate.course,
         }
       : fallbackCourse
@@ -514,6 +645,8 @@ export async function getPersonalizedDashboardRecommendations({
             dimension_label: null,
             recommended_level: null,
             score: 0,
+            score_policy_version: recommendationScoringPolicyVersion,
+            score_components: buildFallbackScore(),
             course: fallbackCourse,
           }
         : null;

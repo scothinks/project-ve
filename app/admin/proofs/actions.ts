@@ -35,27 +35,9 @@ export async function reviewProofSubmission(formData: FormData) {
 
   if (error) {
     const maybePostgresError = error as {
-      code?: string;
       message?: string;
-      details?: string | null;
-      hint?: string | null;
     };
-    const errorText = [
-      maybePostgresError.message,
-      maybePostgresError.details,
-      maybePostgresError.hint,
-    ]
-      .filter((value): value is string => Boolean(value))
-      .join(" ")
-      .toLowerCase();
-
-    const notice =
-      maybePostgresError.code === "23514" && errorText.includes("xp_cost_at_redemption")
-        ? "Proof review failed because reward redemptions are still blocking zero XP cost awards. Apply the latest Supabase migrations, then retry."
-        : maybePostgresError.code === "23514"
-          ? "Proof review failed because the database schema is out of date for mission awards. Apply the latest Supabase migrations, then retry."
-        : maybePostgresError.message ?? "Proof review failed.";
-
+    const notice = maybePostgresError.message ?? "Proof review failed.";
     redirect(appendAdminNotice("/admin/proofs", notice));
   }
 

@@ -5,8 +5,8 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { BellIcon } from "@/components/ui/Icons";
 import { withLoggedFallback } from "@/lib/app-errors";
+import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { getNotificationPreferences, getUnreadNotificationCount } from "@/lib/notifications";
-import { isSupabaseConfigured } from "@/lib/supabase";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 const defaultNotificationPreferences = {
@@ -21,7 +21,7 @@ const defaultNotificationPreferences = {
 export default async function ProfilePage() {
   const { user, profile } = await getCurrentUserProfile();
 
-  if (isSupabaseConfigured && !user) {
+  if (isLiveMode && !user) {
     redirect("/login");
   }
 
@@ -77,6 +77,7 @@ export default async function ProfilePage() {
         avatarUrl={profile?.avatar_url ?? ""}
         displayName={profile?.display_name ?? ""}
         email={user?.email ?? ""}
+        isDemoMode={isDemoMode}
         notificationPreferences={notificationPreferences}
       />
       <BottomNav active="Home" />

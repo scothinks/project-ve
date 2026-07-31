@@ -8,7 +8,7 @@ import {
   normalizeReferralCodeInput,
   sanitizePlainTextInput,
 } from "@/lib/input-safety";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 const referralStorageKey = "project-ve-referral-code";
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -20,6 +20,7 @@ type AuthView = {
 };
 
 type LoginFormProps = {
+  isDemoMode: boolean;
   onViewChange?: (view: AuthView) => void;
 };
 
@@ -42,8 +43,9 @@ declare global {
   }
 }
 
-export function LoginForm({ onViewChange }: LoginFormProps) {
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
+  const browserSupabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const supabase = isDemoMode ? null : browserSupabase;
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -245,6 +247,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setMessage("Login is unavailable until the live backend is configured.");
+        return;
+      }
+
       setPendingAction("submit");
       setMessage(null);
       if (authMode === "signup") {
@@ -359,6 +366,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setMessage("Google login is unavailable until the live backend is configured.");
+        return;
+      }
+
       setPendingAction("google");
       setMessage(null);
       setSuccessMessage(null);
@@ -429,6 +441,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setMessage("Password reset is unavailable until the live backend is configured.");
+        return;
+      }
+
       setSuccessMessage("Password reset email sent.");
       return;
     }
@@ -462,6 +479,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setMessage("Confirmation email is unavailable until the live backend is configured.");
+        return;
+      }
+
       setSuccessMessage("Confirmation email sent.");
       setCanResendConfirmation(false);
       return;
@@ -494,6 +516,11 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
 
   async function handleSaveNewPassword() {
     if (!supabase) {
+      if (!isDemoMode) {
+        setMessage("Password updates are unavailable until the live backend is configured.");
+        return;
+      }
+
       setSuccessMessage("Password updated.");
       return;
     }
@@ -713,9 +740,9 @@ export function LoginForm({ onViewChange }: LoginFormProps) {
         </p>
       ) : null}
 
-      {!isSupabaseConfigured ? (
+      {isDemoMode && !supabase ? (
         <p className="rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
-          Supabase env vars are not set, so login continues in demo mode.
+          Demo mode is active, so login continues without a live account.
         </p>
       ) : null}
 

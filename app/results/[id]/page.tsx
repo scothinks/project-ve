@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { QuizResultDetails } from "@/components/quiz/QuizResultDetails";
-import { getLearningLesson } from "@/lib/supabase-learning";
+import { createLearningRepository } from "@/features/app/repositories/learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 type ResultsPageProps = {
@@ -14,7 +14,8 @@ export const dynamic = "force-dynamic";
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
-  const detail = await getLearningLesson(supabase, id);
+  const learningRepository = createLearningRepository(supabase);
+  const detail = await learningRepository.getLesson(id);
 
   if (!detail) {
     notFound();

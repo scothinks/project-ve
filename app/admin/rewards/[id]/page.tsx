@@ -69,7 +69,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
     redirect(`/admin/rewards/perks/${detail.reward.id}`);
   }
 
-  const { reward, inventoryItems, adjustments, perkPrizes, perkRewardCandidates } = detail;
+  const { reward, inventoryItems, adjustments } = detail;
   const inventoryMode =
     reward.fulfillment_type === "voucher_code" || reward.fulfillment_type === "qr_code"
       ? "items"

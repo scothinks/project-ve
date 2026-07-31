@@ -53,10 +53,6 @@ function labelClasses() {
   return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
 }
 
-function sectionSummaryClasses() {
-  return "cursor-pointer list-none text-sm font-black text-[var(--foreground)]";
-}
-
 function SectionChevron({ open }: { open: boolean }) {
   return (
     <span

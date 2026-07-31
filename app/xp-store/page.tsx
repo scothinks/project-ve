@@ -5,16 +5,16 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { XPStore } from "@/components/rewards/XPStore";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
-import { demoRewardStoreSnapshot } from "@/lib/rewards";
-import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isDemoMode, isLiveMode } from "@/lib/app-mode";
+import { createRewardRepository } from "@/features/app/repositories/rewards";
 
 export default async function XPStorePage() {
   const supabase = await createSupabaseServerClient();
   const { user, profile } = await getCurrentUserProfile(supabase);
+  const rewardRepository = createRewardRepository(supabase);
 
-  if (isSupabaseConfigured && !user) {
+  if (isLiveMode && !user) {
     redirect("/login");
   }
   const [segmentKeys, rewardSnapshot] = await Promise.all([
@@ -26,16 +26,18 @@ export default async function XPStorePage() {
       fallback: [],
       promise: getLearnerAdSegments(supabase, user?.id),
     }),
-    supabase && user && profile
+    isLiveMode && user && profile
       ? withLoggedFallback({
           context: {
             operation: "xp_store.reward_store.load",
             userId: user.id,
           },
           fallback: null,
-          promise: getRewardStoreSnapshot(supabase, user.id, profile.xp_balance_cached ?? 0),
+          promise: rewardRepository.getStoreSnapshot(user.id, profile.xp_balance_cached ?? 0),
         })
-      : Promise.resolve(isSupabaseConfigured ? null : demoRewardStoreSnapshot),
+      : isDemoMode
+        ? rewardRepository.getStoreSnapshot("demo-user", 0)
+        : Promise.resolve(null),
   ]);
   const storeAd = await getAdDecision(supabase, {
     placementKey: "xp_store_card",
