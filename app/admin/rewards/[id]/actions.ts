@@ -108,16 +108,6 @@ async function getUniqueRewardId(supabase: Awaited<ReturnType<typeof requireAdmi
   return `${baseId}-${Date.now().toString(36)}`;
 }
 
-function isMissingDistributionModeRpc(error: unknown) {
-  return (
-    !!error
-    && typeof error === "object"
-    && /p_distribution_mode|function .*admin_(update|create)_reward/i.test(
-      String((error as { message?: string }).message ?? ""),
-    )
-  );
-}
-
 async function callRewardMutationRpc(
   supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
   rpcName: "admin_update_reward" | "admin_create_reward",
@@ -150,19 +140,9 @@ async function callRewardMutationRpc(
     ? { p_total_available: payload.totalAvailable, ...baseArgs }
     : baseArgs;
 
-  const nextResult = await supabase.rpc(rpcName, {
-    ...createArgs,
-    p_distribution_mode: payload.distributionMode,
-  });
-
-  if (!nextResult.error || !isMissingDistributionModeRpc(nextResult.error)) {
-    return nextResult;
-  }
-
   return supabase.rpc(rpcName, {
     ...createArgs,
-    p_fulfillment_type:
-      payload.distributionMode === "perk_bundle" ? "perk_bundle" : payload.fulfillmentType,
+    p_distribution_mode: payload.distributionMode,
   });
 }
 

@@ -39,10 +39,10 @@ Admin-facing:
 
 First-time learners are routed through a short onboarding assessment before the dashboard.
 
-- Assessment schema and seed data live in [supabase/migrations](/Users/scoteritemu/Nu-Project-VE/supabase/migrations)
-- App flow starts at [app/onboarding/assessment/page.tsx](/Users/scoteritemu/Nu-Project-VE/app/onboarding/assessment/page.tsx)
-- Completion is handled by [app/onboarding/assessment/actions.ts](/Users/scoteritemu/Nu-Project-VE/app/onboarding/assessment/actions.ts)
-- Shared helpers live in [lib/values-assessment.ts](/Users/scoteritemu/Nu-Project-VE/lib/values-assessment.ts)
+- Assessment schema and seed data live in [supabase/migrations](supabase/migrations)
+- App flow starts at [app/onboarding/assessment/page.tsx](app/onboarding/assessment/page.tsx)
+- Completion is handled by [app/onboarding/assessment/actions.ts](app/onboarding/assessment/actions.ts)
+- Shared helpers live in [lib/values-assessment.ts](lib/values-assessment.ts)
 
 ### Personalized Recommendations
 
@@ -52,7 +52,7 @@ The dashboard now blends:
 - learner value profile
 - content-to-dimension tags
 
-The current recommendation helper lives in [lib/personalized-recommendations.ts](/Users/scoteritemu/Nu-Project-VE/lib/personalized-recommendations.ts). Content tags are managed through the admin UI and stored in `content_value_tags`.
+The current recommendation helper lives in [lib/personalized-recommendations.ts](lib/personalized-recommendations.ts). Content tags are managed through the admin UI and stored in `content_value_tags`.
 
 ### Notifications
 
@@ -60,8 +60,8 @@ Notifications use an inbox-first model with optional web push.
 
 - inbox, preferences, subscriptions, and push delivery tables are defined in Supabase migrations
 - in-app inbox and settings live in the app UI
-- web push dispatch runs through [app/api/notifications/dispatch/route.ts](/Users/scoteritemu/Nu-Project-VE/app/api/notifications/dispatch/route.ts)
-- device subscription capture runs through [app/api/notifications/push-subscription/route.ts](/Users/scoteritemu/Nu-Project-VE/app/api/notifications/push-subscription/route.ts)
+- web push dispatch runs through [app/api/notifications/dispatch/route.ts](app/api/notifications/dispatch/route.ts)
+- device subscription capture runs through [app/api/notifications/push-subscription/route.ts](app/api/notifications/push-subscription/route.ts)
 
 ### Learning and XP
 
@@ -75,11 +75,11 @@ The repo includes an AI-assisted course generation and media workflow for admins
 
 ## Key Directories
 
-- [app](/Users/scoteritemu/Nu-Project-VE/app) - routes, server actions, and API endpoints
-- [components](/Users/scoteritemu/Nu-Project-VE/components) - learner and admin UI
-- [lib](/Users/scoteritemu/Nu-Project-VE/lib) - Supabase integrations, domain logic, mapping helpers, and seed/demo data
-- [supabase/migrations](/Users/scoteritemu/Nu-Project-VE/supabase/migrations) - migration history and RPC definitions
-- [vercel.json](/Users/scoteritemu/Nu-Project-VE/vercel.json) - Vercel Cron config
+- [app](app) - routes, server actions, and API endpoints
+- [components](components) - learner and admin UI
+- [lib](lib) - Supabase integrations, domain logic, mapping helpers, and seed/demo data
+- [supabase/migrations](supabase/migrations) - migration history and RPC definitions
+- [vercel.json](vercel.json) - Vercel Cron config
 
 ## Local Setup
 
@@ -97,7 +97,7 @@ cp .env.example .env.local
 
 3. Start/reset Supabase from migrations, or apply migrations to your linked project.
 
-See [docs/database.md](/Users/scoteritemu/Nu-Project-VE/docs/database.md) for
+See [docs/database.md](docs/database.md) for
 the local reset, type generation, and DB test workflow.
 
 4. Start the app:
@@ -110,8 +110,9 @@ npm run dev
 
 ## Environment Variables
 
-Defined in [.env.example](/Users/scoteritemu/Nu-Project-VE/.env.example):
+Defined in [.env.example](.env.example):
 
+- `APP_MODE`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -135,9 +136,10 @@ Defined in [.env.example](/Users/scoteritemu/Nu-Project-VE/.env.example):
 
 This app depends on Supabase for authenticated learner progress, admin operations, notifications, assessment, referrals, rewards, and quiz XP.
 
-- Some read-only views still fall back to seeded/demo data when Supabase is unavailable
+- `APP_MODE=live` uses Supabase-backed repositories and does not silently serve demo learner XP or progress
+- `APP_MODE=demo` uses explicit demo repositories for local product exploration without Supabase
 - authenticated write flows do not rely on demo fallbacks
-- migration history in [supabase/migrations](/Users/scoteritemu/Nu-Project-VE/supabase/migrations) is the source of truth
+- migration history in [supabase/migrations](supabase/migrations) is the source of truth
 - do not use or recreate a hand-maintained `supabase/schema.sql`
 
 If learner-facing data looks inconsistent with admin totals, check publication state first. A common example is published lesson content with a quiz that is still in draft, which suppresses learner XP until the quiz is also published.
@@ -156,7 +158,7 @@ npm run typecheck
 
 The app is currently shaped for Vercel deployment.
 
-- cron config lives in [vercel.json](/Users/scoteritemu/Nu-Project-VE/vercel.json)
+- cron config lives in [vercel.json](vercel.json)
 - the current cron calls `/api/notifications/dispatch` and `/api/admin/ai/jobs/process`
 - on Vercel Hobby, the schedule must remain daily-compatible
 

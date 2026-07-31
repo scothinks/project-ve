@@ -7,9 +7,9 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { createLearningRepository } from "@/features/app/repositories/learning";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
-import { getLearningLesson } from "@/lib/supabase-learning";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 type LessonPageProps = {
@@ -23,8 +23,9 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const { id } = await params;
   const { page: pageParam, ref } = await searchParams;
   const supabase = await createSupabaseServerClient();
+  const learningRepository = createLearningRepository(supabase);
   const [detail, userResult] = await Promise.all([
-    getLearningLesson(supabase, id),
+    learningRepository.getLesson(id),
     supabase ? supabase.auth.getUser() : Promise.resolve({ data: { user: null } }),
   ]);
 

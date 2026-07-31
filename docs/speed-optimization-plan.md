@@ -22,15 +22,17 @@ Improve perceived and server-side performance across the public app and admin CM
 
 ## Phase 2 — Remove Global Request Tax
 
-- Do not call `supabase.auth.getUser()` in middleware for every route.
-- Scope middleware auth refresh to protected app/admin paths and auth callbacks.
+- Avoid an expanding manual route list for middleware auth refresh.
+- Refresh auth consistently on matched dynamic routes while explicitly excluding
+  static assets, Next image assets, and common image files.
 - Keep the device cookie used by ads/risk protection available on relevant routes.
 
 ## Phase 3 — Targeted Learning Loaders
 
 - Add targeted course, lesson, and quiz loaders that query only required rows.
 - Stop `getLearningCourse()`, `getLearningLesson()`, and `getLearningQuiz()` from loading the full catalog.
-- Preserve seed/demo fallback behavior when Supabase is not configured.
+- Preserve explicit `APP_MODE=demo` behavior through demo repositories; missing
+  Supabase configuration in live mode must not serve seed/demo learning content.
 
 ## Phase 4 — Public Route Waterfall Reduction
 
@@ -66,7 +68,8 @@ Improve perceived and server-side performance across the public app and admin CM
 
 ## Completion Criteria
 
-- Middleware no longer makes a Supabase auth network call for every public request.
+- Middleware auth refresh uses one explicit matcher and avoids static asset
+  requests without relying on a growing protected-route allowlist.
 - Single course/lesson/quiz pages no longer load the full learning catalog.
 - Dashboard has fewer sequential await waterfalls.
 - Mission list/dashboard rendering avoids award-sync writes.
@@ -79,7 +82,8 @@ Improve perceived and server-side performance across the public app and admin CM
 ### Completed
 
 - Added `PERF_LOGS=1` server timing support for high-impact dashboard loaders.
-- Scoped middleware auth refresh so public/marketing and non-auth routes avoid the global Supabase `getUser()` request tax.
+- Replaced the expanding middleware auth-route list with one explicit matcher
+  that refreshes auth on matched dynamic routes and excludes static assets.
 - Added targeted published course, lesson, and quiz loaders so detail pages no longer load the full catalog.
 - Batched dashboard reads into primary and secondary parallel groups.
 - Reused an existing Supabase server client in hot routes to avoid duplicate client/cookie setup.
@@ -106,7 +110,8 @@ Measured from a local production server with a warmed Next cache. These timings 
 
 ### Remaining Follow-Ups
 
-- Some admin unused-variable lint warnings predate this work and remain intentionally untouched.
+- Capture browser Lighthouse/Web Vitals in staging after the Phase 2 remediation
+  cleanup lands.
 - A deeper database-level mission summary RPC would further reduce query count, but the current implementation removes read-path writes and parallelizes the existing logic without requiring a migration.
 - Browser-level Lighthouse/Web Vitals should be captured in staging because local server timing does not measure hydration, image loading, real device CPU, or mobile network behavior.
 - Investigate why `/api/referrals/accept` fires during simple learner navigation such as dashboard → courses → course detail. Current likely source is `ReferralAttributionCapture` on `/dashboard`; confirm whether stale `project-ve-referral-code` localStorage or missing accepted/refused state causes repeated 400s, then gate or clear it so normal course browsing does not produce referral API noise.

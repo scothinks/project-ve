@@ -7,8 +7,6 @@ import {
 import { parseImagePresentation } from "@/lib/image-presentation";
 import { createPlainSupabaseClient, type AppSupabaseClient } from "@/lib/supabase";
 import {
-  courses as seedCourses,
-  lessons as seedLessons,
   type CalloutBlock,
   type Course,
   type CourseLevel,
@@ -417,31 +415,6 @@ function mapCatalog({
   });
 }
 
-function findSeedCourse(idOrSlug: string) {
-  return seedCourses.find((course) => course.id === idOrSlug || course.slug === idOrSlug) ?? null;
-}
-
-function findSeedLesson(idOrSlug: string) {
-  const lesson = seedLessons.find((item) => item.id === idOrSlug || item.slug === idOrSlug) ?? null;
-  const course = lesson
-    ? seedCourses.find((item) => item.id === lesson.courseId) ?? null
-    : null;
-
-  return lesson && course ? { lesson, course } : null;
-}
-
-function findSeedQuiz(idOrLessonId: string) {
-  const lesson =
-    seedLessons.find(
-      (item) =>
-        item.id === idOrLessonId ||
-        item.slug === idOrLessonId ||
-        item.quiz.id === idOrLessonId,
-    ) ?? null;
-
-  return lesson ? { lesson, quiz: lesson.quiz } : null;
-}
-
 async function getPublishedCourseByIdOrSlug(
   supabase: AppSupabaseClient,
   idOrSlug: string,
@@ -691,7 +664,11 @@ async function loadMappedPublishedCourseSummaries(
 }
 
 export async function getLearningCatalog(supabase: AppSupabaseClient | null): Promise<Course[]> {
-  if (!supabase) return seedCourses;
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.catalog.load",
+    });
+  }
 
   try {
     const { data: courses, error: coursesError } = await supabase
@@ -726,17 +703,14 @@ function throwLoggedLearningDependencyError(
   throw appError;
 }
 
-function stripSeedCoursePages() {
-  return seedCourses.map((course) => ({
-    ...course,
-    lessons: course.lessons.map((lesson) => ({ ...lesson, pages: [] })),
-  }));
-}
-
 export async function getLearningCourseSummaries(
   supabase: AppSupabaseClient | null,
 ): Promise<Course[]> {
-  if (!supabase) return stripSeedCoursePages();
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.course_summaries.load",
+    });
+  }
 
   try {
     const { data: courses, error: coursesError } = await supabase
@@ -768,7 +742,12 @@ export async function getLearningCourse(
   supabase: AppSupabaseClient | null,
   idOrSlug: string,
 ): Promise<Course | null> {
-  if (!supabase) return findSeedCourse(idOrSlug);
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.course.load",
+      resourceId: idOrSlug,
+    });
+  }
 
   try {
     const course = await getPublishedCourseByIdOrSlug(supabase, idOrSlug);
@@ -787,7 +766,12 @@ export async function getLearningLesson(
   supabase: AppSupabaseClient | null,
   idOrSlug: string,
 ): Promise<{ lesson: Lesson; course: Course } | null> {
-  if (!supabase) return findSeedLesson(idOrSlug);
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.lesson.load",
+      resourceId: idOrSlug,
+    });
+  }
 
   try {
     const lessonRow = await getPublishedLessonByIdOrSlug(supabase, idOrSlug);
@@ -818,7 +802,12 @@ export async function getLearningQuiz(
   supabase: AppSupabaseClient | null,
   idOrLessonId: string,
 ): Promise<{ lesson: Lesson; quiz: Quiz } | null> {
-  if (!supabase) return findSeedQuiz(idOrLessonId);
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.quiz.load",
+      resourceId: idOrLessonId,
+    });
+  }
 
   try {
     const lessonId = (await getPublishedQuizLessonId(supabase, idOrLessonId)) ?? idOrLessonId;

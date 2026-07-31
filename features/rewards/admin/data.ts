@@ -61,27 +61,6 @@ export type AdminRedemptionFilters = {
   dateTo?: string;
 };
 
-type LegacyAdminRewardRow = Omit<AdminRewardRow, "distribution_mode">;
-
-function withDerivedDistributionMode<T extends { fulfillment_type: string }>(
-  reward: T,
-): T & { distribution_mode: string; fulfillment_type: string } {
-  return {
-    ...reward,
-    distribution_mode: reward.fulfillment_type === "perk_bundle" ? "perk_bundle" : "direct",
-    fulfillment_type: reward.fulfillment_type === "perk_bundle" ? "manual" : reward.fulfillment_type,
-  };
-}
-
-function isMissingDistributionModeError(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const record = error as Record<string, unknown>;
-  return /distribution_mode/i.test(String(record.message ?? ""));
-}
-
 export async function getAdminRewards(
   supabase: SupabaseClient,
   filters: { campaignId?: string; distributionMode?: "direct" | "perk_bundle" } = {},
@@ -104,43 +83,13 @@ export async function getAdminRewards(
     query = query.eq("distribution_mode", filters.distributionMode);
   }
 
-  let data: AdminRewardRow[] | null = null;
   const { data: nextData, error } = await query;
 
   if (error) {
-    if (!isMissingDistributionModeError(error)) {
-      throw error;
-    }
-
-    let legacyQuery = supabase
-      .from("rewards")
-      .select(baseSelect)
-      .order("sort_order", { ascending: true });
-
-    if (filters.campaignId) {
-      legacyQuery =
-        filters.campaignId === "none"
-          ? legacyQuery.is("campaign_id", null)
-          : legacyQuery.eq("campaign_id", filters.campaignId);
-    }
-
-    const legacyResult = await legacyQuery;
-
-    if (legacyResult.error) {
-      throw legacyResult.error;
-    }
-
-    data = ((legacyResult.data ?? []) as LegacyAdminRewardRow[])
-      .map(withDerivedDistributionMode)
-      .filter((reward) =>
-        filters.distributionMode ? reward.distribution_mode === filters.distributionMode : true,
-      );
-  } else {
-    data = ((nextData ?? []) as AdminRewardRow[]).filter((reward) =>
-      filters.distributionMode ? reward.distribution_mode === filters.distributionMode : true,
-    );
+    throw error;
   }
 
+  const data = (nextData ?? []) as AdminRewardRow[];
   const campaigns = await getAdminCampaignsByIds(
     supabase,
     (data ?? []).map((reward) => reward.campaign_id ?? ""),
@@ -227,30 +176,15 @@ export async function getAdminRewardsByIds(supabase: SupabaseClient, rewardIds: 
   }
 
   const baseSelect =
-    "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, offer_expires_at, updated_at";
+    "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
   const { data, error } = await supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)
     .in("id", uniqueIds);
 
-  let resolvedData: AdminRewardRow[] | null = data ? (data as AdminRewardRow[]) : null;
-
   if (error) {
-    if (!isMissingDistributionModeError(error)) {
-      throw error;
-    }
-
-    const legacyResult = await supabase
-      .from("rewards")
-      .select(baseSelect)
-      .in("id", uniqueIds);
-
-    if (legacyResult.error) {
-      throw legacyResult.error;
-    }
-
-    resolvedData = ((legacyResult.data ?? []) as LegacyAdminRewardRow[]).map(withDerivedDistributionMode);
+    throw error;
   }
 
-  return new Map((resolvedData ?? []).map((reward) => [reward.id, reward]));
+  return new Map(((data ?? []) as AdminRewardRow[]).map((reward) => [reward.id, reward]));
 }

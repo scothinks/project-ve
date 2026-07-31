@@ -24,19 +24,19 @@ import {
   getCompletedLessonIds,
   getContinueLearningItem,
   getCourseProgress,
-  getLessonProgress,
 } from "@/lib/progress";
-import { demoRewardStoreSnapshot } from "@/lib/rewards";
+import type { RewardStoreSnapshot } from "@/lib/rewards";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { resolveDashboardXpBalance } from "@/lib/observability";
 import { measureAsync } from "@/lib/performance";
 import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
-import { getLearningCatalog } from "@/lib/supabase-learning";
-import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
 import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
-import { getRewardStoreSnapshot } from "@/lib/supabase-rewards";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isDemoMode, isLiveMode } from "@/lib/app-mode";
+import { createLearningRepository } from "@/features/app/repositories/learning";
+import { createMissionRepository } from "@/features/app/repositories/missions";
+import { createProgressRepository } from "@/features/app/repositories/progress";
+import { createRewardRepository } from "@/features/app/repositories/rewards";
 import {
   getUserAssessmentCompletionStatus,
   learnerNeedsValuesAssessment,
@@ -160,7 +160,7 @@ function FeaturedRewardsSection({
   rewards,
   compact = false,
 }: {
-  rewards: NonNullable<Awaited<ReturnType<typeof getRewardStoreSnapshot>>>["rewards"];
+  rewards: RewardStoreSnapshot["rewards"];
   compact?: boolean;
 }) {
   if (rewards.length === 0) return null;
@@ -391,12 +391,17 @@ function buildRecommendedMissionItems(params: {
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
   const { user, profile } = await getCurrentUserProfile(supabase);
+  const learningRepository = createLearningRepository(supabase);
+  const progressRepository = createProgressRepository(supabase);
+  const rewardRepository = createRewardRepository(supabase);
+  const missionRepository = createMissionRepository(supabase);
+  const repositoryUserId = user?.id ?? "demo-user";
 
-  if (isSupabaseConfigured && !user) {
+  if (isLiveMode && !user) {
     redirect("/login");
   }
 
-  if (isSupabaseConfigured && user) {
+  if (isLiveMode && user) {
     const assessmentStatus = await getUserAssessmentCompletionStatus(supabase, user.id);
 
     if (
@@ -410,7 +415,7 @@ export default async function DashboardPage() {
   }
 
   const [catalog, requestHeaders] = await Promise.all([
-    measureAsync("dashboard.learning_catalog", () => getLearningCatalog(supabase)),
+    measureAsync("dashboard.learning_catalog", () => learningRepository.getCatalog()),
     headers(),
   ]);
   const origin = buildRequestOrigin(requestHeaders);
@@ -421,7 +426,7 @@ export default async function DashboardPage() {
   const firstName = displayName.split(/\s+/)[0] || "Learner";
 
   const xpBalance = resolveDashboardXpBalance({
-    isConfigured: isSupabaseConfigured,
+    isConfigured: isLiveMode,
     profile,
     userId: user?.id,
   });
@@ -433,17 +438,21 @@ export default async function DashboardPage() {
     missionRecommendations,
     dashboardAdSegments,
   ] = await measureAsync("dashboard.primary_data_batch", () => Promise.all([
-    isSupabaseConfigured && user && supabase ? getLessonProgress(supabase, user.id) : Promise.resolve([]),
+    user || isDemoMode
+      ? progressRepository.getLessonProgress(repositoryUserId)
+      : Promise.resolve([]),
     getDashboardRecommendationSections(supabase, catalog),
-    isSupabaseConfigured && user && supabase
+    isLiveMode && user
       ? withLoggedDashboardFallback({
           fallback: null,
           operation: "dashboard.reward_store.load",
-          promise: getRewardStoreSnapshot(supabase, user.id, xpBalance),
+          promise: rewardRepository.getStoreSnapshot(user.id, xpBalance),
           userId: user.id,
         })
-      : Promise.resolve(demoRewardStoreSnapshot),
-    isSupabaseConfigured && user && supabase
+      : isDemoMode
+        ? rewardRepository.getStoreSnapshot(repositoryUserId, xpBalance)
+        : Promise.resolve(null),
+    isLiveMode && user && supabase
       ? withLoggedDashboardFallback({
           fallback: 0,
           operation: "dashboard.notifications.unread_count",
@@ -451,19 +460,24 @@ export default async function DashboardPage() {
           userId: user.id,
         })
       : Promise.resolve(0),
-    isSupabaseConfigured && user && supabase
+    isLiveMode && user
       ? withLoggedDashboardFallback({
           fallback: [],
           operation: "dashboard.missions.load",
-          promise: getSupabaseMissionSummaries({
-            supabase,
+          promise: missionRepository.getSummaries({
             userId: user.id,
             referralCode: profile?.referral_code ?? null,
             origin,
           }),
           userId: user.id,
         })
-      : Promise.resolve([]),
+      : isDemoMode
+        ? missionRepository.getSummaries({
+            userId: repositoryUserId,
+            referralCode: null,
+            origin,
+          })
+        : Promise.resolve([]),
     withLoggedDashboardFallback({
       fallback: [],
       operation: "dashboard.ads.segments",
@@ -500,7 +514,7 @@ export default async function DashboardPage() {
   );
   const featuredRewards = (rewardSnapshot?.rewards ?? []).slice(0, 2);
   const [continueLearningItem, personalizedRecommendations, homeFeedAd] = await measureAsync("dashboard.secondary_data_batch", () => Promise.all([
-    isSupabaseConfigured && user && supabase
+    isLiveMode && user && supabase
       ? getContinueLearningItem({
           supabase,
           userId: user.id,
@@ -508,7 +522,7 @@ export default async function DashboardPage() {
           lessonProgress,
         })
       : Promise.resolve(null),
-    isSupabaseConfigured && user && supabase
+    isLiveMode && user && supabase
       ? withLoggedDashboardFallback({
           fallback: { sections: [], userProfile: null, userScores: [] },
           operation: "dashboard.personalized_recommendations.load",

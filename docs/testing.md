@@ -40,6 +40,25 @@ is absent, the job emits a notice and skips only the linked Supabase drift check
 checks locally generated public-schema types against `types/database.ts`, and
 runs local pgTAP tests. It does not use `supabase/schema.sql`.
 
+`npm run test:repositories:local` runs the `VE-DEMO-001` repository contract
+tests twice:
+
+```text
+APP_MODE=demo with Supabase env blank
+APP_MODE=live against the local Supabase API
+```
+
+Run it after `npm run db:start` and `npm run db:reset`. The live contract reads
+the local Supabase URL and keys from `supabase status -o env`, reads published
+learning content from the local database, inserts and removes learner progress
+rows for the seeded test learner, and asserts live rewards/progress do not fall
+back to demo snapshots. Override the local connection with
+`LOCAL_SUPABASE_URL`, `LOCAL_SUPABASE_PUBLISHABLE_KEY`, and
+`LOCAL_SUPABASE_SERVICE_ROLE_KEY` if your local Supabase output differs.
+
+`npm run test:integration` runs local pgTAP tests and the local repository
+contract tests.
+
 `npm run test:db:linked` is the remote Supabase pgTAP security gate. It depends
 on the linked project containing the permanent learner/admin test users declared
 in `supabase/tests/database/_test_constants.psql`, so it is intentionally kept

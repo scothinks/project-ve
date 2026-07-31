@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveMode } from "@/lib/app-mode";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { isSupabaseConfigured } from "@/lib/supabase";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -11,10 +11,10 @@ export async function POST(_request: NextRequest, { params }: Params) {
 
   const supabase = await createSupabaseServerClient();
 
-  if (!supabase) {
+  if (!isLiveMode || !supabase) {
     return NextResponse.json(
       { error: "Reward redemption is unavailable until the live backend is configured." },
-      { status: isSupabaseConfigured ? 500 : 503 },
+      { status: 503 },
     );
   }
 

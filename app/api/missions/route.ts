@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { getMissionSummaries } from "@/lib/demo-progress-store";
-import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+import { isDemoMode } from "@/lib/app-mode";
+import { createMissionRepository } from "@/features/app/repositories/missions";
 
 export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
   const { user, profile } = await getCurrentUserProfile(supabase);
+  const missionRepository = createMissionRepository(supabase);
   const origin = new URL(request.url).origin;
 
-  if (supabase && user) {
+  if (user) {
     return NextResponse.json({
-      missions: await getSupabaseMissionSummaries({
-        supabase,
+      missions: await missionRepository.getSummaries({
         userId: user.id,
         referralCode: profile?.referral_code ?? null,
         origin,
@@ -19,11 +19,15 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.json({
-    missions: getMissionSummaries(
-      user?.id,
-      origin,
-      profile?.referral_code,
-    ),
-  });
+  if (isDemoMode) {
+    return NextResponse.json({
+      missions: await missionRepository.getSummaries({
+        userId: "demo-user",
+        origin,
+        referralCode: null,
+      }),
+    });
+  }
+
+  return NextResponse.json({ error: "Please sign in to view missions." }, { status: 401 });
 }

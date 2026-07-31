@@ -14,12 +14,13 @@ import {
   subscribeCurrentDevice,
   unsubscribeCurrentDevice,
 } from "@/lib/push-client";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 type ProfileFormProps = {
   displayName: string;
   avatarUrl: string;
   email: string;
+  isDemoMode: boolean;
   notificationPreferences: NotificationPreferences;
 };
 
@@ -70,10 +71,12 @@ export function ProfileForm({
   displayName,
   avatarUrl,
   email,
+  isDemoMode,
   notificationPreferences: initialNotificationPreferences,
 }: ProfileFormProps) {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const browserSupabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const supabase = isDemoMode ? null : browserSupabase;
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const [pushEnabled, setPushEnabled] = useState(initialNotificationPreferences.webPushEnabled);
   const [name, setName] = useState(displayName);
@@ -127,6 +130,11 @@ export function ProfileForm({
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setError("Profile updates are unavailable until the live backend is configured.");
+        return;
+      }
+
       setName(safeName);
       setAvatar(safeAvatar);
       setMessage("Profile updated.");
@@ -162,6 +170,11 @@ export function ProfileForm({
     }
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setError("Password updates are unavailable until the live backend is configured.");
+        return;
+      }
+
       setNewPassword("");
       setMessage("Password updated.");
       return;
@@ -189,6 +202,11 @@ export function ProfileForm({
     setError(null);
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setError("Sign out is unavailable until the live backend is configured.");
+        return;
+      }
+
       router.replace("/login");
       return;
     }
@@ -261,6 +279,12 @@ export function ProfileForm({
     setSavingPreferenceKey(key);
 
     if (!supabase) {
+      if (!isDemoMode) {
+        setError("Notification preferences are unavailable until the live backend is configured.");
+        setSavingPreferenceKey(null);
+        return;
+      }
+
       setPreferences((current) => ({ ...current, [key]: value }));
       setSavingPreferenceKey(null);
       return;
@@ -568,9 +592,9 @@ export function ProfileForm({
         </p>
       ) : null}
 
-      {!isSupabaseConfigured ? (
+      {isDemoMode && !supabase ? (
         <p className="rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
-          Supabase env vars are not set, so profile changes stay in demo mode.
+          Demo mode is active, so profile changes stay in this browser session.
         </p>
       ) : null}
     </section>

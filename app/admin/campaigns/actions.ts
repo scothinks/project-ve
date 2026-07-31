@@ -6,11 +6,6 @@ import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 
-type SupabaseActionError = {
-  code?: string;
-  message?: string;
-};
-
 function parseOptionalDate(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
 
@@ -20,18 +15,6 @@ function parseOptionalDate(value: FormDataEntryValue | null) {
 
   const date = new Date(raw);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
-
-function isMissingRpcError(error: SupabaseActionError | null) {
-  if (!error) {
-    return false;
-  }
-
-  return (
-    error.code === "PGRST202"
-    || error.code === "42883"
-    || String(error.message ?? "").toLowerCase().includes("function")
-  );
 }
 
 async function setLinkedRewardsEnabled(
@@ -95,7 +78,6 @@ export async function setCampaignEnabled(formData: FormData) {
   const isEnabled = String(formData.get("isEnabled") ?? "") === "true";
   const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/campaigns"), 400);
   const { supabase } = await requireAdmin();
-  const nextStatus = isEnabled ? "active" : "draft";
 
   const { error } = await supabase.rpc("admin_set_campaign_enabled", {
     p_campaign_id: campaignId,
@@ -103,40 +85,7 @@ export async function setCampaignEnabled(formData: FormData) {
   });
 
   if (error) {
-    if (!isMissingRpcError(error)) {
-      throw new Error(error.message);
-    }
-
-    const { data: campaign, error: campaignError } = await supabase
-      .from("campaigns")
-      .select("id, slug, name, description, starts_at, ends_at, budget_label, budget_amount")
-      .eq("id", campaignId)
-      .maybeSingle();
-
-    if (campaignError) {
-      throw new Error(campaignError.message);
-    }
-
-    if (!campaign) {
-      throw new Error("Campaign not found.");
-    }
-
-    const { error: fallbackError } = await supabase.rpc("admin_upsert_campaign", {
-      p_campaign_id: campaign.id,
-      p_name: campaign.name,
-      p_slug: campaign.slug,
-      p_description: campaign.description ?? "",
-      p_status: nextStatus,
-      p_starts_at: campaign.starts_at,
-      p_ends_at: campaign.ends_at,
-      p_budget_label: campaign.budget_label ?? "",
-      p_budget_amount: campaign.budget_amount,
-    });
-
-    if (fallbackError) {
-      throw new Error(fallbackError.message);
-    }
-
+    throw new Error(error.message);
   }
 
   await setLinkedRewardsEnabled(supabase, campaignId, isEnabled);

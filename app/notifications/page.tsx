@@ -4,9 +4,9 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { isLiveMode } from "@/lib/app-mode";
 import { getUnreadNotificationCount, getUserNotifications } from "@/lib/notifications";
 import { loadNotificationPageState } from "@/lib/observability";
-import { isSupabaseConfigured } from "@/lib/supabase";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 const categoryTone = {
@@ -30,7 +30,7 @@ function formatNotificationTime(value: string) {
 export default async function NotificationsPage() {
   const { user } = await getCurrentUserProfile();
 
-  if (isSupabaseConfigured && !user) {
+  if (isLiveMode && !user) {
     redirect("/login");
   }
 
