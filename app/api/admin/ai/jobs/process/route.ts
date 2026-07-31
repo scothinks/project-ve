@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { processNextAiGenerationJob } from "@/app/admin/courses/ai-actions";
+import { revalidateLearningPaths } from "@/app/admin/courses/learning-cache";
+import { processNextAiGenerationJob } from "@/features/ai-generation/application/job-orchestration";
+import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
 function isAuthorized(request: NextRequest) {
   const workerSecret = process.env.AI_GENERATION_WORKER_SECRET;
@@ -26,10 +28,13 @@ async function handleProcess(request: NextRequest) {
 
   const limit = parseLimit(request);
   const workerId = `api-worker-${crypto.randomUUID()}`;
+  const supabase = createSupabaseAdminClient();
   const results = [];
 
   for (let index = 0; index < limit; index += 1) {
-    const result = await processNextAiGenerationJob(workerId);
+    const result = await processNextAiGenerationJob(supabase, workerId, {
+      revalidateLearningPaths,
+    });
     results.push(result);
 
     if (!result.processed) {

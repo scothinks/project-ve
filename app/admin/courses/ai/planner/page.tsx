@@ -13,7 +13,7 @@ import {
   parseStoredCourseExpansionPlan,
   parseStoredNewCoursePlan,
   parseStoredNewCoursePlanSelection,
-} from "@/lib/ai-course-planner";
+} from "@/features/learning/admin/planner-model";
 import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { getAdminAiCoursePlans, getAdminCourses, requireAdmin } from "@/lib/admin";
 

@@ -1628,6 +1628,25 @@ Learner can mark their own notification read.
 
 Learner cannot mark another user's notification read.
 
+### Current implementation status
+
+Implemented and validated:
+
+* `supabase/migrations/20260729201500_restrict_notification_read_mutations.sql`
+  removes generic learner `UPDATE` access on `public.user_notifications`;
+* `public.mark_notification_read(uuid)` and
+  `public.mark_all_notifications_read()` are the scoped authenticated commands
+  for learner read-state changes;
+* both commands derive the learner identity from `auth.uid()` and only update
+  `read_at` on rows owned by that identity;
+* `app/notifications/actions.ts` calls the scoped RPCs instead of directly
+  updating notification rows;
+* `supabase/tests/database/notification_security.sql` verifies authenticated
+  learners cannot directly update notification rows, can mark owned
+  notifications read, cannot mark another user's notification read, and can
+  mark remaining owned notifications read;
+* linked pgTAP validation passes with `notification_security.sql .. ok`.
+
 ---
 
 # VE-ARCH-001
@@ -1717,6 +1736,296 @@ Move code according to responsibility and ownership.
 * `lib/admin.ts` is decomposed into feature-specific modules;
 * AI orchestration no longer lives in a single 4,000-line action file;
 * behavior remains unchanged.
+
+### Current implementation status
+
+Implementation status after the VE-ARCH-001 closeout pass:
+
+* `features/ai-generation/data/jobs.ts` now owns durable AI generation job
+  persistence and worker RPC access for create/update/claim/fail/materialize
+  operations;
+* `features/ai-generation/data/workflow.ts` now owns AI course workflow row
+  types, read-model queries, media asset loading, revision data loading, and
+  audit event persistence, plus AI status recompute, media approval reset, and
+  media-scope approval promotion persistence;
+* `features/ai-generation/data/media-assets.ts` now owns learning media asset
+  lookup, generation-status persistence, and applying/clearing generated media
+  targets on courses, lessons, lesson pages, and managed page image blocks;
+* `features/ai-generation/domain/workflow-status.ts` now owns AI-generated
+  course/lesson guards, media preview/approval predicates, and aggregate AI
+  text/media/publish status derivation, course status patch construction, and
+  lesson media approval readiness rules;
+* `features/ai-generation/domain/generated-tree.ts` now owns AI draft-to-row
+  mapping, slug/text ID helpers, generated lesson duplicate checks, page
+  placement parsing, and AI block sanitization for generated lesson content;
+* `features/ai-generation/domain/media-planning.ts` now owns AI media prompt
+  planning, course/lesson media seed-row creation, media target resolution, and
+  generated image payload shaping, including course-level cover/thumbnail seed
+  row construction used by course creation and revision jobs;
+* `features/ai-generation/domain/revision.ts` now owns AI course extension
+  context shaping, revision prompt context, feedback history handling, and
+  recommended quiz sizing for revisions;
+* `features/ai-generation/application/form-input.ts` now owns repeated AI
+  workflow form helpers for redirect targets, boolean flags, image presentation
+  input, stored image payload strings, required change requests, and continuity
+  instructions;
+* `features/ai-generation/application/generation-form.ts` now owns
+  AI-generation form validation and canonical input parsing outside the server
+  action facade, with focused unit coverage for valid and invalid submissions;
+* `features/ai-generation/application/job-prompts.ts` now owns durable worker
+  job prompt primitives, media job mode inference, and AI generation input
+  normalization without importing the `server-only` model generator at runtime;
+* `features/ai-generation/application/job-orchestration.ts` now owns
+  server-only AI generation job enqueue helpers and worker dispatch/failure
+  handling, while receiving route/action cache revalidation as an explicit
+  boundary callback;
+* `features/ai-generation/application/job-requests.ts` now owns server-only
+  admin AI job request preparation for create-course, extend-course, revise-text,
+  course-media, and lesson-media queueing, including AI workflow validation and
+  stored feedback fallback handling before jobs are enqueued;
+* `features/ai-generation/application/course-text-jobs.ts` now owns the
+  server-only create/extend/revise course text job processors, including model
+  calls, generated tree materialization, revision note updates, and audit event
+  persistence through the extracted data/domain boundaries;
+* `features/ai-generation/application/media-jobs.ts` now owns the server-only
+  course/lesson/single-asset media job processors, including legacy prompt
+  normalization, media seed insertion, target resolution, image work item
+  preparation, media status resets, job result persistence, and audit event
+  persistence through the extracted data/domain boundaries;
+* `features/ai-generation/application/text-review.ts` now owns the server-only
+  course/lesson text approval and change-request commands, including text
+  status transitions, revision feedback persistence, quiz status propagation,
+  aggregate status recomputation, and audit event persistence through the
+  extracted data/domain boundaries;
+* `features/ai-generation/application/media-review.ts` now owns the
+  server-only course/lesson media approval, manual media approval, and media
+  change-request commands, including required media validation, manual media
+  asset upsert, media status transitions, revision feedback persistence,
+  aggregate status recomputation, and audit event persistence through the
+  extracted data/domain boundaries;
+* `features/ai-generation/application/course-finalization.ts` now owns
+  server-only legacy media normalization and approved AI course publishing,
+  including media reset/status recomputation, publish status propagation to
+  lessons/quizzes, and audit event persistence through the extracted
+  data/domain boundaries;
+* `features/ai-generation/application/media-asset-commands.ts` now owns
+  server-only single-media asset generation queueing, media asset approval,
+  library media reuse, and manual media asset saves, including target
+  application/clearing, media approval reset, status recomputation, and audit
+  event persistence through the extracted data/domain boundaries;
+* `features/ai-generation/application/media-worker.ts` now owns media worker
+  bounded-concurrency execution, generated/reused/failed/skipped outcome
+  aggregation, and generated asset completion shaping without invoking media
+  generation or Supabase directly;
+* `features/ai-generation/application/media-work-items.ts` now owns the
+  server-only media work-item execution path that calls the image generator and
+  persists generated/skipped/failed asset outcomes through the media asset data
+  boundary;
+* `features/ai-generation/application/media-targets.ts` now owns pure managed
+  page-image block payload/lookup helpers, lesson page grouping, legacy media
+  asset type normalization, and manual page-media target-kind resolution used
+  by the media asset data adapter and server actions;
+* `tests/unit/ai-generation-workflow-status.test.mjs` covers those extracted
+  business rules, status patch construction, and lesson media readiness without
+  rendering React or invoking server actions;
+* `tests/unit/ai-generation-generated-tree.test.mjs` covers generated-tree row
+  shaping and duplicate lesson rejection without invoking server actions or the
+  model provider;
+* `tests/unit/ai-generation-media-planning.test.mjs` covers media seed planning,
+  course-level cover/thumbnail row construction, duplicate avoidance, target
+  resolution, and image payload shaping without invoking server actions or media
+  generation;
+* `tests/unit/ai-generation-revision.test.mjs` covers revision context,
+  feedback history, generated prompt fallback data, and revision-note assembly
+  without invoking server actions or the model provider;
+* `tests/unit/ai-generation-form-input.test.mjs` covers the extracted form
+  helper normalization without invoking server actions;
+* `tests/unit/ai-generation-job-prompts.test.mjs` covers extracted worker prompt
+  parsing, media mode fallback behavior, and generation input normalization
+  without invoking server actions or the model provider;
+* `tests/unit/ai-generation-media-worker.test.mjs` covers extracted media worker
+  concurrency limits, outcome aggregation, and completed asset metadata shaping
+  without invoking server actions, media generation, or Supabase;
+* `tests/unit/ai-generation-media-targets.test.mjs` covers managed page-image
+  block payload stamping, asset-owned block lookup, page grouping, legacy media
+  asset type normalization, and manual target-kind resolution without invoking
+  server actions or Supabase;
+* `tests/unit/planner-domain.test.mjs` covers planner primitive helpers,
+  selected-brief edit merging, note/continuity builders, stored-plan parsing,
+  and expansion context normalization without rendering React, invoking server
+  actions, calling Supabase, or loading the server-only OpenAI adapter;
+* `app/admin/courses/ai-actions.ts` imports the AI job data boundary instead
+  of embedding queue persistence and admin RPC plumbing directly in the server
+  action/orchestration module, and now also imports the workflow data boundary
+  media asset data boundary, and domain boundaries instead of embedding core
+  read queries, status rules, generated lesson row-shaping logic, media planning
+  rules, course-level media seed row construction, revision prompt context
+  rules, learning media asset lookup/target persistence, AI status
+  recompute/reset/promotion persistence, plus small application boundaries for
+  repeated request parsing, AI-generation form parsing, durable worker job
+  prompt parsing, course text job processing, job enqueue/worker dispatch,
+  admin job request preparation, text review commands, media review commands,
+  course finalization commands, single-media asset commands, media job
+  processing, media worker execution bookkeeping and server-only work-item
+  processing, and managed page-image target payloads/normalization;
+* `app/admin/courses/learning-cache.ts` now owns shared Next cache
+  revalidation for course/lesson learner and admin paths, removing duplicate
+  learning-path revalidation code from the AI server action facade and the AI
+  worker API route;
+* `features/learning/admin/data.ts` now owns admin learning/course read models
+  and data loaders for courses, lessons, lesson detail composition, learning
+  media assets, course categories, and AI course plans; `lib/admin.ts`
+  re-exports those APIs for compatibility while no longer embedding their
+  implementation;
+* `features/missions/admin/data.ts`,
+  `features/recommendations/admin/data.ts`, and
+  `features/content-values/admin/data.ts` now own mission/proof read models,
+  dashboard recommendation read models, and content value-tag admin loaders,
+  while `lib/admin.ts` keeps compatibility re-exports for existing admin pages;
+* `features/users/admin/data.ts` and `features/xp/admin/data.ts` now own admin
+  profile listing/lookup, XP settings, manual XP grant status, and XP ledger
+  read models; `lib/admin.ts` imports only the profile lookup it still needs
+  for remaining reward/redemption composition and re-exports the public admin
+  APIs for compatibility;
+* `features/campaigns/admin/data.ts` now owns campaign admin list/detail
+  loaders, campaign lookup-by-id composition support, and campaign reward
+  analytics; `lib/admin.ts` imports only the campaign lookup helper it still
+  needs for remaining reward composition and re-exports the public campaign
+  APIs for compatibility;
+* `features/rewards/admin/data.ts` now owns base reward list loaders, reward
+  lookup-by-id composition support, and redemption list/export read models;
+  `lib/admin.ts` imports the reward list/lookup helpers it still needs for
+  remaining perk detail and draw composition and re-exports the public reward
+  and redemption APIs for compatibility;
+* `features/rewards/admin/perks.ts` now owns reward detail composition,
+  inventory/adjustment detail rows, perk program summaries, prize candidate and
+  assignment counts, release bucket handling, perk analytics/trends, and perk
+  draw history; `lib/admin.ts` is now a compatibility facade plus the shared
+  admin guard/overview loader;
+* `features/admin/application/context.ts` now owns the shared admin guard and
+  dashboard overview loader; `lib/admin.ts` is now a server-only compatibility
+  export barrel for existing admin pages and actions;
+* `features/ads/admin/data.ts` and `features/ads/admin/types.ts` now own admin
+  ads read-model loading and reusable ads row types, while the ads app route
+  files import the feature data boundary directly;
+* `features/ads/admin/commands.ts` now owns admin ads form validation
+  unwrapping, RPC payload construction, creative image validation/upload, and
+  ad maintenance command execution; `app/admin/ads/actions.ts` is now a thin
+  server-action facade for admin authentication, cache revalidation, and
+  redirects;
+* `features/learning/admin/planner-domain.ts` now owns AI course-planner
+  parsing helpers, selected-brief merging, ID/URL helpers, stored-plan parsing
+  diagnostics, and prompt/note builders that do not require Supabase,
+  redirects, cache revalidation, or model-generator configuration;
+* `features/learning/admin/planner-model.ts` now owns importable planner
+  types, stored-plan parsing, and normalization helpers that were previously
+  coupled to the server-only OpenAI planner adapter; `lib/ai-course-planner.ts`
+  remains the server-only generation adapter and compatibility export surface,
+  while planner UI/data modules import pure parsing from the feature model;
+* `features/learning/admin/planner-data.ts` now owns planner Supabase read
+  models for saved planner records and course expansion context assembly;
+* `features/learning/admin/planner-commands.ts` now owns simple planner
+  selected/dismissed state transitions for `ai_course_plans`, while
+  `app/admin/courses/planner-actions.ts` keeps admin authentication,
+  revalidation, redirects, and larger AI generation handoff flows;
+* `features/learning/admin/planner-commands.ts` now also owns planner
+  new-course brief generation and course-expansion suggestion generation
+  use cases, including AI planner calls and `ai_course_plans` draft
+  persistence; the app server actions only authenticate, revalidate, and
+  redirect for those flows;
+* `features/learning/admin/planner-commands.ts` now owns planner course-shell
+  creation, including course/media/audit writes, selected-plan persistence,
+  and rollback cleanup; `app/admin/courses/planner-actions.ts` keeps the
+  admin-authentication, cache-revalidation, and redirect facade for that flow;
+* `features/learning/admin/planner-commands.ts` now owns the remaining planner
+  generation handoff flows for direct course drafts, planned lesson generation,
+  and expansion-suggestion lesson generation, including planner status updates
+  and AI draft `FormData` preparation; `app/admin/courses/planner-actions.ts`
+  is now a thin facade for admin authentication, cache revalidation, redirects,
+  and calling the existing AI generation server actions;
+* `features/learning/admin/course-detail-data.ts` now owns the admin course
+  detail page data composition, including lesson page/quiz/question fan-out,
+  planner-shell continuation state, media approval validation state, feedback
+  extraction, course shell media lookup, and lesson/media grouping maps;
+  `app/admin/courses/[id]/page.tsx` no longer issues direct Supabase table
+  queries and remains focused on rendering the existing admin course workspace;
+* `features/learning/admin/course-detail-workflow-section.tsx` now owns the
+  admin course detail AI workflow panel UI, including text/media approval
+  controls, planned-lesson continuation, and text/media revision loops, with
+  the page passing server actions in explicitly so feature UI does not import
+  the app action facade directly;
+* `features/learning/admin/course-detail-media-registry-section.tsx` now owns
+  the admin course detail advanced media registry UI, including legacy media
+  normalization controls, media approval blockers/warnings, raw asset editing,
+  library reuse, single-asset generation, and asset approval controls, with
+  server actions still passed in explicitly from the app route;
+* `features/learning/admin/course-detail-expansion-section.tsx` now owns the
+  admin course detail expansion assistant UI, including saved expansion-plan
+  rendering and selected-suggestion lesson draft generation, with planner
+  actions passed in explicitly from the app route;
+* `features/learning/admin/course-detail-shell-media-section.tsx` now owns the
+  admin course detail thumbnail/cover positioning UI, including course shell
+  media save, library reuse, single-asset generation, and approval controls,
+  with media actions passed in explicitly from the app route;
+* `features/learning/admin/course-detail-lesson-review-section.tsx` now owns
+  the admin course detail lesson review and add-lesson UI, including lesson
+  preview frames, per-lesson status cards, publish/unpublish controls,
+  pagination, and the blank lesson creation form, with lesson actions passed in
+  explicitly from the app route;
+* `features/learning/admin/lesson-detail-data.ts` now owns the admin lesson
+  workspace read-model composition, including lesson detail, value tags,
+  lesson-scoped media assets, reusable course media library rows, XP totals,
+  media approval validation, manual-media detection, and stored text/media
+  feedback extraction; `app/admin/courses/lessons/[id]/page.tsx` no longer
+  composes Supabase lesson/media/tag loaders directly;
+* `features/learning/admin/lesson-detail-ai-media-section.tsx` now owns the
+  admin lesson workspace AI workflow and lesson media registry UI, including
+  lesson text/media approval controls, text/media change-request forms,
+  regeneration-with-feedback controls, per-asset media editing, library reuse,
+  single-asset generation, and asset approval controls, with lesson media
+  actions passed in explicitly from the app route;
+* `features/learning/admin/lesson-page-builder-domain.ts` now owns the pure
+  lesson page builder logic for draft snapshots, save reconciliation,
+  page/block reordering, draft merge recovery, payload normalization, block
+  summaries, and learner-preview mapping; `LessonPageBuilder` now imports
+  those helpers instead of defining them inline, and
+  `tests/unit/lesson-page-builder-domain.test.mjs` covers the extracted
+  behavior without rendering React;
+* `features/learning/admin/lesson-page-builder-ui.tsx` now owns the lesson
+  page builder UI panels and editors, including page navigation/reorder
+  controls, page settings, content block editors, the add-content toolbar, and
+  the learner preview frame; `components/admin/LessonPageBuilder.tsx` is now
+  reduced to client hydration, autosave, save reconciliation, draft mutation
+  handlers, and three feature-panel calls;
+* `features/progress/demo/store.ts`, `features/progress/demo/xp-policy.ts`,
+  and `features/progress/demo/mission-policy.ts` now own demo progress store
+  bootstrap, demo XP cap/date-window behavior, and deterministic mission
+  scope/claim/progress policy helpers; `lib/demo-progress-store.ts` keeps the
+  same public API while delegating these responsibilities, and
+  `tests/unit/demo-progress-policy.test.mjs` covers the extracted behavior;
+* `features/rewards/admin/perk-prize-manager-domain.ts` and
+  `features/rewards/admin/perk-prize-manager-ui.tsx` now own reusable perk
+  prize labels, defaults, notices, and field-level prize pool panels;
+  `components/admin/PerkPrizeManager.tsx` keeps manager state and the
+  server-action facade while delegating pure rules and shared UI, and
+  `tests/unit/perk-prize-manager-domain.test.mjs` covers the extracted domain
+  behavior without rendering React or invoking server actions;
+* `features/rewards/learner/xp-store-domain.ts` and
+  `features/rewards/learner/xp-store-ui.tsx` now own XP Store redemption
+  labels, native fulfillment copy, claim-field sanitization, pseudo-QR payload
+  generation, loading/thumbnail UI, and fulfillment renderers;
+  `components/rewards/XPStore.tsx` keeps learner store state, pagination,
+  API refresh/redeem flows, and modal wiring, and
+  `tests/unit/xp-store-domain.test.mjs` covers the extracted domain behavior
+  without rendering React or calling reward APIs;
+* final acceptance review confirms the stated VE-ARCH-001 architecture items
+  are covered: extracted business rules have direct unit coverage, Supabase
+  access is isolated behind server-only feature data/use-case modules, the
+  original admin and learner UI hotspots no longer embed substantial
+  persistence logic, `lib/admin.ts` is decomposed into feature exports, and AI
+  orchestration no longer lives in a single 4,000-line server action file;
+* the extraction is behavior-preserving and keeps worker RPC access
+  service-role-only through the existing database functions and pgTAP coverage.
 
 ---
 

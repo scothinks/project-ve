@@ -1,4 +1,6 @@
-import { requireAdmin } from "@/lib/admin";
+import "server-only";
+
+import { requireAdmin } from "@/features/admin/application/context";
 import type {
   AuditRow,
   BillingSnapshotRow,
@@ -33,10 +35,20 @@ export async function loadAdsOverviewData() {
   ] = await Promise.all([
     supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
     supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_creative_versions")
+      .select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label")
+      .order("created_at", { ascending: false }),
     supabase.from("ad_placements").select(placementSelect).order("key"),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
-    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000),
+    supabase
+      .from("ad_flights")
+      .select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("ad_events")
+      .select("event_type, qualification_status, billable_amount")
+      .order("created_at", { ascending: false })
+      .limit(1000),
   ]);
 
   return {
@@ -60,8 +72,14 @@ export async function loadAdsLaunchData() {
   ] = await Promise.all([
     supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
     supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
-    supabase.from("ad_creatives").select("id, campaign_id, name, status, creative_format, current_version_id").order("created_at", { ascending: false }),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_creatives")
+      .select("id, campaign_id, name, status, creative_format, current_version_id")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("ad_creative_versions")
+      .select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label")
+      .order("created_at", { ascending: false }),
     supabase.from("ad_placements").select(placementSelect).order("key"),
   ]);
 
@@ -85,9 +103,15 @@ export async function loadAdsReviewData() {
   ] = await Promise.all([
     supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
     supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_creative_versions")
+      .select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label")
+      .order("created_at", { ascending: false }),
     supabase.from("ad_placements").select(placementSelect).order("key"),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_flights")
+      .select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority")
+      .order("created_at", { ascending: false }),
   ]);
 
   return {
@@ -111,12 +135,36 @@ export async function loadAdsReportingData() {
     { data: auditEvents },
   ] = await Promise.all([
     supabase.from("ad_campaigns").select(campaignSelect).order("created_at", { ascending: false }),
-    supabase.from("ad_events").select("event_type, qualification_status, billable_amount").order("created_at", { ascending: false }).limit(1000),
-    supabase.from("ad_house_fallback_events").select("event_type, placement_key").order("created_at", { ascending: false }).limit(1000),
-    supabase.from("ad_sponsor_inquiries").select("id, contact_name, organization_name, email, campaign_goal, status, created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("ad_billing_snapshots").select("id, campaign_id, period_start, period_end, billable_spend, billable_viewable_impressions, billable_clicks, filtered_event_count").order("created_at", { ascending: false }).limit(10),
-    supabase.from("ad_make_goods").select("id, campaign_id, status, reason, owed_impressions, owed_clicks").order("created_at", { ascending: false }).limit(10),
-    supabase.from("ad_audit_events").select("id, event_type, entity_type, entity_id, reason, created_at").order("created_at", { ascending: false }).limit(12),
+    supabase
+      .from("ad_events")
+      .select("event_type, qualification_status, billable_amount")
+      .order("created_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("ad_house_fallback_events")
+      .select("event_type, placement_key")
+      .order("created_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("ad_sponsor_inquiries")
+      .select("id, contact_name, organization_name, email, campaign_goal, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("ad_billing_snapshots")
+      .select("id, campaign_id, period_start, period_end, billable_spend, billable_viewable_impressions, billable_clicks, filtered_event_count")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("ad_make_goods")
+      .select("id, campaign_id, status, reason, owed_impressions, owed_clicks")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("ad_audit_events")
+      .select("id, event_type, entity_type, entity_id, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(12),
   ]);
 
   return {
@@ -140,10 +188,19 @@ export async function loadAdsInventoryData() {
     { data: flights },
   ] = await Promise.all([
     supabase.from("ad_partners").select(partnerSelect).order("created_at", { ascending: false }),
-    supabase.from("ad_campaigns").select("id, partner_id, name, status, campaign_type, pricing_model").order("created_at", { ascending: false }),
-    supabase.from("ad_creative_versions").select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_campaigns")
+      .select("id, partner_id, name, status, campaign_type, pricing_model")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("ad_creative_versions")
+      .select("id, creative_id, version_number, status, headline, sponsor_label, disclosure_label")
+      .order("created_at", { ascending: false }),
     supabase.from("ad_placements").select(placementSelect).order("key"),
-    supabase.from("ad_flights").select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority").order("created_at", { ascending: false }),
+    supabase
+      .from("ad_flights")
+      .select("id, campaign_id, creative_id, creative_version_id, placement_key, status, priority")
+      .order("created_at", { ascending: false }),
   ]);
 
   return {

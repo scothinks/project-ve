@@ -10,7 +10,7 @@ import {
   secondaryButtonClasses,
   statusTone,
 } from "./components";
-import { loadAdsOverviewData } from "./data";
+import { loadAdsOverviewData } from "@/features/ads/admin/data";
 import type { AdsRouteProps } from "./types";
 
 export default async function AdminAdsPage({ searchParams }: AdsRouteProps) {

@@ -14,7 +14,7 @@ import {
   statusTone,
 } from "../components";
 import { createAdMakeGoodRecommendations, purgeOldAdRuntimeData, refreshAdBillingSnapshot } from "../actions";
-import { loadAdsReportingData } from "../data";
+import { loadAdsReportingData } from "@/features/ads/admin/data";
 import type { AdsRouteProps } from "../types";
 
 export default async function AdminAdsReportingPage({ searchParams }: AdsRouteProps) {

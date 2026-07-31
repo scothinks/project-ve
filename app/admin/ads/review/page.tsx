@@ -1,7 +1,7 @@
 import { AdminCard } from "@/components/admin/AdminPrimitives";
 import { AdsShell } from "../AdsShell";
 import { AdminStatusBadge, EmptyList, SectionTitle, StatusForm, statusTone } from "../components";
-import { loadAdsReviewData } from "../data";
+import { loadAdsReviewData } from "@/features/ads/admin/data";
 import type { AdsRouteProps } from "../types";
 
 export default async function AdminAdsReviewPage({ searchParams }: AdsRouteProps) {

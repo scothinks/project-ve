@@ -11,7 +11,7 @@ import {
   statusTone,
 } from "../components";
 import { saveAdPlacementFallback } from "../actions";
-import { loadAdsInventoryData } from "../data";
+import { loadAdsInventoryData } from "@/features/ads/admin/data";
 import type { AdsRouteProps } from "../types";
 
 export default async function AdminAdsInventoryPage({ searchParams }: AdsRouteProps) {
