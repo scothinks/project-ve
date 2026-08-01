@@ -14,6 +14,8 @@ import {
   parseStoredNewCoursePlan,
   parseStoredNewCoursePlanSelection,
 } from "@/features/learning/admin/planner-model";
+import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
+import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
 import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { getAdminAiCoursePlans, getAdminCourses, requireAdmin } from "@/lib/admin";
 
@@ -92,6 +94,10 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
   const historicalNewCoursePlans = orderedNewCoursePlans.filter((planRow) => isHistoryPlan(planRow.status));
   const activeExpansionPlans = orderedExpansionPlans.filter((planRow) => !isHistoryPlan(planRow.status));
   const historicalExpansionPlans = orderedExpansionPlans.filter((planRow) => isHistoryPlan(planRow.status));
+  const aiActivity = await getAdminAiActivity(supabase, {
+    courseId,
+    plans: [...newCoursePlans, ...expansionPlans],
+  });
 
   return (
     <>
@@ -99,25 +105,50 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
         backHref="/admin/courses"
         backLabel="Courses"
         eyebrow="Learning"
-        title="AI Course Planner"
-        subtitle="Plan a new course from a rough idea or expand an existing course with suggested next lessons before running the current draft workflow."
+        title="Create with AI"
+        subtitle="Capture the learning need, review the proposed curriculum, then create the course through the existing editorial gates."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
+
+      <div className="mb-6">
+        <AiActivityPanel activity={aiActivity} courseId={courseId} />
+      </div>
+
+      <div className="mb-6 grid gap-2 md:grid-cols-6">
+        {[
+          "Learning need",
+          "Intended audience",
+          "Learning outcomes",
+          "Proposed curriculum",
+          "Draft scope",
+          "Create course",
+        ].map((step, index) => (
+          <div
+            className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-center shadow-sm"
+            key={step}
+          >
+            <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-green)]">
+              {index + 1}
+            </p>
+            <p className="mt-1 text-xs font-black">{step}</p>
+          </div>
+        ))}
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
           <AdminCard>
             <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Start a new course</p>
-              <h2 className="mt-2 text-lg font-black">Generate 3 course brief options</h2>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">New course</p>
+              <h2 className="mt-2 text-lg font-black">Create curriculum proposals</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                Start from a rough idea, problem, or theme. The planner suggests course titles, learning goals, and lesson structure before the normal AI draft flow begins.
+                Start from the learning need, audience and intended outcomes. Review the proposal before creating anything.
               </p>
             </div>
 
             <form action={generateNewCoursePlanOptions} className="space-y-5">
               <label className="block">
-                <span className={labelClasses()}>Rough idea / problem / theme</span>
+                <span className={labelClasses()}>1. Learning need</span>
                 <textarea
                   className={`${fieldClasses()} min-h-28 resize-none`}
                   name="roughIdea"
@@ -128,7 +159,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label>
-                  <span className={labelClasses()}>Audience</span>
+                  <span className={labelClasses()}>2. Intended audience</span>
                   <input className={fieldClasses()} name="audience" placeholder="Young adults, community learners" required />
                 </label>
                 <label>
@@ -153,18 +184,18 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
               </div>
 
               <label className="block">
-                <span className={labelClasses()}>Notes</span>
+                <span className={labelClasses()}>3. Learning outcomes and constraints</span>
                 <textarea
                   className={`${fieldClasses()} min-h-24 resize-none`}
                   name="notes"
-                  placeholder="Add local context, examples to include, examples to avoid, or source material to stay close to."
+                  placeholder="Add outcomes, source material, examples to include, examples to avoid, or constraints."
                 />
               </label>
 
               <PendingSubmitButton
                 className="inline-flex items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
-                label="Generate Brief Options"
-                pendingLabel="Generating Brief Options..."
+                label="Create Proposals"
+                pendingLabel="Creating Proposals..."
                 type="submit"
               />
             </form>
@@ -233,7 +264,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
         <AdminCard className="space-y-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Workflow</p>
-            <h2 className="mt-2 text-lg font-black">Planning sits before generation</h2>
+            <h2 className="mt-2 text-lg font-black">Review before creation</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               The planner helps editors decide what to generate. It never publishes, never skips text review, and never bypasses media approval.
             </p>
@@ -274,7 +305,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Planner results</p>
-            <h2 className="mt-2 text-lg font-black">New course brief options</h2>
+            <h2 className="mt-2 text-lg font-black">Proposed curriculum</h2>
           </div>
         </div>
 
@@ -340,7 +371,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                   <p className="mt-2 text-sm font-black">{selectedBrief.title}</p>
                                   <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
                                     {selectedBrief.generatedCourseId
-                                      ? `Course shell created ${selectedBrief.courseShellCreatedAt ? formatPlanTime(selectedBrief.courseShellCreatedAt) : "recently"}.`
+                                      ? `Course setup created ${selectedBrief.courseShellCreatedAt ? formatPlanTime(selectedBrief.courseShellCreatedAt) : "recently"}.`
                                       : "This brief is selected and ready for staged generation."}
                                   </p>
                                   {selectedBrief.lessonsGeneratedAt ? (
@@ -355,7 +386,7 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                       className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
                                       href={`/admin/courses/${selectedBrief.generatedCourseId}`}
                                     >
-                                      Open Course Shell
+                                      Open Course Setup
                                     </Link>
                                   ) : null}
                                   {selectedBrief.generatedCourseId && !selectedBrief.lessonsGeneratedAt ? (
@@ -363,8 +394,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                       <input name="planId" type="hidden" value={planRow.id} />
                                       <PendingSubmitButton
                                         className="rounded-[12px] bg-[var(--ve-sky)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                        label="Generate Planned Lessons"
-                                        pendingLabel="Generating Planned Lessons..."
+                                        label="Create Planned Lessons"
+                                        pendingLabel="Creating Planned Lessons..."
                                         type="submit"
                                       />
                                     </form>
@@ -481,18 +512,18 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                     />
                                     <PendingSubmitButton
                                       className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-sky-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-sky)] disabled:cursor-not-allowed disabled:opacity-70"
-                                      label="Generate Course Shell"
+                                      label="Create Course Setup"
                                       name="submitIntent"
-                                      pendingLabel="Generating Course Shell..."
+                                      pendingLabel="Creating Course Setup..."
                                       pendingValue="generate-course-shell"
                                       type="submit"
                                       value="generate-course-shell"
                                     />
                                     <PendingSubmitButton
                                       className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                      label="Generate Course Draft"
+                                      label="Create Full Draft"
                                       name="submitIntent"
-                                      pendingLabel="Generating Course Draft..."
+                                      pendingLabel="Creating Full Draft..."
                                       pendingValue="generate-course"
                                       type="submit"
                                       value="generate-course"
@@ -743,8 +774,8 @@ export default async function AdminAiCoursePlannerPage({ searchParams }: Planner
                                   <input name="suggestionIndex" type="hidden" value={suggestionIndex} />
                                   <PendingSubmitButton
                                     className="rounded-[12px] bg-[var(--ve-sky)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                    label="Generate Lesson Draft"
-                                    pendingLabel="Generating Lesson Draft..."
+                                    label="Draft Lesson"
+                                    pendingLabel="Drafting Lesson..."
                                     type="submit"
                                   />
                                 </form>

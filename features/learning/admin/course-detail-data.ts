@@ -13,14 +13,17 @@ import {
   getAdminContentValueTags,
   getAdminValueDimensions,
 } from "@/features/content-values/admin/data";
+import { buildCourseReadiness } from "@/features/learning/admin/course-readiness";
 import {
   getAdminAiCoursePlans,
   getAdminCourse,
   getAdminCourseCategories,
   getAdminLearningMediaAssets,
   getAdminLessons,
+  type AdminLessonBlockRow,
   type AdminLearningMediaAssetRow,
   type AdminLessonPageRow,
+  type AdminQuizOptionRow,
   type AdminQuizQuestionRow,
   type AdminQuizRow,
 } from "./data";
@@ -151,18 +154,51 @@ export async function getAdminCourseDetailPageData(
   if (quizzes.error) throw quizzes.error;
 
   const lessonPageRows = (lessonPages.data ?? []) as AdminLessonPageRow[];
+  const pageIds = lessonPageRows.map((page) => page.id);
   const quizRows = (quizzes.data ?? []) as AdminQuizRow[];
   const quizIds = quizRows.map((quiz) => quiz.id);
-  const quizQuestions = quizIds.length > 0
-    ? await supabase
+  const [lessonBlocks, quizQuestions] = await Promise.all([
+    pageIds.length > 0
+      ? supabase
+        .from("lesson_content_blocks")
+        .select("id, page_id, block_type, sort_order, payload")
+        .in("page_id", pageIds)
+        .order("sort_order", { ascending: true })
+      : { data: [] as AdminLessonBlockRow[], error: null },
+    quizIds.length > 0
+      ? supabase
         .from("quiz_questions")
         .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
         .in("quiz_id", quizIds)
-    : { data: [] as AdminQuizQuestionRow[], error: null };
+      : { data: [] as AdminQuizQuestionRow[], error: null },
+  ]);
 
+  if (lessonBlocks.error) throw lessonBlocks.error;
   if (quizQuestions.error) throw quizQuestions.error;
 
+  const lessonBlockRows = (lessonBlocks.data ?? []) as AdminLessonBlockRow[];
   const quizQuestionRows = (quizQuestions.data ?? []) as AdminQuizQuestionRow[];
+  const questionIds = quizQuestionRows.map((question) => question.id);
+  const quizOptions = questionIds.length > 0
+    ? await supabase
+      .from("quiz_options")
+      .select("id, question_id, option_order, label, is_correct")
+      .in("question_id", questionIds)
+      .order("option_order", { ascending: true })
+    : { data: [] as AdminQuizOptionRow[], error: null };
+
+  if (quizOptions.error) throw quizOptions.error;
+
+  const optionsByQuestionId = new Map<string, AdminQuizOptionRow[]>();
+  for (const option of (quizOptions.data ?? []) as AdminQuizOptionRow[]) {
+    const existing = optionsByQuestionId.get(option.question_id) ?? [];
+    existing.push(option);
+    optionsByQuestionId.set(option.question_id, existing);
+  }
+  const quizQuestionsWithOptions = quizQuestionRows.map((question) => ({
+    ...question,
+    options: optionsByQuestionId.get(question.id) ?? [],
+  }));
   const resolvedCourseNotes = asRecord(course.ai_generation_notes);
   const resolvedPlannerPlanId =
     typeof resolvedCourseNotes.plannerPlanId === "string" ? resolvedCourseNotes.plannerPlanId : "";
@@ -236,6 +272,15 @@ export async function getAdminCourseDetailPageData(
       || mediaValidation.missingRequiredAssets.length > 0
       || mediaValidation.failedRequiredAssets.length > 0
     );
+  const readiness = buildCourseReadiness({
+    blocks: lessonBlockRows,
+    course,
+    lessons,
+    mediaAssets,
+    pages: lessonPageRows,
+    questions: quizQuestionsWithOptions,
+    quizzes: quizRows,
+  });
 
   return {
     course,
@@ -246,8 +291,10 @@ export async function getAdminCourseDetailPageData(
     valueDimensions,
     valueTags,
     lessonPageRows,
+    lessonBlockRows,
     quizRows,
-    quizQuestionRows,
+    quizQuestionRows: quizQuestionsWithOptions,
+    readiness,
     plannerShellPlan,
     plannerShellSelection,
     showPlannedLessonContinuation,

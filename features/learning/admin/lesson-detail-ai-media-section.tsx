@@ -3,7 +3,7 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { MediaAssetPresentationEditor } from "@/components/admin/MediaAssetPresentationEditor";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import type { getAiMediaConfig } from "@/lib/ai-media-generator";
 import { isRequiredMediaAsset } from "@/lib/ai-media-workflow";
@@ -490,58 +490,20 @@ export function LessonDetailAiMediaSection({
                           This asset powers a core learner surface, so it stays in the generation workflow.
                         </div>
                       )}
-                      <MediaAssetPresentationEditor
+                      <MediaPicker
+                        canGenerate={canGenerateAsset}
+                        caption={asset.caption ?? ""}
+                        generateAction={actions.generateLearningMediaAsset}
                         initialAltText={asset.alt_text ?? ""}
                         initialFit={presentation.fit}
                         initialPositionX={presentation.positionX}
                         initialPositionY={presentation.positionY}
                         initialUrl={asset.url ?? ""}
+                        libraryAssets={availableLibraryAssets}
                         placementLabel={asset.placement}
+                        showCaption
+                        useLibraryAction={actions.useLibraryMediaAsset}
                       />
-                      <label className="mt-3 block">
-                        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Caption</span>
-                        <input className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" defaultValue={asset.caption ?? ""} name="caption" />
-                      </label>
-                      <div className="mt-4 grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
-                        <label>
-                          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Use from library</span>
-                          <select
-                            className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
-                            defaultValue=""
-                            disabled={availableLibraryAssets.length === 0}
-                            name="libraryAssetId"
-                          >
-                            <option value="">{availableLibraryAssets.length === 0 ? "No saved media yet" : "Choose saved media"}</option>
-                            {availableLibraryAssets.map((libraryAsset) => (
-                              <option key={libraryAsset.id} value={libraryAsset.id}>
-                                {libraryAsset.lesson?.title ? `${libraryAsset.lesson.title} · ` : ""}{libraryAsset.placement}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <PendingSubmitButton
-                          className="rounded-[12px] bg-[var(--ve-card)] px-4 py-2 text-sm font-black disabled:opacity-50"
-                          disabled={availableLibraryAssets.length === 0}
-                          formAction={actions.useLibraryMediaAsset}
-                          label="Use from library"
-                          name="actionIntent"
-                          pendingLabel="Applying..."
-                          pendingValue="useLibrary"
-                          type="submit"
-                          value="useLibrary"
-                        />
-                        <PendingSubmitButton
-                          className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
-                          disabled={!canGenerateAsset}
-                          formAction={actions.generateLearningMediaAsset}
-                          label="Generate Media"
-                          name="actionIntent"
-                          pendingLabel="Generating..."
-                          pendingValue="generate"
-                          type="submit"
-                          value="generate"
-                        />
-                      </div>
                       <div className="mt-4 flex flex-wrap gap-3">
                         <PendingSubmitButton
                           className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-sm font-black"

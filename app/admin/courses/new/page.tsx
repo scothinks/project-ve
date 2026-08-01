@@ -18,7 +18,7 @@ export default async function NewCoursePage() {
         backLabel="Courses"
         eyebrow="Learning"
         title="Add course"
-        subtitle="Create a course shell before adding lessons and quizzes."
+        subtitle="Create a course setup before adding lessons and quizzes."
       />
       <AdminCard>
         <CourseForm categories={categories} nextSortOrder={nextSortOrder} />

@@ -1,10 +1,11 @@
 "use client";
 
+import * as Collapsible from "@radix-ui/react-collapsible";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
+import { ChevronLeftIcon, ChevronRightIcon, MenuIcon } from "@/components/ui/Icons";
 import type { UserProfile } from "@/lib/supabase-server";
 import { cn } from "@/lib/utils";
 
@@ -154,23 +155,69 @@ function XpLedgerIcon({ className }: IconProps) {
   );
 }
 
-const adminLinks = [
-  { href: "/admin", label: "Overview", icon: OverviewIcon },
-  { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
-  { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
-  { href: "/admin/campaigns", label: "Campaigns", icon: CampaignsIcon },
-  { href: "/admin/ads", label: "Ads", icon: AdsIcon },
-  { href: "/admin/rewards", label: "Rewards", icon: RewardsIcon },
-  { href: "/admin/rewards/perks", label: "Perks", icon: PerksIcon },
-  { href: "/admin/inventory/new", label: "Inventory", icon: InventoryIcon },
-  { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
-  { href: "/admin/missions", label: "Missions", icon: MissionsIcon },
-  { href: "/admin/content", label: "Content", icon: ContentIcon },
-  { href: "/admin/proofs", label: "Proofs", icon: ProofsIcon },
-  { href: "/admin/users", label: "Users", icon: UsersIcon },
-  { href: "/admin/xp-settings", label: "XP Settings", icon: XpSettingsIcon },
-  { href: "/admin/xp-ledger", label: "XP Ledger", icon: XpLedgerIcon },
+type AdminLink = {
+  href: string;
+  label: string;
+  icon: (props: IconProps) => ReactNode;
+};
+
+type AdminLinkGroup = {
+  id: string;
+  label: string;
+  summary: string;
+  links: AdminLink[];
+};
+
+const adminLinkGroups: AdminLinkGroup[] = [
+  {
+    id: "home",
+    label: "Home",
+    summary: "Command centre",
+    links: [{ href: "/admin", label: "Overview", icon: OverviewIcon }],
+  },
+  {
+    id: "learning",
+    label: "Learning",
+    summary: "Courses and learning content",
+    links: [
+      { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
+      { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
+      { href: "/admin/content", label: "Content", icon: ContentIcon },
+    ],
+  },
+  {
+    id: "engagement",
+    label: "Engagement",
+    summary: "Missions, campaigns, and rewards",
+    links: [
+      { href: "/admin/missions", label: "Missions", icon: MissionsIcon },
+      { href: "/admin/campaigns", label: "Campaigns", icon: CampaignsIcon },
+      { href: "/admin/ads", label: "Ads", icon: AdsIcon },
+      { href: "/admin/rewards", label: "Rewards", icon: RewardsIcon },
+      { href: "/admin/rewards/perks", label: "Perks", icon: PerksIcon },
+      { href: "/admin/inventory/new", label: "Inventory", icon: InventoryIcon },
+    ],
+  },
+  {
+    id: "operations",
+    label: "Operations",
+    summary: "Moderation and admin activity",
+    links: [
+      { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
+      { href: "/admin/proofs", label: "Proof reviews", icon: ProofsIcon },
+      { href: "/admin/users", label: "Users", icon: UsersIcon },
+      { href: "/admin/xp-ledger", label: "XP activity", icon: XpLedgerIcon },
+    ],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    summary: "Platform configuration",
+    links: [{ href: "/admin/xp-settings", label: "XP settings", icon: XpSettingsIcon }],
+  },
 ];
+
+const adminLinks = adminLinkGroups.flatMap((group) => group.links);
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/admin") {
@@ -184,6 +231,181 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function getActiveGroupId(pathname: string) {
+  return adminLinkGroups.find((group) =>
+    group.links.some((link) => isActivePath(pathname, link.href)),
+  )?.id;
+}
+
+function getDeepestActiveLink(pathname: string) {
+  return [...adminLinks]
+    .sort((left, right) => right.href.length - left.href.length)
+    .find((link) => isActivePath(pathname, link.href));
+}
+
+function getBreadcrumbs(pathname: string) {
+  const activeLink = getDeepestActiveLink(pathname);
+  const activeGroup = adminLinkGroups.find((group) =>
+    group.links.some((link) => link.href === activeLink?.href),
+  );
+  const crumbs = [{ href: "/admin", label: "Admin" }];
+
+  if (!activeLink || activeLink.href === "/admin") {
+    return crumbs;
+  }
+
+  if (activeGroup) {
+    crumbs.push({ href: activeLink.href, label: activeGroup.label });
+  }
+
+  crumbs.push({ href: activeLink.href, label: activeLink.label });
+
+  if (pathname.startsWith("/admin/courses/ai/new")) {
+    crumbs.push({ href: pathname, label: "Create with AI" });
+  } else if (pathname.startsWith("/admin/courses/ai/planner")) {
+    crumbs.push({ href: pathname, label: "AI planner" });
+  } else if (pathname.startsWith("/admin/courses/lessons/")) {
+    crumbs.push({ href: pathname, label: "Lesson editor" });
+  } else if (pathname.startsWith("/admin/courses/new")) {
+    crumbs.push({ href: pathname, label: "Create course" });
+  } else if (pathname.startsWith("/admin/courses/")) {
+    crumbs.push({ href: pathname, label: "Course workspace" });
+  } else if (pathname.startsWith("/admin/campaigns/new")) {
+    crumbs.push({ href: pathname, label: "Create campaign" });
+  } else if (pathname.startsWith("/admin/campaigns/")) {
+    crumbs.push({ href: pathname, label: "Campaign workspace" });
+  } else if (pathname.startsWith("/admin/missions/new")) {
+    crumbs.push({ href: pathname, label: "Create mission" });
+  } else if (pathname.startsWith("/admin/missions/")) {
+    crumbs.push({ href: pathname, label: "Mission workspace" });
+  } else if (pathname.startsWith("/admin/rewards/perks/new")) {
+    crumbs.push({ href: pathname, label: "Create perk" });
+  } else if (pathname.startsWith("/admin/rewards/perks/")) {
+    crumbs.push({ href: pathname, label: "Perk workspace" });
+  } else if (pathname.startsWith("/admin/rewards/new")) {
+    crumbs.push({ href: pathname, label: "Create reward" });
+  } else if (pathname.startsWith("/admin/rewards/")) {
+    crumbs.push({ href: pathname, label: "Reward workspace" });
+  } else if (pathname.startsWith("/admin/ads/")) {
+    crumbs.push({
+      href: pathname,
+      label: pathname.split("/").at(-1)?.replaceAll("-", " ") ?? "Ads workflow",
+    });
+  }
+
+  return crumbs.filter(
+    (crumb, index, allCrumbs) =>
+      index === allCrumbs.findIndex((candidate) => candidate.label === crumb.label),
+  );
+}
+
+function AdminNavLink({
+  collapsed = false,
+  link,
+  pathname,
+}: {
+  collapsed?: boolean;
+  link: AdminLink;
+  pathname: string;
+}) {
+  const Icon = link.icon;
+  const active = isActivePath(pathname, link.href);
+
+  return (
+    <Link
+      aria-current={active ? "page" : undefined}
+      aria-label={collapsed ? link.label : undefined}
+      className={cn(
+        "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[var(--ve-muted-strong)] transition hover:bg-[var(--ve-panel)] hover:text-[var(--foreground)]",
+        collapsed ? "justify-center px-2" : "gap-3 px-3 py-2",
+        active &&
+          "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)] shadow-sm ring-1 ring-[color:color-mix(in_srgb,var(--ve-green)_18%,transparent)]",
+      )}
+      href={link.href}
+      title={collapsed ? link.label : undefined}
+    >
+      <Icon />
+      {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
+    </Link>
+  );
+}
+
+function AdminNavGroup({
+  collapsed,
+  defaultOpen,
+  group,
+  pathname,
+}: {
+  collapsed: boolean;
+  defaultOpen: boolean;
+  group: AdminLinkGroup;
+  pathname: string;
+}) {
+  if (collapsed) {
+    return (
+      <div className="space-y-1 border-t border-[var(--ve-line-soft)] pt-3 first:border-t-0 first:pt-0">
+        <p className="sr-only">{group.label}</p>
+        {group.links.map((link) => (
+          <AdminNavLink collapsed key={link.href} link={link} pathname={pathname} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <Collapsible.Root className="space-y-2" defaultOpen={defaultOpen}>
+      <Collapsible.Trigger className="group flex w-full items-center justify-between rounded-[12px] px-2 py-2 text-left transition hover:bg-[var(--ve-panel)]">
+        <span>
+          <span className="block text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ve-muted)]">
+            {group.label}
+          </span>
+          <span className="mt-0.5 block text-xs font-semibold text-[var(--ve-muted-strong)]">
+            {group.summary}
+          </span>
+        </span>
+        <ChevronRightIcon className="h-4 w-4 text-[var(--ve-muted)] transition group-data-[state=open]:rotate-90" />
+      </Collapsible.Trigger>
+      <Collapsible.Content className="space-y-1">
+        {group.links.map((link) => (
+          <AdminNavLink key={link.href} link={link} pathname={pathname} />
+        ))}
+      </Collapsible.Content>
+    </Collapsible.Root>
+  );
+}
+
+function AdminBreadcrumbs({ pathname }: { pathname: string }) {
+  const breadcrumbs = getBreadcrumbs(pathname);
+
+  if (breadcrumbs.length <= 1) {
+    return null;
+  }
+
+  return (
+    <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-xs font-black">
+      {breadcrumbs.map((crumb, index) => {
+        const isLast = index === breadcrumbs.length - 1;
+
+        return (
+          <span className="inline-flex items-center gap-2" key={`${crumb.href}-${crumb.label}`}>
+            {index > 0 ? <span className="text-[var(--ve-muted)]">/</span> : null}
+            {isLast ? (
+              <span className="capitalize text-[var(--foreground)]">{crumb.label}</span>
+            ) : (
+              <Link
+                className="capitalize text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]"
+                href={crumb.href}
+              >
+                {crumb.label}
+              </Link>
+            )}
+          </span>
+        );
+      })}
+    </nav>
+  );
+}
+
 export function AdminShell({
   children,
   profile,
@@ -193,6 +415,8 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const activeGroupId = getActiveGroupId(pathname);
 
   return (
     <main className="min-h-screen bg-[var(--ve-panel)] text-[var(--foreground)]">
@@ -232,28 +456,27 @@ export function AdminShell({
             </button>
           </div>
 
-          <nav className="mt-8 space-y-1">
-            {adminLinks.map((link) => (
-              (() => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    aria-label={collapsed ? link.label : undefined}
-                    className={cn(
-                      "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[var(--ve-muted-strong)] hover:bg-[var(--ve-panel)] hover:text-[var(--foreground)]",
-                      collapsed ? "justify-center px-2" : "gap-3 px-3 py-2",
-                      isActivePath(pathname, link.href) &&
-                        "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
-                    )}
-                    href={link.href}
-                    key={link.href}
-                    title={collapsed ? link.label : undefined}
-                  >
-                    <Icon />
-                    {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
-                  </Link>
-                );
-              })()
+          {collapsed ? null : (
+            <div className="mt-6 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                Workspace
+              </p>
+              <p className="mt-1 text-sm font-black">Project VE platform</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                Platform context
+              </p>
+            </div>
+          )}
+
+          <nav className="mt-6 space-y-4 overflow-y-auto pr-1">
+            {adminLinkGroups.map((group) => (
+              <AdminNavGroup
+                collapsed={collapsed}
+                defaultOpen={group.id === activeGroupId || group.id === "home"}
+                group={group}
+                key={`${group.id}-${activeGroupId ?? "none"}`}
+                pathname={pathname}
+              />
             ))}
           </nav>
 
@@ -278,28 +501,46 @@ export function AdminShell({
                   Project VE
                 </p>
                 <h1 className="text-xl font-black">Admin</h1>
+                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                  Project VE platform
+                </p>
               </div>
               <Link className="text-sm font-black" href="/dashboard">
                 App
               </Link>
             </div>
-            <nav className="hide-scrollbar mt-4 flex gap-2 overflow-x-auto">
-              {adminLinks.map((link) => (
-                <Link
-                  className={cn(
-                    "shrink-0 rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)]",
-                    isActivePath(pathname, link.href) &&
-                      "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
-                  )}
-                  href={link.href}
-                  key={link.href}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+            <Collapsible.Root className="mt-4" open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]">
+                <span className="inline-flex items-center gap-2">
+                  <MenuIcon className="h-4 w-4" />
+                  Admin navigation
+                </span>
+                <ChevronRightIcon
+                  className={cn("h-4 w-4 transition", mobileNavOpen && "rotate-90")}
+                />
+              </Collapsible.Trigger>
+              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 shadow-lg">
+                <nav className="space-y-4">
+                  {adminLinkGroups.map((group) => (
+                    <section key={group.id}>
+                      <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                        {group.label}
+                      </p>
+                      <div className="grid gap-1">
+                        {group.links.map((link) => (
+                          <AdminNavLink key={link.href} link={link} pathname={pathname} />
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </nav>
+              </Collapsible.Content>
+            </Collapsible.Root>
           </header>
-          <div className="px-5 py-6 md:px-8 md:py-8">{children}</div>
+          <div className="px-5 py-6 md:px-8 md:py-8">
+            <AdminBreadcrumbs pathname={pathname} />
+            {children}
+          </div>
         </section>
       </div>
     </main>

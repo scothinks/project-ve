@@ -13,6 +13,9 @@ const correctOptionId = `e2e-option-correct-${runId}`;
 const wrongOptionId = `e2e-option-wrong-${runId}`;
 const rewardId = `e2e-reward-${runId}`;
 const courseTitle = `E2E Remediation Course ${runId}`;
+const blankCourseTitle = `E2E CMS Blank Course ${runId}`;
+const updatedBlankCourseTitle = `E2E CMS Updated Course ${runId}`;
+const duplicatedCourseTitle = `Copy of ${courseTitle}`;
 const lessonTitle = `E2E Supported Lesson ${runId}`;
 const questionPrompt = `Which action keeps the E2E remediation flow honest ${runId}?`;
 const rewardTitle = `E2E Reward ${runId}`;
@@ -106,6 +109,10 @@ async function cleanupFixture() {
   await supabase.from("quiz_answers").delete().eq("question_id", questionId);
   await supabase.from("quiz_attempts").delete().eq("quiz_id", quizId);
   await supabase.from("rewards").delete().eq("id", rewardId);
+  await supabase
+    .from("courses")
+    .delete()
+    .in("title", [blankCourseTitle, updatedBlankCourseTitle, duplicatedCourseTitle]);
   await supabase.from("courses").delete().eq("id", courseId);
 
   if (learner?.id) {
@@ -453,10 +460,60 @@ test.describe.serial("remediation browser flows", () => {
     await page.goto("/admin/courses");
     await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
     const courseRow = page.getByRole("row").filter({ hasText: courseTitle });
-    await expect(courseRow.getByText("Enabled")).toBeVisible();
-    await courseRow.getByRole("button", { name: "Disable" }).click();
+    await expect(courseRow.getByText("Published")).toBeVisible();
+    await courseRow.getByRole("button", { name: `More actions for ${courseTitle}` }).click();
+    await page.getByRole("menuitem", { name: "Disable course" }).click();
+    await expect(page.getByRole("alertdialog", { name: "Disable published course?" })).toBeVisible();
+    await page.getByRole("button", { name: "Disable course" }).click();
 
     await expect(page.getByText("Course disabled.")).toBeVisible();
-    await expect(page.getByRole("row").filter({ hasText: courseTitle }).getByText("Disabled")).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: courseTitle }).getByText("Draft")).toBeVisible();
+  });
+
+  test("admin CMS workspace covers creation paths, persistence, tabs, templates, and deterministic AI entry", async ({ page }) => {
+    await signIn(page, adminEmail);
+
+    await page.goto("/admin/courses");
+    await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Start blank" })).toBeVisible();
+    await expect(page.getByText("Duplicate an existing course")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create with AI" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Start blank" }).click();
+    await expect(page.getByRole("heading", { name: "Add course" })).toBeVisible();
+    await page.getByLabel("Title").fill(blankCourseTitle);
+    await page.getByLabel("Description").fill("A browser-created CMS draft for regression coverage.");
+    await page.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByText("Course saved.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: blankCourseTitle })).toBeVisible();
+
+    await page.getByLabel("Title").fill(updatedBlankCourseTitle);
+    await page.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
+    await page.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByText("Course saved.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: updatedBlankCourseTitle })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("heading", { name: updatedBlankCourseTitle })).toBeVisible();
+    await expect(page.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
+
+    await page.getByRole("tab", { name: "Curriculum" }).click();
+    await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
+    await page.getByRole("tab", { name: "Media" }).click();
+    await expect(page.getByRole("heading", { name: "Usage and quality" })).toBeVisible();
+    await page.getByRole("tab", { name: "Review & Publish" }).click();
+    await expect(page.getByRole("heading", { name: "Course readiness" })).toBeVisible();
+
+    await page.goto("/admin/courses");
+    await page.locator("select[name='courseId']").selectOption({ label: courseTitle });
+    await page.getByRole("button", { name: "Use template" }).click();
+    await expect(page.getByText("Course duplicated as a draft.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: duplicatedCourseTitle })).toBeVisible();
+
+    await page.goto("/admin/courses/ai/planner");
+    await expect(page.getByRole("heading", { name: "Create with AI" })).toBeVisible();
+    await expect(page.getByText("1. Learning need")).toBeVisible();
+    await expect(page.getByText("2. Intended audience")).toBeVisible();
+    await expect(page.getByText("3. Learning outcomes and constraints")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create Proposals" })).toBeVisible();
   });
 });

@@ -1,6 +1,10 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  buildCourseReadiness,
+  getCourseReadinessIssueLabels,
+} from "@/features/learning/admin/course-readiness";
 
 export type AdminCourseRow = {
   id: string;
@@ -24,6 +28,10 @@ export type AdminCourseRow = {
   media_approved_at: string | null;
   media_approved_by: string | null;
   media_approved_by_name?: string | null;
+  lesson_count?: number;
+  draft_lesson_count?: number;
+  published_lesson_count?: number;
+  readiness_issues?: string[];
   created_at: string;
   updated_at: string;
 };
@@ -222,27 +230,144 @@ export async function getAdminCourses(supabase: SupabaseClient) {
 
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
-    .select("course_id, estimated_minutes")
+    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .in("course_id", courseIds);
 
   if (lessonsError) {
     throw lessonsError;
   }
 
-  const profilesById = await getProfilesByIds(supabase, approvalUserIds);
+  const lessonRows = (lessons ?? []) as AdminLessonRow[];
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
+  const [pagesResult, mediaResult, quizzesResult] = lessonIds.length > 0
+    ? await Promise.all([
+        supabase
+          .from("lesson_pages")
+          .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image, created_at, updated_at")
+          .in("lesson_id", lessonIds),
+        supabase
+          .from("learning_media_assets")
+          .select("id, course_id, lesson_id, asset_type, placement, source, prompt, script, url, storage_path, provider, model, alt_text, caption, metadata, review_status, generation_status, generation_error, sort_order, created_at, updated_at")
+          .in("course_id", courseIds),
+        supabase
+          .from("quizzes")
+          .select("id, lesson_id, title, version, status, ai_text_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by")
+          .in("lesson_id", lessonIds),
+      ])
+    : [
+        { data: [] as AdminLessonPageRow[], error: null },
+        { data: [] as AdminLearningMediaAssetRow[], error: null },
+        { data: [] as AdminQuizRow[], error: null },
+      ];
 
-  const minutesByCourseId = new Map<string, number>();
-  for (const lesson of ((lessons ?? []) as Array<{ course_id: string; estimated_minutes: number }>)) {
-    minutesByCourseId.set(
-      lesson.course_id,
-      (minutesByCourseId.get(lesson.course_id) ?? 0) + lesson.estimated_minutes,
-    );
+  if (pagesResult.error) throw pagesResult.error;
+  if (mediaResult.error) throw mediaResult.error;
+  if (quizzesResult.error) throw quizzesResult.error;
+
+  const pageRows = (pagesResult.data ?? []) as AdminLessonPageRow[];
+  const pageIds = pageRows.map((page) => page.id);
+  const quizRows = (quizzesResult.data ?? []) as AdminQuizRow[];
+  const quizIds = quizRows.map((quiz) => quiz.id);
+  const [blocksResult, questionsResult] = await Promise.all([
+    pageIds.length > 0
+      ? supabase
+        .from("lesson_content_blocks")
+        .select("id, page_id, block_type, sort_order, payload")
+        .in("page_id", pageIds)
+      : { data: [] as AdminLessonBlockRow[], error: null },
+    quizIds.length > 0
+      ? supabase
+        .from("quiz_questions")
+        .select("id, quiz_id, question_order, question_type, prompt, explanation, xp")
+        .in("quiz_id", quizIds)
+      : { data: [] as AdminQuizQuestionRow[], error: null },
+  ]);
+
+  if (blocksResult.error) throw blocksResult.error;
+  if (questionsResult.error) throw questionsResult.error;
+
+  const blockRows = (blocksResult.data ?? []) as AdminLessonBlockRow[];
+  const questionRows = (questionsResult.data ?? []) as AdminQuizQuestionRow[];
+  const questionIds = questionRows.map((question) => question.id);
+  const optionsResult = questionIds.length > 0
+    ? await supabase
+      .from("quiz_options")
+      .select("id, question_id, option_order, label, is_correct")
+      .in("question_id", questionIds)
+    : { data: [] as AdminQuizOptionRow[], error: null };
+
+  if (optionsResult.error) throw optionsResult.error;
+
+  const profilesById = await getProfilesByIds(supabase, approvalUserIds);
+  const mediaRows = (mediaResult.data ?? []) as AdminLearningMediaAssetRow[];
+  const optionsByQuestionId = new Map<string, AdminQuizOptionRow[]>();
+  for (const option of (optionsResult.data ?? []) as AdminQuizOptionRow[]) {
+    const existing = optionsByQuestionId.get(option.question_id) ?? [];
+    existing.push(option);
+    optionsByQuestionId.set(option.question_id, existing);
+  }
+  const questionsWithOptions = questionRows.map((question) => ({
+    ...question,
+    options: optionsByQuestionId.get(question.id) ?? [],
+  }));
+
+  const summariesByCourseId = new Map<
+    string,
+    { draft: number; minutes: number; published: number; total: number }
+  >();
+  for (const lesson of lessonRows) {
+    const summary = summariesByCourseId.get(lesson.course_id) ?? {
+      draft: 0,
+      minutes: 0,
+      published: 0,
+      total: 0,
+    };
+    summary.total += 1;
+    summary.minutes += lesson.estimated_minutes;
+    if (lesson.status === "draft") summary.draft += 1;
+    if (lesson.status === "published") summary.published += 1;
+    summariesByCourseId.set(lesson.course_id, summary);
   }
 
-  return attachApprovalNames(courses, profilesById).map((course) => ({
-    ...course,
-    estimated_minutes: minutesByCourseId.get(course.id) ?? 0,
-  }));
+  return attachApprovalNames(courses, profilesById).map((course) => {
+    const summary = summariesByCourseId.get(course.id) ?? {
+      draft: 0,
+      minutes: 0,
+      published: 0,
+      total: 0,
+    };
+
+    return {
+      ...course,
+      draft_lesson_count: summary.draft,
+      estimated_minutes: summary.minutes,
+      lesson_count: summary.total,
+      published_lesson_count: summary.published,
+      readiness_issues: getCourseReadinessIssueLabels(buildCourseReadiness({
+        blocks: blockRows.filter((block) => {
+          const page = pageRows.find((item) => item.id === block.page_id);
+          const lesson = page ? lessonRows.find((item) => item.id === page.lesson_id) : null;
+          return lesson?.course_id === course.id;
+        }),
+        course,
+        lessons: lessonRows.filter((lesson) => lesson.course_id === course.id),
+        mediaAssets: mediaRows.filter((asset) => asset.course_id === course.id),
+        pages: pageRows.filter((page) => {
+          const lesson = lessonRows.find((item) => item.id === page.lesson_id);
+          return lesson?.course_id === course.id;
+        }),
+        questions: questionsWithOptions.filter((question) => {
+          const quiz = quizRows.find((item) => item.id === question.quiz_id);
+          const lesson = quiz ? lessonRows.find((item) => item.id === quiz.lesson_id) : null;
+          return lesson?.course_id === course.id;
+        }),
+        quizzes: quizRows.filter((quiz) => {
+          const lesson = lessonRows.find((item) => item.id === quiz.lesson_id);
+          return lesson?.course_id === course.id;
+        }),
+      })),
+    };
+  });
 }
 
 export async function getAdminCourseCategories(supabase: SupabaseClient) {

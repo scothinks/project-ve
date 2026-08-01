@@ -11,6 +11,7 @@ type CourseAction = (formData: FormData) => void | Promise<void>;
 
 type CourseDetailWorkflowSectionProps = {
   course: AdminCourseDetailPageData["course"];
+  canPublish: boolean;
   plannerShellPlan: AdminCourseDetailPageData["plannerShellPlan"];
   plannerShellSelection: AdminCourseDetailPageData["plannerShellSelection"];
   showPlannedLessonContinuation: boolean;
@@ -80,6 +81,7 @@ function collapsibleBodyClasses() {
 
 export function CourseDetailWorkflowSection({
   actions,
+  canPublish,
   course,
   hasManualCourseMedia,
   hasRequiredImageAssets,
@@ -99,8 +101,8 @@ export function CourseDetailWorkflowSection({
         <summary className={collapsibleSummaryClasses()}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI workflow</p>
-              <h2 className="mt-2 text-lg font-black">Approval gates for AI-generated content</h2>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI review</p>
+              <h2 className="mt-2 text-lg font-black">Approval gates for assisted content</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                 Text approval unlocks media. Media approval unlocks publishing. Learners still only see published content.
               </p>
@@ -235,13 +237,13 @@ export function CourseDetailWorkflowSection({
                   <form action={actions.publishApprovedCourse}>
                     <input name="courseId" type="hidden" value={course.id} />
                     <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}`} />
-                    <button className={workflowButtonClasses()} type="submit">Publish Approved Course</button>
+                    <button className={workflowButtonClasses()} disabled={!canPublish} type="submit">Publish Approved Course</button>
                   </form>
                 ) : null}
             </div>
           ) : (
             <p className="mt-5 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-              This course was created manually, so the AI workflow states are informational only.
+              This course was created manually, so assisted-content states are informational only.
             </p>
           )}
 
@@ -250,9 +252,9 @@ export function CourseDetailWorkflowSection({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Next step</p>
-                  <h3 className="mt-2 text-base font-black">Generate the planned lessons for this course shell</h3>
+                  <h3 className="mt-2 text-base font-black">Create the planned lessons for this course</h3>
                   <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                    This course was created from the staged planner flow. The course shell is live, but the original lesson outline has not been generated yet.
+                    This course was created from the staged planner flow, and the original lesson outline is ready to turn into draft lessons.
                   </p>
                   <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
                     Planned lessons: {plannerShellSelection.lessonOutline.length}. They will be created as draft lessons and enter the existing text review, media review, and publish workflow.
@@ -266,8 +268,8 @@ export function CourseDetailWorkflowSection({
                   <input name="planId" type="hidden" value={plannerShellPlan.id} />
                   <PendingSubmitButton
                     className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
-                    label="Generate Planned Lessons"
-                    pendingLabel="Generating Planned Lessons..."
+                    label="Create Planned Lessons"
+                    pendingLabel="Creating Planned Lessons..."
                     type="submit"
                   />
                 </form>
@@ -341,8 +343,8 @@ export function CourseDetailWorkflowSection({
                   <PendingSubmitButton
                     className={`${workflowButtonClasses("neutral")} mt-4 disabled:cursor-not-allowed disabled:opacity-70`}
                     disabled={course.status === "published"}
-                    label="Revise With AI"
-                    pendingLabel="Revising Draft..."
+                    label="Apply Reviewer Feedback"
+                    pendingLabel="Queuing Revision..."
                     type="submit"
                   />
                 </form>

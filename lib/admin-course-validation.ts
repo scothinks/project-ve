@@ -34,6 +34,9 @@ type IntegerOptions = {
 export type ImagePayload = {
   src?: string;
   alt?: string;
+  fit?: "cover" | "contain";
+  positionX?: number;
+  positionY?: number;
 };
 
 export type QuizOptionInput = {
@@ -215,7 +218,7 @@ function imagePayloadFromForm(
   altKey: string,
   issues: ValidationIssue[],
 ): ImagePayload {
-  return {
+  const payload: ImagePayload = {
     src: getFormUrl(formData, urlKey, issues, {
       maxLength: 1000,
       required: false,
@@ -225,6 +228,29 @@ function imagePayloadFromForm(
       maxLength: 240,
     }) || undefined,
   };
+
+  const fitValue = formData.get("imageFit");
+  if (typeof fitValue === "string" && fitValue.trim()) {
+    if (fitValue === "cover" || fitValue === "contain") {
+      payload.fit = fitValue;
+    } else {
+      issues.push({ path: "imageFit", message: "Expected one of: cover, contain." });
+    }
+  }
+
+  const positionX = getOptionalFormInteger(formData, "imagePositionX", issues, {
+    max: 100,
+    min: 0,
+  });
+  const positionY = getOptionalFormInteger(formData, "imagePositionY", issues, {
+    max: 100,
+    min: 0,
+  });
+
+  if (positionX !== null) payload.positionX = positionX;
+  if (positionY !== null) payload.positionY = positionY;
+
+  return payload;
 }
 
 function resolveCategory(formData: FormData, issues: ValidationIssue[]) {
@@ -423,6 +449,15 @@ function parseBlockPayload(formData: FormData, blockType: BlockType, issues: Val
         maxLength: 500,
       }),
     };
+    const fit = getFormEnum(formData, "fit", ["cover", "contain"] as const, issues, "cover");
+    const positionX = getOptionalFormInteger(formData, "positionX", issues, {
+      max: 100,
+      min: 0,
+    });
+    const positionY = getOptionalFormInteger(formData, "positionY", issues, {
+      max: 100,
+      min: 0,
+    });
 
     const aiManagedByAssetId = getOptionalFormString(formData, "aiManagedByAssetId", issues, {
       allowEmpty: true,
@@ -440,6 +475,9 @@ function parseBlockPayload(formData: FormData, blockType: BlockType, issues: Val
     if (aiManagedByAssetId) payload.aiManagedByAssetId = aiManagedByAssetId;
     if (aiManagedKind) payload.aiManagedKind = aiManagedKind;
     if (["true", "1", "yes", "on"].includes(aiGenerated)) payload.aiGenerated = true;
+    if (fit) payload.fit = fit;
+    if (positionX !== null) payload.positionX = positionX;
+    if (positionY !== null) payload.positionY = positionY;
 
     return payload;
   }
@@ -539,13 +577,35 @@ export function parseSaveQuizSettingsForm(formData: FormData) {
 export function parseSaveQuizQuestionForm(formData: FormData) {
   const issues: ValidationIssue[] = [];
   const options = parseQuizOptions(formData, issues);
+  const questionType = getFormEnum(formData, "questionType", questionTypes, issues, "single_choice") as QuestionType;
+  const correctCount = options.filter((option) => option.isCorrect).length;
 
   if (options.length < 2 || options.length > 4) {
     issues.push({ path: "options", message: "Provide between 2 and 4 answer options." });
   }
 
-  if (!options.some((option) => option.isCorrect)) {
+  if (correctCount === 0) {
     issues.push({ path: "options", message: "Mark at least one correct answer." });
+  }
+
+  if (questionType === "single_choice" && correctCount !== 1) {
+    issues.push({ path: "options", message: "Single-choice questions must have exactly one correct answer." });
+  }
+
+  if (questionType === "multiple_choice" && options.length > 1 && correctCount === options.length) {
+    issues.push({ path: "options", message: "Multiple-choice questions need at least one incorrect option." });
+  }
+
+  if (questionType === "true_false") {
+    const labels = options.map((option) => option.label.trim().toLowerCase()).sort();
+
+    if (options.length !== 2 || labels[0] !== "false" || labels[1] !== "true") {
+      issues.push({ path: "options", message: "True/false questions must use exactly True and False options." });
+    }
+
+    if (correctCount !== 1) {
+      issues.push({ path: "options", message: "True/false questions must have exactly one correct answer." });
+    }
   }
 
   return returnResult(issues, {
@@ -564,7 +624,7 @@ export function parseSaveQuizQuestionForm(formData: FormData) {
       fallback: 1,
       min: 1,
     }) ?? 1,
-    questionType: getFormEnum(formData, "questionType", questionTypes, issues, "single_choice") as QuestionType,
+    questionType,
     quizId: getFormString(formData, "quizId", issues, { maxLength: 120 }) ?? "",
     xp: getFormInteger(formData, "xp", issues, {
       fallback: 1,

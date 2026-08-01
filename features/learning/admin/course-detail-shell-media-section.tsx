@@ -2,7 +2,7 @@ import {
   AdminCard,
   AdminStatusBadge,
 } from "@/components/admin/AdminPrimitives";
-import { MediaAssetPresentationEditor } from "@/components/admin/MediaAssetPresentationEditor";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import type { getAiMediaConfig } from "@/lib/ai-media-generator";
 import { parseImagePresentation } from "@/lib/image-presentation";
@@ -66,7 +66,7 @@ export function CourseDetailShellMediaSection({
         <summary className={collapsibleSummaryClasses()}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Course shell media</p>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Course media</p>
               <h2 className="mt-2 text-lg font-black">Thumbnail and cover</h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -92,7 +92,7 @@ export function CourseDetailShellMediaSection({
               const title = targetKind === "course_cover" ? "Course cover" : "Course thumbnail";
               const helper =
                 targetKind === "course_cover"
-                  ? "Use this for the wider shell artwork. Keep the key subject away from the edges."
+                  ? "Use this for the wider course artwork. Keep the key subject away from the edges."
                   : "This is the learner card image. Position it for the card crop first.";
               const availableLibraryAssets = mediaLibraryAssets.filter((libraryAsset) => libraryAsset.id !== asset.id);
               const canApproveAsset = typeof asset.url === "string" && asset.url.trim().length > 0 && asset.generation_status !== "failed";
@@ -108,7 +108,6 @@ export function CourseDetailShellMediaSection({
                   <input name="reviewStatus" type="hidden" value={asset.review_status} />
                   <input name="prompt" type="hidden" value={asset.prompt ?? ""} />
                   <input name="script" type="hidden" value={asset.script ?? ""} />
-                  <input name="caption" type="hidden" value={asset.caption ?? ""} />
 
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -130,18 +129,24 @@ export function CourseDetailShellMediaSection({
                     <p>Provider/model: <span className="font-black text-[var(--foreground)]">{asset.provider ?? "pending"}{asset.model ? ` / ${asset.model}` : ""}</span></p>
                   </div>
 
-                  <MediaAssetPresentationEditor
+                  <MediaPicker
+                    canGenerate={mediaConfig.canGenerate}
+                    caption={asset.caption ?? ""}
+                    generateAction={actions.generateLearningMediaAsset}
                     initialAltText={asset.alt_text ?? ""}
                     initialFit={presentation.fit}
                     initialPositionX={presentation.positionX}
                     initialPositionY={presentation.positionY}
                     initialUrl={asset.url ?? ""}
+                    libraryAssets={availableLibraryAssets}
                     placementLabel={title}
                     previewDescription={course.description}
                     previewEyebrow={course.category}
                     previewMinutes={derivedMinutes}
                     previewTitle={course.title}
                     previewVariant={targetKind === "course_cover" ? "course-cover" : "course-thumbnail"}
+                    showCaption
+                    useLibraryAction={actions.useLibraryMediaAsset}
                   />
 
                   <PendingSubmitButton
@@ -153,46 +158,6 @@ export function CourseDetailShellMediaSection({
                     type="submit"
                     value="save"
                   />
-                  <div className="mt-4 grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
-                    <label>
-                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Use from library</span>
-                      <select
-                        className="mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold"
-                        defaultValue=""
-                        disabled={availableLibraryAssets.length === 0}
-                        name="libraryAssetId"
-                      >
-                        <option value="">{availableLibraryAssets.length === 0 ? "No saved media yet" : "Choose saved media"}</option>
-                        {availableLibraryAssets.map((libraryAsset) => (
-                          <option key={libraryAsset.id} value={libraryAsset.id}>
-                            {libraryAsset.lesson?.title ? `${libraryAsset.lesson.title} · ` : ""}{libraryAsset.placement}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <PendingSubmitButton
-                      className="rounded-[12px] bg-[var(--ve-card)] px-4 py-2 text-sm font-black disabled:opacity-50"
-                      disabled={availableLibraryAssets.length === 0}
-                      formAction={actions.useLibraryMediaAsset}
-                      label="Use from library"
-                      name="actionIntent"
-                      pendingLabel="Applying..."
-                      pendingValue="useLibrary"
-                      type="submit"
-                      value="useLibrary"
-                    />
-                    <PendingSubmitButton
-                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
-                      disabled={!mediaConfig.canGenerate}
-                      formAction={actions.generateLearningMediaAsset}
-                      label="Generate Media"
-                      name="actionIntent"
-                      pendingLabel="Generating..."
-                      pendingValue="generate"
-                      type="submit"
-                      value="generate"
-                    />
-                  </div>
                   <PendingSubmitButton
                     className="mt-3 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
                     disabled={!canApproveAsset}
@@ -210,7 +175,7 @@ export function CourseDetailShellMediaSection({
 
             {!courseThumbnailAsset && !courseCoverAsset ? (
               <div className="rounded-[16px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-4 py-5 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                Course shell media briefs have not been seeded yet. Generate course media first, then come back here to position the thumbnail and cover.
+                Course media briefs have not been seeded yet. Generate course media first, then come back here to position the thumbnail and cover.
               </div>
             ) : null}
           </div>

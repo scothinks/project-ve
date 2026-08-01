@@ -22,6 +22,7 @@ import {
   normalizeCourseLegacyMediaAssetsCommand,
   publishApprovedAiCourseCommand,
 } from "@/features/ai-generation/application/course-finalization";
+import { assertAdminCoursePublishReady } from "@/features/learning/admin/course-readiness-data";
 import {
   approveLearningMediaAssetCommand,
   applyLibraryMediaAssetCommand,
@@ -144,7 +145,7 @@ export async function reviseCourseTextWithAi(formData: FormData) {
   redirect(
     appendAdminNotice(
       redirectTo,
-      `AI revision queued. Job ${result.jobId} will replace the course text when the worker runs.`,
+      `AI revision queued. Job ${result.jobId} will create an updated draft and return it to review.`,
     ),
   );
 }
@@ -382,6 +383,7 @@ export async function publishApprovedCourse(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  await assertAdminCoursePublishReady(supabase, courseId);
   const result = await publishApprovedAiCourseCommand(supabase, profile.id, courseId);
 
   revalidateLearningPaths(result.courseId, result.lessonIds);

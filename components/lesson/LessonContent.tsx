@@ -1,11 +1,31 @@
 import Image from "next/image";
 import type { LessonContentBlock, LessonPageType } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
+import { containsRichTextHtml, sanitizeRichTextHtml } from "@/lib/rich-text";
 
 type LessonContentProps = {
   blocks: LessonContentBlock[];
   variant?: LessonPageType | string;
 };
+
+function RichTextBody({
+  body,
+  className,
+}: {
+  body: string;
+  className: string;
+}) {
+  if (!containsRichTextHtml(body)) {
+    return <p className={className}>{body}</p>;
+  }
+
+  return (
+    <div
+      className={`${className} [&_a]:font-black [&_a]:text-[var(--ve-green)] [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-black [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-black [&_li]:ml-5 [&_ol]:my-2 [&_ol]:list-decimal [&_p]:my-2 [&_strong]:font-black [&_ul]:my-2 [&_ul]:list-disc`}
+      dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(body) }}
+    />
+  );
+}
 
 export function LessonContent({ blocks, variant = "concept" }: LessonContentProps) {
   const isReflection = variant === "reflection";
@@ -63,9 +83,7 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
               {block.heading ? (
                 <h3 className={textHeadingClasses}>{block.heading}</h3>
               ) : null}
-              <p className={textBodyClasses}>
-                {block.body}
-              </p>
+              <RichTextBody body={block.body} className={textBodyClasses} />
             </section>
           );
         }

@@ -23,6 +23,7 @@ type CourseDetailLessonReviewSectionProps = {
   course: AdminCourseDetailPageData["course"];
   lessons: AdminCourseDetailPageData["lessons"];
   lessonsPage?: string;
+  paginateLessons?: boolean;
   mediaAssetsByLessonId: AdminCourseDetailPageData["mediaAssetsByLessonId"];
   pagesByLessonId: AdminCourseDetailPageData["pagesByLessonId"];
   questionCountByQuizId: AdminCourseDetailPageData["questionCountByQuizId"];
@@ -112,12 +113,22 @@ export function CourseDetailLessonReviewSection({
   course,
   lessons,
   lessonsPage,
+  paginateLessons = true,
   mediaAssetsByLessonId,
   pagesByLessonId,
   questionCountByQuizId,
   quizByLessonId,
 }: CourseDetailLessonReviewSectionProps) {
-  const paginatedLessons = paginateItems(lessons, parsePageParam(lessonsPage), 12);
+  const visibleLessons = paginateLessons
+    ? paginateItems(lessons, parsePageParam(lessonsPage), 12)
+    : {
+        currentPage: 1,
+        endItem: lessons.length,
+        items: lessons,
+        startItem: lessons.length === 0 ? 0 : 1,
+        totalItems: lessons.length,
+        totalPages: 1,
+      };
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.85fr]">
@@ -141,7 +152,7 @@ export function CourseDetailLessonReviewSection({
         ) : (
           <>
             <div className="space-y-4">
-              {paginatedLessons.items.map((lesson) => {
+              {visibleLessons.items.map((lesson) => {
                 const lessonPagesForPreview = pagesByLessonId.get(lesson.id) ?? [];
                 const lessonQuiz = quizByLessonId.get(lesson.id) ?? null;
                 const questionCount = lessonQuiz ? questionCountByQuizId.get(lessonQuiz.id) ?? 0 : 0;
@@ -366,12 +377,14 @@ export function CourseDetailLessonReviewSection({
                 );
               })}
             </div>
-            <AdminPagination
-              basePath={`/admin/courses/${course.id}`}
-              currentPage={paginatedLessons.currentPage}
-              summary={`Showing ${paginatedLessons.startItem}-${paginatedLessons.endItem} of ${paginatedLessons.totalItems} lessons`}
-              totalPages={paginatedLessons.totalPages}
-            />
+            {paginateLessons ? (
+              <AdminPagination
+                basePath={`/admin/courses/${course.id}`}
+                currentPage={visibleLessons.currentPage}
+                summary={`Showing ${visibleLessons.startItem}-${visibleLessons.endItem} of ${visibleLessons.totalItems} lessons`}
+                totalPages={visibleLessons.totalPages}
+              />
+            ) : null}
           </>
         )}
       </AdminCard>
