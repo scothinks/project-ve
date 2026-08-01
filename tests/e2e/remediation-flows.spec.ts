@@ -1,0 +1,359 @@
+import { randomUUID } from "node:crypto";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { expect, test, type Page } from "@playwright/test";
+
+const authCredential = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
+const runId = randomUUID().slice(0, 8);
+const courseId = `e2e-course-${runId}`;
+const lessonId = `e2e-lesson-${runId}`;
+const pageId = `e2e-page-${runId}`;
+const quizId = `e2e-quiz-${runId}`;
+const questionId = `e2e-question-${runId}`;
+const correctOptionId = `e2e-option-correct-${runId}`;
+const wrongOptionId = `e2e-option-wrong-${runId}`;
+const rewardId = `e2e-reward-${runId}`;
+const courseTitle = `E2E Remediation Course ${runId}`;
+const lessonTitle = `E2E Supported Lesson ${runId}`;
+const questionPrompt = `Which action keeps the E2E remediation flow honest ${runId}?`;
+const rewardTitle = `E2E Reward ${runId}`;
+const learnerEmail = `e2e-learner-${runId}@example.test`;
+const adminEmail = `e2e-admin-${runId}@example.test`;
+
+let supabase: SupabaseClient;
+let learner: User;
+let admin: User;
+
+function requiredEnv(name: string) {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`${name} is required for remediation E2E tests.`);
+  }
+
+  return value;
+}
+
+async function assertNoError<T>(
+  result: { data: T; error: null } | { data: T | null; error: Error },
+  context: string,
+) {
+  if (result.error) {
+    throw new Error(`${context}: ${result.error.message}`);
+  }
+
+  return result.data as T;
+}
+
+async function createTestUser(email: string, displayName: string) {
+  const result = await supabase.auth.admin.createUser({
+    email,
+    password: authCredential,
+    email_confirm: true,
+    user_metadata: {
+      display_name: displayName,
+    },
+  });
+
+  if (result.error || !result.data.user) {
+    throw new Error(result.error?.message ?? `Could not create ${email}.`);
+  }
+
+  return result.data.user;
+}
+
+async function cleanupFixture() {
+  await supabase.from("reward_redemptions").delete().eq("reward_id", rewardId);
+  await supabase.from("xp_transactions").delete().in("user_id", [learner?.id, admin?.id].filter(Boolean));
+  await supabase.from("lesson_page_completions").delete().eq("lesson_id", lessonId);
+  await supabase.from("lesson_progress").delete().eq("lesson_id", lessonId);
+  await supabase.from("quiz_answers").delete().eq("question_id", questionId);
+  await supabase.from("quiz_attempts").delete().eq("quiz_id", quizId);
+  await supabase.from("rewards").delete().eq("id", rewardId);
+  await supabase.from("courses").delete().eq("id", courseId);
+
+  if (learner?.id) {
+    await supabase.auth.admin.deleteUser(learner.id);
+  }
+
+  if (admin?.id) {
+    await supabase.auth.admin.deleteUser(admin.id);
+  }
+}
+
+async function seedContent() {
+  await assertNoError(
+    await supabase.from("courses").insert({
+      id: courseId,
+      slug: courseId,
+      title: courseTitle,
+      description: "Throwaway course for remediation browser coverage.",
+      category: "E2E",
+      level: "beginner",
+      status: "published",
+      estimated_minutes: 1,
+      sort_order: -10_000,
+      thumbnail: {},
+    }),
+    "seed course",
+  );
+
+  await assertNoError(
+    await supabase.from("lessons").insert({
+      id: lessonId,
+      course_id: courseId,
+      slug: lessonId,
+      title: lessonTitle,
+      subtitle: "Supported remediation path",
+      description: "A local E2E lesson that can be completed through the app.",
+      status: "published",
+      retry_mode: "anytime",
+      retry_requires_reread: false,
+      quiz_requires_lesson_completion: true,
+      estimated_minutes: 1,
+      sort_order: 1,
+    }),
+    "seed lesson",
+  );
+
+  await assertNoError(
+    await supabase.from("lesson_pages").insert({
+      id: pageId,
+      lesson_id: lessonId,
+      page_number: 1,
+      title: "Supported progress page",
+      subtitle: "Read-only browser fixture",
+      page_type: "concept",
+      cover_image: null,
+    }),
+    "seed lesson page",
+  );
+
+  await assertNoError(
+    await supabase.from("lesson_content_blocks").insert({
+      page_id: pageId,
+      block_type: "text",
+      sort_order: 1,
+      payload: {
+        heading: "Browser flow",
+        body: "This page lets the E2E suite exercise normal lesson progress.",
+      },
+    }),
+    "seed lesson content block",
+  );
+
+  await assertNoError(
+    await supabase.from("quizzes").insert({
+      id: quizId,
+      lesson_id: lessonId,
+      title: "Supported E2E quiz",
+      status: "published",
+    }),
+    "seed quiz",
+  );
+
+  await assertNoError(
+    await supabase.from("quiz_questions").insert({
+      id: questionId,
+      quiz_id: quizId,
+      question_order: 1,
+      question_type: "single_choice",
+      prompt: questionPrompt,
+      explanation: "The supported app RPC path is the expected answer.",
+      xp: 5,
+    }),
+    "seed quiz question",
+  );
+
+  await assertNoError(
+    await supabase.from("quiz_options").insert([
+      {
+        id: correctOptionId,
+        question_id: questionId,
+        option_order: 1,
+        label: "Use the supported app RPC path",
+        is_correct: true,
+      },
+      {
+        id: wrongOptionId,
+        question_id: questionId,
+        option_order: 2,
+        label: "Bypass the app path with a raw write",
+        is_correct: false,
+      },
+    ]),
+    "seed quiz options",
+  );
+
+  await assertNoError(
+    await supabase.from("rewards").insert({
+      id: rewardId,
+      title: rewardTitle,
+      description: "A throwaway reward for remediation browser coverage.",
+      cost_xp: 5,
+      inventory_count: 1,
+      starts_at: null,
+      ends_at: null,
+      status: "published",
+      thumbnail: {},
+      offer_expires_at: null,
+      terms: "E2E only.",
+      claim_steps: [],
+      fulfillment_type: "manual",
+      fulfillment_config: {},
+      per_user_limit: 1,
+      sort_order: -10_000,
+      is_enabled: true,
+      total_uploaded: 1,
+      total_available: 1,
+      visibility_mode: "store",
+      distribution_mode: "direct",
+      limit_period: "lifetime",
+      redemption_window_days: null,
+    }),
+    "seed reward",
+  );
+
+  await assertNoError(
+    await supabase.from("reward_quantity_allocations").insert({
+      reward_id: rewardId,
+      quantity_total: 1,
+      quantity_available: 1,
+      available_from: null,
+      expires_at: null,
+      reason: "E2E remediation fixture inventory",
+    }),
+    "seed reward quantity allocation",
+  );
+}
+
+async function seedUsers() {
+  learner = await createTestUser(learnerEmail, "E2E Learner");
+  admin = await createTestUser(adminEmail, "E2E Admin");
+
+  await assertNoError(
+    await supabase.from("profiles").upsert(
+      [
+        {
+          id: learner.id,
+          display_name: "E2E Learner",
+          role: "learner",
+          xp: 100,
+          xp_balance_cached: 100,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: admin.id,
+          display_name: "E2E Admin",
+          role: "admin",
+          xp: 0,
+          xp_balance_cached: 0,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+      ],
+      { onConflict: "id" },
+    ),
+    "seed profiles",
+  );
+
+  await assertNoError(
+    await supabase.from("user_value_profiles").upsert(
+      {
+        user_id: learner.id,
+        assessment_completed_at: new Date().toISOString(),
+        readiness_level: "beginner",
+        profile_summary: {},
+      },
+      { onConflict: "user_id" },
+    ),
+    "seed learner assessment completion",
+  );
+}
+
+async function signIn(page: Page, email: string) {
+  await page.goto("/login");
+  await page.getByPlaceholder("Enter Email Address").fill(email);
+  await page.getByPlaceholder("Enter Password").fill(authCredential);
+  await page.getByRole("button", { name: "Login" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+}
+
+test.describe.serial("remediation browser flows", () => {
+  test.beforeAll(async () => {
+    supabase = createClient(
+      requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+      requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
+    await cleanupFixture();
+    await seedContent();
+    await seedUsers();
+  });
+
+  test.afterAll(async () => {
+    await cleanupFixture();
+  });
+
+  test("signup view and password login stay reachable", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Sign up" }).click();
+    await expect(page.getByRole("button", { name: "Create Account" })).toBeVisible();
+    await page.getByRole("button", { name: "Login" }).click();
+
+    await signIn(page, learnerEmail);
+  });
+
+  test("learner completes a lesson page and earns quiz XP through supported APIs", async ({ page }) => {
+    await signIn(page, learnerEmail);
+
+    await page.goto(`/lessons/${lessonId}`);
+    await expect(page.getByText("Supported progress page")).toBeVisible();
+    await expect(page.getByText("This page lets the E2E suite exercise normal lesson progress.")).toBeVisible();
+    await page.waitForResponse(
+      (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
+    );
+
+    await page.getByRole("link", { name: "Take Quiz" }).click();
+    await expect(page).toHaveURL(new RegExp(`/quiz/${lessonId}$`));
+    await expect(page.getByText(questionPrompt)).toBeVisible();
+    await page.getByRole("button", { name: "Use the supported app RPC path" }).click();
+    await page.getByRole("button", { name: "View result" }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/results/${lessonId}$`));
+    await expect(page.getByRole("heading", { name: "You earned 5 XP!" })).toBeVisible();
+    await expect(page.getByText("No missed questions")).toBeVisible();
+  });
+
+  test("learner redeems a reward and sees it in history", async ({ page }) => {
+    await signIn(page, learnerEmail);
+
+    await page.goto("/xp-store");
+    await expect(page.getByRole("heading", { name: "Redeem XP rewards" })).toBeVisible();
+    const rewardCard = page.locator("section").filter({ hasText: rewardTitle }).first();
+    await expect(rewardCard.getByRole("heading", { name: rewardTitle })).toBeVisible();
+    await rewardCard.getByRole("button", { name: "Redeem" }).click();
+    await page.getByRole("button", { name: "Confirm" }).click();
+
+    await expect(page.getByText("Reward added to your history.")).toBeVisible();
+    await page.getByRole("button", { name: "History" }).click();
+    await expect(page.getByRole("heading", { name: rewardTitle }).first()).toBeVisible();
+  });
+
+  test("admin can use the course status workflow for owned fixture content", async ({ page }) => {
+    await signIn(page, adminEmail);
+
+    await page.goto("/admin/courses");
+    await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
+    const courseRow = page.getByRole("row").filter({ hasText: courseTitle });
+    await expect(courseRow.getByText("Enabled")).toBeVisible();
+    await courseRow.getByRole("button", { name: "Disable" }).click();
+
+    await expect(page.getByText("Course disabled.")).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: courseTitle }).getByText("Disabled")).toBeVisible();
+  });
+});

@@ -13,12 +13,24 @@ This command runs:
 3. `npm run build`
 4. `npm run test:db`
 
+The broader local remediation gate is:
+
+```bash
+npm run test:remediation:local
+```
+
+That command resets/replays local migrations, checks local database type drift,
+runs local pgTAP, repository contracts, the quiz XP concurrency regression, and
+the current E2E command. GitHub Actions runs this as a merge-blocking job.
+
 The DB suite includes:
 
+- `supabase/tests/database/ai_generation_worker.sql`
 - `supabase/tests/database/rpc_security.sql`
 - `supabase/tests/database/notification_security.sql`
 - `supabase/tests/database/xp_ledger_security.sql`
 - `supabase/tests/database/quiz_security.sql`
+- `supabase/tests/database/progress_security.sql`
 - `supabase/tests/database/p0_release_gate.sql`
 
 ## Required Environment
@@ -47,18 +59,32 @@ The gate checks that:
 
 ## Latest Confirmed Result
 
-Last confirmed linked DB gate:
+Last confirmed linked DB gate after `VE-AI-002`:
 
 ```text
+ai_generation_worker.sql ... ok
 notification_security.sql .. ok
 p0_release_gate.sql ........ ok
+progress_security.sql ...... ok
 quiz_security.sql .......... ok
 rpc_security.sql ........... ok
 xp_ledger_security.sql ..... ok
 All tests successful.
-Files=5, Tests=89
+Files=7, Tests=140
 Result: PASS
 ```
+
+A third `VE-SEC-002` classification refinement migration is pushed and linked
+validated with `Files=7, Tests=133, Result: PASS`.
+
+The follow-up test-only `VE-SEC-002` mission-flow acceptance assertion raises
+the linked pgTAP suite to 136 assertions.
+
+The `VE-QUIZ-003` daily quiz XP serialization migration is also pushed and
+linked validated with `Files=7, Tests=136, Result: PASS`.
+
+The `VE-AI-002` durable worker lease fencing migration is pushed and linked
+validated with `Files=7, Tests=140, Result: PASS`.
 
 The app-side checks were also confirmed during P0 remediation:
 
@@ -69,16 +95,16 @@ The app-side checks were also confirmed during P0 remediation:
 
 ## Next Action Items
 
-With P0 complete, continue with Phase 1A from `docs/project-ve-engineering-remediation-plan.md`:
+No VE-TEST-002 addendum closure items remain open. `npm run test:e2e` now runs
+real Playwright browser coverage for the critical learner/admin remediation
+flows against local Supabase, and `npm run test:remediation:local` includes that
+suite in the merge-blocking local gate.
 
-- `VE-TEST-001`: keep expanding automated security coverage beyond the P0 gate.
-- `VE-AUTH-001`: harden auth/session and startup secret handling.
-- `VE-NOTIF-002`: restrict learner notification mutations to explicit read/mark-read use cases.
+Latest local remediation validation:
 
-Then move into Phase 1B:
-
-- `VE-PROGRESS-001`
-- `VE-DATA-001`
-- `VE-API-001`
-- `VE-OBS-001`
-- `VE-DB-001`
+```text
+npm run test:remediation:local
+Result: PASS
+pgTAP: Files=7, Tests=140
+Playwright: 4 passed
+```

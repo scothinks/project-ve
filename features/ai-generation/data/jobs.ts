@@ -10,8 +10,6 @@ type AiGenerationJobType = "course_text" | "media_assets";
 
 type AiGenerationJobStatus = "queued" | "running";
 
-type AiGenerationJobUpdate = Database["public"]["Tables"]["ai_generation_jobs"]["Update"];
-
 export type AiGenerationClaim = {
   id: string;
   entity_type: string;
@@ -91,15 +89,6 @@ export async function createAiGenerationJob(
   return (data as { id: string }).id;
 }
 
-export async function updateAiGenerationJob(
-  supabase: AiGenerationAdminClient,
-  jobId: string,
-  patch: AiGenerationJobUpdate,
-) {
-  const { error } = await supabase.from("ai_generation_jobs").update(patch).eq("id", jobId);
-  if (error) throw error;
-}
-
 export async function getAiGenerationJobActorUserId(
   supabase: AiGenerationAdminClient,
   jobId: string,
@@ -134,6 +123,7 @@ export async function claimNextAiGenerationJob(
 export async function markAiGenerationJobFailed(
   supabase: AiGenerationAdminClient,
   jobId: string,
+  workerId: string,
   error: unknown,
   retry: boolean,
 ) {
@@ -145,6 +135,28 @@ export async function markAiGenerationJobFailed(
       name: error instanceof Error ? error.name : "UnknownError",
     },
     p_retry: retry,
+    p_worker_id: workerId,
+  });
+}
+
+export async function completeAiGenerationJob(
+  supabase: AiGenerationAdminClient,
+  args: {
+    entityId: string;
+    error: string | null;
+    jobId: string;
+    result: Record<string, unknown>;
+    status: "completed" | "failed";
+    workerId: string;
+  },
+) {
+  await callAdminRpc<void>(supabase, "complete_ai_generation_job", {
+    p_job_id: args.jobId,
+    p_worker_id: args.workerId,
+    p_entity_id: args.entityId,
+    p_status: args.status,
+    p_result: args.result,
+    p_error: args.error,
   });
 }
 
@@ -157,6 +169,7 @@ export async function materializeAiCourseTextJob(
     generatedTree: AiGeneratedTreeRows;
     jobId: string;
     jobResult: Record<string, unknown>;
+    workerId: string;
   },
 ) {
   await callAdminRpc<void>(supabase, "materialize_ai_course_text_job", {
@@ -172,6 +185,7 @@ export async function materializeAiCourseTextJob(
     p_option_rows: args.generatedTree.optionRows,
     p_media_rows: args.generatedTree.mediaRows,
     p_job_result: args.jobResult,
+    p_worker_id: args.workerId,
   });
 }
 
@@ -183,6 +197,7 @@ export async function replaceAiCourseTextJob(
     generatedTree: AiGeneratedTreeRows;
     jobId: string;
     jobResult: Record<string, unknown>;
+    workerId: string;
   },
 ) {
   await callAdminRpc<void>(supabase, "replace_ai_course_text_job", {
@@ -197,5 +212,6 @@ export async function replaceAiCourseTextJob(
     p_option_rows: args.generatedTree.optionRows,
     p_media_rows: args.generatedTree.mediaRows,
     p_job_result: args.jobResult,
+    p_worker_id: args.workerId,
   });
 }

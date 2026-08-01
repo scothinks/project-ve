@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(12);
+select extensions.plan(16);
 
 reset role;
 set local role service_role;
@@ -134,6 +134,58 @@ select extensions.ok(
   'stale lease recovery refreshes lock metadata and increments attempts'
 );
 
+select extensions.throws_ok(
+  $$
+    select public.fail_ai_generation_job(
+      '00000000-0000-4000-8000-000000000101',
+      'stale-worker',
+      'Stale worker failure.',
+      'worker_error',
+      '{"name":"StaleWorkerError"}'::jsonb,
+      false
+    )
+  $$,
+  '42501',
+  'AI generation job lease is not held by this worker.',
+  'stale worker cannot fail a job after another worker reclaims the lease'
+);
+
+select extensions.throws_ok(
+  $$
+    select public.materialize_ai_course_text_job(
+      '00000000-0000-4000-8000-000000000101'::uuid,
+      'test-ai-worker-stale-course',
+      null::jsonb,
+      null::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '[]'::jsonb,
+      '{"mode":"stale-worker"}'::jsonb,
+      'stale-worker'
+    )
+  $$,
+  '42501',
+  'AI generation job lease is not held by this worker.',
+  'stale worker cannot complete a job after another worker reclaims the lease'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.ai_generation_jobs
+    where id = '00000000-0000-4000-8000-000000000101'
+      and status = 'running'
+      and locked_by = 'fresh-worker'
+      and error is null
+      and completed_at is null
+  ),
+  'stale worker denial leaves the reclaimed worker lease intact'
+);
+
 create temporary table test_claimed_exclusion
 on commit drop
 as
@@ -160,6 +212,7 @@ select extensions.ok(
 
 select public.fail_ai_generation_job(
   '00000000-0000-4000-8000-000000000202',
+  'second-worker',
   'Transient model failure.',
   'worker_error',
   '{"name":"DependencyUnavailableError"}'::jsonb,
@@ -184,6 +237,7 @@ select extensions.ok(
 
 select public.fail_ai_generation_job(
   '00000000-0000-4000-8000-000000000301',
+  'failure-worker',
   'Validation failed.',
   'validation_error',
   '{"name":"ValidationError"}'::jsonb,
@@ -256,7 +310,8 @@ select extensions.throws_ok(
       '[]'::jsonb,
       '[]'::jsonb,
       '[]'::jsonb,
-      '{"mode":"create_course"}'::jsonb
+      '{"mode":"create_course"}'::jsonb,
+      'materialize-worker'
     )
   $$,
   '23503',
@@ -297,11 +352,20 @@ select extensions.ok(
 select extensions.ok(
   has_function_privilege('service_role', 'public.claim_ai_generation_job(text, integer, integer)', 'execute')
   and not has_function_privilege('authenticated', 'public.claim_ai_generation_job(text, integer, integer)', 'execute')
-  and has_function_privilege('service_role', 'public.fail_ai_generation_job(uuid, text, text, jsonb, boolean)', 'execute')
-  and not has_function_privilege('authenticated', 'public.fail_ai_generation_job(uuid, text, text, jsonb, boolean)', 'execute')
-  and has_function_privilege('service_role', 'public.materialize_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb)', 'execute')
-  and not has_function_privilege('authenticated', 'public.materialize_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb)', 'execute'),
+  and has_function_privilege('service_role', 'public.fail_ai_generation_job(uuid, text, text, text, jsonb, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.fail_ai_generation_job(uuid, text, text, text, jsonb, boolean)', 'execute')
+  and has_function_privilege('service_role', 'public.materialize_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.materialize_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, text)', 'execute')
+  and has_function_privilege('service_role', 'public.complete_ai_generation_job(uuid, text, text, text, jsonb, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.complete_ai_generation_job(uuid, text, text, text, jsonb, text)', 'execute'),
   'worker RPCs remain service-role-only while testing worker behavior'
+);
+
+select extensions.ok(
+  not has_function_privilege('service_role', 'public.fail_ai_generation_job(uuid, text, text, jsonb, boolean)', 'execute')
+  and not has_function_privilege('service_role', 'public.materialize_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb)', 'execute')
+  and not has_function_privilege('service_role', 'public.replace_ai_course_text_job(uuid, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb)', 'execute'),
+  'unfenced worker RPC signatures are not executable by service_role'
 );
 
 select * from finish();

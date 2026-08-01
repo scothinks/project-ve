@@ -10,8 +10,8 @@ select extensions.plan(19);
 
 select extensions.ok(
   not has_function_privilege('anon', 'public.queue_user_notification(uuid, text, text, text, text, text, text, jsonb, text)', 'execute')
-  and has_function_privilege('authenticated', 'public.queue_user_notification(uuid, text, text, text, text, text, text, jsonb, text)', 'execute'),
-  'authenticated users can reach queue_user_notification denial wrapper while anon cannot'
+  and not has_function_privilege('authenticated', 'public.queue_user_notification(uuid, text, text, text, text, text, text, jsonb, text)', 'execute'),
+  'client roles cannot execute queue_user_notification directly'
 );
 
 select extensions.ok(
@@ -22,8 +22,8 @@ select extensions.ok(
 
 select extensions.ok(
   not has_function_privilege('anon', 'public.generate_continue_learning_reminders()', 'execute')
-  and has_function_privilege('authenticated', 'public.generate_continue_learning_reminders()', 'execute'),
-  'authenticated users can reach reminder generation denial wrapper while anon cannot'
+  and not has_function_privilege('authenticated', 'public.generate_continue_learning_reminders()', 'execute'),
+  'client roles cannot execute reminder generation directly'
 );
 
 select extensions.ok(
@@ -72,19 +72,19 @@ set local role authenticated;
 select extensions.throws_ok(
   $$ select public.queue_user_notification('00000000-0000-0000-0000-000000000301', 'system', 'test', 'Title', 'Body') $$,
   '42501',
-  'authenticated learner cannot queue a notification to themselves'
+  'permission denied for function queue_user_notification'
 );
 
 select extensions.throws_ok(
   $$ select public.queue_user_notification('00000000-0000-0000-0000-000000000302', 'system', 'test', 'Title', 'Body') $$,
   '42501',
-  'authenticated learner cannot queue a notification to another user'
+  'permission denied for function queue_user_notification'
 );
 
 select extensions.throws_ok(
   $$ select public.generate_continue_learning_reminders() $$,
   '42501',
-  'authenticated learner cannot run reminder generation'
+  'permission denied for function generate_continue_learning_reminders'
 );
 
 select extensions.throws_ok(

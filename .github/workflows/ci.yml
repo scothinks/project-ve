@@ -46,3 +46,35 @@ jobs:
         if: ${{ env.SUPABASE_ACCESS_TOKEN == '' || env.SUPABASE_PROJECT_REF == '' }}
         run: |
           echo "::notice::Skipping Supabase type drift check because SUPABASE_ACCESS_TOKEN and/or SUPABASE_PROJECT_REF is not configured."
+
+  remediation-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: local-remediation-placeholder
+      SUPABASE_SERVICE_ROLE_KEY: local-remediation-placeholder
+      TURNSTILE_SECRET_KEY: ci-turnstile-secret
+      FRAUD_HASH_SALT: ci-fraud-hash-salt
+      OAUTH_SIGNUP_PROOF_SECRET: ci-oauth-proof-secret
+      OPENAI_API_KEY: ci-openai-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Start local Supabase
+        run: npx supabase@2.110.0 start
+      - name: Run local remediation acceptance gate
+        run: npm run test:remediation:local
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase@2.110.0 stop --no-backup
