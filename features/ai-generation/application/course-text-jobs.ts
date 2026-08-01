@@ -130,6 +130,8 @@ export async function processCreateCourseTextJob(
       mediaAssetCount: generatedTree.mediaRows.length,
     },
     workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_draft_generated", "course", courseId, {
@@ -207,6 +209,8 @@ export async function processExtendCourseTextJob(
       mediaAssetCount: generatedTree.mediaRows.length,
     },
     workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_extended_with_lessons", "course", courseId, {
@@ -345,6 +349,8 @@ export async function processReviseCourseTextJob(
       mediaAssetCount: generatedTree.mediaRows.length,
     },
     workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_course_text_revised", "course", courseId, {

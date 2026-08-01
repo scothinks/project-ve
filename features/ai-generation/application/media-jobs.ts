@@ -4,7 +4,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getAiGenerationJobActorUserId,
   completeAiGenerationJob,
+  heartbeatAiGenerationJob,
   type AiGenerationClaim,
+  type AiGenerationLease,
 } from "@/features/ai-generation/data/jobs";
 import {
   getLearningMediaAssetById,
@@ -72,6 +74,23 @@ function asRecord(value: unknown) {
     : {};
 }
 
+function getAiGenerationLease(job: AiGenerationClaim, workerId: string): AiGenerationLease {
+  return {
+    jobId: job.id,
+    workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
+  };
+}
+
+async function heartbeatMediaJobLease(
+  supabase: AiGenerationAdminClient,
+  job: AiGenerationClaim,
+  options: MediaJobRevalidation,
+) {
+  await heartbeatAiGenerationJob(supabase, getAiGenerationLease(job, options.workerId));
+}
+
 async function processCourseMediaAssetsJob(
   supabase: AiGenerationAdminClient,
   job: AiGenerationClaim,
@@ -123,6 +142,7 @@ async function processCourseMediaAssetsJob(
   const typedExistingAssets = (existingAssets ?? []) as WorkflowMediaAssetRow[];
   const seedRows = createCourseMediaSeedRows(course, lessons, pages, typedExistingAssets, job.id);
   if (seedRows.length > 0) {
+    await heartbeatMediaJobLease(supabase, job, options);
     const { error } = await supabase
       .from("learning_media_assets")
       .insert(seedRows as LearningMediaAssetInsert[]);
@@ -155,6 +175,7 @@ async function processCourseMediaAssetsJob(
     const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
     if (!target) {
       skippedCount += 1;
+      await heartbeatMediaJobLease(supabase, job, options);
       await updateMediaAssetGenerationStatus(
         supabase,
         asset.id,
@@ -166,6 +187,7 @@ async function processCourseMediaAssetsJob(
 
     if (usedTargetKeys.has(target.key)) {
       skippedCount += 1;
+      await heartbeatMediaJobLease(supabase, job, options);
       await updateMediaAssetGenerationStatus(
         supabase,
         asset.id,
@@ -206,8 +228,15 @@ async function processCourseMediaAssetsJob(
     });
   }
 
-  const counts = await processMediaWorkItemsForJob(supabase, workItems, replaceExisting, skippedCount);
+  const counts = await processMediaWorkItemsForJob(
+    supabase,
+    workItems,
+    replaceExisting,
+    skippedCount,
+    getAiGenerationLease(job, options.workerId),
+  );
 
+  await heartbeatMediaJobLease(supabase, job, options);
   const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
     p_course_id: courseId,
     p_media_status: "draft",
@@ -226,6 +255,7 @@ async function processCourseMediaAssetsJob(
       jobId: job.id,
     });
 
+    await heartbeatMediaJobLease(supabase, job, options);
     const { error } = await supabase
       .from("courses")
       .update({ ai_generation_notes: nextNotes as Json })
@@ -254,6 +284,8 @@ async function processCourseMediaAssetsJob(
     result,
     error: jobStatus === "failed" ? "No media images were generated successfully." : null,
     workerId: options.workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_course_media_assets_generated", "course", courseId, {
@@ -327,6 +359,7 @@ async function processLessonMediaAssetsJob(
   const seedRows = createLessonMediaSeedRows(course, lesson, lessonPages, existingLessonAssets, job.id);
 
   if (seedRows.length > 0) {
+    await heartbeatMediaJobLease(supabase, job, options);
     const { error } = await supabase
       .from("learning_media_assets")
       .insert(seedRows as LearningMediaAssetInsert[]);
@@ -351,6 +384,7 @@ async function processLessonMediaAssetsJob(
     const target = resolveMediaTarget(asset, pagesByLessonId, usedPageIds);
     if (!target) {
       skippedCount += 1;
+      await heartbeatMediaJobLease(supabase, job, options);
       await updateMediaAssetGenerationStatus(
         supabase,
         asset.id,
@@ -362,6 +396,7 @@ async function processLessonMediaAssetsJob(
 
     if (usedTargetKeys.has(target.key)) {
       skippedCount += 1;
+      await heartbeatMediaJobLease(supabase, job, options);
       await updateMediaAssetGenerationStatus(
         supabase,
         asset.id,
@@ -401,8 +436,15 @@ async function processLessonMediaAssetsJob(
     });
   }
 
-  const counts = await processMediaWorkItemsForJob(supabase, workItems, replaceExisting, skippedCount);
+  const counts = await processMediaWorkItemsForJob(
+    supabase,
+    workItems,
+    replaceExisting,
+    skippedCount,
+    getAiGenerationLease(job, options.workerId),
+  );
 
+  await heartbeatMediaJobLease(supabase, job, options);
   const { error: mediaStatusError } = await supabase.rpc("admin_reset_ai_course_media", {
     p_course_id: course.id,
     p_lesson_id: lessonId,
@@ -422,6 +464,7 @@ async function processLessonMediaAssetsJob(
       jobId: job.id,
     });
 
+    await heartbeatMediaJobLease(supabase, job, options);
     const { error } = await supabase
       .from("lessons")
       .update({ ai_generation_notes: nextNotes as Json })
@@ -433,6 +476,7 @@ async function processLessonMediaAssetsJob(
   const jobStatus = counts.generatedCount > 0 || counts.reusedCount > 0 || counts.skippedCount > 0
     ? "completed"
     : "failed";
+  await heartbeatMediaJobLease(supabase, job, options);
   const aggregate = await recomputeCourseAiStatuses(supabase, course.id, actorUserId);
   const result = {
     courseId: course.id,
@@ -450,6 +494,8 @@ async function processLessonMediaAssetsJob(
     result,
     error: jobStatus === "failed" ? "No lesson media images were generated successfully." : null,
     workerId: options.workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_lesson_media_assets_generated", "lesson", lessonId, {
@@ -565,9 +611,12 @@ async function processSingleMediaAssetJob(
     ],
     true,
     0,
+    getAiGenerationLease(job, options.workerId),
   );
 
+  await heartbeatMediaJobLease(supabase, job, options);
   await resetMediaApprovalAfterAssetChange(supabase, courseId, asset.lesson_id);
+  await heartbeatMediaJobLease(supabase, job, options);
   const aggregate = await recomputeCourseAiStatuses(supabase, courseId, actorUserId);
   const jobStatus = counts.generatedCount > 0 || counts.reusedCount > 0 ? "completed" : "failed";
   const result = {
@@ -587,6 +636,8 @@ async function processSingleMediaAssetJob(
     result,
     error: jobStatus === "failed" ? "Media generation failed." : null,
     workerId: options.workerId,
+    lockToken: job.lock_token,
+    lockVersion: job.lock_version,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "learning_media_asset_generated", "media_asset", assetId, {

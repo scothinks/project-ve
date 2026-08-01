@@ -107,7 +107,15 @@ export async function processNextAiGenerationJob(
   } catch (error) {
     const isValidationError = isAiGenerationValidationFailure(error);
     const retry = !isValidationError && job.attempt_count < 3;
-    await markAiGenerationJobFailed(supabase, job.id, workerId, error, retry).catch((failureError) => {
+    await markAiGenerationJobFailed(
+      supabase,
+      job.id,
+      workerId,
+      job.lock_token,
+      job.lock_version,
+      error,
+      retry,
+    ).catch((failureError) => {
       logAppError(failureError, {
         operation: "admin.ai_generation_job.fail",
         resourceId: job.id,

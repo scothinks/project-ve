@@ -1445,6 +1445,8 @@ export type Database = {
           id: string
           idempotency_key: string | null
           job_type: string
+          lock_token: string | null
+          lock_version: number
           locked_at: string | null
           locked_by: string | null
           prompt: Json
@@ -1468,6 +1470,8 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           job_type: string
+          lock_token?: string | null
+          lock_version?: number
           locked_at?: string | null
           locked_by?: string | null
           prompt?: Json
@@ -1491,6 +1495,8 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           job_type?: string
+          lock_token?: string | null
+          lock_version?: number
           locked_at?: string | null
           locked_by?: string | null
           prompt?: Json
@@ -5126,20 +5132,36 @@ export type Database = {
           entity_type: string
           id: string
           job_type: string
+          lock_token: string
+          lock_version: number
           prompt: Json
         }[]
       }
-      complete_ai_generation_job: {
-        Args: {
-          p_entity_id: string
-          p_error?: string
-          p_job_id: string
-          p_result: Json
-          p_status: string
-          p_worker_id: string
-        }
-        Returns: undefined
-      }
+      complete_ai_generation_job:
+        | {
+            Args: {
+              p_entity_id: string
+              p_error?: string
+              p_job_id: string
+              p_result: Json
+              p_status: string
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_entity_id: string
+              p_error?: string
+              p_job_id: string
+              p_lock_token: string
+              p_lock_version: number
+              p_result: Json
+              p_status: string
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
       complete_lesson_page: {
         Args: { p_lesson_id: string; p_page_id: string }
         Returns: Json
@@ -5168,6 +5190,19 @@ export type Database = {
               p_failure_code?: string
               p_failure_detail?: Json
               p_job_id: string
+              p_retry?: boolean
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_error: string
+              p_failure_code?: string
+              p_failure_detail?: Json
+              p_job_id: string
+              p_lock_token: string
+              p_lock_version: number
               p_retry?: boolean
               p_worker_id: string
             }
@@ -5217,6 +5252,16 @@ export type Database = {
         }
         Returns: Json
       }
+      heartbeat_ai_generation_job: {
+        Args: {
+          p_job_id: string
+          p_lease_seconds?: number
+          p_lock_token: string
+          p_lock_version: number
+          p_worker_id: string
+        }
+        Returns: undefined
+      }
       increment_profile_xp: {
         Args: { p_amount: number; p_user_id: string }
         Returns: undefined
@@ -5258,6 +5303,26 @@ export type Database = {
               p_job_id: string
               p_job_result: Json
               p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_row: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_lock_token: string
+              p_lock_version: number
               p_media_rows: Json
               p_option_rows: Json
               p_page_rows: Json
@@ -5420,6 +5485,25 @@ export type Database = {
               p_job_id: string
               p_job_result: Json
               p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_lock_token: string
+              p_lock_version: number
               p_media_rows: Json
               p_option_rows: Json
               p_page_rows: Json

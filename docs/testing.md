@@ -64,8 +64,8 @@ tests, and the local quiz XP concurrency regression.
 `npm run test:remediation:local` is the local remediation acceptance gate used
 by GitHub Actions. It resets/replays the local database from migrations, checks
 generated local database types against `types/database.ts`, runs local pgTAP,
-runs repository contracts, runs the quiz XP concurrency regression, and then
-runs the current E2E command.
+runs repository contracts, runs the quiz XP concurrency regression, runs the
+economic integrity regression, and then runs the current E2E command.
 
 `npm run test:quiz-xp-concurrency:local` runs the `VE-QUIZ-003` concurrency
 regression directly against local Supabase Postgres. It creates throwaway local
@@ -74,6 +74,15 @@ two correct answers concurrently, verifies the daily quiz XP cap is not
 exceeded, checks ledger/cache consistency, and cleans up afterward. The script
 refuses non-local database URLs unless `ALLOW_NONLOCAL_DB_CONCURRENCY_TESTS=1`
 is explicitly set.
+
+`npm run test:economic-integrity:local` runs the `VE-TEST-003` economic
+integrity regression directly against local Supabase Postgres. It creates
+throwaway local users, missions, rewards, and inventory; asserts concurrent
+reward redemption allocates one reward only; asserts duplicate XP mission and
+reward mission awards collapse to one domain event; verifies ledger/cache
+consistency after each economic mutation; and cleans up afterward. The script
+refuses non-local database URLs unless `ALLOW_NONLOCAL_DB_ECONOMIC_TESTS=1` is
+explicitly set.
 
 `npm run test:db:linked` is the remote Supabase pgTAP security gate. It depends
 on the linked project containing the permanent learner/admin test users declared
@@ -108,17 +117,21 @@ The `VE-AI-002` durable worker lease fencing cleanup is pushed and linked
 validated with `Files=7, Tests=140, Result: PASS`.
 
 `npm run test:e2e` now runs the Playwright remediation browser suite against
-local Supabase. The suite creates throwaway users/content and covers signup
-view/login reachability, learner lesson progress plus quiz XP, reward
-redemption/history, and the admin course status workflow.
+local Supabase. The suite creates throwaway users/content and covers real
+signup, password login, learner lesson progress plus quiz XP, reward
+redemption/history, and the admin course status workflow. For local E2E only,
+the runner disables the public Turnstile widget and enables a local-only
+verification bypass fenced to `PROJECT_VE_LOCAL_E2E=1`, non-Vercel execution,
+and the local Supabase URL.
 
-Latest local remediation gate after adding the Playwright coverage:
+Latest local remediation gate:
 
 ```text
 npm run test:remediation:local
 Result: PASS
-pgTAP: Files=7, Tests=140
-Playwright: 4 passed
+pgTAP: Files=7, Tests=147
+Economic integrity regression: PASS
+Playwright: 5 passed
 ```
 
 GitHub Actions now blocks pull requests and pushes on:

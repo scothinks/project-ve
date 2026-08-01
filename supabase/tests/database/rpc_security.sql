@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(46);
+select extensions.plan(47);
 
 select extensions.ok(
   not has_function_privilege('anon', 'public.increment_profile_xp(uuid, integer)', 'execute')
@@ -414,6 +414,22 @@ select extensions.is_empty(
 
 select extensions.is_empty(
   $$
+    select c.function_schema || '.' || c.function_name || '(' || c.identity_arguments || ')'
+    from private.rpc_security_classifications c
+    left join pg_namespace n
+      on n.nspname = c.function_schema
+    left join pg_proc p
+      on p.pronamespace = n.oid
+     and p.proname = c.function_name
+     and pg_get_function_identity_arguments(p.oid) = c.identity_arguments
+    where c.function_schema = 'public'
+      and p.oid is null
+  $$,
+  'all public RPC classifications resolve to current function signatures'
+);
+
+select extensions.is_empty(
+  $$
     select p.oid::regprocedure::text
     from private.rpc_security_classifications c
     join pg_namespace n
@@ -425,9 +441,10 @@ select extensions.is_empty(
     where (
       has_function_privilege('anon', p.oid, 'execute') is distinct from ('anon' = any(c.execute_roles))
       or has_function_privilege('authenticated', p.oid, 'execute') is distinct from ('authenticated' = any(c.execute_roles))
+      or has_function_privilege('service_role', p.oid, 'execute') is distinct from ('service_role' = any(c.execute_roles))
     )
   $$,
-  'client RPC privileges match security classifications'
+  'API role RPC privileges match security classifications'
 );
 
 select extensions.is_empty(
@@ -494,9 +511,10 @@ select extensions.is_empty(
     where (
       has_function_privilege('anon', p.oid, 'execute') is distinct from ('anon' = any(c.execute_roles))
       or has_function_privilege('authenticated', p.oid, 'execute') is distinct from ('authenticated' = any(c.execute_roles))
+      or has_function_privilege('service_role', p.oid, 'execute') is distinct from ('service_role' = any(c.execute_roles))
     )
   $$,
-  'client execute privileges match RPC classifications'
+  'API role execute privileges match RPC classifications'
 );
 
 select * from finish();

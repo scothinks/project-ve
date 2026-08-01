@@ -8,6 +8,10 @@ import {
 } from "@/lib/ai-media-generator";
 import type { Database, Json } from "@/types/database";
 import {
+  heartbeatAiGenerationJob,
+  type AiGenerationLease,
+} from "../data/jobs";
+import {
   applyLearningMediaAssetTarget,
   updateMediaAssetGenerationStatus,
 } from "../data/media-assets";
@@ -32,6 +36,7 @@ async function processMediaGenerationWorkItem(
   supabase: AiGenerationAdminClient,
   item: MediaGenerationWorkItem,
   replaceExisting: boolean,
+  lease: AiGenerationLease,
 ): Promise<MediaGenerationOutcome> {
   const { asset, context, target } = item;
 
@@ -43,6 +48,7 @@ async function processMediaGenerationWorkItem(
     });
 
     const updatedAsset = buildCompletedMediaAsset(asset, target, result);
+    await heartbeatAiGenerationJob(supabase, lease);
 
     if (result.status === "skipped") {
       const { error } = await supabase
@@ -59,9 +65,11 @@ async function processMediaGenerationWorkItem(
       }
     }
 
+    await heartbeatAiGenerationJob(supabase, lease);
     await applyLearningMediaAssetTarget(supabase, updatedAsset, target);
     return result.status === "generated" ? "generatedCount" : "reusedCount";
   } catch (error) {
+    await heartbeatAiGenerationJob(supabase, lease);
     await updateMediaAssetGenerationStatus(
       supabase,
       asset.id,
@@ -77,10 +85,11 @@ export async function processMediaWorkItemsForJob(
   workItems: MediaGenerationWorkItem[],
   replaceExisting: boolean,
   skippedCount: number,
+  lease: AiGenerationLease,
 ): Promise<MediaGenerationCounts> {
   return processMediaGenerationWorkItems(
     workItems,
-    (item) => processMediaGenerationWorkItem(supabase, item, replaceExisting),
+    (item) => processMediaGenerationWorkItem(supabase, item, replaceExisting, lease),
     skippedCount,
   );
 }

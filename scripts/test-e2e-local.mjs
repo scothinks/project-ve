@@ -44,13 +44,15 @@ const result = spawnSync("npx", ["playwright", "test"], {
   env: {
     ...process.env,
     APP_MODE: "live",
+    PROJECT_VE_LOCAL_E2E: "1",
     NEXT_PUBLIC_SUPABASE_URL: localSupabaseUrl,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: localPublishableKey,
     SUPABASE_SERVICE_ROLE_KEY: localServiceRoleKey,
     FRAUD_HASH_SALT: process.env.FRAUD_HASH_SALT ?? "project-ve-e2e-risk-salt",
     OAUTH_SIGNUP_PROOF_SECRET:
       process.env.OAUTH_SIGNUP_PROOF_SECRET ?? "project-ve-e2e-oauth-proof-secret",
-    TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY ?? "project-ve-e2e-turnstile-secret",
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.LOCAL_E2E_TURNSTILE_SITE_KEY ?? "",
+    TURNSTILE_SECRET_KEY: process.env.LOCAL_E2E_TURNSTILE_SECRET_KEY ?? "local-e2e-turnstile",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "project-ve-e2e-openai-key",
   },
   stdio: "inherit",

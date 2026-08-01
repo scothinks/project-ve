@@ -201,18 +201,35 @@ Files=7, Tests=140
 Result: PASS
 ```
 
+The `VE-SEC-003` RPC governance cleanup is complete and linked validated. It
+records `service_role` in the registry where actual ACLs already permit it for
+`complete_lesson_page`, `mark_notification_read`, and
+`mark_all_notifications_read`; pgTAP now compares declared roles against actual
+ACLs for `anon`, `authenticated`, and `service_role`; and stale classification
+rows fail the gate when they no longer resolve to a current public function
+signature. The linked project has applied
+`20260801172803_align_rpc_classification_service_role_acl.sql`, and linked pgTAP
+passes:
+
+```text
+Files=7, Tests=147
+Result: PASS
+```
+
 ## Next Action Items
 
 No VE-TEST-002 addendum closure items remain open. The local remediation gate
-now includes real Playwright browser scenarios for signup view/login
-reachability, course progress, quiz XP, reward redemption/history, and admin
-course status workflows.
+now includes real Playwright browser scenarios for signup, password login,
+course progress, quiz XP, reward redemption/history, and admin course status
+workflows, plus the local economic integrity regression for concurrent reward
+redemption, duplicate mission awards, and ledger/cache consistency.
 
 Latest local remediation validation passes:
 
 ```text
 npm run test:remediation:local
-pgTAP: Files=7, Tests=140
-Playwright: 4 passed
+pgTAP: Files=7, Tests=147
+Economic integrity regression: PASS
+Playwright: 5 passed
 Result: PASS
 ```
