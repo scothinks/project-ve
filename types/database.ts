@@ -5129,6 +5129,17 @@ export type Database = {
           prompt: Json
         }[]
       }
+      complete_ai_generation_job: {
+        Args: {
+          p_entity_id: string
+          p_error?: string
+          p_job_id: string
+          p_result: Json
+          p_status: string
+          p_worker_id: string
+        }
+        Returns: undefined
+      }
       complete_lesson_page: {
         Args: { p_lesson_id: string; p_page_id: string }
         Returns: Json
@@ -5140,16 +5151,28 @@ export type Database = {
       create_ad_make_good_recommendations: { Args: never; Returns: Json }
       current_user_is_admin: { Args: never; Returns: boolean }
       email_domain: { Args: { email: string }; Returns: string }
-      fail_ai_generation_job: {
-        Args: {
-          p_error: string
-          p_failure_code?: string
-          p_failure_detail?: Json
-          p_job_id: string
-          p_retry?: boolean
-        }
-        Returns: undefined
-      }
+      fail_ai_generation_job:
+        | {
+            Args: {
+              p_error: string
+              p_failure_code?: string
+              p_failure_detail?: Json
+              p_job_id: string
+              p_retry?: boolean
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_error: string
+              p_failure_code?: string
+              p_failure_detail?: Json
+              p_job_id: string
+              p_retry?: boolean
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
       finalize_oauth_signup: {
         Args: {
           p_captcha_passed?: boolean
@@ -5208,23 +5231,42 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: boolean
       }
-      materialize_ai_course_text_job: {
-        Args: {
-          p_block_rows: Json
-          p_course_row: Json
-          p_course_update: Json
-          p_entity_id: string
-          p_job_id: string
-          p_job_result: Json
-          p_lesson_rows: Json
-          p_media_rows: Json
-          p_option_rows: Json
-          p_page_rows: Json
-          p_question_rows: Json
-          p_quiz_rows: Json
-        }
-        Returns: undefined
-      }
+      materialize_ai_course_text_job:
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_row: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_row: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
       mission_proof_fields_satisfy: {
         Args: {
           p_allowed_statuses: string[]
@@ -5353,22 +5395,40 @@ export type Database = {
         Args: { p_reason?: string; p_redemption_id: string }
         Returns: Json
       }
-      replace_ai_course_text_job: {
-        Args: {
-          p_block_rows: Json
-          p_course_update: Json
-          p_entity_id: string
-          p_job_id: string
-          p_job_result: Json
-          p_lesson_rows: Json
-          p_media_rows: Json
-          p_option_rows: Json
-          p_page_rows: Json
-          p_question_rows: Json
-          p_quiz_rows: Json
-        }
-        Returns: undefined
-      }
+      replace_ai_course_text_job:
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_block_rows: Json
+              p_course_update: Json
+              p_entity_id: string
+              p_job_id: string
+              p_job_result: Json
+              p_lesson_rows: Json
+              p_media_rows: Json
+              p_option_rows: Json
+              p_page_rows: Json
+              p_question_rows: Json
+              p_quiz_rows: Json
+              p_worker_id: string
+            }
+            Returns: undefined
+          }
       reward_available_inventory_counts: {
         Args: never
         Returns: {

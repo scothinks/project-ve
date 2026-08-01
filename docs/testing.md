@@ -8,6 +8,8 @@ npm run test:unit
 npm run test:db
 npm run test:db:linked
 npm run test:integration
+npm run test:remediation:local
+npm run test:quiz-xp-concurrency:local
 npm run db:verify:local
 npm run test:e2e
 npm run db:types:check
@@ -56,18 +58,32 @@ back to demo snapshots. Override the local connection with
 `LOCAL_SUPABASE_URL`, `LOCAL_SUPABASE_PUBLISHABLE_KEY`, and
 `LOCAL_SUPABASE_SERVICE_ROLE_KEY` if your local Supabase output differs.
 
-`npm run test:integration` runs local pgTAP tests and the local repository
-contract tests.
+`npm run test:integration` runs local pgTAP tests, the local repository contract
+tests, and the local quiz XP concurrency regression.
+
+`npm run test:remediation:local` is the local remediation acceptance gate used
+by GitHub Actions. It resets/replays the local database from migrations, checks
+generated local database types against `types/database.ts`, runs local pgTAP,
+runs repository contracts, runs the quiz XP concurrency regression, and then
+runs the current E2E command.
+
+`npm run test:quiz-xp-concurrency:local` runs the `VE-QUIZ-003` concurrency
+regression directly against local Supabase Postgres. It creates throwaway local
+auth users and content, uses real learner RPCs to start/answer attempts, submits
+two correct answers concurrently, verifies the daily quiz XP cap is not
+exceeded, checks ledger/cache consistency, and cleans up afterward. The script
+refuses non-local database URLs unless `ALLOW_NONLOCAL_DB_CONCURRENCY_TESTS=1`
+is explicitly set.
 
 `npm run test:db:linked` is the remote Supabase pgTAP security gate. It depends
 on the linked project containing the permanent learner/admin test users declared
-in `supabase/tests/database/_test_constants.psql`, so it is intentionally kept
-separate from the generic app CI workflow until CI has a dedicated linked test
-database and secret set.
+in `supabase/tests/database/_test_constants.psql`, so it remains a linked
+environment validation command rather than the local replay gate.
 
-Latest linked DB result after `VE-DB-001`:
+Latest linked DB result after `VE-AI-002`:
 
 ```text
+ai_generation_worker.sql ... ok
 notification_security.sql .. ok
 p0_release_gate.sql ........ ok
 progress_security.sql ...... ok
@@ -75,9 +91,39 @@ quiz_security.sql .......... ok
 rpc_security.sql ........... ok
 xp_ledger_security.sql ..... ok
 All tests successful.
-Files=6, Tests=107
+Files=7, Tests=140
 Result: PASS
 ```
 
-`npm run test:e2e` is present as a stable command for the next Playwright pass,
-but no browser scenarios are configured yet.
+The third `VE-SEC-002` classification refinement migration is pushed and linked
+validated with `Files=7, Tests=133, Result: PASS`.
+
+The follow-up test-only `VE-SEC-002` mission-flow acceptance assertion raises
+the linked pgTAP suite to 136 assertions.
+
+The `VE-QUIZ-003` daily quiz XP serialization migration is pushed and linked
+validated with `Files=7, Tests=136, Result: PASS`.
+
+The `VE-AI-002` durable worker lease fencing cleanup is pushed and linked
+validated with `Files=7, Tests=140, Result: PASS`.
+
+`npm run test:e2e` now runs the Playwright remediation browser suite against
+local Supabase. The suite creates throwaway users/content and covers signup
+view/login reachability, learner lesson progress plus quiz XP, reward
+redemption/history, and the admin course status workflow.
+
+Latest local remediation gate after adding the Playwright coverage:
+
+```text
+npm run test:remediation:local
+Result: PASS
+pgTAP: Files=7, Tests=140
+Playwright: 4 passed
+```
+
+GitHub Actions now blocks pull requests and pushes on:
+
+- app-side `npm run ci`;
+- linked Supabase type drift when `SUPABASE_ACCESS_TOKEN` and
+  `SUPABASE_PROJECT_REF` are configured;
+- local remediation replay through `npm run test:remediation:local`.

@@ -114,31 +114,105 @@ The answer RPC now validates selected options against the server-created attempt
 
 ## Latest P0 Gate
 
-The linked pgTAP P0 database gate passed:
+The latest linked pgTAP database gate after `VE-AI-002` includes the AI worker
+and progress security files and passes:
 
 ```text
+ai_generation_worker.sql ... ok
 notification_security.sql .. ok
 p0_release_gate.sql ........ ok
+progress_security.sql ...... ok
 quiz_security.sql .......... ok
 rpc_security.sql ........... ok
 xp_ledger_security.sql ..... ok
 All tests successful.
-Files=5, Tests=89
+Files=7, Tests=140
+Result: PASS
+```
+
+The second `VE-SEC-002` pass was applied by:
+
+```text
+supabase/migrations/20260801103000_review_remaining_rpc_classifications.sql
+```
+
+That migration corrects reviewed classifications/ACLs for:
+
+- `public.find_existing_reward_inventory_values(text, text, jsonb)`;
+- `public.refund_reward_redemption(uuid, text)`;
+- `public.mission_proof_fields_satisfy(text[], text, uuid, text, text, text[])`.
+
+Local and linked pgTAP validation after applying that migration pass all seven
+database test files, now totaling 131 assertions.
+
+The third `VE-SEC-002` pass was applied by:
+
+```text
+supabase/migrations/20260801110000_refine_public_rpc_classifications.sql
+```
+
+That migration refines the reviewed public/authenticated RPC classifications
+without changing function grants. It adds explicit classification vocabulary for
+public read helpers, public telemetry endpoints, authenticated read helpers,
+and authenticated context-write helpers, then updates the reviewed ad/reward
+rows. Local pgTAP validation after applying it passes all seven database test
+files, now totaling 133 assertions. Linked pgTAP validation also passes with
+`Files=7, Tests=133, Result: PASS`.
+
+A follow-up test-only `VE-SEC-002` assertion was added to `rpc_security.sql`
+proving that the supported mission completion/award path still works:
+
+```text
+complete_lesson_page(...)
+award_valid_mission_xp(...)
+```
+
+Local and linked pgTAP validation pass all seven database test files, now
+totaling 136 assertions.
+
+The `VE-QUIZ-003` daily quiz XP serialization migration was then pushed to the
+linked project:
+
+```text
+supabase/migrations/20260801113000_serialize_daily_quiz_xp_allocation.sql
+```
+
+Linked pgTAP validation remains green across all seven database test files:
+
+```text
+Files=7, Tests=136
+Result: PASS
+```
+
+The `VE-AI-002` durable worker lease fencing cleanup is complete and was pushed
+by:
+
+```text
+supabase/migrations/20260801132845_fence_ai_generation_worker_leases.sql
+```
+
+The migration adds fenced worker-id checks to AI job completion/failure paths,
+keeps unfenced helper signatures non-executable by `service_role`, and adds
+pgTAP coverage proving stale workers cannot fail or complete jobs after another
+worker reclaims the lease. Local and linked pgTAP validation pass:
+
+```text
+Files=7, Tests=140
 Result: PASS
 ```
 
 ## Next Action Items
 
-Proceed to Phase 1A in the main remediation plan:
+No VE-TEST-002 addendum closure items remain open. The local remediation gate
+now includes real Playwright browser scenarios for signup view/login
+reachability, course progress, quiz XP, reward redemption/history, and admin
+course status workflows.
 
-- `VE-TEST-001`: broaden automated coverage around admin, reward, redemption, mission, notification, and XP workflows.
-- `VE-AUTH-001`: enforce required security secrets and harden auth/session behavior.
-- `VE-NOTIF-002`: reduce learner notification mutations to explicit scoped use cases.
+Latest local remediation validation passes:
 
-Then continue with Phase 1B:
-
-- `VE-PROGRESS-001`
-- `VE-DATA-001`
-- `VE-API-001`
-- `VE-OBS-001`
-- `VE-DB-001`
+```text
+npm run test:remediation:local
+pgTAP: Files=7, Tests=140
+Playwright: 4 passed
+Result: PASS
+```

@@ -77,6 +77,7 @@ function buildCourseNotes(
 export async function processCreateCourseTextJob(
   supabase: AiGenerationAdminClient,
   job: AiGenerationClaim,
+  workerId: string,
 ): Promise<CourseTextJobResult> {
   const input = getPromptInput(job.prompt);
   if (!input.topic || !input.audience || !input.region || !input.tone) {
@@ -128,6 +129,7 @@ export async function processCreateCourseTextJob(
       lessonCount: draft.lessons.length,
       mediaAssetCount: generatedTree.mediaRows.length,
     },
+    workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_draft_generated", "course", courseId, {
@@ -149,6 +151,7 @@ export async function processCreateCourseTextJob(
 export async function processExtendCourseTextJob(
   supabase: AiGenerationAdminClient,
   job: AiGenerationClaim,
+  workerId: string,
 ): Promise<CourseTextJobResult> {
   const input = getPromptInput(job.prompt);
   const courseId = getPromptString(job.prompt, "courseId");
@@ -203,6 +206,7 @@ export async function processExtendCourseTextJob(
       lessonIds: generatedTree.lessonIds,
       mediaAssetCount: generatedTree.mediaRows.length,
     },
+    workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, getPromptString(job.prompt, "actorUserId"), "ai_course_extended_with_lessons", "course", courseId, {
@@ -221,6 +225,7 @@ export async function processExtendCourseTextJob(
 export async function processReviseCourseTextJob(
   supabase: AiGenerationAdminClient,
   job: AiGenerationClaim,
+  workerId: string,
 ): Promise<CourseTextJobResult> {
   const courseId = getPromptString(job.prompt, "courseId");
   const feedback = getPromptString(job.prompt, "feedback").trim();
@@ -339,6 +344,7 @@ export async function processReviseCourseTextJob(
       lessonCount: draft.lessons.length,
       mediaAssetCount: generatedTree.mediaRows.length,
     },
+    workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_course_text_revised", "course", courseId, {

@@ -2531,6 +2531,40 @@ Phase 2 remediation status:
 * Phase 2 cleanup is complete for `VE-DEMO-001`, `VE-REC-001`, and
   `VE-HARD-001`.
 
+Engineering remediation addendum status:
+
+* `VE-SEC-002`: complete. Three residual privileged RPC passes have been
+  pushed and linked-DB validated. The current pgTAP gate proves direct client
+  execution is denied for reviewed internal/service-only/trigger-only
+  functions, `grant_mission_award` is not callable by API roles, registry/ACL
+  semantic checks cover the classified function surface, and public read,
+  public telemetry, authenticated read, and authenticated context-write helpers
+  are no longer mislabeled as generic self-scoped RPCs. A test-only positive
+  mission-flow assertion has also been added locally to prove the supported
+  `award_valid_mission_xp(...)` path still works after `grant_mission_award(...)`
+  was locked down. Linked pgTAP validation passes with 136 assertions.
+* `VE-QUIZ-003`: complete. `answer_quiz_question(...)` now takes a
+  transaction-scoped advisory lock for `user_id + Africa/Lagos local date`
+  before reading daily quiz XP and posting ledger rows. A local concurrency
+  regression creates two simultaneous earning attempts and proves the daily cap,
+  ledger, cached balance, sequential earning, duplicate-answer, and practice
+  retry invariants. The forward migration has been pushed to the linked
+  project, and linked pgTAP validation passes with 136 assertions.
+* `VE-AI-002`: complete. Worker completion/failure RPCs now require the worker
+  id that currently holds the job lease, stale workers are rejected after lease
+  reclamation, unfenced worker RPC signatures are no longer externally
+  executable by `service_role`, and media jobs now complete through a fenced RPC
+  instead of direct table updates. Local and linked pgTAP validation pass with
+  140 assertions, and app-side checks pass.
+* `VE-TEST-002`: complete. GitHub Actions now has a merge-blocking local
+  remediation gate that resets/replays migrations, checks local database type
+  drift, runs pgTAP, repository integration contracts, the quiz XP concurrency
+  regression, and real Playwright browser E2E coverage. The E2E suite creates
+  throwaway local users/content and covers signup view/login reachability,
+  learner lesson progress plus quiz XP, reward redemption/history, and the admin
+  course status workflow. App-side checks and linked schema type drift are also
+  merge-blocking.
+
 Latest app-side validation after Phase 2 cleanup:
 
 ```text
@@ -2546,8 +2580,16 @@ Result: PASS, 116 tests
 npm run test:repositories:local
 Result: PASS against demo adapters and local Supabase live adapters
 
+npm run test:remediation:local
+Result: PASS; local db reset/replay, local type drift check, pgTAP
+Files=7 / Tests=140, repository contracts, quiz XP concurrency regression,
+and Playwright E2E 4 passed
+
 npm run test:db
 Result: PASS, 7 files / 119 pgTAP tests
+
+npm run ci
+Result: PASS; typecheck, lint, 116 unit tests, and production build
 
 npm run build
 Result: PASS

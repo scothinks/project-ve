@@ -10,8 +10,8 @@ select extensions.plan(16);
 
 select extensions.ok(
   not has_function_privilege('anon', 'public.increment_profile_xp(uuid, integer)', 'execute')
-  and has_function_privilege('authenticated', 'public.increment_profile_xp(uuid, integer)', 'execute'),
-  'authenticated users can reach increment_profile_xp denial wrapper while anon cannot'
+  and not has_function_privilege('authenticated', 'public.increment_profile_xp(uuid, integer)', 'execute'),
+  'client roles cannot execute increment_profile_xp directly'
 );
 
 select extensions.ok(
@@ -42,7 +42,7 @@ set local role authenticated;
 select extensions.throws_ok(
   $$ select public.increment_profile_xp('00000000-0000-0000-0000-000000000401', 500) $$,
   '42501',
-  'authenticated learner cannot choose an XP amount'
+  'permission denied for function increment_profile_xp'
 );
 
 reset role;

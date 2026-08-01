@@ -3,7 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getAiGenerationJobActorUserId,
-  updateAiGenerationJob,
+  completeAiGenerationJob,
   type AiGenerationClaim,
 } from "@/features/ai-generation/data/jobs";
 import {
@@ -57,6 +57,7 @@ type AiGenerationAdminClient = SupabaseClient<Database>;
 
 type MediaJobRevalidation = {
   revalidateLearningPaths: (courseId: string, lessonIds: string[]) => void;
+  workerId: string;
 };
 
 type MediaJobResult = {
@@ -246,11 +247,13 @@ async function processCourseMediaAssetsJob(
     ...counts,
   };
 
-  await updateAiGenerationJob(supabase, job.id, {
-    entity_id: courseId,
+  await completeAiGenerationJob(supabase, {
+    entityId: courseId,
+    jobId: job.id,
     status: jobStatus,
     result,
     error: jobStatus === "failed" ? "No media images were generated successfully." : null,
+    workerId: options.workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_course_media_assets_generated", "course", courseId, {
@@ -440,11 +443,13 @@ async function processLessonMediaAssetsJob(
     ...counts,
   };
 
-  await updateAiGenerationJob(supabase, job.id, {
-    entity_id: course.id,
+  await completeAiGenerationJob(supabase, {
+    entityId: course.id,
+    jobId: job.id,
     status: jobStatus,
     result,
     error: jobStatus === "failed" ? "No lesson media images were generated successfully." : null,
+    workerId: options.workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "ai_lesson_media_assets_generated", "lesson", lessonId, {
@@ -575,11 +580,13 @@ async function processSingleMediaAssetJob(
     ...counts,
   };
 
-  await updateAiGenerationJob(supabase, job.id, {
-    entity_id: courseId,
+  await completeAiGenerationJob(supabase, {
+    entityId: courseId,
+    jobId: job.id,
     status: jobStatus,
     result,
     error: jobStatus === "failed" ? "Media generation failed." : null,
+    workerId: options.workerId,
   });
 
   await insertAiGenerationAuditEvent(supabase, actorUserId, "learning_media_asset_generated", "media_asset", assetId, {

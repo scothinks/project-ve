@@ -69,6 +69,7 @@ export async function processNextAiGenerationJob(
     if (job.job_type === "media_assets") {
       const result = await processMediaAssetsJob(supabase, job, {
         revalidateLearningPaths: options.revalidateLearningPaths,
+        workerId,
       });
 
       return {
@@ -86,11 +87,11 @@ export async function processNextAiGenerationJob(
     const mode = getPromptString(job.prompt, "mode");
     const result =
       mode === "create_course"
-        ? await processCreateCourseTextJob(supabase, job)
+        ? await processCreateCourseTextJob(supabase, job, workerId)
         : mode === "extend_course"
-          ? await processExtendCourseTextJob(supabase, job)
+          ? await processExtendCourseTextJob(supabase, job, workerId)
           : mode === "revise_course"
-            ? await processReviseCourseTextJob(supabase, job)
+            ? await processReviseCourseTextJob(supabase, job, workerId)
             : (() => {
                 throw new ValidationError(`Unsupported AI course text job mode: ${mode}`);
               })();
@@ -106,7 +107,7 @@ export async function processNextAiGenerationJob(
   } catch (error) {
     const isValidationError = isAiGenerationValidationFailure(error);
     const retry = !isValidationError && job.attempt_count < 3;
-    await markAiGenerationJobFailed(supabase, job.id, error, retry).catch((failureError) => {
+    await markAiGenerationJobFailed(supabase, job.id, workerId, error, retry).catch((failureError) => {
       logAppError(failureError, {
         operation: "admin.ai_generation_job.fail",
         resourceId: job.id,

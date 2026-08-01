@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(13);
+select extensions.plan(16);
 
 select extensions.is_empty(
   $$
@@ -47,7 +47,12 @@ select extensions.is_empty(
     from (
       values
         ('apply_native_reward_effect', 'public.apply_native_reward_effect(uuid, uuid, text, jsonb)'),
-        ('queue_push_deliveries_for_notification', 'public.queue_push_deliveries_for_notification(uuid)')
+        ('queue_push_deliveries_for_notification', 'public.queue_push_deliveries_for_notification(uuid)'),
+        ('grant_mission_award', 'public.grant_mission_award(uuid, text, text, jsonb)'),
+        ('refresh_reward_quantity_inventory_counts', 'public.refresh_reward_quantity_inventory_counts(text)'),
+        ('aggregate_ad_events_daily', 'public.aggregate_ad_events_daily(date, date)'),
+        ('upsert_ad_frequency_counter', 'public.upsert_ad_frequency_counter(public.ad_frequency_scope_type, text, text, interval, text, text, text, uuid, text, text, public.ad_event_type)'),
+        ('mission_proof_fields_satisfy', 'public.mission_proof_fields_satisfy(text[], text, uuid, text, text, text[])')
     ) sensitive(function_name, signature)
     where has_function_privilege('anon', signature, 'execute')
        or has_function_privilege('authenticated', signature, 'execute')
@@ -63,11 +68,62 @@ select extensions.is_empty(
         ('increment_profile_xp', 'public.increment_profile_xp(uuid, integer)'),
         ('queue_user_notification', 'public.queue_user_notification(uuid, text, text, text, text, text, text, jsonb, text)'),
         ('generate_continue_learning_reminders', 'public.generate_continue_learning_reminders()')
-    ) wrappers(function_name, signature)
+    ) helpers(function_name, signature)
     where has_function_privilege('anon', signature, 'execute')
-       or not has_function_privilege('authenticated', signature, 'execute')
+       or has_function_privilege('authenticated', signature, 'execute')
   $$,
-  'P0 gate: sensitive public wrappers are authenticated-reachable deny-on-entry RPCs and not anon executable'
+  'P0 gate: sensitive implementation helpers are not directly executable by client roles'
+);
+
+select extensions.is_empty(
+  $$
+    select p.oid::regprocedure::text || ' classified as ' || c.classification::text
+    from private.rpc_security_classifications c
+    join pg_namespace n
+      on n.nspname = c.function_schema
+    join pg_proc p
+      on p.pronamespace = n.oid
+     and p.proname = c.function_name
+     and pg_get_function_identity_arguments(p.oid) = c.identity_arguments
+    where c.classification in ('INTERNAL_HELPER', 'SERVICE_ROLE_ONLY', 'TRIGGER_ONLY')
+      and (
+        has_function_privilege('anon', p.oid, 'execute')
+        or has_function_privilege('authenticated', p.oid, 'execute')
+      )
+  $$,
+  'P0 gate: internal, service-only, and trigger-only functions are not client executable'
+);
+
+select extensions.is_empty(
+  $$
+    select p.oid::regprocedure::text
+    from private.rpc_security_classifications c
+    join pg_namespace n
+      on n.nspname = c.function_schema
+    join pg_proc p
+      on p.pronamespace = n.oid
+     and p.proname = c.function_name
+     and pg_get_function_identity_arguments(p.oid) = c.identity_arguments
+    where c.classification = 'TRIGGER_ONLY'
+      and has_function_privilege('service_role', p.oid, 'execute')
+  $$,
+  'P0 gate: trigger-only functions are not executable by service_role'
+);
+
+select extensions.is_empty(
+  $$
+    select p.oid::regprocedure::text
+    from private.rpc_security_classifications c
+    join pg_namespace n
+      on n.nspname = c.function_schema
+    join pg_proc p
+      on p.pronamespace = n.oid
+     and p.proname = c.function_name
+     and pg_get_function_identity_arguments(p.oid) = c.identity_arguments
+    where c.classification = 'PUBLIC_AUTHENTICATED_SELF'
+      and c.identity_arguments ~ '(^|, )p_user_id uuid(,|$)'
+  $$,
+  'P0 gate: self-scoped SECURITY DEFINER functions do not accept caller-supplied user ids'
 );
 
 select extensions.ok(
