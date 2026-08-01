@@ -10,6 +10,13 @@ private.rpc_security_classifications
 
 Every `public.SECURITY DEFINER` function must have one row in that table. DB tests fail when a new `SECURITY DEFINER` function exists without a classification row.
 
+The release gate now checks every declared API role in `execute_roles` against
+the actual function ACL for `anon`, `authenticated`, and `service_role`. It also
+fails when a classification row no longer resolves to a current function
+signature. This keeps the registry from drifting when overloads are replaced or
+when Supabase role inheritance makes `service_role` callable even though only
+`authenticated` was granted directly.
+
 ## Classifications
 
 | Classification | Intended callers | Authorization rule | Roles with EXECUTE |
@@ -47,6 +54,9 @@ Every `public.SECURITY DEFINER` function must have one row in that table. DB tes
 | `public.queue_broadcast_notification(text, text, text, text, text, text, jsonb, text)` | `ADMIN_AUTHENTICATED` | Admin/domain broadcast workflows. | Requires `auth.uid()` and `public.current_user_is_admin()` for direct authenticated calls. | `authenticated`, `service_role` |
 | `public.start_quiz_attempt(text, text)` | `PUBLIC_AUTHENTICATED_SELF` | Authenticated learners starting their own quiz attempts. | Derives user, eligibility, attempt mode, question snapshots and XP from canonical database state. | `authenticated`, `service_role` |
 | `public.answer_quiz_question(uuid, text, text[])` | `PUBLIC_AUTHENTICATED_SELF` | Authenticated learners answering questions in their own attempts. | Validates selected options against server-created snapshots and grades against private answer keys. | `authenticated`, `service_role` |
+| `public.complete_lesson_page(text, text)` | `PUBLIC_AUTHENTICATED_SELF` | Authenticated learners and trusted service-role maintenance calls scoped to the current auth context. | Uses `auth.uid()` as the only user identity source and only records a completion for the current user when the target page belongs to a published lesson/course. | `authenticated`, `service_role` |
+| `public.mark_notification_read(uuid)` | `PUBLIC_AUTHENTICATED_SELF` | Authenticated learners and trusted service-role maintenance calls scoped to the current auth context. | Uses `auth.uid()` as the only user identity source and only updates `read_at` for a notification owned by the current user. | `authenticated`, `service_role` |
+| `public.mark_all_notifications_read()` | `PUBLIC_AUTHENTICATED_SELF` | Authenticated learners and trusted service-role maintenance calls scoped to the current auth context. | Uses `auth.uid()` as the only user identity source and only updates `read_at` on unread notifications owned by the current user. | `authenticated`, `service_role` |
 
 Private implementation helpers:
 

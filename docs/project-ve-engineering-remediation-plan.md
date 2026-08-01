@@ -2560,7 +2560,7 @@ Engineering remediation addendum status:
   remediation gate that resets/replays migrations, checks local database type
   drift, runs pgTAP, repository integration contracts, the quiz XP concurrency
   regression, and real Playwright browser E2E coverage. The E2E suite creates
-  throwaway local users/content and covers signup view/login reachability,
+  throwaway local users/content and covers real signup, password login,
   learner lesson progress plus quiz XP, reward redemption/history, and the admin
   course status workflow. App-side checks and linked schema type drift are also
   merge-blocking.
@@ -2582,8 +2582,8 @@ Result: PASS against demo adapters and local Supabase live adapters
 
 npm run test:remediation:local
 Result: PASS; local db reset/replay, local type drift check, pgTAP
-Files=7 / Tests=140, repository contracts, quiz XP concurrency regression,
-and Playwright E2E 4 passed
+Files=7 / Tests=147, repository contracts, quiz XP concurrency regression,
+economic integrity regression, and Playwright E2E 5 passed
 
 npm run test:db
 Result: PASS, 7 files / 119 pgTAP tests
@@ -2637,6 +2637,106 @@ Result: PASS
 
 git diff --check
 Result: PASS
+```
+
+Final remediation closure recommendation:
+
+* `VE-AI-003`: complete and linked-DB validated. AI worker claims now issue a
+  lock token and incrementing lock version, worker
+  completion/failure/materialization/replacement RPCs require the current
+  worker id plus token/version, stale or mismatched workers are rejected,
+  media worker side-effect writes heartbeat the current lease before
+  persistence, and active queued/running job enqueueing uses deterministic
+  idempotency keys while allowing later jobs after completion/failure.
+* `VE-TEST-003`: complete locally. The remediation gate now includes actual
+  signup E2E through `/api/auth/signup`, concurrent reward redemption coverage,
+  duplicate XP mission and reward mission domain-event assertions, and
+  ledger/cache consistency checks after economic mutations. The economic script
+  is local-only and refuses non-local database URLs by default.
+* `VE-SEC-003`: complete and linked-DB validated. RPC governance now compares
+  `anon`, `authenticated`, and `service_role` against declared classification
+  ACLs, checks classification rows resolve to current signatures, and aligns
+  the three service-role drift rows (`complete_lesson_page`,
+  `mark_notification_read`, `mark_all_notifications_read`) with actual ACLs
+  without adding grants.
+
+All final remediation closure recommendation items are implemented and
+validated. The engineering remediation phase can be closed after the current
+branch is reviewed and merged.
+
+Latest focused validation for `VE-AI-003`:
+
+```text
+npm run typecheck
+Result: PASS
+
+npm run lint
+Result: PASS
+
+npm run test:unit
+Result: PASS, 116 tests
+
+npm run db:reset
+Result: PASS
+
+npm run db:types:local:check
+Result: PASS
+
+npm run test:db
+Result: PASS, 7 files / 145 pgTAP tests
+
+npx supabase@2.110.0 test db --linked supabase/tests/database
+Result: PASS, 7 files / 145 pgTAP tests
+
+npm run build
+Result: PASS
+
+git diff --check
+Result: PASS
+```
+
+Latest focused validation for `VE-TEST-003` cleanup:
+
+```text
+npm run typecheck
+Result: PASS
+
+npm run lint
+Result: PASS
+
+npm run test:unit
+Result: PASS, 116 tests
+
+npm run test:economic-integrity:local
+Result: PASS
+
+npm run test:e2e
+Result: PASS, Playwright 5 passed
+
+npm run test:remediation:local
+Result: PASS; local db reset/replay, local type drift check, pgTAP
+Files=7 / Tests=147, repository contracts, quiz XP concurrency regression,
+economic integrity regression, and Playwright E2E 5 passed
+
+git diff --check
+Result: PASS
+```
+
+Latest focused validation for `VE-SEC-003` cleanup:
+
+```text
+npm run db:verify:local
+Result: PASS; local db reset/replay, local type drift check, pgTAP
+Files=7 / Tests=147
+
+RPC ACL/classification mismatch query across anon/authenticated/service_role
+Result: 0 mismatches
+
+npx supabase@2.110.0 db push
+Result: PASS; applied 20260801172803_align_rpc_classification_service_role_acl.sql
+
+npx supabase@2.110.0 test db --linked supabase/tests/database
+Result: PASS, 7 files / 147 pgTAP tests
 ```
 
 ## Phase 0A: Stop direct privilege escalation

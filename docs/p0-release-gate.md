@@ -47,7 +47,8 @@ DB tests require:
 The gate checks that:
 
 - every public `SECURITY DEFINER` function has a classification;
-- client RPC privileges match classifications;
+- every public RPC classification resolves to a current function signature;
+- `anon`, `authenticated`, and `service_role` RPC privileges match classifications;
 - sensitive public wrappers that are authenticated-reachable fail closed before reaching trusted primitives;
 - private XP and notification implementation helpers are not directly executable by API roles;
 - service role can run operational reminder generation;
@@ -59,7 +60,7 @@ The gate checks that:
 
 ## Latest Confirmed Result
 
-Last confirmed linked DB gate after `VE-AI-002`:
+Last confirmed linked DB gate after `VE-SEC-003`:
 
 ```text
 ai_generation_worker.sql ... ok
@@ -70,7 +71,7 @@ quiz_security.sql .......... ok
 rpc_security.sql ........... ok
 xp_ledger_security.sql ..... ok
 All tests successful.
-Files=7, Tests=140
+Files=7, Tests=147
 Result: PASS
 ```
 
@@ -86,6 +87,11 @@ linked validated with `Files=7, Tests=136, Result: PASS`.
 The `VE-AI-002` durable worker lease fencing migration is pushed and linked
 validated with `Files=7, Tests=140, Result: PASS`.
 
+The `VE-AI-003`, `VE-TEST-003`, and `VE-SEC-003` closure work raises the linked
+pgTAP gate to 147 assertions. The `VE-SEC-003` migration
+`20260801172803_align_rpc_classification_service_role_acl.sql` is pushed and
+linked validated with `Files=7, Tests=147, Result: PASS`.
+
 The app-side checks were also confirmed during P0 remediation:
 
 - `npm run typecheck`
@@ -97,14 +103,16 @@ The app-side checks were also confirmed during P0 remediation:
 
 No VE-TEST-002 addendum closure items remain open. `npm run test:e2e` now runs
 real Playwright browser coverage for the critical learner/admin remediation
-flows against local Supabase, and `npm run test:remediation:local` includes that
-suite in the merge-blocking local gate.
+flows against local Supabase, and `npm run test:remediation:local` includes
+that suite plus the local economic integrity regression in the merge-blocking
+local gate.
 
 Latest local remediation validation:
 
 ```text
 npm run test:remediation:local
 Result: PASS
-pgTAP: Files=7, Tests=140
-Playwright: 4 passed
+pgTAP: Files=7, Tests=147
+Economic integrity regression: PASS
+Playwright: 5 passed
 ```

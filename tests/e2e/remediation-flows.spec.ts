@@ -18,10 +18,20 @@ const questionPrompt = `Which action keeps the E2E remediation flow honest ${run
 const rewardTitle = `E2E Reward ${runId}`;
 const learnerEmail = `e2e-learner-${runId}@example.test`;
 const adminEmail = `e2e-admin-${runId}@example.test`;
+const signupEmail = `e2e-signup-${runId}@example.test`;
+const signupName = `E2E Signup ${runId}`;
 
 let supabase: SupabaseClient;
 let learner: User;
 let admin: User;
+let signedUpLearner: User | null = null;
+
+type SignupProfile = {
+  display_name: string | null;
+  role: string;
+  xp: number;
+  xp_balance_cached: number;
+};
 
 function requiredEnv(name: string) {
   const value = process.env[name];
@@ -61,9 +71,36 @@ async function createTestUser(email: string, displayName: string) {
   return result.data.user;
 }
 
+async function findAuthUserByEmail(email: string) {
+  for (let page = 1; page <= 5; page += 1) {
+    const result = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+
+    if (result.error) {
+      throw new Error(`list users: ${result.error.message}`);
+    }
+
+    const user = result.data.users.find((candidate) => candidate.email === email) ?? null;
+
+    if (user) {
+      return user;
+    }
+
+    if (result.data.users.length < 200) {
+      return null;
+    }
+  }
+
+  throw new Error(`Could not find ${email} in the first 1000 local auth users.`);
+}
+
 async function cleanupFixture() {
+  signedUpLearner = signedUpLearner ?? (await findAuthUserByEmail(signupEmail));
+
   await supabase.from("reward_redemptions").delete().eq("reward_id", rewardId);
-  await supabase.from("xp_transactions").delete().in("user_id", [learner?.id, admin?.id].filter(Boolean));
+  await supabase
+    .from("xp_transactions")
+    .delete()
+    .in("user_id", [learner?.id, admin?.id, signedUpLearner?.id].filter(Boolean));
   await supabase.from("lesson_page_completions").delete().eq("lesson_id", lessonId);
   await supabase.from("lesson_progress").delete().eq("lesson_id", lessonId);
   await supabase.from("quiz_answers").delete().eq("question_id", questionId);
@@ -77,6 +114,11 @@ async function cleanupFixture() {
 
   if (admin?.id) {
     await supabase.auth.admin.deleteUser(admin.id);
+  }
+
+  if (signedUpLearner?.id) {
+    await supabase.auth.admin.deleteUser(signedUpLearner.id);
+    signedUpLearner = null;
   }
 }
 
@@ -299,12 +341,73 @@ test.describe.serial("remediation browser flows", () => {
     await cleanupFixture();
   });
 
-  test("signup view and password login stay reachable", async ({ page }) => {
+  test("learner can create an account through the real signup flow", async ({ page }) => {
     await page.goto("/login");
     await page.getByRole("button", { name: "Sign up" }).click();
-    await expect(page.getByRole("button", { name: "Create Account" })).toBeVisible();
-    await page.getByRole("button", { name: "Login" }).click();
+    await page.getByPlaceholder("Enter Full Name").fill(signupName);
+    await page.getByPlaceholder("Enter Email Address").fill(signupEmail);
+    await page.getByPlaceholder("Enter Password").fill(authCredential);
+    await page.getByLabel(/I agree to the Terms/).check();
 
+    const signupResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/auth/signup") &&
+        response.request().method() === "POST",
+    );
+
+    await page.getByRole("button", { name: "Create Account" }).click();
+    const signupResponse = await signupResponsePromise;
+
+    expect(signupResponse.status()).toBe(200);
+
+    const result = await Promise.race([
+      page
+        .waitForURL(/\/(dashboard|onboarding\/assessment)$/, { timeout: 10_000 })
+        .then(() => "signed-in" as const),
+      page
+        .getByRole("heading", { name: "Check your email" })
+        .waitFor({ state: "visible", timeout: 10_000 })
+        .then(() => "confirmation" as const),
+    ]);
+
+    if (result === "confirmation") {
+      await expect(page.getByText(signupEmail)).toBeVisible();
+    }
+
+    await expect
+      .poll(
+        async () => {
+          const user = await findAuthUserByEmail(signupEmail);
+          signedUpLearner = user;
+
+          if (!user) {
+            return "missing-user";
+          }
+
+          const profileResult = await supabase
+            .from("profiles")
+            .select("display_name, role, xp, xp_balance_cached")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (profileResult.error) {
+            throw new Error(`load signed-up profile: ${profileResult.error.message}`);
+          }
+
+          const profile = profileResult.data as SignupProfile | null;
+
+          if (!profile) {
+            return "missing-profile";
+          }
+
+          return `${profile.display_name}:${profile.role}:${profile.xp}:${profile.xp_balance_cached}`;
+        },
+        { timeout: 10_000 },
+      )
+      .toBe(`${signupName}:learner:0:0`);
+  });
+
+  test("password login stays reachable", async ({ page }) => {
     await signIn(page, learnerEmail);
   });
 

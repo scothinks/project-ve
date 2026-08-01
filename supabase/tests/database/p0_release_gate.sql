@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(16);
+select extensions.plan(17);
 
 select extensions.is_empty(
   $$
@@ -25,6 +25,22 @@ select extensions.is_empty(
 
 select extensions.is_empty(
   $$
+    select c.function_schema || '.' || c.function_name || '(' || c.identity_arguments || ')'
+    from private.rpc_security_classifications c
+    left join pg_namespace n
+      on n.nspname = c.function_schema
+    left join pg_proc p
+      on p.pronamespace = n.oid
+     and p.proname = c.function_name
+     and pg_get_function_identity_arguments(p.oid) = c.identity_arguments
+    where c.function_schema = 'public'
+      and p.oid is null
+  $$,
+  'P0 gate: every public RPC classification resolves to a current function signature'
+);
+
+select extensions.is_empty(
+  $$
     select p.oid::regprocedure::text
     from private.rpc_security_classifications c
     join pg_namespace n
@@ -36,9 +52,10 @@ select extensions.is_empty(
     where (
       has_function_privilege('anon', p.oid, 'execute') is distinct from ('anon' = any(c.execute_roles))
       or has_function_privilege('authenticated', p.oid, 'execute') is distinct from ('authenticated' = any(c.execute_roles))
+      or has_function_privilege('service_role', p.oid, 'execute') is distinct from ('service_role' = any(c.execute_roles))
     )
   $$,
-  'P0 gate: client RPC privileges match classifications'
+  'P0 gate: API role RPC privileges match classifications'
 );
 
 select extensions.is_empty(

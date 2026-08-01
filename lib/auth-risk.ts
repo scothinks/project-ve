@@ -37,8 +37,22 @@ export function getRiskContext(request: NextRequest) {
   };
 }
 
+function isLocalE2ETurnstileBypassEnabled() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+
+  return (
+    process.env.PROJECT_VE_LOCAL_E2E === "1" &&
+    process.env.VERCEL !== "1" &&
+    /^http:\/\/(127\.0\.0\.1|localhost):54321\/?$/.test(supabaseUrl)
+  );
+}
+
 export async function verifyTurnstileToken(token: string | null | undefined, ipAddress: string) {
   const secret = getTurnstileSecret();
+
+  if (isLocalE2ETurnstileBypassEnabled()) {
+    return true;
+  }
 
   if (!secret) {
     return true;
