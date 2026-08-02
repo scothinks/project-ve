@@ -5,15 +5,10 @@ import {
   AdminNoticeBanner,
   AdminPageHeader,
   AdminStatCard,
-  AdminStatusBadge,
-  EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
+import { AssessmentBuilder } from "@/components/admin/AssessmentBuilder";
 import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
-import {
-  LessonForm,
-  QuizSettingsForm,
-  QuizQuestionForm,
-} from "@/components/admin/LearningForms";
+import { LessonForm } from "@/components/admin/LearningForms";
 import { LessonPageBuilder } from "@/components/admin/LessonPageBuilder";
 import {
   approveLessonMedia,
@@ -32,6 +27,8 @@ import { requireAdmin } from "@/lib/admin";
 import { formatXpLabel } from "@/lib/xp-format";
 import { LessonDetailAiMediaSection } from "@/features/learning/admin/lesson-detail-ai-media-section";
 import { getAdminLessonDetailPageData } from "@/features/learning/admin/lesson-detail-data";
+import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
+import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
 
 type LessonDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -67,6 +64,9 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
     valueTags,
   } = data;
   const mediaConfig = getAiMediaConfig();
+  const aiActivity = await getAdminAiActivity(supabase, {
+    courseId: lesson.course_id,
+  });
 
   return (
     <>
@@ -99,6 +99,10 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         </AdminCard>
       </section>
 
+      <div className="mb-6">
+        <AiActivityPanel activity={aiActivity} courseId={lesson.course_id} />
+      </div>
+
       <LessonDetailAiMediaSection
         actions={{
           approveLearningMediaAsset,
@@ -127,7 +131,7 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
       <details className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
         <summary className="cursor-pointer text-lg font-black">Lesson setup</summary>
         <div className="mt-5">
-          <LessonForm courseId={lesson.course_id} lesson={lesson} />
+          <LessonForm courseId={lesson.course_id} lesson={lesson} mediaLibraryAssets={mediaLibraryAssets} />
         </div>
       </details>
 
@@ -135,55 +139,11 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         blocks={blocks}
         initialPageId={selectedPageId}
         lesson={lesson}
+        mediaLibraryAssets={mediaLibraryAssets}
         pages={pages}
       />
 
-      {quiz ? (
-        <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.85fr]">
-          <AdminCard>
-            <QuizSettingsForm lessonId={lesson.id} quiz={quiz} />
-          </AdminCard>
-          <AdminCard>
-            <h2 className="mb-1 text-lg font-black">Add question</h2>
-            <p className="mb-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              XP lives on questions. Multiple choice is graded all-or-nothing.
-            </p>
-            <QuizQuestionForm
-              lessonId={lesson.id}
-              quiz={quiz}
-              defaultQuestionOrder={questions.length + 1}
-            />
-          </AdminCard>
-        </section>
-      ) : null}
-
-      {quiz ? (
-        <section className="mt-6">
-          <AdminCard>
-            <h2 className="mb-4 text-lg font-black">Quiz questions</h2>
-            {questions.length === 0 ? (
-              <EmptyAdminState>No quiz questions yet.</EmptyAdminState>
-            ) : (
-              <div className="space-y-4">
-                {questions.map((question) => (
-                  <div className="rounded-[16px] border border-[var(--ve-line-soft)] p-4" key={question.id}>
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-                          Question {question.question_order} · {question.question_type.replaceAll("_", " ")}
-                        </p>
-                        <h3 className="mt-1 font-black">{question.prompt}</h3>
-                      </div>
-                      <AdminStatusBadge tone="store">{formatXpLabel(question.xp)}</AdminStatusBadge>
-                    </div>
-                    <QuizQuestionForm lessonId={lesson.id} quiz={quiz} question={question} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </AdminCard>
-        </section>
-      ) : null}
+      {quiz ? <AssessmentBuilder lesson={lesson} questions={questions} quiz={quiz} /> : null}
     </>
   );
 }

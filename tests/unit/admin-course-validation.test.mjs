@@ -25,7 +25,7 @@ test("course form requires a title and rejects unexpected status values", () => 
   ]));
 
   assert.equal(result.ok, false);
-  assert.deepEqual(result.issues, [
+  assert.deepEqual(result.issues.toSorted((first, second) => first.path.localeCompare(second.path)), [
     { path: "status", message: "Expected one of: draft, published, archived." },
     { path: "title", message: "Required." },
   ]);
@@ -76,7 +76,7 @@ test("lesson form validates required course, retry enum, and numeric ranges", ()
   ]));
 
   assert.equal(result.ok, false);
-  assert.deepEqual(result.issues, [
+  assert.deepEqual(result.issues.toSorted((first, second) => first.path.localeCompare(second.path)), [
     { path: "courseId", message: "Required." },
     { path: "estimatedMinutes", message: "Expected an integer." },
     { path: "maxEarningAttempts", message: "Must be at least 1." },
@@ -99,7 +99,7 @@ test("quiz question form rejects invalid question type, XP range, and missing co
   ]));
 
   assert.equal(result.ok, false);
-  assert.deepEqual(result.issues, [
+  assert.deepEqual(result.issues.toSorted((first, second) => first.path.localeCompare(second.path)), [
     { path: "options", message: "Mark at least one correct answer." },
     { path: "questionOrder", message: "Must be at least 1." },
     { path: "questionType", message: "Expected one of: single_choice, multiple_choice, true_false." },

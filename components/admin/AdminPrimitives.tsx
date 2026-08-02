@@ -4,6 +4,42 @@ import { ArrowLeftIcon } from "@/components/ui/Icons";
 import { getPaginationWindow } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
+type AdminButtonTone = "primary" | "secondary" | "danger" | "success" | "neutral";
+
+export function adminButtonClasses(
+  tone: AdminButtonTone = "secondary",
+  className?: string,
+) {
+  const base =
+    "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition outline-none focus-visible:ring-4 focus-visible:ring-[color:color-mix(in_srgb,var(--ve-green)_14%,transparent)] disabled:cursor-not-allowed disabled:opacity-60";
+
+  if (tone === "primary") {
+    return cn(base, "bg-[var(--ve-green)] text-white hover:brightness-95", className);
+  }
+
+  if (tone === "danger") {
+    return cn(
+      base,
+      "border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)] hover:brightness-95 focus-visible:ring-[color:color-mix(in_srgb,var(--ve-danger)_14%,transparent)]",
+      className,
+    );
+  }
+
+  if (tone === "success") {
+    return cn(
+      base,
+      "border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)] hover:brightness-95",
+      className,
+    );
+  }
+
+  return cn(
+    base,
+    "border border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)] hover:border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] hover:text-[var(--ve-green)]",
+    className,
+  );
+}
+
 export function AdminPageHeader({
   backHref,
   backLabel = "Back",

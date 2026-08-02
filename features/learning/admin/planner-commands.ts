@@ -370,7 +370,7 @@ export async function generateCourseShellFromSelectedPlanCommand(
     return {
       courseId: existingSelection.generatedCourseId,
       returnPath: `/admin/courses/${existingSelection.generatedCourseId}`,
-      notice: "This planner brief already has a generated course shell.",
+      notice: "This planner brief already has a generated course setup.",
     };
   }
 
@@ -497,7 +497,7 @@ export async function generateCourseShellFromSelectedPlanCommand(
     courseId,
     returnPath: `/admin/courses/${courseId}`,
     notice:
-      "AI course shell created. Review the course, generate course media, and enable it when ready. Generate lessons later from the planner.",
+      "AI course setup created. Review the course, generate course media, and enable it when ready. Create lessons later from the planner.",
   };
 }
 
@@ -524,14 +524,14 @@ export async function generatePlannedLessonsFromSelectedPlanCommand(
   }
 
   if (!selectedOption.generatedCourseId) {
-    throw new Error("Generate the course shell first before drafting the planned lessons.");
+    throw new Error("Create the course setup first before drafting the planned lessons.");
   }
 
   if (selectedOption.lessonsGeneratedAt) {
     return {
       courseId: selectedOption.generatedCourseId,
       returnPath: `/admin/courses/${selectedOption.generatedCourseId}`,
-      notice: "Planned lessons were already generated for this course shell.",
+      notice: "Planned lessons were already created for this course.",
     };
   }
 

@@ -1,20 +1,37 @@
 "use client";
 
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState } from "react";
 import { EmptyAdminState, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
+import { MediaPicker } from "@/components/admin/MediaPicker";
+import { RichTextBlockEditor } from "@/components/admin/RichTextBlockEditor";
 import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
 import { ArrowLeftIcon, MenuIcon } from "@/components/ui/Icons";
 import type {
   AdminLessonPageRow,
   AdminLessonRow,
+  AdminLearningMediaAssetRow,
 } from "@/lib/admin";
 import type { ImageAsset, LessonContentBlock } from "@/lib/lessons";
 import {
   blockSummary,
   getImageValue,
-  isDraftId,
   type DraftBlock,
   type ReorderDirection,
 } from "@/features/learning/admin/lesson-page-builder-domain";
@@ -81,6 +98,10 @@ function actionButtonClasses(tone: "neutral" | "danger" = "neutral") {
   return `inline-flex h-8 w-8 items-center justify-center rounded-full ${toneClasses} transition disabled:cursor-not-allowed disabled:opacity-35`;
 }
 
+function secondaryButtonClasses() {
+  return "inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-xs font-black text-[var(--ve-muted-strong)] transition hover:border-[var(--ve-green)] hover:text-[var(--ve-green)] disabled:cursor-not-allowed disabled:opacity-60";
+}
+
 function compactFieldClasses() {
   return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
 }
@@ -90,60 +111,25 @@ function labelClasses() {
 }
 
 function ReorderPageButtons({
-  lessonId,
   pageId,
   isFirst,
   isLast,
   onReorder,
+  onDuplicatePage,
 }: {
-  lessonId: string;
   pageId: string;
   isFirst: boolean;
   isLast: boolean;
   onReorder: (pageId: string, direction: ReorderDirection) => void;
+  onDuplicatePage: (pageId: string) => void;
 }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
-  function reorder(direction: ReorderDirection) {
-    onReorder(pageId, direction);
-    if (isDraftId(pageId)) {
-      return;
-    }
-
-    startTransition(() => {
-      void fetch("/api/admin/learning/reorder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          kind: "page",
-          lessonId,
-          pageId,
-          direction,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            window.alert("The page order could not be saved. Refreshing to restore the latest version.");
-            router.refresh();
-          }
-        })
-        .catch(() => {
-          window.alert("The page order could not be saved. Refreshing to restore the latest version.");
-          router.refresh();
-        });
-    });
-  }
-
   return (
     <div className="flex gap-1">
       <button
         aria-label="Move page earlier"
         className={actionButtonClasses()}
-        disabled={isFirst || isPending}
-        onClick={() => reorder("up")}
+        disabled={isFirst}
+        onClick={() => onReorder(pageId, "up")}
         title="Move earlier"
         type="button"
       >
@@ -152,12 +138,21 @@ function ReorderPageButtons({
       <button
         aria-label="Move page later"
         className={actionButtonClasses()}
-        disabled={isLast || isPending}
-        onClick={() => reorder("down")}
+        disabled={isLast}
+        onClick={() => onReorder(pageId, "down")}
         title="Move later"
         type="button"
       >
         <ArrowDownIcon />
+      </button>
+      <button
+        aria-label="Duplicate page"
+        className={actionButtonClasses()}
+        onClick={() => onDuplicatePage(pageId)}
+        title="Duplicate page"
+        type="button"
+      >
+        +
       </button>
     </div>
   );
@@ -167,22 +162,30 @@ function BlockActionButtons({
   block,
   isFirst,
   isLast,
+  onDuplicate,
   onReorder,
   onRemove,
 }: {
   block: DraftBlock;
   isFirst: boolean;
   isLast: boolean;
+  onDuplicate: (block: DraftBlock) => void;
   onReorder: (blockId: string, direction: ReorderDirection) => void;
   onRemove: (block: DraftBlock) => void;
 }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
   if (block.isDraft) {
     return (
       <div className="flex items-center gap-2">
         <span className="text-xs font-bold text-[var(--ve-muted)]">Unsaved</span>
+        <button
+          aria-label="Duplicate draft block"
+          className={actionButtonClasses()}
+          onClick={() => onDuplicate(block)}
+          title="Duplicate block"
+          type="button"
+        >
+          +
+        </button>
         <button
           aria-label="Remove draft block"
           className={actionButtonClasses("danger")}
@@ -196,41 +199,13 @@ function BlockActionButtons({
     );
   }
 
-  function reorder(direction: ReorderDirection) {
-    onReorder(block.id, direction);
-    startTransition(() => {
-      void fetch("/api/admin/learning/reorder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          kind: "block",
-          pageId: block.page_id,
-          blockId: block.id,
-          direction,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            window.alert("The block order could not be saved. Refreshing to restore the latest version.");
-            router.refresh();
-          }
-        })
-        .catch(() => {
-          window.alert("The block order could not be saved. Refreshing to restore the latest version.");
-          router.refresh();
-        });
-    });
-  }
-
   return (
     <div className="flex gap-1">
       <button
         aria-label="Move block earlier"
         className={actionButtonClasses()}
-        disabled={isFirst || isPending}
-        onClick={() => reorder("up")}
+        disabled={isFirst}
+        onClick={() => onReorder(block.id, "up")}
         title="Move earlier"
         type="button"
       >
@@ -239,17 +214,25 @@ function BlockActionButtons({
       <button
         aria-label="Move block later"
         className={actionButtonClasses()}
-        disabled={isLast || isPending}
-        onClick={() => reorder("down")}
+        disabled={isLast}
+        onClick={() => onReorder(block.id, "down")}
         title="Move later"
         type="button"
       >
         <ArrowDownIcon />
       </button>
       <button
+        aria-label="Duplicate block"
+        className={actionButtonClasses()}
+        onClick={() => onDuplicate(block)}
+        title="Duplicate block"
+        type="button"
+      >
+        +
+      </button>
+      <button
         aria-label="Remove block"
         className={actionButtonClasses("danger")}
-        disabled={isPending}
         onClick={() => onRemove(block)}
         title="Remove block"
         type="button"
@@ -273,11 +256,13 @@ function AddPageButton({ onAddPage }: { onAddPage: () => void }) {
 }
 
 function PageSettingsEditor({
+  mediaLibraryAssets,
   page,
   onChange,
   onSaveNow,
   isSaving,
 }: {
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
   page: AdminLessonPageRow;
   onChange: (page: AdminLessonPageRow) => void;
   onSaveNow: () => void;
@@ -335,42 +320,33 @@ function PageSettingsEditor({
           </select>
         </label>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label>
-          <span className={labelClasses()}>Page image URL</span>
-          <input
-            className={compactFieldClasses()}
-            name="coverImageUrl"
-            value={getImageValue(coverImage, "src")}
-            onChange={(event) =>
-              onChange({
-                ...page,
-                cover_image: {
-                  ...coverImage,
-                  src: event.target.value,
-                },
-              })
-            }
-          />
-        </label>
-        <label>
-          <span className={labelClasses()}>Page image alt</span>
-          <input
-            className={compactFieldClasses()}
-            name="coverImageAlt"
-            value={getImageValue(coverImage, "alt")}
-            onChange={(event) =>
-              onChange({
-                ...page,
-                cover_image: {
-                  ...coverImage,
-                  alt: event.target.value,
-                },
-              })
-            }
-          />
-        </label>
-      </div>
+      <MediaPicker
+        assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
+        caption={String(coverImage.caption ?? "")}
+        initialAltText={getImageValue(coverImage, "alt")}
+        initialFit={String(coverImage.fit ?? "cover")}
+        initialPositionX={Number(coverImage.positionX ?? 50)}
+        initialPositionY={Number(coverImage.positionY ?? 50)}
+        initialUrl={getImageValue(coverImage, "src")}
+        libraryAssets={mediaLibraryAssets}
+        onPresentationChange={(value) =>
+          onChange({
+            ...page,
+            cover_image: {
+              ...coverImage,
+              alt: value.altText,
+              caption: value.caption,
+              fit: value.fit,
+              positionX: value.positionX,
+              positionY: value.positionY,
+              src: value.url,
+            },
+          })
+        }
+        placementLabel="Page cover"
+        renderFormFields={false}
+        showCaption
+      />
       <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
         {isSaving ? "Saving..." : "Save now"}
       </button>
@@ -382,19 +358,27 @@ function BlockEditor({
   block,
   isFirst,
   isLast,
+  isSelected,
+  mediaLibraryAssets,
+  onDuplicate,
   onPayloadChange,
   onReorder,
   onRemove,
   onSaveNow,
+  onSelect,
   isSaving,
 }: {
   block: DraftBlock;
   isFirst: boolean;
   isLast: boolean;
+  isSelected: boolean;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+  onDuplicate: (block: DraftBlock) => void;
   onPayloadChange: (key: string, value: unknown) => void;
   onReorder: (blockId: string, direction: ReorderDirection) => void;
   onRemove: (block: DraftBlock) => void;
   onSaveNow: () => void;
+  onSelect: (blockId: string) => void;
   isSaving: boolean;
 }) {
   const payload = block.payload ?? {};
@@ -414,6 +398,7 @@ function BlockEditor({
           block={block}
           isFirst={isFirst}
           isLast={isLast}
+          onDuplicate={onDuplicate}
           onRemove={onRemove}
           onReorder={onReorder}
         />
@@ -424,7 +409,8 @@ function BlockEditor({
   if (block.block_type === "image") {
     return (
       <form
-        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
+        onFocus={() => onSelect(block.id)}
         onSubmit={(event) => {
           event.preventDefault();
           onSaveNow();
@@ -441,35 +427,28 @@ function BlockEditor({
             </div>
           </>
         ) : null}
-        <label className="block">
-          <span className={labelClasses()}>Image URL</span>
-          <input
-            className={compactFieldClasses()}
-            name="src"
-            value={String(payload.src ?? "")}
-            onChange={(event) => onPayloadChange("src", event.target.value)}
-          />
-        </label>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Alt text</span>
-            <input
-              className={compactFieldClasses()}
-              name="alt"
-              value={String(payload.alt ?? "")}
-              onChange={(event) => onPayloadChange("alt", event.target.value)}
-            />
-          </label>
-          <label>
-            <span className={labelClasses()}>Caption</span>
-            <input
-              className={compactFieldClasses()}
-              name="caption"
-              value={String(payload.caption ?? "")}
-              onChange={(event) => onPayloadChange("caption", event.target.value)}
-            />
-          </label>
-        </div>
+        <MediaPicker
+          assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
+          caption={String(payload.caption ?? "")}
+          initialAltText={String(payload.alt ?? "")}
+          initialFit={String(payload.fit ?? "cover")}
+          initialPositionX={Number(payload.positionX ?? 50)}
+          initialPositionY={Number(payload.positionY ?? 50)}
+          initialUrl={String(payload.src ?? "")}
+          libraryAssets={mediaLibraryAssets}
+          onCaptionChange={(value) => onPayloadChange("caption", value)}
+          onPresentationChange={(value) => {
+            onPayloadChange("src", value.url);
+            onPayloadChange("alt", value.altText);
+            onPayloadChange("fit", value.fit);
+            onPayloadChange("positionX", value.positionX);
+            onPayloadChange("positionY", value.positionY);
+            onPayloadChange("caption", value.caption);
+          }}
+          placementLabel="Image block"
+          renderFormFields={false}
+          showCaption
+        />
         <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
           {isSaving ? "Saving..." : "Save now"}
         </button>
@@ -482,7 +461,8 @@ function BlockEditor({
 
     return (
       <form
-        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
+        onFocus={() => onSelect(block.id)}
         onSubmit={(event) => {
           event.preventDefault();
           onSaveNow();
@@ -541,7 +521,8 @@ function BlockEditor({
 
     return (
       <form
-        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
+        onFocus={() => onSelect(block.id)}
         onSubmit={(event) => {
           event.preventDefault();
           onSaveNow();
@@ -614,7 +595,8 @@ function BlockEditor({
   if (block.block_type === "callout") {
     return (
       <form
-        className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
+        onFocus={() => onSelect(block.id)}
         onSubmit={(event) => {
           event.preventDefault();
           onSaveNow();
@@ -675,7 +657,8 @@ function BlockEditor({
 
   return (
     <form
-      className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4"
+      className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
+      onFocus={() => onSelect(block.id)}
       onSubmit={(event) => {
         event.preventDefault();
         onSaveNow();
@@ -693,11 +676,10 @@ function BlockEditor({
       </label>
       <label className="block">
         <span className={labelClasses()}>Text</span>
-        <textarea
-          className={`${compactFieldClasses()} min-h-36 resize-none text-base leading-7`}
-          name="body"
+        <RichTextBlockEditor
+          disabled={isSaving}
           value={body}
-          onChange={(event) => onPayloadChange("body", event.target.value)}
+          onChange={(value) => onPayloadChange("body", value)}
         />
       </label>
       <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
@@ -708,72 +690,68 @@ function BlockEditor({
 }
 
 export function LessonBuilderPagesPanel({
-  lessonId,
   pages,
   blocks,
   selectedPageId,
   onSelectPage,
   onAddPage,
+  onDuplicatePage,
   onReorderPage,
+  onReorderPageById,
 }: {
-  lessonId: string;
   pages: AdminLessonPageRow[];
   blocks: DraftBlock[];
   selectedPageId: string;
   onSelectPage: (pageId: string) => void;
   onAddPage: () => void;
+  onDuplicatePage: (pageId: string) => void;
   onReorderPage: (pageId: string, direction: ReorderDirection) => void;
+  onReorderPageById: (activePageId: string, overPageId: string) => void;
 }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    onReorderPageById(String(active.id), String(over.id));
+  }
+
   return (
     <div className="h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
       <h2 className="text-lg font-black">Pages</h2>
       <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-        Pick a page to edit and preview. Use the arrows to change page order.
+        Pick a page to edit. Drag pages to reorder; buttons provide a keyboard fallback.
       </p>
       {pages.length === 0 ? (
         <div className="mt-4">
           <EmptyAdminState>No pages yet.</EmptyAdminState>
         </div>
       ) : (
-        <div className="mt-4 space-y-2">
-          {pages.map((page, index) => (
-            <div
-              className={`rounded-[16px] border p-3 transition ${
-                selectedPageId === page.id
-                  ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))]"
-                  : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] hover:bg-[var(--ve-shell)]"
-              }`}
-              key={page.id}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <button
-                  className="text-left text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]"
-                  onClick={() => onSelectPage(page.id)}
-                  type="button"
-                >
-                  Page {index + 1}
-                </button>
-                <ReorderPageButtons
-                  isFirst={index === 0}
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+          <SortableContext items={pages.map((page) => page.id)} strategy={verticalListSortingStrategy}>
+            <div className="mt-4 space-y-2">
+              {pages.map((page, index) => (
+                <SortablePageCard
+                  blockCount={blocks.filter((block) => block.page_id === page.id).length}
+                  index={index}
                   isLast={index === pages.length - 1}
-                  lessonId={lessonId}
-                  onReorder={onReorderPage}
-                  pageId={page.id}
+                  isSelected={selectedPageId === page.id}
+                  key={page.id}
+                  onDuplicatePage={onDuplicatePage}
+                  onReorderPage={onReorderPage}
+                  onSelectPage={onSelectPage}
+                  page={page}
                 />
-              </div>
-              <button
-                className="mt-2 block w-full text-left"
-                onClick={() => onSelectPage(page.id)}
-                type="button"
-              >
-                <h3 className="line-clamp-2 text-sm font-black">{page.title}</h3>
-                <p className="mt-1 text-[11px] font-bold capitalize text-[var(--ve-muted)]">
-                  {page.page_type} · {blocks.filter((block) => block.page_id === page.id).length} blocks
-                </p>
-              </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       <div className="mt-5 border-t border-[var(--ve-line-soft)] pt-5">
@@ -787,6 +765,87 @@ export function LessonBuilderPagesPanel({
   );
 }
 
+function SortablePageCard({
+  blockCount,
+  index,
+  isLast,
+  isSelected,
+  onDuplicatePage,
+  onReorderPage,
+  onSelectPage,
+  page,
+}: {
+  blockCount: number;
+  index: number;
+  isLast: boolean;
+  isSelected: boolean;
+  onDuplicatePage: (pageId: string) => void;
+  onReorderPage: (pageId: string, direction: ReorderDirection) => void;
+  onSelectPage: (pageId: string) => void;
+  page: AdminLessonPageRow;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: page.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      className={`rounded-[16px] border p-3 transition ${
+        isSelected
+          ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))]"
+          : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] hover:bg-[var(--ve-shell)]"
+      } ${isDragging ? "opacity-80 shadow-lg" : ""}`}
+      ref={setNodeRef}
+      style={style}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <button
+          aria-label={`Drag ${page.title}`}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] touch-none"
+          type="button"
+          {...attributes}
+          {...listeners}
+        >
+          ::
+        </button>
+        <button
+          className="text-left text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]"
+          onClick={() => onSelectPage(page.id)}
+          type="button"
+        >
+          Page {index + 1}
+        </button>
+        <ReorderPageButtons
+          isFirst={index === 0}
+          isLast={isLast}
+          onDuplicatePage={onDuplicatePage}
+          onReorder={onReorderPage}
+          pageId={page.id}
+        />
+      </div>
+      <button
+        className="mt-2 block w-full text-left"
+        onClick={() => onSelectPage(page.id)}
+        type="button"
+      >
+        <h3 className="line-clamp-2 text-sm font-black">{page.title}</h3>
+        <p className="mt-1 text-[11px] font-bold capitalize text-[var(--ve-muted)]">
+          {page.page_type} · {blockCount} blocks
+        </p>
+      </button>
+    </div>
+  );
+}
+
 export function LessonBuilderEditorPanel({
   selectedPage,
   selectedPageBlocks,
@@ -795,11 +854,15 @@ export function LessonBuilderEditorPanel({
   lastSavedAt,
   autosaveDelayMs,
   onSaveNow,
-  onUpdatePage,
   onAddDraftBlock,
+  onDuplicateBlock,
+  mediaLibraryAssets,
   onUpdateBlock,
   onReorderBlock,
+  onReorderBlockById,
   onRemoveBlock,
+  onSelectBlock,
+  selectedBlockId,
 }: {
   selectedPage: AdminLessonPageRow | null;
   selectedPageBlocks: DraftBlock[];
@@ -808,13 +871,30 @@ export function LessonBuilderEditorPanel({
   lastSavedAt: string | null;
   autosaveDelayMs: number;
   onSaveNow: () => void;
-  onUpdatePage: (page: AdminLessonPageRow) => void;
-  onAddDraftBlock: (blockType: string) => void;
+  onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
+  onDuplicateBlock: (block: DraftBlock) => void;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
   onUpdateBlock: (blockId: string, key: string, value: unknown) => void;
   onReorderBlock: (blockId: string, direction: ReorderDirection) => void;
+  onReorderBlockById: (activeBlockId: string, overBlockId: string) => void;
   onRemoveBlock: (block: DraftBlock) => void;
+  onSelectBlock: (blockId: string) => void;
+  selectedBlockId: string;
 }) {
   const isSaving = autosaveState === "saving";
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    onReorderBlockById(String(active.id), String(over.id));
+  }
 
   return (
     <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
@@ -858,54 +938,43 @@ export function LessonBuilderEditorPanel({
             </div>
           </div>
 
-          <details className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
-            <summary className="cursor-pointer text-sm font-black">Page settings</summary>
-            <div className="mt-4">
-              <PageSettingsEditor
-                onChange={onUpdatePage}
-                onSaveNow={onSaveNow}
-                page={selectedPage}
-                isSaving={isSaving}
-              />
-            </div>
-          </details>
-
           <div className="mt-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-sm font-black">Add content</h3>
-              <p className="text-xs font-bold text-[var(--ve-muted)]">Toolbar adds locally first</p>
+              <p className="text-xs font-bold text-[var(--ve-muted)]">Choose a position in the canvas</p>
             </div>
-            <div className="flex flex-wrap gap-2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-2">
-              {blockToolbarItems.map((item) => (
-                <button
-                  className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
-                  key={item.type}
-                  onClick={() => onAddDraftBlock(item.type)}
-                  type="button"
-                >
-                  + {item.label}
-                </button>
-              ))}
-            </div>
+            <BlockInserter insertIndex={0} onAddDraftBlock={onAddDraftBlock} />
           </div>
 
           <div className="mt-5 space-y-4">
             {selectedPageBlocks.length === 0 ? (
               <EmptyAdminState>No blocks on this page yet.</EmptyAdminState>
             ) : (
-              selectedPageBlocks.map((block, index) => (
-                <BlockEditor
-                  block={block}
-                  isFirst={index === 0}
-                  isLast={index === selectedPageBlocks.length - 1}
-                  key={block.id}
-                  onRemove={onRemoveBlock}
-                  onPayloadChange={(key, value) => onUpdateBlock(block.id, key, value)}
-                  onReorder={onReorderBlock}
-                  onSaveNow={onSaveNow}
-                  isSaving={isSaving}
-                />
-              ))
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+                <SortableContext items={selectedPageBlocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-4">
+                    {selectedPageBlocks.map((block, index) => (
+                      <SortableBlockCard
+                        block={block}
+                        index={index}
+                        isFirst={index === 0}
+                        isLast={index === selectedPageBlocks.length - 1}
+                        isSaving={isSaving}
+                        isSelected={selectedBlockId === block.id}
+                        key={block.id}
+                        mediaLibraryAssets={mediaLibraryAssets}
+                        onAddDraftBlock={onAddDraftBlock}
+                        onDuplicate={onDuplicateBlock}
+                        onPayloadChange={(key, value) => onUpdateBlock(block.id, key, value)}
+                        onRemove={onRemoveBlock}
+                        onReorder={onReorderBlock}
+                        onSaveNow={onSaveNow}
+                        onSelect={onSelectBlock}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </>
@@ -916,19 +985,125 @@ export function LessonBuilderEditorPanel({
   );
 }
 
+function BlockInserter({
+  insertIndex,
+  onAddDraftBlock,
+}: {
+  insertIndex: number;
+  onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-2">
+      {blockToolbarItems.map((item) => (
+        <button
+          className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
+          key={item.type}
+          onClick={() => onAddDraftBlock(item.type, insertIndex)}
+          type="button"
+        >
+          + {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SortableBlockCard({
+  block,
+  index,
+  isFirst,
+  isLast,
+  isSaving,
+  isSelected,
+  mediaLibraryAssets,
+  onAddDraftBlock,
+  onDuplicate,
+  onPayloadChange,
+  onRemove,
+  onReorder,
+  onSaveNow,
+  onSelect,
+}: {
+  block: DraftBlock;
+  index: number;
+  isFirst: boolean;
+  isLast: boolean;
+  isSaving: boolean;
+  isSelected: boolean;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+  onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
+  onDuplicate: (block: DraftBlock) => void;
+  onPayloadChange: (key: string, value: unknown) => void;
+  onRemove: (block: DraftBlock) => void;
+  onReorder: (blockId: string, direction: ReorderDirection) => void;
+  onSaveNow: () => void;
+  onSelect: (blockId: string) => void;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: block.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div className={isDragging ? "opacity-80" : undefined} ref={setNodeRef} style={style}>
+      <div className="mb-2 flex items-center gap-2">
+        <button
+          aria-label={`Drag ${block.block_type} block`}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] touch-none"
+          type="button"
+          {...attributes}
+          {...listeners}
+        >
+          ::
+        </button>
+        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          Block {index + 1}
+        </span>
+      </div>
+      <BlockEditor
+        block={block}
+        isFirst={isFirst}
+        isLast={isLast}
+        isSaving={isSaving}
+        isSelected={isSelected}
+        mediaLibraryAssets={mediaLibraryAssets}
+        onDuplicate={onDuplicate}
+        onPayloadChange={onPayloadChange}
+        onRemove={onRemove}
+        onReorder={onReorder}
+        onSaveNow={onSaveNow}
+        onSelect={onSelect}
+      />
+      <div className="mt-3">
+        <BlockInserter insertIndex={index + 1} onAddDraftBlock={onAddDraftBlock} />
+      </div>
+    </div>
+  );
+}
+
 export function LessonBuilderPreviewPanel({
+  embedded = false,
   lesson,
   selectedPage,
   selectedPreviewBlocks,
   pageCoverImage,
 }: {
+  embedded?: boolean;
   lesson: AdminLessonRow;
   selectedPage: AdminLessonPageRow | null;
   selectedPreviewBlocks: LessonContentBlock[];
   pageCoverImage: ImageAsset | null;
 }) {
   return (
-    <div className="h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm xl:sticky xl:top-6">
+    <div className={embedded ? "h-fit" : "h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm xl:sticky xl:top-6"}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
@@ -970,5 +1145,175 @@ export function LessonBuilderPreviewPanel({
         )}
       </div>
     </div>
+  );
+}
+
+export function LessonBuilderInspectorPanel({
+  autosaveState,
+  hasUnsavedChanges,
+  isSaving,
+  lastSavedAt,
+  lesson,
+  mediaLibraryAssets,
+  onDuplicateBlock,
+  onDuplicatePage,
+  onRemoveBlock,
+  onSaveNow,
+  onUpdatePage,
+  pageCoverImage,
+  selectedBlock,
+  selectedPage,
+  selectedPreviewBlocks,
+}: {
+  autosaveState: AutosaveState;
+  hasUnsavedChanges: boolean;
+  isSaving: boolean;
+  lastSavedAt: string | null;
+  lesson: AdminLessonRow;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+  onDuplicateBlock?: () => void;
+  onDuplicatePage?: () => void;
+  onRemoveBlock?: () => void;
+  onSaveNow: () => void;
+  onUpdatePage: (page: AdminLessonPageRow) => void;
+  pageCoverImage: ImageAsset | null;
+  selectedBlock: DraftBlock | null;
+  selectedPage: AdminLessonPageRow | null;
+  selectedPreviewBlocks: LessonContentBlock[];
+}) {
+  const [showPreview, setShowPreview] = useState(false);
+  const saveLabel =
+    autosaveState === "saving"
+      ? "Saving"
+      : hasUnsavedChanges
+        ? "Unsaved locally"
+        : "Saved";
+
+  return (
+    <aside className="space-y-4 xl:sticky xl:top-6 xl:h-fit">
+      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+              Inspector
+            </p>
+            <h2 className="mt-1 text-lg font-black">Authoring state</h2>
+          </div>
+          <AdminStatusBadge tone={autosaveState === "error" ? "danger" : hasUnsavedChanges ? "warning" : "good"}>
+            {saveLabel}
+          </AdminStatusBadge>
+        </div>
+        <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          {autosaveState === "error"
+            ? "Save failed. Your local draft remains recoverable in this browser session."
+            : hasUnsavedChanges
+              ? "Changes are local until autosave or Save now completes."
+              : lastSavedAt
+                ? `Saved at ${new Date(lastSavedAt).toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}.`
+                : "No unsaved builder changes."}
+        </p>
+        <div className="mt-4 grid gap-2">
+          <button
+            className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--ve-green)] px-4 text-sm font-black text-white disabled:opacity-60"
+            disabled={isSaving}
+            onClick={onSaveNow}
+            type="button"
+          >
+            {isSaving ? "Saving..." : "Save now"}
+          </button>
+          <Link className={secondaryButtonClasses()} href={`/admin/courses/${lesson.course_id}?tab=curriculum`}>
+            Course curriculum
+          </Link>
+          <Link className={secondaryButtonClasses()} href={`/lessons/${lesson.id}`}>
+            Learner preview
+          </Link>
+        </div>
+      </div>
+
+      {selectedPage ? (
+        <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className={labelClasses()}>Selected page</p>
+              <h3 className="mt-1 text-base font-black">{selectedPage.title}</h3>
+            </div>
+            {onDuplicatePage ? (
+              <button className={secondaryButtonClasses()} onClick={onDuplicatePage} type="button">
+                Duplicate
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-4">
+              <PageSettingsEditor
+                isSaving={isSaving}
+                mediaLibraryAssets={mediaLibraryAssets}
+                onChange={onUpdatePage}
+              onSaveNow={onSaveNow}
+              page={selectedPage}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
+        <p className={labelClasses()}>Selected block</p>
+        {selectedBlock ? (
+          <>
+            <h3 className="mt-1 text-base font-black capitalize">
+              {selectedBlock.block_type.replaceAll("_", " ")} block
+            </h3>
+            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              {blockSummary(selectedBlock) || "No content summary yet."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {onDuplicateBlock ? (
+                <button className={secondaryButtonClasses()} onClick={onDuplicateBlock} type="button">
+                  Duplicate
+                </button>
+              ) : null}
+              {onRemoveBlock ? (
+                <button
+                  className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_82%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
+                  onClick={onRemoveBlock}
+                  type="button"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            Select a block in the canvas to inspect, duplicate or remove it.
+          </p>
+        )}
+      </div>
+
+      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className={labelClasses()}>Preview</p>
+            <h3 className="mt-1 text-base font-black">Learner page</h3>
+          </div>
+          <button className={secondaryButtonClasses()} onClick={() => setShowPreview((current) => !current)} type="button">
+            {showPreview ? "Hide" : "Show"}
+          </button>
+        </div>
+        {showPreview ? (
+          <div className="mt-4">
+            <LessonBuilderPreviewPanel
+              embedded
+              lesson={lesson}
+              pageCoverImage={pageCoverImage}
+              selectedPage={selectedPage}
+              selectedPreviewBlocks={selectedPreviewBlocks}
+            />
+          </div>
+        ) : null}
+      </div>
+    </aside>
   );
 }

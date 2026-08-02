@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { CourseCategoryField } from "@/components/admin/CourseCategoryField";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type {
   AdminCourseRow,
+  AdminLearningMediaAssetRow,
   AdminLessonBlockRow,
   AdminLessonPageRow,
   AdminLessonRow,
@@ -38,6 +40,11 @@ function helperTextClasses() {
 function getImageValue(image: Record<string, unknown> | null | undefined, key: "src" | "alt") {
   const value = image?.[key];
   return typeof value === "string" ? value : "";
+}
+
+function getImageNumber(image: Record<string, unknown> | null | undefined, key: "positionX" | "positionY", fallback: number) {
+  const value = Number(image?.[key]);
+  return Number.isFinite(value) ? value : fallback;
 }
 
 function FormSection({
@@ -169,11 +176,13 @@ export function CourseForm({
   categories = [],
   course,
   derivedMinutes,
+  mediaLibraryAssets = [],
   nextSortOrder = 0,
 }: {
   categories?: string[];
   course?: AdminCourseRow | null;
   derivedMinutes?: number;
+  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
   nextSortOrder?: number;
 }) {
   const estimatedMinutes = derivedMinutes ?? course?.estimated_minutes ?? 0;
@@ -229,8 +238,8 @@ export function CourseForm({
                   <option value="archived">Archived</option>
                 </select>
                 {course?.ai_generated ? (
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]" title="Learners can see the course shell before all lessons are published.">
-                    Shell can go live before lessons.
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]" title="Learners can see the course before all lessons are published.">
+                    The course can go live before all lessons are published.
                   </p>
                 ) : null}
               </label>
@@ -246,18 +255,25 @@ export function CourseForm({
             collapsible
             defaultOpen={!course?.id}
             title="Course thumbnail"
-            subtitle="Learner card image."
+            subtitle="Learner card image. Choose from media already approved for this course, or use an external URL."
           >
-            <div className="grid gap-4 xl:grid-cols-2">
-              <label>
-                <span className={labelClasses()}>Thumbnail URL</span>
-                <input className={fieldClasses()} name="thumbnailUrl" defaultValue={getImageValue(course?.thumbnail, "src")} />
-              </label>
-              <label>
-                <span className={labelClasses()}>Thumbnail alt</span>
-                <input className={fieldClasses()} name="thumbnailAlt" defaultValue={getImageValue(course?.thumbnail, "alt")} />
-              </label>
-            </div>
+            <MediaPicker
+              assetTypeFilter={["cover", "image", "thumbnail"]}
+              fieldNames={{
+                altText: "thumbnailAlt",
+                url: "thumbnailUrl",
+              }}
+              initialAltText={getImageValue(course?.thumbnail, "alt")}
+              initialUrl={getImageValue(course?.thumbnail, "src")}
+              libraryAssets={mediaLibraryAssets}
+              onPickAsset={undefined}
+              placementLabel="Course thumbnail"
+              previewDescription={course?.description}
+              previewEyebrow={course?.category}
+              previewMinutes={estimatedMinutes}
+              previewTitle={course?.title}
+              previewVariant="course-thumbnail"
+            />
           </FormSection>
         </div>
         <CoursePreview course={course} estimatedMinutes={estimatedMinutes} />
@@ -270,9 +286,11 @@ export function CourseForm({
 export function LessonForm({
   lesson,
   courseId,
+  mediaLibraryAssets = [],
 }: {
   lesson?: AdminLessonRow | null;
   courseId: string;
+  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
 }) {
   return (
     <form action={saveLesson} className="space-y-5">
@@ -319,16 +337,17 @@ export function LessonForm({
       </FormSection>
 
       <FormSection title="Cover image">
-        <div className="grid gap-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Cover image URL</span>
-            <input className={fieldClasses()} name="coverImageUrl" defaultValue={getImageValue(lesson?.cover_image, "src")} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Cover image alt</span>
-            <input className={fieldClasses()} name="coverImageAlt" defaultValue={getImageValue(lesson?.cover_image, "alt")} />
-          </label>
-        </div>
+        <MediaPicker
+          assetTypeFilter={["cover", "image", "thumbnail"]}
+          fieldNames={{
+            altText: "coverImageAlt",
+            url: "coverImageUrl",
+          }}
+          initialAltText={getImageValue(lesson?.cover_image, "alt")}
+          initialUrl={getImageValue(lesson?.cover_image, "src")}
+          libraryAssets={mediaLibraryAssets}
+          placementLabel="Lesson cover"
+        />
       </FormSection>
 
       <FormSection
@@ -382,10 +401,12 @@ export function LessonForm({
 
 export function LessonPageForm({
   lessonId,
+  mediaLibraryAssets = [],
   page,
   defaultPageNumber,
 }: {
   lessonId: string;
+  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
   page?: AdminLessonPageRow | null;
   defaultPageNumber?: number;
 }) {
@@ -419,16 +440,20 @@ export function LessonPageForm({
           </select>
         </label>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label>
-          <span className={labelClasses()}>Page image URL</span>
-          <input className={compactFieldClasses()} name="coverImageUrl" defaultValue={getImageValue(page?.cover_image, "src")} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Page image alt</span>
-          <input className={compactFieldClasses()} name="coverImageAlt" defaultValue={getImageValue(page?.cover_image, "alt")} />
-        </label>
-      </div>
+      <MediaPicker
+        assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
+        fieldNames={{
+          altText: "coverImageAlt",
+          url: "coverImageUrl",
+        }}
+        initialAltText={getImageValue(page?.cover_image, "alt")}
+        initialFit={String(page?.cover_image?.fit ?? "cover")}
+        initialPositionX={getImageNumber(page?.cover_image, "positionX", 50)}
+        initialPositionY={getImageNumber(page?.cover_image, "positionY", 50)}
+        initialUrl={getImageValue(page?.cover_image, "src")}
+        libraryAssets={mediaLibraryAssets}
+        placementLabel="Page cover"
+      />
       <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save page
       </button>
@@ -577,9 +602,11 @@ export function AddBlockToolbar({
 
 export function ContentBlockEditor({
   lessonId,
+  mediaLibraryAssets = [],
   block,
 }: {
   lessonId: string;
+  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
   block: AdminLessonBlockRow;
 }) {
   const payload = block.payload ?? {};
@@ -594,20 +621,26 @@ export function ContentBlockEditor({
           <p className={labelClasses()}>Image block</p>
           <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
         </div>
-        <label className="block">
-          <span className={labelClasses()}>Image URL</span>
-          <input className={compactFieldClasses()} name="src" defaultValue={String(payload.src ?? "")} />
-        </label>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Alt text</span>
-            <input className={compactFieldClasses()} name="alt" defaultValue={String(payload.alt ?? "")} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Caption</span>
-            <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
-          </label>
-        </div>
+        <MediaPicker
+          assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
+          caption={String(payload.caption ?? "")}
+          fieldNames={{
+            altText: "alt",
+            caption: "caption",
+            fit: "fit",
+            positionX: "positionX",
+            positionY: "positionY",
+            url: "src",
+          }}
+          initialAltText={String(payload.alt ?? "")}
+          initialFit={String(payload.fit ?? "cover")}
+          initialPositionX={Number(payload.positionX ?? 50)}
+          initialPositionY={Number(payload.positionY ?? 50)}
+          initialUrl={String(payload.src ?? "")}
+          libraryAssets={mediaLibraryAssets}
+          placementLabel="Image block"
+          showCaption
+        />
         <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save image
         </button>

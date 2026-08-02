@@ -4674,6 +4674,10 @@ export type Database = {
         Args: { p_bucket_id: string }
         Returns: undefined
       }
+      admin_delete_quiz_question: {
+        Args: { p_question_id: string; p_quiz_id: string }
+        Returns: Json
+      }
       admin_delete_recommendation_item: {
         Args: { p_item_id: string }
         Returns: Json
@@ -4727,12 +4731,20 @@ export type Database = {
         Args: { p_prize_id: string; p_quantity: number; p_reason?: string }
         Returns: Json
       }
+      admin_reorder_course_lessons: {
+        Args: { p_course_id: string; p_lesson_ids: string[] }
+        Returns: Json
+      }
       admin_reorder_lesson_block: {
         Args: { p_block_id: string; p_direction: string; p_page_id: string }
         Returns: Json
       }
       admin_reorder_lesson_page: {
         Args: { p_direction: string; p_lesson_id: string; p_page_id: string }
+        Returns: Json
+      }
+      admin_reorder_quiz_questions: {
+        Args: { p_question_ids: string[]; p_quiz_id: string }
         Returns: Json
       }
       admin_reset_ai_course_media: {

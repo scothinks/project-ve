@@ -92,6 +92,10 @@ export function isDraftId(value: string) {
   return value.startsWith("draft-");
 }
 
+export function createDraftId(prefix: string) {
+  return `draft-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function createBuilderSnapshotKey(
   pages: AdminLessonPageRow[],
   blocks: DraftBlock[],
@@ -216,6 +220,29 @@ export function swapPageOrder(
   });
 }
 
+export function reorderPagesById(
+  pages: AdminLessonPageRow[],
+  activePageId: string,
+  overPageId: string,
+) {
+  const sorted = [...pages].sort((first, second) => first.page_number - second.page_number);
+  const activeIndex = sorted.findIndex((page) => page.id === activePageId);
+  const overIndex = sorted.findIndex((page) => page.id === overPageId);
+
+  if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+    return pages;
+  }
+
+  const [activePage] = sorted.splice(activeIndex, 1);
+  sorted.splice(overIndex, 0, activePage);
+  const nextNumberById = new Map(sorted.map((page, index) => [page.id, index + 1]));
+
+  return pages.map((page) => ({
+    ...page,
+    page_number: nextNumberById.get(page.id) ?? page.page_number,
+  }));
+}
+
 export function swapBlockOrder(
   blocks: DraftBlock[],
   blockId: string,
@@ -243,6 +270,65 @@ export function swapBlockOrder(
   });
 }
 
+export function reorderBlocksById(
+  blocks: DraftBlock[],
+  activeBlockId: string,
+  overBlockId: string,
+) {
+  const activeBlock = blocks.find((block) => block.id === activeBlockId);
+  const overBlock = blocks.find((block) => block.id === overBlockId);
+
+  if (!activeBlock || !overBlock || activeBlock.page_id !== overBlock.page_id) {
+    return blocks;
+  }
+
+  const sorted = blocks
+    .filter((block) => block.page_id === activeBlock.page_id)
+    .sort((first, second) => first.sort_order - second.sort_order);
+  const activeIndex = sorted.findIndex((block) => block.id === activeBlockId);
+  const overIndex = sorted.findIndex((block) => block.id === overBlockId);
+
+  if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+    return blocks;
+  }
+
+  const [movedBlock] = sorted.splice(activeIndex, 1);
+  sorted.splice(overIndex, 0, movedBlock);
+  const nextOrderById = new Map(sorted.map((block, index) => [block.id, index + 1]));
+
+  return blocks.map((block) =>
+    block.page_id === activeBlock.page_id
+      ? {
+          ...block,
+          sort_order: nextOrderById.get(block.id) ?? block.sort_order,
+        }
+      : block,
+  );
+}
+
+export function insertBlockAtPosition(
+  blocks: DraftBlock[],
+  pageId: string,
+  block: DraftBlock,
+  insertIndex: number,
+) {
+  const pageBlocks = blocks
+    .filter((item) => item.page_id === pageId)
+    .sort((first, second) => first.sort_order - second.sort_order);
+  const otherBlocks = blocks.filter((item) => item.page_id !== pageId);
+  const boundedIndex = Math.max(0, Math.min(insertIndex, pageBlocks.length));
+
+  pageBlocks.splice(boundedIndex, 0, block);
+
+  return [
+    ...otherBlocks,
+    ...pageBlocks.map((item, index) => ({
+      ...item,
+      sort_order: index + 1,
+    })),
+  ];
+}
+
 export function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
   const payload = block.payload ?? {};
   const title = getPayloadString(payload, "title") || getPayloadString(payload, "heading");
@@ -259,6 +345,9 @@ export function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
   }
 
   if (block.block_type === "image") {
+    const positionX = Number(payload.positionX);
+    const positionY = Number(payload.positionY);
+
     return {
       id: block.id,
       type: "image",
@@ -267,6 +356,9 @@ export function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
         "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",
       alt: getPayloadString(payload, "alt") || "Lesson image",
       caption: getPayloadString(payload, "caption") || undefined,
+      fit: payload.fit === "contain" ? "contain" : "cover",
+      positionX: Number.isFinite(positionX) ? positionX : 50,
+      positionY: Number.isFinite(positionY) ? positionY : 50,
     };
   }
 
@@ -337,6 +429,7 @@ export function mergeDraftBlocks(
 export function blockSummary(block: DraftBlock) {
   const payload = block.payload ?? {};
   return String(payload.title ?? payload.heading ?? payload.body ?? payload.src ?? "")
+    .replace(/<[^>]*>/g, " ")
     .trim()
     .slice(0, 80);
 }

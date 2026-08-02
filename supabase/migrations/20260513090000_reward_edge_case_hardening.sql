@@ -168,7 +168,7 @@ values (
   'Multiply the next XP you earn for a limited period.',
   90,
   50,
-  now() - interval '1 day',
+  '2026-05-01 00:00:00+00',
   '2026-09-30 23:59:59+00',
   'published',
   '{"icon":"BOOST","color":"#fff7ed"}',

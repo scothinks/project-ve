@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+import { sanitizeRichTextHtml } from "@/lib/rich-text";
 import {
   getArrayField,
   getBooleanField,
@@ -104,6 +105,11 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
       alt: sanitizePlainTextInput(String(payload.alt ?? ""), 240),
       caption: sanitizePlainTextInput(String(payload.caption ?? ""), 500),
     };
+    if (payload.fit === "cover" || payload.fit === "contain") {
+      next.fit = payload.fit;
+    }
+    next.positionX = Math.max(0, Math.min(100, parseInteger(payload.positionX, 50)));
+    next.positionY = Math.max(0, Math.min(100, parseInteger(payload.positionY, 50)));
 
     const aiManagedByAssetId = sanitizePlainTextInput(String(payload.aiManagedByAssetId ?? ""), 120);
     const aiManagedKind = sanitizePlainTextInput(String(payload.aiManagedKind ?? ""), 80);
@@ -144,7 +150,7 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
 
   return {
     heading: sanitizePlainTextInput(String(payload.heading ?? payload.title ?? ""), 180),
-    body: sanitizePlainTextInput(String(payload.body ?? ""), 4000),
+    body: sanitizeRichTextHtml(String(payload.body ?? ""), 6000),
   };
 }
 

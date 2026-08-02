@@ -10,9 +10,10 @@ Use this skill before beginning any Project VE task. Keep it active while planni
 ## Start Checklist
 
 1. Read the current task against `docs/project-ve-engineering-remediation-plan.md`.
-2. Check `git status -sb` and avoid reverting user changes.
-3. Identify whether the task touches architecture, DB/RLS/RPCs, auth, notifications, XP, AI generation, tests, CI, or remediation docs.
-4. Pick the narrowest implementation that matches existing repo patterns.
+2. For admin/CMS/LMS/product work, also read `docs/project-ve-cms-lms-product-remediation-plan.md`.
+3. Check `git status -sb` and avoid reverting user changes.
+4. Identify whether the task touches architecture, DB/RLS/RPCs, auth, notifications, XP, AI generation, CMS workflows, tests, CI, or remediation docs.
+5. Pick the narrowest implementation that matches existing repo patterns.
 
 ## Architecture
 
@@ -39,9 +40,21 @@ Use this skill before beginning any Project VE task. Keep it active while planni
 - If a new required validation command is added, wire it into CI or document why it remains manual.
 - Keep `npm run test:remediation:local` and the remediation docs aligned with current gates.
 
+## CMS Product Work
+
+- Implement only P0 CMS remediation work unless P1/P2 scope has been explicitly approved.
+- Treat the CMS component foundation as mandatory: `shadcn/ui` with Radix primitives, `dnd-kit`, Tiptap, and TanStack Table.
+- Install, configure, and use the mandatory libraries when missing and relevant to the CMS workflow being remediated.
+- Do not introduce competing component, rich-text, drag-and-drop, or data-grid libraries without explicit approval.
+- Preserve the structured content model: course -> lesson -> page -> structured content block.
+- Keep manual and AI-generated content in one editorial lifecycle, with AI provenance/status as secondary metadata.
+- Replace native `window.alert()` and `window.confirm()` in P0 CMS workflows with accessible dialogs, toasts, inline validation, and recoverable error states.
+- Preserve learner-facing rendering compatibility when adding CMS authoring capability.
+
 ## Documentation
 
 - Update remediation/status docs in the same change when a task closes or a gate changes.
+- Update `docs/project-ve-cms-lms-product-remediation-plan.md` when CMS/LMS product scope, gates, or completion status changes.
 - Do not leave "next action" or "partial" notes stale after validation proves completion.
 - Prefer exact command/results summaries over vague status language.
 

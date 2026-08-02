@@ -20,6 +20,14 @@ import {
   generateLessonFromExpansionSuggestion as generateLessonFromExpansionSuggestionBase,
   generatePlannedLessonsFromSelectedPlan as generatePlannedLessonsFromSelectedPlanBase,
 } from "@/app/admin/courses/planner-actions";
+import {
+  approveCourseReview as approveCourseReviewBase,
+  archiveReviewedCourse as archiveReviewedCourseBase,
+  publishReviewedCourse as publishReviewedCourseBase,
+  requestCourseReviewChanges as requestCourseReviewChangesBase,
+  sendCourseForReview as sendCourseForReviewBase,
+  unpublishReviewedCourse as unpublishReviewedCourseBase,
+} from "@/app/admin/courses/review-actions";
 
 export async function approveCourseText(formData: FormData) {
   return approveCourseTextBase(formData);
@@ -71,6 +79,30 @@ export async function publishApprovedCourse(formData: FormData) {
 
 export async function saveLearningMediaAsset(formData: FormData) {
   return saveLearningMediaAssetBase(formData);
+}
+
+export async function sendCourseForReview(formData: FormData) {
+  return sendCourseForReviewBase(formData);
+}
+
+export async function requestCourseReviewChanges(formData: FormData) {
+  return requestCourseReviewChangesBase(formData);
+}
+
+export async function approveCourseReview(formData: FormData) {
+  return approveCourseReviewBase(formData);
+}
+
+export async function publishReviewedCourse(formData: FormData) {
+  return publishReviewedCourseBase(formData);
+}
+
+export async function unpublishReviewedCourse(formData: FormData) {
+  return unpublishReviewedCourseBase(formData);
+}
+
+export async function archiveReviewedCourse(formData: FormData) {
+  return archiveReviewedCourseBase(formData);
 }
 
 export async function generateCourseExpansionPlan(formData: FormData) {

@@ -43,8 +43,8 @@ export function CourseDetailExpansionSection({
       <AdminCard>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI Expansion Assistant</p>
-            <h2 className="mt-2 text-lg font-black">Plan the next lesson before generating it</h2>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">AI lesson assistant</p>
+            <h2 className="mt-2 text-lg font-black">Plan the next lesson before drafting it</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               Analyze the current course, suggest useful next lessons, and draft only the selected lesson idea into the existing text review, media review, and publish workflow.
             </p>
@@ -53,7 +53,7 @@ export function CourseDetailExpansionSection({
             className="rounded-[12px] border border-[var(--ve-line-soft)] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
             href={`/admin/courses/ai/planner?courseId=${course.id}`}
           >
-            Open Full Planner
+            Open AI Planner
           </Link>
         </div>
 
@@ -89,8 +89,8 @@ export function CourseDetailExpansionSection({
 
           <PendingSubmitButton
             className="inline-flex items-center justify-center rounded-[14px] bg-[var(--ve-sky)] px-5 py-3 text-sm font-black text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
-            label="Generate Expansion Ideas"
-            pendingLabel="Generating Expansion Ideas..."
+                label="Propose Curriculum"
+                pendingLabel="Proposing Curriculum..."
             type="submit"
           />
         </form>
@@ -151,8 +151,8 @@ export function CourseDetailExpansionSection({
                             <input name="suggestionIndex" type="hidden" value={suggestionIndex} />
                             <PendingSubmitButton
                               className="rounded-[12px] bg-[var(--ve-sky)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-70"
-                              label="Generate Lesson Draft"
-                              pendingLabel="Generating Lesson Draft..."
+                              label="Draft Lesson"
+                              pendingLabel="Drafting Lesson..."
                               type="submit"
                             />
                           </form>
