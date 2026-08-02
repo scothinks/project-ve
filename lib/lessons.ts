@@ -18,6 +18,8 @@ export type Course = {
   title: string;
   category: string;
   description: string;
+  intendedAudience?: string;
+  learningOutcomes?: string[];
   level: CourseLevel;
   status: CourseStatus;
   thumbnail: ImageAsset;

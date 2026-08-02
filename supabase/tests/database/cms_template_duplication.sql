@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(18);
+select extensions.plan(19);
 
 set local role service_role;
 
@@ -15,6 +15,8 @@ insert into public.courses (
   slug,
   title,
   description,
+  intended_audience,
+  learning_outcomes,
   category,
   level,
   thumbnail,
@@ -36,6 +38,8 @@ values (
   'course-cms-template-source',
   'CMS Template Source',
   'Source description',
+  'Editors building values education pathways',
+  array['Map a CMS authoring journey', 'Publish a reviewed course'],
   'Integrity',
   'intermediate',
   '{"src":"https://example.test/source.png","alt":"Source thumbnail"}'::jsonb,
@@ -336,6 +340,16 @@ select extensions.is(
   ),
   2,
   'template duplication copies every lesson'
+);
+
+select extensions.is(
+  (
+    select intended_audience || '/' || array_to_string(learning_outcomes, '|')
+    from public.courses
+    where id = (select course_id from test_template_result)
+  ),
+  'Editors building values education pathways/Map a CMS authoring journey|Publish a reviewed course',
+  'template duplication copies canonical audience and learning outcomes'
 );
 
 select extensions.is(

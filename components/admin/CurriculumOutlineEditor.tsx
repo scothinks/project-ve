@@ -20,12 +20,11 @@ import { CSS } from "@dnd-kit/utilities";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import {
   archiveLessonFromCurriculum,
-  duplicateLessonFromCurriculum,
   reorderCourseLessons,
-  saveLesson,
 } from "@/app/admin/courses/actions";
 import { AdminCard, AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
 import { cn } from "@/lib/utils";
@@ -134,20 +133,20 @@ function readinessLabel(lesson: CurriculumLesson) {
 }
 
 function SortableLessonRow({
-  courseId,
   index,
   isPending,
   lesson,
   lessonCount,
   moveLesson,
+  onDuplicateLesson,
   requestArchive,
 }: {
-  courseId: string;
   index: number;
   isPending: boolean;
   lesson: CurriculumLesson;
   lessonCount: number;
   moveLesson: (fromIndex: number, toIndex: number) => void;
+  onDuplicateLesson: (lesson: CurriculumLesson) => void;
   requestArchive: (lesson: CurriculumLesson) => void;
 }) {
   const issues = lessonIssues(lesson);
@@ -283,16 +282,14 @@ function SortableLessonRow({
                   </Link>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item asChild>
-                  <form action={duplicateLessonFromCurriculum}>
-                    <input name="courseId" type="hidden" value={courseId} />
-                    <input name="lessonId" type="hidden" value={lesson.id} />
-                    <button
-                      className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--ve-panel)]"
-                      type="submit"
-                    >
-                      Duplicate lesson
-                    </button>
-                  </form>
+                  <button
+                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--ve-panel)]"
+                    disabled={isPending}
+                    onClick={() => onDuplicateLesson(lesson)}
+                    type="button"
+                  >
+                    Duplicate lesson
+                  </button>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator className="my-1 h-px bg-[var(--ve-line-soft)]" />
                 <DropdownMenu.Item asChild>
@@ -325,8 +322,11 @@ export function CurriculumOutlineEditor({
     () => [...lessons].sort((first, second) => first.sortOrder - second.sortOrder),
     [lessons],
   );
+  const router = useRouter();
   const [orderedLessons, setOrderedLessons] = useState(sortedLessons);
   const [archiveTarget, setArchiveTarget] = useState<CurriculumLesson | null>(null);
+  const [isCreatingLesson, setIsCreatingLesson] = useState(false);
+  const [duplicatingLessonId, setDuplicatingLessonId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const sensors = useSensors(
@@ -360,6 +360,61 @@ export function CurriculumOutlineEditor({
     startTransition(() => {
       void persistOrder(nextLessons, previousLessons);
     });
+  }
+
+  async function createLesson() {
+    setIsCreatingLesson(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/learning/lessons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId,
+          title: `Untitled lesson ${orderedLessons.length + 1}`,
+          description: "",
+          sortOrder: orderedLessons.length + 1,
+          estimatedMinutes: 0,
+        }),
+      });
+      const payload = await response.json() as { error?: string; lessonId?: string };
+
+      if (!response.ok || !payload.lessonId) {
+        throw new Error(payload.error ?? "Lesson could not be created.");
+      }
+
+      router.push(`/admin/courses/lessons/${payload.lessonId}?notice=Lesson%20created.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Lesson could not be created.");
+      setIsCreatingLesson(false);
+    }
+  }
+
+  async function duplicateLesson(lesson: CurriculumLesson) {
+    setDuplicatingLessonId(lesson.id);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/learning/lessons/duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId,
+          lessonId: lesson.id,
+        }),
+      });
+      const payload = await response.json() as { error?: string; lessonId?: string };
+
+      if (!response.ok || !payload.lessonId) {
+        throw new Error(payload.error ?? "Lesson could not be duplicated.");
+      }
+
+      router.push(`/admin/courses/lessons/${payload.lessonId}?notice=Lesson%20duplicated%20as%20a%20draft.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Lesson could not be duplicated.");
+      setDuplicatingLessonId(null);
+    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -402,25 +457,14 @@ export function CurriculumOutlineEditor({
               <p className="mt-3 text-sm font-black text-[var(--ve-muted-strong)]">{message}</p>
             ) : null}
           </div>
-          <form action={saveLesson}>
-            <input name="lessonId" type="hidden" value="" />
-            <input name="courseId" type="hidden" value={courseId} />
-            <input name="title" type="hidden" value={`Untitled lesson ${orderedLessons.length + 1}`} />
-            <input name="description" type="hidden" value="" />
-            <input name="coverImageUrl" type="hidden" value="" />
-            <input name="coverImageAlt" type="hidden" value="" />
-            <input name="status" type="hidden" value="draft" />
-            <input name="sortOrder" type="hidden" value={orderedLessons.length + 1} />
-            <input name="estimatedMinutes" type="hidden" value="0" />
-            <input name="retryMode" type="hidden" value="anytime" />
-            <input name="retryCooldownSeconds" type="hidden" value="" />
-            <input name="retryRequiresReread" type="hidden" value="on" />
-            <input name="quizRequiresLessonCompletion" type="hidden" value="on" />
-            <input name="maxEarningAttempts" type="hidden" value="" />
-            <button className={buttonClasses("primary")} type="submit">
-              Create lesson
-            </button>
-          </form>
+          <button
+            className={buttonClasses("primary")}
+            disabled={isPending || isCreatingLesson}
+            onClick={createLesson}
+            type="button"
+          >
+            {isCreatingLesson ? "Creating..." : "Create lesson"}
+          </button>
         </div>
       </AdminCard>
 
@@ -439,13 +483,13 @@ export function CurriculumOutlineEditor({
             <div className="space-y-3">
               {orderedLessons.map((lesson, index) => (
                 <SortableLessonRow
-                  courseId={courseId}
                   index={index}
-                  isPending={isPending}
+                  isPending={isPending || duplicatingLessonId === lesson.id}
                   key={lesson.id}
                   lesson={lesson}
                   lessonCount={orderedLessons.length}
                   moveLesson={moveLesson}
+                  onDuplicateLesson={duplicateLesson}
                   requestArchive={setArchiveTarget}
                 />
               ))}

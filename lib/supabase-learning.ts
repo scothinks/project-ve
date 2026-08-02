@@ -26,6 +26,8 @@ type CourseRow = {
   slug: string;
   title: string;
   description: string | null;
+  intended_audience: string | null;
+  learning_outcomes: string[] | null;
   category: string | null;
   level: string;
   thumbnail: Record<string, unknown> | null;
@@ -404,6 +406,8 @@ function mapCatalog({
       title: course.title,
       category: course.category ?? "Values Education",
       description: course.description ?? "",
+      intendedAudience: course.intended_audience ?? "",
+      learningOutcomes: course.learning_outcomes ?? [],
       level: isCourseLevel(course.level) ? course.level : "beginner",
       status: "available",
       thumbnail: toImageAsset(course.thumbnail, course.title),
@@ -421,7 +425,7 @@ async function getPublishedCourseByIdOrSlug(
 ): Promise<CourseRow | null> {
   const { data: byId, error: idError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
     .eq("id", idOrSlug)
     .eq("status", "published")
     .maybeSingle();
@@ -431,7 +435,7 @@ async function getPublishedCourseByIdOrSlug(
 
   const { data: bySlug, error: slugError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
     .eq("slug", idOrSlug)
     .eq("status", "published")
     .maybeSingle();
@@ -673,7 +677,7 @@ export async function getLearningCatalog(supabase: AppSupabaseClient | null): Pr
   try {
     const { data: courses, error: coursesError } = await supabase
       .from("courses")
-      .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
+      .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
 
@@ -715,7 +719,7 @@ export async function getLearningCourseSummaries(
   try {
     const { data: courses, error: coursesError } = await supabase
       .from("courses")
-      .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
+      .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
 
@@ -778,7 +782,7 @@ export async function getLearningLesson(
     if (!lessonRow) return null;
     const { data: courseRow, error: courseError } = await supabase
       .from("courses")
-      .select("id, slug, title, description, category, level, thumbnail, sort_order, estimated_minutes")
+      .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
       .eq("id", lessonRow.course_id)
       .eq("status", "published")
       .maybeSingle();

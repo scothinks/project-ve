@@ -243,6 +243,21 @@ export async function POST(request: Request) {
   const savedPages: SavedPageResult[] = [];
   const savedBlocks: SavedBlockResult[] = [];
   const pageIdMap = new Map<string, string>();
+  const existingPageIds = pages
+    .map((page) => sanitizePlainTextInput(String(page.id ?? ""), 120))
+    .filter((pageId) => pageId && !isDraftId(pageId));
+
+  for (const [index, pageId] of existingPageIds.entries()) {
+    const { error } = await supabase
+      .from("lesson_pages")
+      .update({ page_number: 100_000 + index })
+      .eq("lesson_id", lessonId)
+      .eq("id", pageId);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
 
   for (const page of [...pages].sort((a, b) => parseInteger(a.page_number, 0) - parseInteger(b.page_number, 0))) {
     const clientId = sanitizePlainTextInput(String(page.id ?? ""), 120);
@@ -276,6 +291,21 @@ export async function POST(request: Request) {
       pageId: savedPageId,
       status: sanitizePlainTextInput(String(result.status ?? "saved"), 40) || "saved",
     });
+  }
+
+  const existingBlockIds = blocks
+    .map((block) => sanitizePlainTextInput(String(block.id ?? ""), 160))
+    .filter((blockId) => blockId && !isDraftId(blockId));
+
+  for (const [index, blockId] of existingBlockIds.entries()) {
+    const { error } = await supabase
+      .from("lesson_content_blocks")
+      .update({ sort_order: 100_000 + index })
+      .eq("id", blockId);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   for (const block of [...blocks].sort((a, b) => parseInteger(a.sort_order, 0) - parseInteger(b.sort_order, 0))) {

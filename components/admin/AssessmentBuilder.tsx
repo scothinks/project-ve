@@ -445,10 +445,16 @@ function QuestionEditor({
 function SortableQuestionCard({
   children,
   issueCount,
+  isFirst,
+  isLast,
+  onMove,
   question,
 }: {
   children: React.ReactNode;
   issueCount: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onMove: (question: AdminQuizQuestionRow, direction: "up" | "down") => void;
   question: AdminQuizQuestionRow;
 }) {
   const {
@@ -492,6 +498,22 @@ function SortableQuestionCard({
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            className={buttonClasses()}
+            disabled={isFirst}
+            onClick={() => onMove(question, "up")}
+            type="button"
+          >
+            Move question up
+          </button>
+          <button
+            className={buttonClasses()}
+            disabled={isLast}
+            onClick={() => onMove(question, "down")}
+            type="button"
+          >
+            Move question down
+          </button>
           <AdminStatusBadge tone={issueCount > 0 ? "warning" : "good"}>
             {issueCount} issue{issueCount === 1 ? "" : "s"}
           </AdminStatusBadge>
@@ -565,6 +587,24 @@ export function AssessmentBuilder({
     nextQuestions.splice(overIndex, 0, movedQuestion);
     persistQuestionOrder(
       nextQuestions.map((question, index) => ({ ...question, question_order: index + 1 })),
+      previousQuestions,
+    );
+  }
+
+  function moveQuestion(question: AdminQuizQuestionRow, direction: "up" | "down") {
+    const currentIndex = orderedQuestions.findIndex((item) => item.id === question.id);
+    const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= orderedQuestions.length) {
+      return;
+    }
+
+    const previousQuestions = orderedQuestions;
+    const nextQuestions = [...orderedQuestions];
+    const [movedQuestion] = nextQuestions.splice(currentIndex, 1);
+    nextQuestions.splice(nextIndex, 0, movedQuestion);
+    persistQuestionOrder(
+      nextQuestions.map((item, index) => ({ ...item, question_order: index + 1 })),
       previousQuestions,
     );
   }
@@ -676,10 +716,13 @@ export function AssessmentBuilder({
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
             <SortableContext items={orderedQuestions.map((question) => question.id)} strategy={verticalListSortingStrategy}>
               <div className="mt-4 space-y-4">
-                {orderedQuestions.map((question) => (
+                {orderedQuestions.map((question, index) => (
                   <SortableQuestionCard
                     issueCount={getQuestionIssues(question).length}
+                    isFirst={index === 0}
+                    isLast={index === orderedQuestions.length - 1}
                     key={question.id}
+                    onMove={moveQuestion}
                     question={question}
                   >
                     <QuestionEditor

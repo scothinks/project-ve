@@ -1792,6 +1792,8 @@ export type Database = {
           description: string
           estimated_minutes: number
           id: string
+          intended_audience: string
+          learning_outcomes: string[]
           level: Database["public"]["Enums"]["course_level"]
           media_approved_at: string | null
           media_approved_by: string | null
@@ -1815,6 +1817,8 @@ export type Database = {
           description: string
           estimated_minutes?: number
           id: string
+          intended_audience?: string
+          learning_outcomes?: string[]
           level?: Database["public"]["Enums"]["course_level"]
           media_approved_at?: string | null
           media_approved_by?: string | null
@@ -1838,6 +1842,8 @@ export type Database = {
           description?: string
           estimated_minutes?: number
           id?: string
+          intended_audience?: string
+          learning_outcomes?: string[]
           level?: Database["public"]["Enums"]["course_level"]
           media_approved_at?: string | null
           media_approved_by?: string | null
@@ -5004,6 +5010,8 @@ export type Database = {
           p_course_id: string
           p_description: string
           p_estimated_minutes: number
+          p_intended_audience: string
+          p_learning_outcomes: string[]
           p_level: Database["public"]["Enums"]["course_level"]
           p_sort_order: number
           p_status: Database["public"]["Enums"]["content_status"]

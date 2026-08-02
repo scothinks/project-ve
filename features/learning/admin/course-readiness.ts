@@ -187,12 +187,14 @@ export function buildCourseReadiness({
   const courseOverviewComplete = Boolean(
     course.title.trim()
     && course.description.trim()
+    && (course.intended_audience ?? "").trim()
+    && (course.learning_outcomes?.length ?? 0) > 0
     && course.category.trim(),
   );
   checks.push(check({
     condition: courseOverviewComplete,
-    detail: "Title, category and learner-facing description are present.",
-    failedDetail: "Add a title, category and learner-facing description.",
+    detail: "Title, category, learner-facing description, intended audience and learning outcomes are present.",
+    failedDetail: "Add a title, category, learner-facing description, intended audience and learning outcomes.",
     href: `${courseHref}?tab=overview`,
     id: "course-overview",
     label: "Course overview complete",

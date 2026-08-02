@@ -19,6 +19,20 @@ const blankCourseTitle = `E2E CMS Blank Course ${runId}`;
 const updatedBlankCourseTitle = `E2E CMS Updated Course ${runId}`;
 const duplicatedCourseTitle = `Copy of ${courseTitle}`;
 const uploadedMediaAlt = `E2E uploaded CMS image ${runId}`;
+const uploadedCoverAlt = `E2E uploaded CMS cover ${runId}`;
+const courseAudience = `Community learners completing a full authoring path ${runId}`;
+const courseOutcomeOne = `Explain the responsible choice pattern ${runId}`;
+const courseOutcomeTwo = `Apply the pattern in a local scenario ${runId}`;
+const authoredLessonTitle = `E2E Authored Lesson ${runId}`;
+const authoredLessonSummary = `A lesson authored through the CMS browser journey ${runId}`;
+const authoredPageOneTitle = `E2E Authored Page One ${runId}`;
+const authoredPageTwoTitle = `E2E Authored Page Two ${runId}`;
+const authoredTextHeading = `Browser-authored Tiptap heading ${runId}`;
+const authoredTextBody = `This rich text survived the CMS builder journey ${runId}`;
+const authoredCalloutTitle = `Browser callout ${runId}`;
+const authoredCalloutBody = `This callout was inserted after the text block ${runId}`;
+const authoredQuestionOne = `What should an editor verify before publishing ${runId}?`;
+const authoredQuestionTwo = `A reviewed course can be published after blockers clear ${runId}.`;
 const lessonTitle = `E2E Supported Lesson ${runId}`;
 const questionPrompt = `Which action keeps the E2E remediation flow honest ${runId}?`;
 const rewardTitle = `E2E Reward ${runId}`;
@@ -347,6 +361,34 @@ async function signIn(page: Page, email: string) {
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
+function getCourseIdFromAdminUrl(page: Page) {
+  return page.url().split("/admin/courses/")[1]?.split("?")[0] ?? "";
+}
+
+function blockLocator(page: Page, label: string) {
+  return page.locator("form").filter({ hasText: label }).first();
+}
+
+function richTextBoldButton(block: ReturnType<typeof blockLocator>) {
+  return block.locator("button").filter({ hasText: /^B$/ }).first();
+}
+
+async function saveLessonBuilder(page: Page) {
+  const saveResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/admin/learning/builder") &&
+      response.request().method() === "POST",
+  );
+  const inspector = page.locator("aside").filter({ hasText: "Authoring state" }).first();
+  await inspector.getByRole("button", { name: "Save now" }).first().click();
+  const saveResponse = await saveResponsePromise;
+  expect(
+    saveResponse.status(),
+    await saveResponse.text(),
+  ).toBe(200);
+  await expect(page.getByText("Lesson content saved.").first()).toBeVisible();
+}
+
 test.describe.serial("remediation browser flows", () => {
   test.beforeAll(async () => {
     supabase = createClient(
@@ -471,7 +513,7 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByRole("button", { name: "Confirm" }).click();
 
     await expect(page.getByText("Reward added to your history.")).toBeVisible();
-    await page.getByRole("button", { name: "History" }).click();
+    await page.getByRole("button", { name: "View History" }).click();
     await expect(page.getByRole("heading", { name: rewardTitle }).first()).toBeVisible();
   });
 
@@ -492,6 +534,7 @@ test.describe.serial("remediation browser flows", () => {
   });
 
   test("admin CMS workspace covers creation paths, persistence, tabs, templates, and deterministic AI entry", async ({ page }) => {
+    test.setTimeout(180_000);
     await signIn(page, adminEmail);
 
     await page.goto("/admin/courses");
@@ -513,15 +556,21 @@ test.describe.serial("remediation browser flows", () => {
     await courseIdentitySection.locator("summary").click();
     await courseIdentitySection.getByLabel("Title").fill(updatedBlankCourseTitle);
     await courseIdentitySection.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
+    await courseIdentitySection.getByLabel("Intended audience").fill(courseAudience);
+    await courseIdentitySection.getByLabel("Learning outcomes").fill(`${courseOutcomeOne}\n${courseOutcomeTwo}`);
     await overviewPanel.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
+    const authoredCourseId = getCourseIdFromAdminUrl(page);
+    expect(authoredCourseId).toBeTruthy();
     await page.reload();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
     const reloadedOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
     const reloadedCourseIdentitySection = reloadedOverviewPanel.locator("details").filter({ hasText: "Course identity" });
     await reloadedCourseIdentitySection.locator("summary").click();
     await expect(reloadedCourseIdentitySection.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
+    await expect(reloadedCourseIdentitySection.locator("textarea[name='intendedAudience']")).toHaveValue(courseAudience);
+    await expect(reloadedCourseIdentitySection.locator("textarea[name='learningOutcomes']")).toHaveValue(`${courseOutcomeOne}\n${courseOutcomeTwo}`);
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
     await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
@@ -529,6 +578,238 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByRole("heading", { name: "Usage and quality" })).toBeVisible();
     await page.getByRole("tab", { name: "Review & Publish" }).click();
     await expect(page.getByRole("heading", { name: "Course readiness" })).toBeVisible();
+    await expect(page.getByText("Add at least one active lesson.")).toBeVisible();
+
+    await page.getByRole("tab", { name: "Curriculum" }).click();
+    await page.getByRole("button", { name: "Create lesson" }).click();
+    await expect(page).toHaveURL(/\/admin\/courses\/lessons\/[^/?]+(\?.*)?$/);
+    await expect(page.getByRole("heading", { level: 1, name: /Untitled lesson/ })).toBeVisible();
+    const authoredLessonId = page.url().split("/admin/courses/lessons/")[1]?.split("?")[0] ?? "";
+    expect(authoredLessonId).toBeTruthy();
+
+    const lessonSetup = page.locator("details").filter({ hasText: "Lesson setup" }).first();
+    await lessonSetup.locator("summary").click();
+    await lessonSetup.getByLabel("Title").fill(authoredLessonTitle);
+    await lessonSetup.getByLabel("Learner summary").fill(authoredLessonSummary);
+    await lessonSetup.getByLabel("Status").selectOption("published");
+    await lessonSetup.getByLabel("Minutes").fill("4");
+    await lessonSetup.getByRole("button", { name: "Save lesson" }).click();
+    await expect(page.getByText("Lesson saved.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: authoredLessonTitle })).toBeVisible();
+
+    await page.getByRole("button", { name: "+ Add page" }).click();
+    const pageSettings = page.locator("aside").filter({ hasText: "Selected page" }).first();
+    await pageSettings.getByLabel("Page title").fill(authoredPageOneTitle);
+    await pageSettings.getByLabel("Subtitle").fill("First browser-authored page");
+    await pageSettings.getByLabel("Page type").selectOption("primer");
+    await page.getByRole("button", { name: "+ Text" }).first().click();
+    const textBlock = blockLocator(page, "Text block");
+    await textBlock.getByLabel("Heading").fill(authoredTextHeading);
+    await richTextBoldButton(textBlock).click();
+    await textBlock.locator(".ProseMirror").click();
+    await page.keyboard.insertText(authoredTextBody);
+    await richTextBoldButton(textBlock).click();
+    await page.getByRole("button", { name: "+ Callout" }).first().click();
+    const calloutBlock = blockLocator(page, "Callout block");
+    await calloutBlock.getByLabel("Callout label").fill("Review");
+    await calloutBlock.getByLabel("Title").fill(authoredCalloutTitle);
+    await calloutBlock.getByLabel("Body").fill(authoredCalloutBody);
+    await page.getByRole("button", { name: "Duplicate" }).last().click();
+    await saveLessonBuilder(page);
+    await page.getByRole("button", { name: "Move block later" }).first().click();
+    await saveLessonBuilder(page);
+
+    await page.getByRole("button", { name: "+ Add page" }).click();
+    await pageSettings.getByLabel("Page title").fill(authoredPageTwoTitle);
+    await pageSettings.getByLabel("Subtitle").fill("Second browser-authored page");
+    await page.getByRole("button", { name: "+ Text" }).first().click();
+    const secondPageTextBlock = blockLocator(page, "Text block");
+    await secondPageTextBlock.getByLabel("Heading").fill(`Second page heading ${runId}`);
+    await secondPageTextBlock.locator(".ProseMirror").click();
+    await page.keyboard.insertText(`Second page body ${runId}`);
+    await pageSettings.getByRole("button", { name: "Duplicate" }).first().click();
+    await page.locator("button[aria-label='Move page earlier']:not([disabled])").first().click();
+    await saveLessonBuilder(page);
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1, name: authoredLessonTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { name: authoredPageOneTitle }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: authoredPageTwoTitle }).first()).toBeVisible();
+    await expect(page.getByText(`Copy of ${authoredPageTwoTitle}`).first()).toBeVisible();
+    await page.getByRole("button", { name: new RegExp(`${authoredPageOneTitle}.*primer`, "i") }).click();
+    const reloadedTextBlock = page.locator("form").filter({ hasText: authoredTextHeading }).first();
+    await reloadedTextBlock.scrollIntoViewIfNeeded();
+    await expect(reloadedTextBlock.locator(".ProseMirror")).toContainText(authoredTextBody);
+
+    await page.getByRole("heading", { name: "New assessment item" }).scrollIntoViewIfNeeded();
+    const newQuestionCard = page.locator("div").filter({ hasText: "New assessment item" }).last();
+    await newQuestionCard.getByLabel("Prompt").fill(authoredQuestionOne);
+    await expect(newQuestionCard.getByText("At least two answer options are required.")).toBeVisible();
+    await newQuestionCard.getByRole("button", { name: "Add option" }).click();
+    await newQuestionCard.getByRole("button", { name: "Remove" }).last().click();
+    await newQuestionCard.getByLabel("Option 1").fill("Check all blockers, content, and learner preview.");
+    await newQuestionCard.getByLabel("Option 2").fill("Publish first and inspect later.");
+    await newQuestionCard.getByLabel("Correct").first().check();
+    await newQuestionCard.getByLabel("Explanation").fill("Publication follows readiness review.");
+    await newQuestionCard.getByRole("button", { name: "Create question" }).click();
+    await expect(page.getByText("Question saved.")).toBeVisible();
+    await page.getByRole("heading", { name: "New assessment item" }).scrollIntoViewIfNeeded();
+    const secondQuestionCard = page.locator("div").filter({ hasText: "New assessment item" }).last();
+    await secondQuestionCard.getByLabel("Prompt").fill(authoredQuestionTwo);
+    await secondQuestionCard.getByLabel("Type").selectOption("true_false");
+    await secondQuestionCard.getByLabel("Explanation").fill("The lifecycle blocks publishing until approval.");
+    await secondQuestionCard.getByRole("button", { name: "Create question" }).click();
+    await expect(page.getByText("Question saved.")).toBeVisible();
+    const savedQuestionCard = page.locator("article").filter({ hasText: authoredQuestionOne }).first();
+    await savedQuestionCard.scrollIntoViewIfNeeded();
+    await savedQuestionCard.getByRole("button", { name: "Duplicate" }).click();
+    await expect(page.getByText("Question duplicated.")).toBeVisible();
+    const reorderedQuestionCard = page.locator("article").filter({ hasText: authoredQuestionOne }).first();
+    await reorderedQuestionCard.scrollIntoViewIfNeeded();
+    await reorderedQuestionCard.getByRole("button", { name: "Move question down" }).click();
+    await expect(page.getByText("Question order saved.")).toBeVisible();
+    await page.getByLabel("Editorial status").selectOption("published");
+    await page.getByRole("button", { name: "Save quiz" }).click();
+    await expect(page.getByText("Quiz settings saved.")).toBeVisible();
+
+    await page.goto(`/admin/courses/${authoredCourseId}?tab=curriculum`);
+    await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
+    const authoredLessonRow = page.locator("article").filter({ hasText: authoredLessonTitle }).first();
+    await authoredLessonRow.getByRole("button", { name: "More" }).click();
+    await page.getByRole("menuitem", { name: "Duplicate lesson" }).click();
+    await expect(page.getByText("Lesson duplicated as a draft.")).toBeVisible();
+    const duplicatedLessonId = page.url().split("/admin/courses/lessons/")[1]?.split("?")[0] ?? "";
+    expect(duplicatedLessonId).toBeTruthy();
+    const duplicatedLessonSetup = page.locator("details").filter({ hasText: "Lesson setup" }).first();
+    await duplicatedLessonSetup.locator("summary").click();
+    await duplicatedLessonSetup.getByLabel("Status").selectOption("published");
+    await duplicatedLessonSetup.getByRole("button", { name: "Save lesson" }).click();
+    await expect(page.getByText("Lesson saved.")).toBeVisible();
+    await page.getByLabel("Editorial status").selectOption("published");
+    await page.getByRole("button", { name: "Save quiz" }).click();
+    await expect(page.getByText("Quiz settings saved.")).toBeVisible();
+    await page.goto(`/admin/courses/${authoredCourseId}?tab=curriculum`);
+    await page.locator("article").filter({ hasText: `Copy of ${authoredLessonTitle}` }).getByRole("button", { name: "Move up" }).click();
+    await expect(page.getByText("Lesson order saved.")).toBeVisible();
+
+    await page.getByRole("tab", { name: "Overview" }).click();
+    const authoredOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
+    const thumbnailSection = authoredOverviewPanel.locator("details").filter({ hasText: "Course thumbnail" });
+    await thumbnailSection.locator("summary").click();
+    await thumbnailSection.getByRole("tab", { name: "Upload" }).click();
+    await thumbnailSection.locator("input[type='file']").setInputFiles({
+      buffer: readFileSync(cmsUploadFixturePath),
+      mimeType: "image/png",
+      name: "authored-thumbnail.png",
+    });
+    await thumbnailSection.getByLabel("Alt text").fill(uploadedMediaAlt);
+    await thumbnailSection.getByRole("button", { name: "Upload media" }).click();
+    await expect(thumbnailSection.locator(`img[alt="${uploadedMediaAlt}"]`).first()).toBeVisible();
+    await authoredOverviewPanel.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByText("Course saved.")).toBeVisible();
+
+    const coverUploadResponse = await page.request.post("/api/admin/learning/media/upload", {
+      multipart: {
+        altText: uploadedCoverAlt,
+        assetType: "cover",
+        courseId: authoredCourseId,
+        file: {
+          buffer: readFileSync(cmsUploadFixturePath),
+          mimeType: "image/png",
+          name: "authored-cover.png",
+        },
+        placement: "course_cover",
+      },
+    });
+    expect(coverUploadResponse.status()).toBe(200);
+
+    await page.goto(`/admin/courses/${authoredCourseId}?tab=review-publish`);
+    await expect(page.getByText("Course readiness")).toBeVisible();
+    await expect(page.getByText("1 blocker")).toBeVisible();
+    await expect(page.getByText("Editorial approval complete")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Publish" })).toBeDisabled();
+    await expect(page.getByText("Draft").first()).toBeVisible();
+    await page.getByRole("button", { name: "Send for review" }).click();
+    await expect(page.getByText("Course sent for review.")).toBeVisible();
+    await expect(page.getByText("In review").first()).toBeVisible();
+    await page.getByRole("button", { name: "Approve" }).click();
+    await expect(page.getByText("Course approved for publishing.")).toBeVisible();
+    await expect(page.getByText("Approved").first()).toBeVisible();
+    await expect(page.getByText("0 blockers")).toBeVisible();
+    await page.getByRole("button", { name: "Publish" }).click();
+    await expect(page.getByText("Course published.")).toBeVisible();
+    await expect(page.getByText("Published").first()).toBeVisible();
+
+    const authoredCourseRow = await assertNoError(
+      await supabase
+        .from("courses")
+        .select("id, intended_audience, learning_outcomes, status, ai_text_status, ai_publish_status")
+        .eq("id", authoredCourseId)
+        .maybeSingle(),
+      "load authored published course",
+    ) as {
+      ai_publish_status: string;
+      ai_text_status: string;
+      intended_audience: string;
+      learning_outcomes: string[];
+      status: string;
+    } | null;
+    expect(authoredCourseRow?.intended_audience).toBe(courseAudience);
+    expect(authoredCourseRow?.learning_outcomes).toEqual([courseOutcomeOne, courseOutcomeTwo]);
+    expect(authoredCourseRow?.status).toBe("published");
+    expect(authoredCourseRow?.ai_text_status).toBe("approved");
+    expect(authoredCourseRow?.ai_publish_status).toBe("published");
+
+    const authoredPages = await assertNoError(
+      await supabase
+        .from("lesson_pages")
+        .select("id, title, page_number")
+        .eq("lesson_id", authoredLessonId)
+        .order("page_number", { ascending: true }),
+      "load authored pages",
+    );
+    expect(authoredPages.length).toBeGreaterThanOrEqual(3);
+    const authoredBlocks = await assertNoError(
+      await supabase
+        .from("lesson_content_blocks")
+        .select("id, block_type, sort_order, payload")
+        .in("page_id", authoredPages.map((item) => item.id))
+        .order("sort_order", { ascending: true }),
+      "load authored blocks",
+    );
+    expect(authoredBlocks.length).toBeGreaterThanOrEqual(4);
+    expect(JSON.stringify(authoredBlocks)).toContain("<strong>");
+    expect(JSON.stringify(authoredBlocks)).toContain(authoredTextBody);
+    const authoredQuestions = await assertNoError(
+      await supabase
+        .from("quiz_questions")
+        .select("id, prompt, question_order, question_type")
+        .eq("quiz_id", `quiz-${authoredLessonId.replace(/^lesson-/, "")}`)
+        .order("question_order", { ascending: true }),
+      "load authored questions",
+    );
+    expect(authoredQuestions.length).toBeGreaterThanOrEqual(3);
+
+    await page.context().clearCookies();
+    await signIn(page, learnerEmail);
+    await page.goto(`/courses/${authoredCourseId}`);
+    await expect(page.getByRole("heading", { name: updatedBlankCourseTitle }).first()).toBeVisible();
+    await expect(page.locator(`img[alt="${uploadedMediaAlt}"]`).first()).toBeAttached();
+    for (const pageNumber of [1, 2, 3]) {
+      const progressResponse = page.waitForResponse(
+        (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
+      );
+      await page.goto(`/lessons/${authoredLessonId}?page=${pageNumber}`);
+      await progressResponse;
+      if (pageNumber === 2) {
+        await expect(page.getByText(authoredTextBody)).toBeVisible();
+        await expect(page.getByText("<p>")).not.toBeVisible();
+      }
+    }
+    await page.goto(`/quiz/${authoredLessonId}`);
+    await expect(page.getByText(authoredQuestionTwo)).toBeVisible();
+
+    await page.context().clearCookies();
+    await signIn(page, adminEmail);
 
     await page.goto("/admin/courses");
     await page.locator("select[name='courseId']").selectOption({ label: courseTitle });
