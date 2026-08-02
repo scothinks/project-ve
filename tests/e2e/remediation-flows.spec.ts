@@ -485,15 +485,15 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByLabel("Description").fill("A browser-created CMS draft for regression coverage.");
     await page.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: blankCourseTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: blankCourseTitle })).toBeVisible();
 
     await page.getByLabel("Title").fill(updatedBlankCourseTitle);
     await page.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
     await page.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: updatedBlankCourseTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
     await page.reload();
-    await expect(page.getByRole("heading", { name: updatedBlankCourseTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
     await expect(page.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
@@ -507,7 +507,7 @@ test.describe.serial("remediation browser flows", () => {
     await page.locator("select[name='courseId']").selectOption({ label: courseTitle });
     await page.getByRole("button", { name: "Use template" }).click();
     await expect(page.getByText("Course duplicated as a draft.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: duplicatedCourseTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: duplicatedCourseTitle })).toBeVisible();
 
     await page.goto("/admin/courses/ai/planner");
     await expect(page.getByRole("heading", { name: "Create with AI" })).toBeVisible();
