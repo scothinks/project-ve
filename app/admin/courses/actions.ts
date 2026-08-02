@@ -380,54 +380,16 @@ export async function setCourseStatus(formData: FormData) {
 
 export async function duplicateCourseShell(formData: FormData) {
   const courseId = String(formData.get("courseId") ?? "").trim();
+  const requestedTitle = String(formData.get("templateTitle") ?? "").trim();
 
   if (!courseId) {
     throw new ValidationError("Course is required.");
   }
 
   const { supabase } = await requireAdmin();
-  const { data: sourceCourse, error: sourceError } = await supabase
-    .from("courses")
-    .select("id, title, description, category, level, thumbnail")
-    .eq("id", courseId)
-    .maybeSingle();
-
-  if (sourceError) throw sourceError;
-
-  const source = sourceCourse as {
-    id: string;
-    title: string;
-    description: string | null;
-    category: string | null;
-    level: "beginner" | "intermediate" | "advanced";
-    thumbnail: StoredImagePayload;
-  } | null;
-
-  if (!source) {
-    throw new Error("Course not found.");
-  }
-
-  const { data: courses, error: coursesError } = await supabase
-    .from("courses")
-    .select("sort_order");
-
-  if (coursesError) throw coursesError;
-
-  const nextSortOrder = ((courses ?? []) as Array<{ sort_order: number | null }>).reduce(
-    (highest, course) => Math.max(highest, course.sort_order ?? 0),
-    0,
-  ) + 1;
-
-  const { data, error } = await supabase.rpc("admin_upsert_course", {
-    p_course_id: "",
-    p_title: `Copy of ${source.title}`,
-    p_description: source.description ?? "",
-    p_category: source.category ?? "",
-    p_level: source.level,
-    p_status: "draft",
-    p_thumbnail: source.thumbnail ?? {},
-    p_sort_order: nextSortOrder,
-    p_estimated_minutes: 0,
+  const { data, error } = await supabase.rpc("admin_duplicate_course_template", {
+    p_source_course_id: courseId,
+    p_title: requestedTitle || null,
   });
 
   if (error) throw error;

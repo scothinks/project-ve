@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -16,6 +18,7 @@ const courseTitle = `E2E Remediation Course ${runId}`;
 const blankCourseTitle = `E2E CMS Blank Course ${runId}`;
 const updatedBlankCourseTitle = `E2E CMS Updated Course ${runId}`;
 const duplicatedCourseTitle = `Copy of ${courseTitle}`;
+const uploadedMediaAlt = `E2E uploaded CMS image ${runId}`;
 const lessonTitle = `E2E Supported Lesson ${runId}`;
 const questionPrompt = `Which action keeps the E2E remediation flow honest ${runId}?`;
 const rewardTitle = `E2E Reward ${runId}`;
@@ -23,6 +26,7 @@ const learnerEmail = `e2e-learner-${runId}@example.test`;
 const adminEmail = `e2e-admin-${runId}@example.test`;
 const signupEmail = `e2e-signup-${runId}@example.test`;
 const signupName = `E2E Signup ${runId}`;
+const cmsUploadFixturePath = path.join(process.cwd(), "tests/fixtures/cms-upload-image.png");
 
 let supabase: SupabaseClient;
 let learner: User;
@@ -98,6 +102,23 @@ async function findAuthUserByEmail(email: string) {
 
 async function cleanupFixture() {
   signedUpLearner = signedUpLearner ?? (await findAuthUserByEmail(signupEmail));
+  const removableCourseResult = await supabase
+    .from("courses")
+    .select("id")
+    .in("title", [blankCourseTitle, updatedBlankCourseTitle, duplicatedCourseTitle]);
+  const removableCourseIds = (removableCourseResult.data ?? []).map((course) => course.id);
+  if (removableCourseIds.length > 0) {
+    const mediaResult = await supabase
+      .from("learning_media_assets")
+      .select("storage_path")
+      .in("course_id", removableCourseIds);
+    const storagePaths = (mediaResult.data ?? [])
+      .map((asset) => asset.storage_path)
+      .filter((path): path is string => Boolean(path));
+    if (storagePaths.length > 0) {
+      await supabase.storage.from(process.env.LEARNING_MEDIA_BUCKET || "learning-media").remove(storagePaths);
+    }
+  }
 
   await supabase.from("reward_redemptions").delete().eq("reward_id", rewardId);
   await supabase
@@ -514,6 +535,155 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByRole("button", { name: "Use template" }).click();
     await expect(page.getByText("Course duplicated as a draft.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: duplicatedCourseTitle })).toBeVisible();
+    const duplicatedCourseId = page.url().split("/admin/courses/")[1]?.split("?")[0] ?? "";
+    expect(duplicatedCourseId).toBeTruthy();
+
+    await page.getByRole("tab", { name: "Curriculum" }).click();
+    await expect(page.getByRole("link", { name: lessonTitle })).toBeVisible();
+    await expect(page.getByText("1 questions")).toBeVisible();
+
+    const duplicatedLessons = await assertNoError(
+      await supabase
+        .from("lessons")
+        .select("id, title, status, sort_order")
+        .eq("course_id", duplicatedCourseId)
+        .order("sort_order", { ascending: true }),
+      "load duplicated lessons",
+    );
+    expect(duplicatedLessons).toHaveLength(1);
+    expect(duplicatedLessons[0].id).not.toBe(lessonId);
+    expect(duplicatedLessons[0].status).toBe("draft");
+
+    const duplicatedPages = await assertNoError(
+      await supabase
+        .from("lesson_pages")
+        .select("id, title, page_number")
+        .eq("lesson_id", duplicatedLessons[0].id)
+        .order("page_number", { ascending: true }),
+      "load duplicated pages",
+    );
+    expect(duplicatedPages).toHaveLength(1);
+    expect(duplicatedPages[0].id).not.toBe(pageId);
+
+    const duplicatedBlocks = await assertNoError(
+      await supabase
+        .from("lesson_content_blocks")
+        .select("id, block_type, sort_order, payload")
+        .eq("page_id", duplicatedPages[0].id)
+        .order("sort_order", { ascending: true }),
+      "load duplicated content blocks",
+    );
+    expect(duplicatedBlocks).toHaveLength(1);
+    expect(duplicatedBlocks[0].payload).toMatchObject({
+      body: "This page lets the E2E suite exercise normal lesson progress.",
+    });
+
+    const duplicatedQuiz = await assertNoError(
+      await supabase
+        .from("quizzes")
+        .select("id, status")
+        .eq("lesson_id", duplicatedLessons[0].id)
+        .maybeSingle(),
+      "load duplicated quiz",
+    ) as { id: string; status: string } | null;
+    expect(duplicatedQuiz?.id).toBeTruthy();
+    expect(duplicatedQuiz?.id).not.toBe(quizId);
+    expect(duplicatedQuiz?.status).toBe("draft");
+
+    const duplicatedQuestions = await assertNoError(
+      await supabase
+        .from("quiz_questions")
+        .select("id, prompt, question_order")
+        .eq("quiz_id", duplicatedQuiz?.id ?? "")
+        .order("question_order", { ascending: true }),
+      "load duplicated quiz questions",
+    );
+    expect(duplicatedQuestions).toHaveLength(1);
+    expect(duplicatedQuestions[0].id).not.toBe(questionId);
+    expect(duplicatedQuestions[0].prompt).toBe(questionPrompt);
+
+    const duplicatedOptions = await assertNoError(
+      await supabase
+        .from("quiz_options")
+        .select("id, question_id, label, option_order, is_correct")
+        .eq("question_id", duplicatedQuestions[0].id)
+        .order("option_order", { ascending: true }),
+      "load duplicated quiz options",
+    );
+    expect(duplicatedOptions.map((option) => option.label)).toEqual([
+      "Use the supported app RPC path",
+      "Bypass the app path with a raw write",
+    ]);
+
+    await assertNoError(
+      await supabase
+        .from("lesson_content_blocks")
+        .update({ payload: { body: `Copied content changed ${runId}` } })
+        .eq("id", duplicatedBlocks[0].id),
+      "edit duplicated content block",
+    );
+    const sourceBlock = await assertNoError(
+      await supabase
+        .from("lesson_content_blocks")
+        .select("payload")
+        .eq("page_id", pageId)
+        .eq("block_type", "text")
+        .maybeSingle(),
+      "load source content block",
+    ) as { payload: Record<string, unknown> } | null;
+    expect(sourceBlock?.payload).toMatchObject({
+      body: "This page lets the E2E suite exercise normal lesson progress.",
+    });
+
+    await page.getByRole("tab", { name: "Overview" }).click();
+    const duplicatedOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
+    const duplicatedThumbnailSection = duplicatedOverviewPanel.locator("details").filter({ hasText: "Course thumbnail" });
+    await duplicatedThumbnailSection.locator("summary").click();
+    await duplicatedThumbnailSection.getByRole("tab", { name: "Upload" }).click();
+    await duplicatedThumbnailSection.locator("input[type='file']").setInputFiles({
+      buffer: readFileSync(cmsUploadFixturePath),
+      mimeType: "image/png",
+      name: "cms-upload-fixture.png",
+    });
+    await duplicatedThumbnailSection.getByLabel("Alt text").fill(uploadedMediaAlt);
+    await duplicatedThumbnailSection.getByRole("button", { name: "Upload media" }).click();
+    await expect(duplicatedThumbnailSection.locator(`img[alt="${uploadedMediaAlt}"]`).first()).toBeVisible();
+    await duplicatedOverviewPanel.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByText("Course saved.")).toBeVisible();
+
+    const uploadedAsset = await assertNoError(
+      await supabase
+        .from("learning_media_assets")
+        .select("id, course_id, source, storage_path, alt_text, review_status, generation_status")
+        .eq("course_id", duplicatedCourseId)
+        .eq("alt_text", uploadedMediaAlt)
+        .maybeSingle(),
+      "load uploaded media asset",
+    ) as {
+      generation_status: string;
+      review_status: string;
+      source: string;
+      storage_path: string | null;
+    } | null;
+    expect(uploadedAsset?.source).toBe("uploaded");
+    expect(uploadedAsset?.review_status).toBe("approved");
+    expect(uploadedAsset?.generation_status).toBe("completed");
+    expect(uploadedAsset?.storage_path).toMatch(new RegExp(`^cms/${duplicatedCourseId}/\\d{4}/\\d{2}/[a-zA-Z0-9_-]+\\.png$`));
+
+    const invalidUploadResponse = await page.request.post("/api/admin/learning/media/upload", {
+      multipart: {
+        altText: "Invalid media",
+        assetType: "image",
+        courseId: duplicatedCourseId,
+        file: {
+          buffer: Buffer.from("not an image"),
+          mimeType: "text/plain",
+          name: "invalid.txt",
+        },
+        placement: "course_thumbnail",
+      },
+    });
+    expect(invalidUploadResponse.status()).toBe(400);
 
     await page.goto("/admin/courses/ai/planner");
     await expect(page.getByRole("heading", { name: "Create with AI" })).toBeVisible();
@@ -521,5 +691,22 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("2. Intended audience")).toBeVisible();
     await expect(page.getByText("3. Learning outcomes and constraints")).toBeVisible();
     await expect(page.getByRole("button", { name: "Create Proposals" })).toBeVisible();
+
+    await page.context().clearCookies();
+    await signIn(page, learnerEmail);
+    const learnerUploadResponse = await page.request.post("/api/admin/learning/media/upload", {
+      multipart: {
+        altText: "Learner upload",
+        assetType: "image",
+        courseId: duplicatedCourseId,
+        file: {
+          buffer: readFileSync(cmsUploadFixturePath),
+          mimeType: "image/png",
+          name: "learner-upload.png",
+        },
+        placement: "course_thumbnail",
+      },
+    });
+    expect([401, 403]).toContain(learnerUploadResponse.status());
   });
 });

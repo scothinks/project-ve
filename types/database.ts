@@ -4682,6 +4682,10 @@ export type Database = {
         Args: { p_item_id: string }
         Returns: Json
       }
+      admin_duplicate_course_template: {
+        Args: { p_source_course_id: string; p_title?: string }
+        Returns: Json
+      }
       admin_grant_user_xp: {
         Args: { p_amount: number; p_reason?: string; p_target_user_id: string }
         Returns: string

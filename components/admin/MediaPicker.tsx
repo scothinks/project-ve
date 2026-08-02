@@ -25,6 +25,13 @@ type MediaPickerFieldNames = {
   url?: string;
 };
 
+type MediaPickerUploadContext = {
+  assetType: string;
+  courseId?: string | null;
+  lessonId?: string | null;
+  placement: string;
+};
+
 type MediaPickerProps = {
   assetTypeFilter?: string[];
   canGenerate?: boolean;
@@ -57,6 +64,7 @@ type MediaPickerProps = {
   renderFormFields?: boolean;
   showCaption?: boolean;
   useLibraryAction?: MediaPickerAction;
+  uploadContext?: MediaPickerUploadContext;
 };
 
 function fieldClasses() {
@@ -139,6 +147,7 @@ export function MediaPicker({
   renderFormFields = true,
   showCaption = false,
   useLibraryAction,
+  uploadContext,
 }: MediaPickerProps) {
   const [activeTab, setActiveTab] = useState("library");
   const [url, setUrl] = useState(initialUrl);
@@ -149,15 +158,25 @@ export function MediaPicker({
   const [captionValue, setCaptionValue] = useState(caption);
   const [search, setSearch] = useState("");
   const [assetType, setAssetType] = useState("all");
+  const [uploadedAssets, setUploadedAssets] = useState<AdminLearningMediaAssetRow[]>([]);
+  const [uploadAltText, setUploadAltText] = useState(initialAltText);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [selectedLibraryAssetId, setSelectedLibraryAssetId] = useState("");
+  const combinedLibraryAssets = useMemo(
+    () => [...uploadedAssets, ...libraryAssets],
+    [libraryAssets, uploadedAssets],
+  );
   const libraryAssetTypes = useMemo(
-    () => Array.from(new Set(libraryAssets.map((asset) => asset.asset_type))).sort(),
-    [libraryAssets],
+    () => Array.from(new Set(combinedLibraryAssets.map((asset) => asset.asset_type))).sort(),
+    [combinedLibraryAssets],
   );
   const filteredLibraryAssets = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    return libraryAssets.filter((asset) => {
+    return combinedLibraryAssets.filter((asset) => {
       if (assetTypeFilter && !assetTypeFilter.includes(asset.asset_type)) return false;
       if (assetType !== "all" && asset.asset_type !== assetType) return false;
       if (!normalizedSearch) return true;
@@ -165,9 +184,9 @@ export function MediaPicker({
         || (asset.alt_text ?? "").toLowerCase().includes(normalizedSearch)
         || (asset.caption ?? "").toLowerCase().includes(normalizedSearch);
     });
-  }, [assetType, assetTypeFilter, libraryAssets, search]);
+  }, [assetType, assetTypeFilter, combinedLibraryAssets, search]);
   const selectedLibraryAsset =
-    libraryAssets.find((asset) => asset.id === selectedLibraryAssetId)
+    combinedLibraryAssets.find((asset) => asset.id === selectedLibraryAssetId)
     ?? filteredLibraryAssets[0]
     ?? null;
   const previewImage = getPreviewImage({
@@ -220,6 +239,67 @@ export function MediaPicker({
     onCaptionChange?.(nextValue.caption);
     onPickAsset?.(asset);
     onPresentationChange?.(nextValue);
+  }
+
+  async function uploadSelectedAsset() {
+    setUploadError("");
+    setUploadStatus("");
+
+    if (!uploadContext?.courseId && !uploadContext?.lessonId) {
+      setUploadError("Save this item before uploading media.");
+      return;
+    }
+
+    if (!uploadFile) {
+      setUploadError("Choose an image file to upload.");
+      return;
+    }
+
+    if (!uploadAltText.trim()) {
+      setUploadError("Alt text is required for uploaded CMS images.");
+      return;
+    }
+
+    const body = new FormData();
+    body.set("file", uploadFile);
+    body.set("altText", uploadAltText);
+    body.set("assetType", uploadContext.assetType);
+    body.set("placement", uploadContext.placement);
+    body.set("caption", captionValue);
+    body.set("fit", fit);
+    body.set("positionX", String(positionX));
+    body.set("positionY", String(positionY));
+    if (uploadContext.courseId) body.set("courseId", uploadContext.courseId);
+    if (uploadContext.lessonId) body.set("lessonId", uploadContext.lessonId);
+
+    setIsUploading(true);
+    setUploadStatus("Uploading...");
+
+    try {
+      const response = await fetch("/api/admin/learning/media/upload", {
+        body,
+        method: "POST",
+      });
+      const result = await response.json() as {
+        asset?: AdminLearningMediaAssetRow;
+        error?: string;
+      };
+
+      if (!response.ok || !result.asset) {
+        throw new Error(result.error || "Upload failed.");
+      }
+
+      setUploadedAssets((assets) => [result.asset as AdminLearningMediaAssetRow, ...assets]);
+      applyAsset(result.asset);
+      setUploadFile(null);
+      setUploadStatus("Uploaded and selected.");
+      setActiveTab("library");
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed.");
+      setUploadStatus("");
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   return (
@@ -470,11 +550,66 @@ export function MediaPicker({
         </Tabs.Content>
 
         <Tabs.Content className="mt-4" value="upload">
-          <div className="rounded-[14px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-            <p className="text-sm font-black">Upload endpoint not configured</p>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              This project currently supports media library selection, AI generation and external URLs. Direct upload needs a storage endpoint and signed upload policy before it can be enabled safely.
-            </p>
+          <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
+              <label>
+                <span className={labelClasses()}>Image file</span>
+                <input
+                  accept="image/png,image/jpeg,image/webp"
+                  className={fieldClasses()}
+                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
+                  onChange={(event) => {
+                    setUploadFile(event.target.files?.[0] ?? null);
+                    setUploadError("");
+                    setUploadStatus("");
+                  }}
+                  type="file"
+                />
+              </label>
+              <label>
+                <span className={labelClasses()}>Alt text</span>
+                <input
+                  className={fieldClasses()}
+                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
+                  onChange={(event) => setUploadAltText(event.target.value)}
+                  value={uploadAltText}
+                />
+              </label>
+            </div>
+            {showCaption ? (
+              <label className="mt-3 block">
+                <span className={labelClasses()}>Caption / attribution</span>
+                <input
+                  className={fieldClasses()}
+                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
+                  onChange={(event) => {
+                    setCaptionValue(event.target.value);
+                    onCaptionChange?.(event.target.value);
+                    emit({ caption: event.target.value });
+                  }}
+                  value={captionValue}
+                />
+              </label>
+            ) : null}
+            {!uploadContext?.courseId && !uploadContext?.lessonId ? (
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                Save this item before uploading media.
+              </p>
+            ) : null}
+            {uploadError ? (
+              <p className="mt-3 text-xs font-black text-[var(--ve-danger)]">{uploadError}</p>
+            ) : null}
+            {uploadStatus ? (
+              <p className="mt-3 text-xs font-black text-[var(--ve-green)]">{uploadStatus}</p>
+            ) : null}
+            <button
+              className="mt-4 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isUploading || !uploadFile || (!uploadContext?.courseId && !uploadContext?.lessonId)}
+              onClick={uploadSelectedAsset}
+              type="button"
+            >
+              {isUploading ? "Uploading..." : "Upload media"}
+            </button>
           </div>
         </Tabs.Content>
       </Tabs.Root>
