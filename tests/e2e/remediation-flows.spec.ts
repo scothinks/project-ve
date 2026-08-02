@@ -487,14 +487,20 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("Course saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: blankCourseTitle })).toBeVisible();
 
-    await page.getByLabel("Title").fill(updatedBlankCourseTitle);
-    await page.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
-    await page.getByRole("button", { name: "Save course" }).click();
+    const overviewPanel = page.getByRole("tabpanel", { name: "Overview" });
+    const courseIdentitySection = overviewPanel.locator("details").filter({ hasText: "Course identity" });
+    await courseIdentitySection.locator("summary").click();
+    await courseIdentitySection.getByLabel("Title").fill(updatedBlankCourseTitle);
+    await courseIdentitySection.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
+    await overviewPanel.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
     await page.reload();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
-    await expect(page.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
+    const reloadedOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
+    const reloadedCourseIdentitySection = reloadedOverviewPanel.locator("details").filter({ hasText: "Course identity" });
+    await reloadedCourseIdentitySection.locator("summary").click();
+    await expect(reloadedCourseIdentitySection.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
     await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
