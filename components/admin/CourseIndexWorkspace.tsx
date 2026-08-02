@@ -454,6 +454,14 @@ export function CourseIndexWorkspace({
                 ))}
               </select>
             </label>
+            <label className="block">
+              <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">New title</span>
+              <input
+                className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-bold"
+                name="templateTitle"
+                placeholder="Copy of source title"
+              />
+            </label>
             <PendingSubmitButton
               className={adminButtonClasses("secondary", "px-3 text-xs")}
               label="Use template"

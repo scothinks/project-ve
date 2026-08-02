@@ -273,6 +273,11 @@ export function CourseForm({
               previewMinutes={estimatedMinutes}
               previewTitle={course?.title}
               previewVariant="course-thumbnail"
+              uploadContext={course?.id ? {
+                assetType: "thumbnail",
+                courseId: course.id,
+                placement: "course_thumbnail",
+              } : undefined}
             />
           </FormSection>
         </div>
@@ -347,6 +352,12 @@ export function LessonForm({
           initialUrl={getImageValue(lesson?.cover_image, "src")}
           libraryAssets={mediaLibraryAssets}
           placementLabel="Lesson cover"
+          uploadContext={lesson?.id ? {
+            assetType: "cover",
+            courseId,
+            lessonId: lesson.id,
+            placement: "lesson_cover",
+          } : undefined}
         />
       </FormSection>
 
@@ -453,6 +464,11 @@ export function LessonPageForm({
         initialUrl={getImageValue(page?.cover_image, "src")}
         libraryAssets={mediaLibraryAssets}
         placementLabel="Page cover"
+        uploadContext={{
+          assetType: "cover",
+          lessonId,
+          placement: "page_cover",
+        }}
       />
       <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
         Save page
@@ -640,6 +656,11 @@ export function ContentBlockEditor({
           libraryAssets={mediaLibraryAssets}
           placementLabel="Image block"
           showCaption
+          uploadContext={{
+            assetType: "image",
+            lessonId,
+            placement: "image_block",
+          }}
         />
         <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
           Save image

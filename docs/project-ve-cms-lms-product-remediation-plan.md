@@ -1781,6 +1781,26 @@ What happens next?
 | CMS-UX-001 | Implemented |
 | CMS-TEST-001 | Implemented |
 
+## P0 Closure Addendum
+
+**Status:** Implemented on 2026-08-02 for review.
+
+| Ticket | Status |
+| --- | --- |
+| CMS-TEMPLATE-002 | Implemented |
+| CMS-MEDIA-002 | Implemented |
+| CMS-TEST-002 | Implemented |
+
+Closure scope remained limited to full course-template duplication, secure direct CMS media upload and expanded CMS authoring regression coverage. P1 LMS work, organisations, programmes, cohorts and tenancy were not implemented.
+
+Closure implementation added:
+
+* transactional `admin_duplicate_course_template` RPC that copies the course authoring tree into an independent draft course;
+* direct admin media upload through the existing unified `MediaPicker`;
+* server-side image validation, safe generated storage paths and media-library row creation with storage cleanup on persistence failure;
+* pgTAP coverage for template copy completeness, draft-state reset, source isolation, rollback and learner denial;
+* Playwright coverage for template content copy, copied-content isolation, direct upload, invalid upload rejection and unauthorized upload denial.
+
 ## Files Changed
 
 Primary CMS implementation files:
