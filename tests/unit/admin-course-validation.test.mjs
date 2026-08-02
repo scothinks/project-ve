@@ -52,6 +52,8 @@ test("course form normalizes custom category, URL, and numeric fields", () => {
     category: "Civic Education",
     description: "Intro",
     estimatedMinutes: 30,
+    intendedAudience: "",
+    learningOutcomes: [],
     level: "intermediate",
     sortOrder: 2,
     status: "published",

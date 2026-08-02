@@ -11,6 +11,8 @@ export type AdminCourseRow = {
   slug: string;
   title: string;
   description: string;
+  intended_audience: string;
+  learning_outcomes: string[];
   category: string;
   level: string;
   thumbnail: Record<string, unknown> | null;
@@ -210,7 +212,7 @@ function attachApprovalNames<
 export async function getAdminCourses(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .order("sort_order", { ascending: true });
 
   if (error) {
@@ -391,7 +393,7 @@ export async function getAdminCourseCategories(supabase: SupabaseClient) {
 export async function getAdminCourse(supabase: SupabaseClient, courseId: string) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", courseId)
     .maybeSingle();
 

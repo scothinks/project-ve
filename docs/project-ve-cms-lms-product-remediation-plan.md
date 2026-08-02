@@ -1783,7 +1783,7 @@ What happens next?
 
 ## P0 Closure Addendum
 
-**Status:** Implemented on 2026-08-02 for review.
+**Status:** Implemented on 2026-08-02 for review. Revised P0 closure gaps were resolved on 2026-08-02.
 
 | Ticket | Status |
 | --- | --- |
@@ -1795,11 +1795,13 @@ Closure scope remained limited to full course-template duplication, secure direc
 
 Closure implementation added:
 
+* canonical `courses.intended_audience` and `courses.learning_outcomes` fields wired through the manual course form, AI planner course creation, readiness checks, learner reads and generated database types;
 * transactional `admin_duplicate_course_template` RPC that copies the course authoring tree into an independent draft course;
 * direct admin media upload through the existing unified `MediaPicker`;
 * server-side image validation, safe generated storage paths and media-library row creation with storage cleanup on persistence failure;
 * pgTAP coverage for template copy completeness, draft-state reset, source isolation, rollback and learner denial;
-* Playwright coverage for template content copy, copied-content isolation, direct upload, invalid upload rejection and unauthorized upload denial.
+* Playwright coverage for template content copy, copied-content isolation, direct upload, invalid upload rejection and unauthorized upload denial;
+* a browser-level CMS authoring-to-publishing journey covering blank course creation, overview persistence, lesson creation/duplication/reordering, page and block authoring/reordering, Tiptap persistence, quiz building/reordering/validation, media upload/selection, readiness blocking, review, approval, publishing and learner-facing rendering.
 
 ## Files Changed
 
@@ -1815,6 +1817,8 @@ Primary CMS implementation files:
 * `app/admin/courses/ai/planner/page.tsx`
 * `app/admin/courses/review-actions.ts`
 * `app/api/admin/learning/builder/route.ts`
+* `app/api/admin/learning/lessons/route.ts`
+* `app/api/admin/learning/lessons/duplicate/route.ts`
 * `components/admin/AdminPrimitives.tsx`
 * `components/admin/AdminShell.tsx`
 * `components/admin/LearningForms.tsx`
@@ -1850,6 +1854,9 @@ Primary CMS implementation files:
 * `tests/e2e/remediation-flows.spec.ts`
 * `tests/unit/admin-course-validation.test.mjs`
 * `tests/unit/cms-product-regressions.test.mjs`
+* `supabase/migrations/20260802110000_canonical_course_audience_outcomes.sql`
+* `supabase/tests/database/cms_template_duplication.sql`
+* `types/database.ts`
 * `package.json`
 * `package-lock.json`
 * `docs/project-ve-cms-lms-product-remediation-plan.md`
@@ -1866,7 +1873,13 @@ Two admin CMS migrations were added and pushed to the remote database by the ope
 * `supabase/migrations/20260801190000_admin_reorder_course_lessons.sql`
 * `supabase/migrations/20260801193000_admin_manage_quiz_questions.sql`
 
-No schema changes were added for CMS-MEDIA-001, CMS-REVIEW-001, CMS-AI-001, CMS-UX-001 or CMS-TEST-001.
+No schema changes were added for CMS-MEDIA-001, CMS-REVIEW-001, CMS-AI-001 or CMS-UX-001.
+
+Additional P0 closure migrations:
+
+* `supabase/migrations/20260802090000_classify_admin_cms_rpcs.sql`
+* `supabase/migrations/20260802100000_admin_template_duplication_and_media_upload.sql`
+* `supabase/migrations/20260802110000_canonical_course_audience_outcomes.sql`
 
 ## New Dependencies
 
@@ -1901,7 +1914,7 @@ No competing component, editor, drag-and-drop or data-grid libraries were introd
 
 * Added `tests/unit/cms-product-regressions.test.mjs`.
 * Extended `tests/unit/admin-course-validation.test.mjs` for deterministic validation issue comparison.
-* Extended `tests/e2e/remediation-flows.spec.ts` to cover the new CMS course index/status UX, blank course creation, overview persistence, workspace tab navigation, template duplication and deterministic AI planner entry.
+* Extended `tests/e2e/remediation-flows.spec.ts` to cover the new CMS course index/status UX, blank course creation, overview persistence, lesson/page/block authoring, Tiptap persistence, curriculum ordering, quiz building and validation, direct media upload/selection, readiness, review, approval, publishing, learner rendering, template duplication and deterministic AI planner entry.
 * The new unit tests are included in `npm run test:unit` and therefore in `npm run ci`.
 * The new Playwright coverage remains included in `npm run test:e2e`, which is run by the existing GitHub remediation job through `npm run test:remediation:local`.
 
@@ -1912,29 +1925,31 @@ Successful validation:
 * `npm run typecheck`
 * `npm run lint`
 * `npm run build`
-* `npm run test:unit`
-* `npm run ci`
-* `git diff --check`
-
-Attempted but blocked locally:
-
+* `npm test`
+* `npm run test:db`
+* `npm run test:integration`
 * `npm run test:e2e`
-* `npm run db:start`
+* `npm run db:types:local:check`
+* `npm run test:remediation:local`
 
 ## Test Results
 
 Passing:
 
-* `npm run test:unit`: 121/121 tests passed.
-* `npm run ci`: typecheck, lint, unit tests and production build passed.
+* `npm run typecheck`: passed.
+* `npm run lint`: passed.
 * `npm run build`: production build completed successfully.
-* `git diff --check`: no whitespace errors.
+* `npm test`: 125/125 unit tests passed and 166/166 database tests passed.
+* `npm run test:db`: 166/166 database tests passed.
+* `npm run test:integration`: database, repository-contract and quiz XP concurrency checks passed.
+* `npm run test:e2e`: 6/6 Playwright tests passed.
+* `npm run db:types:local:check`: committed local database types matched generated local schema.
+* `npm run test:remediation:local`: full local remediation acceptance gate passed, including DB reset, DB types, DB tests, repositories, concurrency, economic integrity and E2E.
 
-Blocked:
+Notes:
 
-* `npm run test:e2e` could not run in the sandbox because local Supabase keys were unavailable.
-* `npm run db:start` could not fetch `npx supabase@2.110.0` because the sandbox could not resolve `registry.npmjs.org`.
-* Two escalation attempts to run `npm run db:start` with network access timed out without approval.
+* `db:types:check:ci` remains a remote-project CI check because it requires `SUPABASE_PROJECT_REF`; local drift was verified with `db:types:local:check`.
+* Initial sandbox attempts to run `npx supabase@2.110.0` failed with DNS resolution errors for `registry.npmjs.org`; the same commands passed when rerun with approved network access.
 
 CI coverage:
 
@@ -1942,29 +1957,10 @@ CI coverage:
 
 ## Visual Evidence
 
-Screenshots or a screen recording were not captured in this sandbox.
-
-Reason:
-
-* the requested CMS screens are protected by `requireAdmin()`;
-* `requireAdmin()` redirects without a live authenticated Supabase admin session;
-* local Supabase could not be started because `npx supabase@2.110.0` could not be fetched under sandbox DNS/network restrictions.
-
-Screens still required for final operator review:
-
-1. course index;
-2. course overview;
-3. curriculum outline;
-4. lesson editor;
-5. quiz builder;
-6. media picker;
-7. review and publishing screen;
-8. AI-assisted creation flow.
+The browser proof is captured by the local Playwright gate rather than static screenshots. `npm run test:e2e` exercises authenticated admin and learner surfaces against local Supabase and passed during closure validation.
 
 ## Known Limitations
 
-* Local Playwright E2E and screenshot capture need a running local Supabase stack or an authenticated admin browser session.
-* Direct media upload remains disabled until a storage endpoint and signed upload policy are designed.
 * Undo/redo history for the lesson builder remains deferred because the autosave/recovery model needs an explicit history layer to avoid corrupting local drafts.
 * True curriculum sections/modules remain a later structural enhancement; P0 keeps a lesson outline that can support sections later.
 * AI generation tests use deterministic planner/domain paths and do not call live external models.

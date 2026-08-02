@@ -29,6 +29,8 @@ function course(overrides = {}) {
     slug: "course-1",
     title: "Safety Course",
     description: "A practical safety course.",
+    intended_audience: "New learners who need practical safety habits.",
+    learning_outcomes: ["Identify common safety risks."],
     category: "Values Education",
     level: "beginner",
     status: "draft",

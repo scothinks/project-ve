@@ -382,6 +382,8 @@ export async function generateCourseShellFromSelectedPlanCommand(
     slug: courseSlug,
     title: selectedOption.title,
     description: selectedOption.description,
+    intended_audience: selectedOption.targetAudience || stored.input.audience,
+    learning_outcomes: selectedOption.learningObjectives,
     category: "Values Education",
     level: selectedOption.level,
     thumbnail: {},

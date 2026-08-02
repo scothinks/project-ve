@@ -47,6 +47,12 @@ function getImageNumber(image: Record<string, unknown> | null | undefined, key: 
   return Number.isFinite(value) ? value : fallback;
 }
 
+function getLearningOutcomesValue(course?: AdminCourseRow | null) {
+  return Array.isArray(course?.learning_outcomes)
+    ? course.learning_outcomes.join("\n")
+    : "";
+}
+
 function FormSection({
   title,
   subtitle,
@@ -212,6 +218,25 @@ export function CourseForm({
             <label className="mt-4 block">
               <span className={labelClasses()}>Description</span>
               <textarea className={`${fieldClasses()} min-h-28 resize-none`} name="description" required defaultValue={course?.description ?? ""} />
+            </label>
+            <label className="mt-4 block">
+              <span className={labelClasses()}>Intended audience</span>
+              <textarea
+                className={`${fieldClasses()} min-h-24 resize-none`}
+                name="intendedAudience"
+                placeholder="Young adults, community learners, first-time civic education learners"
+                defaultValue={course?.intended_audience ?? ""}
+              />
+            </label>
+            <label className="mt-4 block">
+              <span className={labelClasses()}>Learning outcomes</span>
+              <textarea
+                className={`${fieldClasses()} min-h-32 resize-none`}
+                name="learningOutcomes"
+                placeholder={"Explain one practical civic habit\nApply the habit in a daily scenario\nReflect on the effect of the choice"}
+                defaultValue={getLearningOutcomesValue(course)}
+              />
+              <p className={helperTextClasses()}>One outcome per line. These are canonical course fields used by manual and assisted courses.</p>
             </label>
           </FormSection>
 

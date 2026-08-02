@@ -273,6 +273,8 @@ export async function saveCourse(formData: FormData) {
     p_course_id: courseId,
     p_title: input.title,
     p_description: input.description,
+    p_intended_audience: input.intendedAudience,
+    p_learning_outcomes: input.learningOutcomes,
     p_category: input.category,
     p_level: input.level,
     p_status: input.status,
@@ -347,6 +349,49 @@ export async function saveLesson(formData: FormData) {
       lessonId ? "Lesson saved." : "Lesson created.",
     ),
   );
+}
+
+export async function createCurriculumLesson(formData: FormData) {
+  const input = requireValidForm(parseSaveLessonForm(formData));
+  const { courseId } = input;
+  const { supabase } = await requireAdmin();
+
+  const { data, error } = await supabase.rpc("admin_upsert_lesson", {
+    p_lesson_id: "",
+    p_course_id: courseId,
+    p_title: input.title,
+    p_description: input.description,
+    p_cover_image: input.coverImage,
+    p_status: "draft",
+    p_sort_order: input.sortOrder,
+    p_estimated_minutes: input.estimatedMinutes,
+    p_retry_mode: input.retryMode,
+    p_retry_cooldown_seconds: input.retryCooldownSeconds,
+    p_retry_requires_reread: input.retryRequiresReread,
+    p_quiz_requires_lesson_completion: input.quizRequiresLessonCompletion,
+    p_max_earning_attempts: input.maxEarningAttempts,
+  });
+
+  if (error) throw error;
+
+  const result = data as { lessonId?: string } | null;
+  const lessonId = result?.lessonId ?? "";
+
+  const { error: syncError } = await supabase.rpc("admin_sync_course_estimated_minutes", {
+    p_course_id: courseId,
+  });
+
+  if (syncError) throw syncError;
+
+  await syncLessonQuizStatus(supabase, lessonId, "draft");
+
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath("/courses");
+  revalidatePath(`/courses/${courseId}`);
+  revalidatePath("/dashboard");
+
+  return { lessonId };
 }
 
 export async function setCourseStatus(formData: FormData) {
@@ -702,18 +747,21 @@ export async function duplicateLessonFromCurriculum(formData: FormData) {
 
   const sourceQuiz = quizResult.data as { id: string; title: string; version: number } | null;
   if (sourceQuiz) {
-    const newQuizId = createCopyId("quiz", `${newLessonId}-${sourceQuiz.title}`);
-    const { error: quizInsertError } = await supabase
+    const defaultQuizId = `quiz-${newLessonId.replace(/^lesson-/, "")}`;
+    const { data: newQuizData, error: quizInsertError } = await supabase
       .from("quizzes")
-      .insert({
-        id: newQuizId,
+      .upsert({
+        id: defaultQuizId,
         lesson_id: newLessonId,
         title: sourceQuiz.title,
         version: sourceQuiz.version,
         status: "draft",
-      });
+      }, { onConflict: "lesson_id" })
+      .select("id")
+      .single();
 
     if (quizInsertError) throw quizInsertError;
+    const newQuizId = (newQuizData as { id: string }).id;
 
     const questionsResult = await supabase
       .from("quiz_questions")

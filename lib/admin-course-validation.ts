@@ -287,6 +287,18 @@ export function parseSaveCourseForm(formData: FormData) {
       allowEmpty: true,
       maxLength: 1000,
     }),
+    intendedAudience: getOptionalFormString(formData, "intendedAudience", issues, {
+      allowEmpty: true,
+      maxLength: 500,
+    }),
+    learningOutcomes: getOptionalFormString(formData, "learningOutcomes", issues, {
+      allowEmpty: true,
+      maxLength: 2000,
+    })
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 12),
     category: resolveCategory(formData, issues),
     estimatedMinutes: getFormInteger(formData, "estimatedMinutes", issues, {
       fallback: 0,
