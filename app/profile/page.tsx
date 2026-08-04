@@ -3,7 +3,8 @@ import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-import { BellIcon } from "@/components/ui/Icons";
+import { Card } from "@/components/ui/Card";
+import { BellIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { getNotificationPreferences, getUnreadNotificationCount } from "@/lib/notifications";
@@ -73,6 +74,26 @@ export default async function ProfilePage() {
           </Link>
         )}
       />
+      <section className="px-5 pb-2">
+        <Link href="/profile/transcript">
+          <Card className="rounded-[20px] p-4" variant="quiet">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                  Learning record
+                </p>
+                <h2 className="mt-1 text-base font-black text-[var(--foreground)]">Transcript</h2>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  View course and programme completion status.
+                </p>
+              </div>
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--ve-panel-soft)] text-lg font-black text-[var(--ve-green)]">
+                <ChevronRightIcon className="h-5 w-5" />
+              </span>
+            </div>
+          </Card>
+        </Link>
+      </section>
       <ProfileForm
         avatarUrl={profile?.avatar_url ?? ""}
         displayName={profile?.display_name ?? ""}

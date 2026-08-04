@@ -22,6 +22,7 @@ const fulfillmentTypes = ["manual", "voucher_code", "qr_code", "native"] as cons
 const visibilityModes = ["store", "hidden", "system_only"] as const;
 const limitPeriods = ["none", "daily", "weekly", "monthly", "lifetime"] as const;
 const prizeTypes = ["native_xp", "xp_boost", "reward"] as const;
+const rewardOwnerScopes = ["platform_owned", "organization_owned", "programme_sponsored"] as const;
 
 export type RewardThumbnailPayload = {
   color?: string;
@@ -42,10 +43,14 @@ export type RewardMutationPayload = {
   isEnabled: boolean;
   limitPeriod: "none" | "daily" | "weekly" | "monthly" | "lifetime";
   offerExpiresAt: string | null;
+  organizationId: string | null;
+  ownerScope: "platform_owned" | "organization_owned" | "programme_sponsored";
   perUserLimit: number;
   redemptionWindowDays: number | null;
   rewardId: string;
+  sharedWithProgrammes: boolean;
   sortOrder: number;
+  sponsoredProgrammeId: string | null;
   status: "draft" | "published" | "archived";
   terms: string;
   thumbnail: RewardThumbnailPayload;
@@ -121,6 +126,7 @@ export function parseRewardPayloadForm(formData: FormData) {
   const fulfillmentType = getFormEnum(formData, "fulfillmentType", fulfillmentTypes, issues, "manual");
   const distributionMode = getFormEnum(formData, "distributionMode", distributionModes, issues, "direct");
   const limitPeriod = getFormEnum(formData, "limitPeriod", limitPeriods, issues, "lifetime");
+  const ownerScope = getFormEnum(formData, "ownerScope", rewardOwnerScopes, issues, "platform_owned") ?? "platform_owned";
 
   const data: RewardMutationPayload = {
     campaignId: getOptionalFormString(formData, "campaignId", issues, {
@@ -139,13 +145,23 @@ export function parseRewardPayloadForm(formData: FormData) {
     isEnabled: getBooleanFlag(formData, "isEnabled"),
     limitPeriod: limitPeriod ?? "lifetime",
     offerExpiresAt: getOptionalFormDate(formData, "offerExpiresAt", issues),
+    organizationId: getOptionalFormString(formData, "organizationId", issues, {
+      allowEmpty: true,
+      maxLength: 120,
+    }) || null,
+    ownerScope,
     perUserLimit: limitPeriod === "none" ? 1 : positive(formData, "perUserLimit", issues, 1),
     redemptionWindowDays: getOptionalFormInteger(formData, "redemptionWindowDays", issues, { min: 1 }),
     rewardId: getOptionalFormString(formData, "rewardId", issues, {
       allowEmpty: true,
       maxLength: 120,
     }),
+    sharedWithProgrammes: getBooleanFlag(formData, "sharedWithProgrammes"),
     sortOrder: getFormInteger(formData, "sortOrder", issues, { fallback: 0 }) ?? 0,
+    sponsoredProgrammeId: getOptionalFormString(formData, "sponsoredProgrammeId", issues, {
+      allowEmpty: true,
+      maxLength: 120,
+    }) || null,
     status: getFormEnum(formData, "status", rewardStatuses, issues, "draft") ?? "draft",
     terms: getOptionalFormString(formData, "terms", issues, {
       allowEmpty: true,
@@ -162,6 +178,14 @@ export function parseRewardPayloadForm(formData: FormData) {
       fulfillmentType === "native" ? "system_only" : "store",
     ) ?? "store",
   };
+
+  if (data.ownerScope === "organization_owned" && !data.organizationId) {
+    issues.push({ path: "organizationId", message: "Organisation-owned rewards require an organisation." });
+  }
+
+  if (data.ownerScope === "programme_sponsored" && !data.sponsoredProgrammeId) {
+    issues.push({ path: "sponsoredProgrammeId", message: "Programme-sponsored rewards require a programme." });
+  }
 
   return result(issues, data);
 }

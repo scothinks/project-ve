@@ -42,6 +42,52 @@ test("reward payload form rejects malformed JSON and invalid thumbnail URL", () 
   hasIssue(result, "thumbnailUrl", "Expected a valid HTTP or HTTPS URL.");
 });
 
+test("reward payload form enforces LMS owner scope requirements", () => {
+  const organizationResult = parseRewardPayloadForm(formData([
+    ["rewardId", "reward-1"],
+    ["title", "Tenant reward"],
+    ["costXp", "10"],
+    ["status", "draft"],
+    ["fulfillmentConfig", "{}"],
+    ["ownerScope", "organization_owned"],
+  ]));
+
+  hasIssue(
+    organizationResult,
+    "organizationId",
+    "Organisation-owned rewards require an organisation.",
+  );
+
+  const sponsoredResult = parseRewardPayloadForm(formData([
+    ["rewardId", "reward-2"],
+    ["title", "Programme reward"],
+    ["costXp", "10"],
+    ["status", "draft"],
+    ["fulfillmentConfig", "{}"],
+    ["ownerScope", "programme_sponsored"],
+  ]));
+
+  hasIssue(
+    sponsoredResult,
+    "sponsoredProgrammeId",
+    "Programme-sponsored rewards require a programme.",
+  );
+
+  const platformResult = parseRewardPayloadForm(formData([
+    ["rewardId", "reward-3"],
+    ["title", "Shared platform reward"],
+    ["costXp", "10"],
+    ["status", "draft"],
+    ["fulfillmentConfig", "{}"],
+    ["ownerScope", "platform_owned"],
+    ["sharedWithProgrammes", "on"],
+  ]));
+
+  assert.equal(platformResult.ok, true);
+  assert.equal(platformResult.data.ownerScope, "platform_owned");
+  assert.equal(platformResult.data.sharedWithProgrammes, true);
+});
+
 test("bulk perk prize form requires at least one source reward", () => {
   const result = parseBulkPerkRewardPrizesForm(formData([
     ["bundleRewardId", "bundle-1"],

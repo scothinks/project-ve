@@ -1629,7 +1629,7 @@ Implementation notes:
 * E2E tests remain wired into the existing GitHub remediation job through `npm run test:remediation:local`; the workflow starts local Supabase, installs Chromium and runs `npm run test:e2e`;
 * no database schema changes or new dependencies were required;
 * validated locally with `npm run test:unit`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run ci` and `git diff --check`;
-* local `npm run test:e2e` could not run in this sandbox because local Supabase was not started and `npm run db:start` could not fetch `npx supabase@2.110.0` due network/DNS restrictions; two escalation attempts timed out without approval.
+* earlier local `npm run test:e2e` attempts were blocked by Supabase CLI availability in the sandbox; database scripts now use the repo-local Supabase CLI wrapper instead of `npx`.
 
 ### Required tests
 
@@ -1949,11 +1949,11 @@ Passing:
 Notes:
 
 * `db:types:check:ci` remains a remote-project CI check because it requires `SUPABASE_PROJECT_REF`; local drift was verified with `db:types:local:check`.
-* Initial sandbox attempts to run `npx supabase@2.110.0` failed with DNS resolution errors for `registry.npmjs.org`; the same commands passed when rerun with approved network access.
+* Supabase CLI execution is now routed through the repo-local `supabase` dev dependency and `scripts/supabase-cli.mjs`, avoiding repeated `npx` registry lookups during local validation.
 
 CI coverage:
 
-* `.github/workflows/ci.yml` still runs the remediation job by installing Chromium, starting local Supabase with `npx supabase@2.110.0 start`, running `npm run test:remediation:local`, and stopping Supabase afterward.
+* `.github/workflows/ci.yml` still runs the remediation job by installing Chromium, starting local Supabase with `npm run db:start`, running `npm run test:remediation:local`, and stopping Supabase through `scripts/supabase-cli.mjs`.
 
 ## Visual Evidence
 
@@ -2020,6 +2020,40 @@ Provide an organisation-context switcher.
 
 Every tenant-owned object must have enforceable ownership and RLS boundaries.
 
+## Implementation Status
+
+**Status:** Implemented on 2026-08-02 for review.
+
+Implemented:
+
+* `organizations`;
+* `organization_roles`;
+* `organization_memberships`;
+* contextual organisation roles using the required P1 role set;
+* platform-role separation: `profiles.role` remains the platform role boundary, while organisation memberships hold contextual LMS roles;
+* admin-only RPCs for organisation and membership management;
+* authenticated helper RPCs for checking the current user's organisation role/context;
+* RLS policies that allow platform admins to read all organisation records and active members/managers to read only their permitted organisation context;
+* admin-shell organisation context switcher backed by the signed-in user's active memberships;
+* pgTAP coverage for tenant visibility, contextual role separation, suspended membership behavior, admin RPC denial and RPC security classification.
+
+Forward migration:
+
+* `supabase/migrations/20260802120000_lms_organizations_memberships.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_organizations_memberships.sql`
+
+Validation run:
+
+* `npm run db:reset`
+* `npm run db:types:local`
+* `npm run test:db`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run db:types:local:check`
+
 ---
 
 # LMS-CATALOG-001
@@ -2047,6 +2081,41 @@ available upstream update
 ```
 
 An organisation must not modify the canonical platform course.
+
+## Implementation Status
+
+**Status:** Implemented on 2026-08-02 for review.
+
+Implemented:
+
+* `course_catalog_scope` with platform, organisation-private and adapted-platform scope values;
+* course ownership/provenance columns for organisation owner, source course, source version, copied timestamp, local changes, upstream update availability and catalog version;
+* catalog constraints that keep platform courses canonical, organisation-private courses tenant-owned, and adapted courses tied to canonical platform sources;
+* catalog-aware RLS helpers for course read/edit decisions without exposing raw quiz answer data to learners;
+* organisation content editor creation of private draft courses through an authenticated RPC;
+* organisation content editor adaptation of canonical platform courses through an authenticated RPC that copies the independent authoring tree and resets copied content to draft/editorial-safe states;
+* triggers for catalog-version increments, adapted-course provenance normalization, local-change tracking and upstream-update flags;
+* admin course index and course workspace metadata showing catalog scope, ownership and adapted-source provenance;
+* pgTAP coverage for platform visibility, organisation-private isolation, contextual editor access, unauthorized adaptation denial, canonical platform immutability, adapted tree copying, local changes, upstream updates and RPC classification.
+
+Forward migration:
+
+* `supabase/migrations/20260802130000_lms_course_catalog_model.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_course_catalog_model.sql`
+
+Validation run:
+
+* `npm run db:reset`
+* `npm run db:types:local`
+* `npm run test:db`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run db:types:local:check`
+* `npm run build`
+* `npm test`
 
 ---
 
@@ -2085,6 +2154,44 @@ Programme builder should support:
 * completion rules;
 * status.
 
+## Implementation Status
+
+**Status:** Implemented on 2026-08-02 for review.
+
+Implemented:
+
+* `programmes` as organisation-owned LMS operating containers separate from courses;
+* programme fields for title, slug, objective, intended audience, status, schedule window, completion rules and reporting config;
+* reusable course sequencing through `programme_courses`;
+* mission, reward and assessment attachments through `programme_missions`, `programme_rewards` and `programme_assessments`;
+* course reuse across programmes without changing course ownership;
+* enforcement that organisation-private/adapted courses can only be attached to programmes in the same organisation while platform courses remain reusable;
+* contextual programme management helpers for platform admins and organisation owner/admin/programme-manager roles;
+* programme RLS for organisation visibility and manager-only writes;
+* authenticated RPCs for transactional programme upsert and lifecycle status changes;
+* admin programme index, create page and edit builder at `/admin/programmes`;
+* admin-shell navigation and breadcrumbs for Programmes;
+* pgTAP coverage for programme creation, course ordering, reusable courses, linked missions/rewards/assessments, cross-organisation course rejection, publish readiness, contextual role denial, published programme visibility and RPC classification.
+
+Forward migration:
+
+* `supabase/migrations/20260802140000_lms_programme_builder.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_programme_builder.sql`
+
+Validation run:
+
+* `npm run db:reset`
+* `npm run db:types:local`
+* `npm run test:db`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run db:types:local:check`
+* `npm run build`
+* `npm test`
+
 ---
 
 # LMS-COHORT-001
@@ -2113,6 +2220,46 @@ Support:
 * assignment source;
 * programme intake dates.
 
+## Implementation Status
+
+**Status:** Implemented on 2026-08-02 for review.
+
+Implemented:
+
+* `cohorts` and `cohort_members` for organisation-scoped audience groups and active/completed/withdrawn roster state;
+* `course_assignments`, `programme_assignments` and `enrolments` for canonical learner assignment records;
+* due-date support for course and programme assignment flows;
+* programme intake dates recorded on programme assignments and generated enrolment metadata;
+* assignment-source tracking for manual, cohort and programme-derived enrolments;
+* contextual audience-management helpers for platform admins and organisation owner/admin/programme-manager/instructor roles;
+* RLS policies that let audience managers read/manage assigned cohorts while learners can read only their own cohort/enrolment surfaces;
+* trigger enforcement that blocks organisation-private course, programme and cohort assignment drift across organisation boundaries even outside RPCs;
+* authenticated RPCs for cohort upsert, bulk roster replacement, course assignment, programme assignment and enrolment status updates;
+* admin cohort index, create page and cohort workspace at `/admin/cohorts`;
+* cohort workspace controls for bulk learner UUID import, member checkbox replacement, direct learner assignment, cohort assignment, due dates, intake dates and enrolment status updates;
+* admin-shell navigation and breadcrumbs for Cohorts;
+* pgTAP coverage for cohort creation, roster replacement, withdrawn member history, manual assignment, cohort assignment, programme assignment fan-out, learner visibility, unauthorized denial, trigger enforcement and RPC classification.
+
+Forward migration:
+
+* `supabase/migrations/20260802150000_lms_cohorts_assignments.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_cohorts_assignments.sql`
+
+Validation run:
+
+* `npm run db:reset`
+* `npm run db:types:local`
+* `npm run test:db`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run db:types:local:check`
+* `npm run build`
+* `npm test`
+* `git diff --check`
+
 ---
 
 # LMS-COMPLETION-001
@@ -2136,6 +2283,55 @@ Add learner transcript view.
 
 Certificates may be deferred to P2 if necessary.
 
+## Implementation Status
+
+**Status:** Implemented on 2026-08-03 for review.
+
+Implemented:
+
+* canonical `course_completion_rules` and `programme_completion_rules` configuration tables;
+* canonical `course_completions` and `programme_completions` transcript records;
+* completion status enum for in-progress and completed records;
+* self-service learner evaluation RPCs for assigned course and programme completion;
+* learner transcript RPC that refreshes enrolment-linked records for `auth.uid()`;
+* admin RPCs for course and programme completion rule configuration;
+* rule validation for course lessons, quizzes, missions, programme courses, programme missions and final assessments;
+* transactional completion evaluation that derives progress from lesson progress, quiz attempts, mission awards and assessment attempts;
+* RLS policies that let learners read only their own completion rows and organisation audience staff read contextual rows;
+* direct API-role table writes revoked for completion records so state changes go through RPC boundaries;
+* programme editor completion-rule persistence through the canonical programme completion rule RPC;
+* course workspace completion-rule panel for required lessons, quizzes, missions, quiz score, threshold and final assessment;
+* learner transcript page at `/profile/transcript` linked from Profile;
+* RPC security classifications for public self-service, admin configuration and internal helper functions;
+* pgTAP coverage for rule configuration, invalid rule rejection, learner self evaluation, transcript output, RLS visibility, direct-write denial and helper execute denial.
+
+Forward migration:
+
+* `supabase/migrations/20260803090000_lms_completion_transcripts.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_completion_transcripts.sql`
+
+Validation run:
+
+* `npm run db:reset`
+* `npm run db:types:local`
+* `npm run test:db`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run db:types:local:check`
+* `npm run build`
+* `npm test`
+* `git diff --check`
+
+Deferred:
+
+* certificates;
+* programme-scoped missions/rewards;
+* reporting dashboards;
+* reminders and interventions.
+
 ---
 
 # LMS-ENGAGEMENT-001
@@ -2157,6 +2353,28 @@ programme-sponsored
 Protect inventory, funding and reporting by tenant.
 
 Shared Project Ve rewards may be explicitly enabled for selected programmes.
+
+## Implementation status
+
+Status: Implemented.
+
+Implemented:
+
+* reward ownership scopes for platform-owned, organisation-owned and programme-sponsored rewards;
+* explicit platform reward sharing with programmes;
+* programme reward and reward-granting mission enforcement at the database boundary;
+* admin reward ownership controls in the existing rewards CMS;
+* programme builder validation for tenant-safe mission and reward attachment;
+* RPC security classifications for the new admin RPC, helper and triggers.
+
+Validation:
+
+* `npm run test:db`
+* `npm run db:types:local:check`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run build`
+* `npm test`
 
 ---
 
@@ -2182,6 +2400,32 @@ Provide reporting for:
 
 Reports must respect organisation boundaries and role permissions.
 
+## Implementation status
+
+Status: Implemented.
+
+Implemented:
+
+* read-only LMS reporting RPC for programme, cohort and learner reporting;
+* organisation, programme and cohort filters with database-side boundary validation;
+* assigned, started, in-progress, completed and overdue learner summary metrics;
+* learner detail rows with cohort, progress, quiz, mission and reward usage signals;
+* cohort comparison, quiz score, mission completion and reward usage report sections;
+* CSV export for the scoped learner report;
+* admin Reporting navigation and dashboard page;
+* pgTAP coverage for report viewer access, cross-organisation denial, anon denial and RPC classification.
+
+Validation:
+
+* `npm run db:reset`
+* `npm run test:db`
+* `npm run db:types:local`
+* `npm run db:types:local:check`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run build`
+* `npm test`
+
 ---
 
 # LMS-NOTIF-001
@@ -2200,6 +2444,32 @@ Support:
 * programme-manager intervention queue.
 
 Use the existing secured notification architecture.
+
+## Implementation status
+
+Status: Implemented.
+
+Implemented:
+
+* programme assignment notifications from canonical programme enrolment inserts;
+* completion notifications from canonical programme completion records;
+* service-role-only LMS programme notification generator for assignment catch-up, upcoming due dates, overdue reminders and inactivity reminders;
+* deduplicated learner notifications through the existing secured notification primitive;
+* programme-manager intervention queue backed by scoped LMS intervention records;
+* contextual intervention queue read/update RPCs with organisation boundary checks;
+* admin Interventions navigation and queue page with organisation, programme and status filters;
+* notification dispatch route integration and push delivery priority support for LMS programme events;
+* pgTAP coverage for notification creation, dedupe, service-role ACLs, contextual queue access, intervention mutation denial and RPC classification.
+
+Validation:
+
+* `npm run db:reset`
+* `npm run test:db`
+* `npm run db:types:local`
+* `npm run db:types:local:check`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run build`
 
 ---
 
@@ -2220,6 +2490,29 @@ Test:
 * programme completion;
 * tenant reward isolation;
 * reporting access controls.
+
+## Implementation status
+
+Status: Implemented.
+
+Implemented:
+
+* cross-feature P1 pgTAP release gate covering organisation-scoped roles and tenant isolation;
+* shared platform catalogue access and organisation-private course isolation assertions;
+* adapted-platform course provenance and copied instructional-tree assertions;
+* cohort-based programme assignment fan-out to programme and course enrolments;
+* learner programme completion evaluation through the public completion RPC;
+* tenant reward isolation through the programme reward attachment boundary;
+* scoped reporting result assertions and cross-organisation/anonymous reporting denial checks;
+* the gate is included in the existing `npm run test:db` suite and therefore in `npm run db:verify:local`.
+
+Tests:
+
+* `supabase/tests/database/lms_p1_release_gate.sql`
+
+Validation:
+
+* `npm run test:db`
 
 ---
 

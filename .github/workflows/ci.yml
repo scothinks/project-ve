@@ -72,9 +72,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
       - name: Start local Supabase
-        run: npx supabase@2.110.0 start
+        run: npm run db:start
       - name: Run local remediation acceptance gate
         run: npm run test:remediation:local
       - name: Stop local Supabase
         if: always()
-        run: npx supabase@2.110.0 stop --no-backup
+        run: node scripts/supabase-cli.mjs stop --no-backup

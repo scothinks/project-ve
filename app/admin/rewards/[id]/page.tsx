@@ -9,7 +9,13 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminRewardDetail, requireAdmin } from "@/lib/admin";
+import {
+  getAdminCampaigns,
+  getAdminOrganizations,
+  getAdminProgrammes,
+  getAdminRewardDetail,
+  requireAdmin,
+} from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 import { formatRewardDate } from "@/lib/rewards";
@@ -56,9 +62,11 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
   const { id } = await params;
   const { inventoryPage, adjustmentsPage } = (await searchParams) ?? {};
   const { supabase } = await requireAdmin();
-  const [detail, campaigns] = await Promise.all([
+  const [detail, campaigns, organizations, programmes] = await Promise.all([
     getAdminRewardDetail(supabase, id),
     getAdminCampaigns(supabase),
+    getAdminOrganizations(supabase),
+    getAdminProgrammes(supabase),
   ]);
 
   if (!detail) {
@@ -103,6 +111,8 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
             campaigns={campaigns}
             lockDistributionMode="direct"
             mode="edit"
+            organizations={organizations}
+            programmes={programmes}
             reward={{
               id: reward.id,
               title: reward.title,
@@ -116,8 +126,14 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
               fulfillmentConfig: reward.fulfillment_config ?? {},
               perUserLimit: reward.per_user_limit,
               limitPeriod: reward.limit_period,
+              organizationId: reward.organization_id ?? "",
+              ownerScope: reward.owner_scope === "organization_owned" || reward.owner_scope === "programme_sponsored"
+                ? reward.owner_scope
+                : "platform_owned",
               redemptionWindowDays: reward.redemption_window_days ?? "",
+              sharedWithProgrammes: Boolean(reward.shared_with_programmes),
               sortOrder: reward.sort_order,
+              sponsoredProgrammeId: reward.sponsored_programme_id ?? "",
               offerExpiresAt: toDateInputValue(reward.offer_expires_at),
               thumbnailUrl: getString(thumbnail, "url"),
               thumbnailIconName: thumbnailEditor.iconName,
@@ -161,6 +177,10 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
                 <dd className="mt-1 font-black tabular-nums">
                   {reward.total_available}/{reward.total_uploaded}
                 </dd>
+              </div>
+              <div>
+                <dt className="font-black text-[var(--ve-muted)]">Owner</dt>
+                <dd className="mt-1 font-bold">{reward.owner_scope.replaceAll("_", " ")}</dd>
               </div>
               <div>
                 <dt className="font-black text-[var(--ve-muted)]">Visibility</dt>

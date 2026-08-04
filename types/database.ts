@@ -1736,6 +1736,112 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_members: {
+        Row: {
+          added_by: string | null
+          cohort_id: string
+          created_at: string
+          status: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          cohort_id: string
+          created_at?: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          cohort_id?: string
+          created_at?: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_members_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohorts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          ends_at: string | null
+          id: string
+          organization_id: string
+          slug: string
+          starts_at: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          ends_at?: string | null
+          id?: string
+          organization_id: string
+          slug: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          ends_at?: string | null
+          id?: string
+          organization_id?: string
+          slug?: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohorts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohorts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_value_tags: {
         Row: {
           content_id: string
@@ -1780,6 +1886,221 @@ export type Database = {
           },
         ]
       }
+      course_assignments: {
+        Row: {
+          assigned_by: string | null
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id: string | null
+          course_id: string
+          created_at: string
+          due_at: string | null
+          id: string
+          organization_id: string
+          status: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id?: string | null
+          course_id: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          organization_id: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assignment_source?: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id?: string | null
+          course_id?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          organization_id?: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_assignments_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_assignments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_completion_rules: {
+        Row: {
+          course_id: string
+          created_at: string
+          minimum_completion_threshold: number
+          minimum_quiz_score: number
+          required_final_assessment_version_id: string | null
+          required_lesson_ids: string[]
+          required_mission_ids: string[]
+          required_quiz_ids: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          minimum_completion_threshold?: number
+          minimum_quiz_score?: number
+          required_final_assessment_version_id?: string | null
+          required_lesson_ids?: string[]
+          required_mission_ids?: string[]
+          required_quiz_ids?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          minimum_completion_threshold?: number
+          minimum_quiz_score?: number
+          required_final_assessment_version_id?: string | null
+          required_lesson_ids?: string[]
+          required_mission_ids?: string[]
+          required_quiz_ids?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_completion_rules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: true
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_completion_rules_required_final_assessment_version__fkey"
+            columns: ["required_final_assessment_version_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_completion_rules_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_completions: {
+        Row: {
+          completed_at: string | null
+          completed_required_lessons: string[]
+          completed_required_missions: string[]
+          completed_required_quizzes: string[]
+          course_id: string
+          created_at: string
+          evaluated_at: string
+          id: string
+          metadata: Json
+          missing_requirements: Json
+          organization_id: string | null
+          progress_percent: number
+          status: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_required_lessons?: string[]
+          completed_required_missions?: string[]
+          completed_required_quizzes?: string[]
+          course_id: string
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          missing_requirements?: Json
+          organization_id?: string | null
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_required_lessons?: string[]
+          completed_required_missions?: string[]
+          completed_required_quizzes?: string[]
+          course_id?: string
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          missing_requirements?: Json
+          organization_id?: string | null
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_completions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_completions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           ai_generated: boolean
@@ -1787,7 +2108,10 @@ export type Database = {
           ai_media_status: string
           ai_publish_status: string
           ai_text_status: string
+          catalog_scope: Database["public"]["Enums"]["course_catalog_scope"]
+          catalog_version: number
           category: string
+          copied_at: string | null
           created_at: string
           description: string
           estimated_minutes: number
@@ -1795,16 +2119,21 @@ export type Database = {
           intended_audience: string
           learning_outcomes: string[]
           level: Database["public"]["Enums"]["course_level"]
+          local_changes: Json
           media_approved_at: string | null
           media_approved_by: string | null
+          organization_id: string | null
           slug: string
           sort_order: number
+          source_catalog_version: number | null
+          source_course_id: string | null
           status: Database["public"]["Enums"]["content_status"]
           text_approved_at: string | null
           text_approved_by: string | null
           thumbnail: Json | null
           title: string
           updated_at: string
+          upstream_update_available: boolean
         }
         Insert: {
           ai_generated?: boolean
@@ -1812,7 +2141,10 @@ export type Database = {
           ai_media_status?: string
           ai_publish_status?: string
           ai_text_status?: string
+          catalog_scope?: Database["public"]["Enums"]["course_catalog_scope"]
+          catalog_version?: number
           category: string
+          copied_at?: string | null
           created_at?: string
           description: string
           estimated_minutes?: number
@@ -1820,16 +2152,21 @@ export type Database = {
           intended_audience?: string
           learning_outcomes?: string[]
           level?: Database["public"]["Enums"]["course_level"]
+          local_changes?: Json
           media_approved_at?: string | null
           media_approved_by?: string | null
+          organization_id?: string | null
           slug: string
           sort_order?: number
+          source_catalog_version?: number | null
+          source_course_id?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           text_approved_at?: string | null
           text_approved_by?: string | null
           thumbnail?: Json | null
           title: string
           updated_at?: string
+          upstream_update_available?: boolean
         }
         Update: {
           ai_generated?: boolean
@@ -1837,7 +2174,10 @@ export type Database = {
           ai_media_status?: string
           ai_publish_status?: string
           ai_text_status?: string
+          catalog_scope?: Database["public"]["Enums"]["course_catalog_scope"]
+          catalog_version?: number
           category?: string
+          copied_at?: string | null
           created_at?: string
           description?: string
           estimated_minutes?: number
@@ -1845,18 +2185,141 @@ export type Database = {
           intended_audience?: string
           learning_outcomes?: string[]
           level?: Database["public"]["Enums"]["course_level"]
+          local_changes?: Json
           media_approved_at?: string | null
           media_approved_by?: string | null
+          organization_id?: string | null
           slug?: string
           sort_order?: number
+          source_catalog_version?: number | null
+          source_course_id?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           text_approved_at?: string | null
           text_approved_by?: string | null
           thumbnail?: Json | null
           title?: string
           updated_at?: string
+          upstream_update_available?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_source_course_id_fkey"
+            columns: ["source_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrolments: {
+        Row: {
+          assigned_at: string
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          completed_at: string | null
+          course_assignment_id: string | null
+          course_id: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          programme_assignment_id: string | null
+          programme_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at: string
+          user_id: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          completed_at?: string | null
+          course_assignment_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          programme_assignment_id?: string | null
+          programme_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assignment_source?: Database["public"]["Enums"]["lms_assignment_source"]
+          completed_at?: string | null
+          course_assignment_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          programme_assignment_id?: string | null
+          programme_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrolments_course_assignment_id_fkey"
+            columns: ["course_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "course_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_programme_assignment_id_fkey"
+            columns: ["programme_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "programme_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       learning_media_assets: {
         Row: {
@@ -2202,6 +2665,112 @@ export type Database = {
           },
         ]
       }
+      lms_interventions: {
+        Row: {
+          cohort_id: string | null
+          created_at: string
+          due_at: string | null
+          enrolment_id: string | null
+          id: string
+          intervention_type: Database["public"]["Enums"]["lms_intervention_type"]
+          last_activity_at: string | null
+          metadata: Json
+          organization_id: string
+          programme_id: string
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["lms_intervention_severity"]
+          status: Database["public"]["Enums"]["lms_intervention_status"]
+          triggered_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          enrolment_id?: string | null
+          id?: string
+          intervention_type: Database["public"]["Enums"]["lms_intervention_type"]
+          last_activity_at?: string | null
+          metadata?: Json
+          organization_id: string
+          programme_id: string
+          reason: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["lms_intervention_severity"]
+          status?: Database["public"]["Enums"]["lms_intervention_status"]
+          triggered_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          enrolment_id?: string | null
+          id?: string
+          intervention_type?: Database["public"]["Enums"]["lms_intervention_type"]
+          last_activity_at?: string | null
+          metadata?: Json
+          organization_id?: string
+          programme_id?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["lms_intervention_severity"]
+          status?: Database["public"]["Enums"]["lms_intervention_status"]
+          triggered_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_interventions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_interventions_enrolment_id_fkey"
+            columns: ["enrolment_id"]
+            isOneToOne: false
+            referencedRelation: "enrolments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_interventions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_interventions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_interventions_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_interventions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_awards: {
         Row: {
           award_scope: string
@@ -2411,6 +2980,127 @@ export type Database = {
             foreignKeyName: "notification_preferences_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_memberships_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_memberships_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["role"]
+          },
+          {
+            foreignKeyName: "organization_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_roles: {
+        Row: {
+          description: string
+          label: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          sort_order: number
+        }
+        Insert: {
+          description: string
+          label: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          sort_order: number
+        }
+        Update: {
+          description?: string
+          label?: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          slug: string
+          status: Database["public"]["Enums"]["content_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          slug: string
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2683,6 +3373,428 @@ export type Database = {
           xp_balance_cached?: number
         }
         Relationships: []
+      }
+      programme_assessments: {
+        Row: {
+          assessment_version_id: string
+          created_at: string
+          programme_id: string
+          sort_order: number
+        }
+        Insert: {
+          assessment_version_id: string
+          created_at?: string
+          programme_id: string
+          sort_order: number
+        }
+        Update: {
+          assessment_version_id?: string
+          created_at?: string
+          programme_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_assessments_assessment_version_id_fkey"
+            columns: ["assessment_version_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assessments_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_assignments: {
+        Row: {
+          assigned_by: string | null
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          intake_starts_at: string | null
+          organization_id: string
+          programme_id: string
+          status: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assignment_source: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          intake_starts_at?: string | null
+          organization_id: string
+          programme_id: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assignment_source?: Database["public"]["Enums"]["lms_assignment_source"]
+          cohort_id?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          intake_starts_at?: string | null
+          organization_id?: string
+          programme_id?: string
+          status?: Database["public"]["Enums"]["lms_participation_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assignments_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assignments_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_completion_rules: {
+        Row: {
+          created_at: string
+          minimum_completion_threshold: number
+          programme_id: string
+          required_course_ids: string[]
+          required_final_assessment_version_id: string | null
+          required_mission_ids: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          minimum_completion_threshold?: number
+          programme_id: string
+          required_course_ids?: string[]
+          required_final_assessment_version_id?: string | null
+          required_mission_ids?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          minimum_completion_threshold?: number
+          programme_id?: string
+          required_course_ids?: string[]
+          required_final_assessment_version_id?: string | null
+          required_mission_ids?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_completion_rules_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: true
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_completion_rules_required_final_assessment_versi_fkey"
+            columns: ["required_final_assessment_version_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_completion_rules_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_completions: {
+        Row: {
+          completed_at: string | null
+          completed_required_courses: string[]
+          completed_required_missions: string[]
+          created_at: string
+          evaluated_at: string
+          id: string
+          metadata: Json
+          missing_requirements: Json
+          organization_id: string
+          programme_id: string
+          progress_percent: number
+          status: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_required_courses?: string[]
+          completed_required_missions?: string[]
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          missing_requirements?: Json
+          organization_id: string
+          programme_id: string
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_required_courses?: string[]
+          completed_required_missions?: string[]
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          missing_requirements?: Json
+          organization_id?: string
+          programme_id?: string
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_completions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_completions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_courses: {
+        Row: {
+          course_id: string
+          created_at: string
+          programme_id: string
+          requirement: Database["public"]["Enums"]["programme_course_requirement"]
+          sort_order: number
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          programme_id: string
+          requirement?: Database["public"]["Enums"]["programme_course_requirement"]
+          sort_order: number
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          programme_id?: string
+          requirement?: Database["public"]["Enums"]["programme_course_requirement"]
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_courses_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_missions: {
+        Row: {
+          created_at: string
+          mission_id: string
+          programme_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          mission_id: string
+          programme_id: string
+          sort_order: number
+        }
+        Update: {
+          created_at?: string
+          mission_id?: string
+          programme_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_missions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programme_rewards: {
+        Row: {
+          created_at: string
+          programme_id: string
+          reward_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          programme_id: string
+          reward_id: string
+          sort_order: number
+        }
+        Update: {
+          created_at?: string
+          programme_id?: string
+          reward_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_rewards_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programmes: {
+        Row: {
+          completion_rules: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          intended_audience: string
+          objective: string
+          organization_id: string
+          reporting_config: Json
+          schedule_ends_at: string | null
+          schedule_starts_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completion_rules?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          intended_audience?: string
+          objective?: string
+          organization_id: string
+          reporting_config?: Json
+          schedule_ends_at?: string | null
+          schedule_starts_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completion_rules?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          intended_audience?: string
+          objective?: string
+          organization_id?: string
+          reporting_config?: Json
+          schedule_ends_at?: string | null
+          schedule_starts_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programmes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programmes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_answers: {
         Row: {
@@ -3750,9 +4862,13 @@ export type Database = {
           is_enabled: boolean
           limit_period: string
           offer_expires_at: string | null
+          organization_id: string | null
+          owner_scope: Database["public"]["Enums"]["lms_reward_owner_scope"]
           per_user_limit: number
           redemption_window_days: number | null
+          shared_with_programmes: boolean
           sort_order: number
+          sponsored_programme_id: string | null
           starts_at: string | null
           status: Database["public"]["Enums"]["content_status"]
           terms: string | null
@@ -3778,9 +4894,13 @@ export type Database = {
           is_enabled?: boolean
           limit_period?: string
           offer_expires_at?: string | null
+          organization_id?: string | null
+          owner_scope?: Database["public"]["Enums"]["lms_reward_owner_scope"]
           per_user_limit?: number
           redemption_window_days?: number | null
+          shared_with_programmes?: boolean
           sort_order?: number
+          sponsored_programme_id?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           terms?: string | null
@@ -3806,9 +4926,13 @@ export type Database = {
           is_enabled?: boolean
           limit_period?: string
           offer_expires_at?: string | null
+          organization_id?: string | null
+          owner_scope?: Database["public"]["Enums"]["lms_reward_owner_scope"]
           per_user_limit?: number
           redemption_window_days?: number | null
+          shared_with_programmes?: boolean
           sort_order?: number
+          sponsored_programme_id?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           terms?: string | null
@@ -3825,6 +4949,20 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_sponsored_programme_id_fkey"
+            columns: ["sponsored_programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
             referencedColumns: ["id"]
           },
         ]
@@ -4486,6 +5624,14 @@ export type Database = {
     }
     Functions: {
       accept_referral: { Args: { p_referral_code: string }; Returns: Json }
+      admin_adapt_platform_course: {
+        Args: {
+          p_organization_id: string
+          p_source_course_id: string
+          p_title?: string
+        }
+        Returns: Json
+      }
       admin_add_recommendation_item: {
         Args: {
           p_item_id: string
@@ -4513,6 +5659,26 @@ export type Database = {
           p_reward_xp: number
         }
         Returns: undefined
+      }
+      admin_assign_course: {
+        Args: {
+          p_cohort_ids: string[]
+          p_course_id: string
+          p_due_at: string
+          p_organization_id: string
+          p_user_ids: string[]
+        }
+        Returns: Json
+      }
+      admin_assign_programme: {
+        Args: {
+          p_cohort_ids: string[]
+          p_due_at: string
+          p_intake_starts_at: string
+          p_programme_id: string
+          p_user_ids: string[]
+        }
+        Returns: Json
       }
       admin_assign_reward_stock_to_perk_prize: {
         Args: {
@@ -4580,6 +5746,21 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_create_organization_private_course: {
+        Args: {
+          p_category: string
+          p_description: string
+          p_estimated_minutes: number
+          p_intended_audience: string
+          p_learning_outcomes: string[]
+          p_level: Database["public"]["Enums"]["course_level"]
+          p_organization_id: string
+          p_sort_order: number
+          p_thumbnail: Json
+          p_title: string
+        }
+        Returns: Json
+      }
       admin_create_reward:
         | {
             Args: {
@@ -4692,6 +5873,15 @@ export type Database = {
         Args: { p_source_course_id: string; p_title?: string }
         Returns: Json
       }
+      admin_get_lms_reporting: {
+        Args: {
+          p_cohort_id?: string
+          p_limit?: number
+          p_organization_id?: string
+          p_programme_id?: string
+        }
+        Returns: Json
+      }
       admin_grant_user_xp: {
         Args: { p_amount: number; p_reason?: string; p_target_user_id: string }
         Returns: string
@@ -4755,6 +5945,10 @@ export type Database = {
       }
       admin_reorder_quiz_questions: {
         Args: { p_question_ids: string[]; p_quiz_id: string }
+        Returns: Json
+      }
+      admin_replace_cohort_members: {
+        Args: { p_cohort_id: string; p_user_ids: string[] }
         Returns: Json
       }
       admin_reset_ai_course_media: {
@@ -4822,6 +6016,13 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_set_programme_status: {
+        Args: {
+          p_programme_id: string
+          p_status: Database["public"]["Enums"]["content_status"]
+        }
+        Returns: Json
+      }
       admin_set_recommendation_section_status: {
         Args: {
           p_section_id: string
@@ -4831,6 +6032,16 @@ export type Database = {
       }
       admin_set_reward_enabled: {
         Args: { p_is_enabled: boolean; p_reward_id: string }
+        Returns: Json
+      }
+      admin_set_reward_lms_ownership: {
+        Args: {
+          p_organization_id: string
+          p_owner_scope: Database["public"]["Enums"]["lms_reward_owner_scope"]
+          p_reward_id: string
+          p_shared_with_programmes: boolean
+          p_sponsored_programme_id: string
+        }
         Returns: Json
       }
       admin_set_reward_quantity: {
@@ -4860,6 +6071,21 @@ export type Database = {
           p_eyebrow: string
           p_headline: string
           p_placement_key: string
+        }
+        Returns: Json
+      }
+      admin_update_enrolment_status: {
+        Args: {
+          p_enrolment_id: string
+          p_status: Database["public"]["Enums"]["lms_participation_status"]
+        }
+        Returns: Json
+      }
+      admin_update_lms_intervention_status: {
+        Args: {
+          p_intervention_id: string
+          p_note?: string
+          p_status: Database["public"]["Enums"]["lms_intervention_status"]
         }
         Returns: Json
       }
@@ -5004,6 +6230,19 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_upsert_cohort: {
+        Args: {
+          p_cohort_id: string
+          p_description: string
+          p_ends_at: string
+          p_organization_id: string
+          p_slug: string
+          p_starts_at: string
+          p_status: Database["public"]["Enums"]["content_status"]
+          p_title: string
+        }
+        Returns: Json
+      }
       admin_upsert_course: {
         Args: {
           p_category: string
@@ -5017,6 +6256,18 @@ export type Database = {
           p_status: Database["public"]["Enums"]["content_status"]
           p_thumbnail: Json
           p_title: string
+        }
+        Returns: Json
+      }
+      admin_upsert_course_completion_rules: {
+        Args: {
+          p_course_id: string
+          p_minimum_completion_threshold: number
+          p_minimum_quiz_score: number
+          p_required_final_assessment_version_id: string
+          p_required_lesson_ids: string[]
+          p_required_mission_ids: string[]
+          p_required_quiz_ids: string[]
         }
         Returns: Json
       }
@@ -5060,6 +6311,24 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_upsert_organization: {
+        Args: {
+          p_name: string
+          p_organization_id: string
+          p_slug: string
+          p_status?: Database["public"]["Enums"]["content_status"]
+        }
+        Returns: Json
+      }
+      admin_upsert_organization_membership: {
+        Args: {
+          p_organization_id: string
+          p_role: Database["public"]["Enums"]["organization_role_key"]
+          p_status?: Database["public"]["Enums"]["organization_membership_status"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       admin_upsert_perk_bundle_prize: {
         Args: {
           p_available_from?: string
@@ -5089,6 +6358,35 @@ export type Database = {
           p_release_cap?: number
           p_sort_order?: number
           p_starts_at?: string
+        }
+        Returns: Json
+      }
+      admin_upsert_programme: {
+        Args: {
+          p_assessment_version_ids: string[]
+          p_completion_rules: Json
+          p_course_ids: string[]
+          p_intended_audience: string
+          p_mission_ids: string[]
+          p_objective: string
+          p_organization_id: string
+          p_programme_id: string
+          p_reward_ids: string[]
+          p_schedule_ends_at: string
+          p_schedule_starts_at: string
+          p_slug: string
+          p_status: Database["public"]["Enums"]["content_status"]
+          p_title: string
+        }
+        Returns: Json
+      }
+      admin_upsert_programme_completion_rules: {
+        Args: {
+          p_minimum_completion_threshold: number
+          p_programme_id: string
+          p_required_course_ids: string[]
+          p_required_final_assessment_version_id: string
+          p_required_mission_ids: string[]
         }
         Returns: Json
       }
@@ -5195,8 +6493,67 @@ export type Database = {
         Returns: Json
       }
       create_ad_make_good_recommendations: { Args: never; Returns: Json }
+      current_programme_can_use_reward: {
+        Args: { p_programme_id: string; p_reward_id: string }
+        Returns: boolean
+      }
+      current_user_can_edit_course: {
+        Args: { p_course_id: string }
+        Returns: boolean
+      }
+      current_user_can_edit_organization_content: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_manage_organization: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_manage_organization_audience: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_manage_organization_programmes: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_manage_programme: {
+        Args: { p_programme_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_cohort: {
+        Args: { p_cohort_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_course: {
+        Args: { p_course_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_organization_audience: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_programme: {
+        Args: { p_programme_id: string }
+        Returns: boolean
+      }
+      current_user_has_organization_role: {
+        Args: {
+          p_organization_id: string
+          p_roles?: Database["public"]["Enums"]["organization_role_key"][]
+        }
+        Returns: boolean
+      }
       current_user_is_admin: { Args: never; Returns: boolean }
       email_domain: { Args: { email: string }; Returns: string }
+      evaluate_course_completion: {
+        Args: { p_course_id: string }
+        Returns: Json
+      }
+      evaluate_programme_completion: {
+        Args: { p_programme_id: string }
+        Returns: Json
+      }
       fail_ai_generation_job:
         | {
             Args: {
@@ -5247,6 +6604,10 @@ export type Database = {
         }[]
       }
       generate_continue_learning_reminders: { Args: never; Returns: number }
+      generate_lms_programme_notifications: {
+        Args: { p_now?: string }
+        Returns: Json
+      }
       generate_referral_code: { Args: { user_id: string }; Returns: string }
       get_ad_click_target: { Args: { p_decision_id: string }; Returns: Json }
       get_ad_recent_lesson_decision: {
@@ -5267,6 +6628,16 @@ export type Database = {
         Args: { p_session_key_hash: string }
         Returns: string[]
       }
+      get_lms_intervention_queue: {
+        Args: {
+          p_limit?: number
+          p_organization_id?: string
+          p_programme_id?: string
+          p_status?: Database["public"]["Enums"]["lms_intervention_status"]
+        }
+        Returns: Json
+      }
+      get_my_lms_transcript: { Args: never; Returns: Json }
       grant_mission_award: {
         Args: {
           p_award_scope: string
@@ -5600,6 +6971,77 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_course_completion_for_user: {
+        Args: { p_course_id: string; p_user_id: string }
+        Returns: {
+          completed_at: string | null
+          completed_required_lessons: string[]
+          completed_required_missions: string[]
+          completed_required_quizzes: string[]
+          course_id: string
+          created_at: string
+          evaluated_at: string
+          id: string
+          metadata: Json
+          missing_requirements: Json
+          organization_id: string | null
+          progress_percent: number
+          status: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "course_completions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_lms_intervention: {
+        Args: {
+          p_cohort_id: string
+          p_due_at: string
+          p_enrolment_id: string
+          p_intervention_type: Database["public"]["Enums"]["lms_intervention_type"]
+          p_last_activity_at: string
+          p_metadata?: Json
+          p_organization_id: string
+          p_programme_id: string
+          p_reason: string
+          p_severity: Database["public"]["Enums"]["lms_intervention_severity"]
+          p_user_id: string
+        }
+        Returns: string
+      }
+      upsert_programme_completion_for_user: {
+        Args: { p_programme_id: string; p_user_id: string }
+        Returns: {
+          completed_at: string | null
+          completed_required_courses: string[]
+          completed_required_missions: string[]
+          created_at: string
+          evaluated_at: string
+          id: string
+          metadata: Json
+          missing_requirements: Json
+          organization_id: string
+          programme_id: string
+          progress_percent: number
+          status: Database["public"]["Enums"]["lms_completion_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "programme_completions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      user_completed_assessment: {
+        Args: { p_assessment_version_id: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       ad_asset_type: "image" | "logo" | "video" | "poster" | "caption"
@@ -5632,6 +7074,10 @@ export type Database = {
       ad_pricing_model: "cpm" | "cpc" | "flat_fee" | "make_good" | "house"
       ad_qualification_status: "raw" | "filtered" | "qualified" | "billable"
       content_status: "draft" | "published" | "archived"
+      course_catalog_scope:
+        | "platform"
+        | "organization_private"
+        | "adapted_platform"
       course_level: "beginner" | "intermediate" | "advanced"
       lesson_content_block_type:
         | "text"
@@ -5647,6 +7093,20 @@ export type Database = {
         | "reflection"
         | "summary"
       lesson_retry_mode: "disabled" | "anytime" | "cooldown"
+      lms_assignment_source: "manual" | "cohort" | "programme"
+      lms_completion_status: "in_progress" | "completed"
+      lms_intervention_severity: "info" | "warning" | "critical"
+      lms_intervention_status:
+        | "open"
+        | "acknowledged"
+        | "resolved"
+        | "dismissed"
+      lms_intervention_type: "upcoming_due" | "overdue" | "inactive"
+      lms_participation_status: "active" | "completed" | "withdrawn"
+      lms_reward_owner_scope:
+        | "platform_owned"
+        | "organization_owned"
+        | "programme_sponsored"
       mission_category:
         | "course"
         | "referral"
@@ -5667,6 +7127,21 @@ export type Database = {
         | "referral_friend_completed_lessons"
         | "proof_upload"
         | "manual_review"
+      organization_membership_status:
+        | "active"
+        | "invited"
+        | "suspended"
+        | "removed"
+      organization_role_key:
+        | "organisation_owner"
+        | "organisation_admin"
+        | "programme_manager"
+        | "content_editor"
+        | "reviewer"
+        | "instructor"
+        | "report_viewer"
+        | "learner"
+      programme_course_requirement: "required" | "optional"
       quiz_answer_status:
         | "earned"
         | "missed"
@@ -5861,6 +7336,11 @@ export const Constants = {
       ad_pricing_model: ["cpm", "cpc", "flat_fee", "make_good", "house"],
       ad_qualification_status: ["raw", "filtered", "qualified", "billable"],
       content_status: ["draft", "published", "archived"],
+      course_catalog_scope: [
+        "platform",
+        "organization_private",
+        "adapted_platform",
+      ],
       course_level: ["beginner", "intermediate", "advanced"],
       lesson_content_block_type: [
         "text",
@@ -5878,6 +7358,22 @@ export const Constants = {
         "summary",
       ],
       lesson_retry_mode: ["disabled", "anytime", "cooldown"],
+      lms_assignment_source: ["manual", "cohort", "programme"],
+      lms_completion_status: ["in_progress", "completed"],
+      lms_intervention_severity: ["info", "warning", "critical"],
+      lms_intervention_status: [
+        "open",
+        "acknowledged",
+        "resolved",
+        "dismissed",
+      ],
+      lms_intervention_type: ["upcoming_due", "overdue", "inactive"],
+      lms_participation_status: ["active", "completed", "withdrawn"],
+      lms_reward_owner_scope: [
+        "platform_owned",
+        "organization_owned",
+        "programme_sponsored",
+      ],
       mission_category: [
         "course",
         "referral",
@@ -5901,6 +7397,23 @@ export const Constants = {
         "proof_upload",
         "manual_review",
       ],
+      organization_membership_status: [
+        "active",
+        "invited",
+        "suspended",
+        "removed",
+      ],
+      organization_role_key: [
+        "organisation_owner",
+        "organisation_admin",
+        "programme_manager",
+        "content_editor",
+        "reviewer",
+        "instructor",
+        "report_viewer",
+        "learner",
+      ],
+      programme_course_requirement: ["required", "optional"],
       quiz_answer_status: [
         "earned",
         "missed",

@@ -11,10 +11,14 @@ function parseEnvOutput(output) {
 }
 
 function readLocalSupabaseEnv() {
-  const result = spawnSync("npx", ["supabase@2.110.0", "status", "-o", "env"], {
-    cwd: process.cwd(),
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    process.execPath,
+    ["scripts/supabase-cli.mjs", "status", "-o", "env"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
 
   if (result.status !== 0) return {};
   return parseEnvOutput(result.stdout);

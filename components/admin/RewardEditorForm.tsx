@@ -4,7 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { RewardThumbnailFields } from "@/components/admin/RewardThumbnailFields";
 import type { RewardActionState } from "@/app/admin/rewards/[id]/actions";
-import type { AdminCampaignRow } from "@/lib/admin";
+import type { AdminCampaignRow, AdminOrganizationRow, AdminProgrammeRow } from "@/lib/admin";
 
 type RewardField = {
   id: string;
@@ -26,8 +26,12 @@ type RewardEditorValue = {
   fulfillmentConfig: Record<string, unknown>;
   perUserLimit: number;
   limitPeriod: string;
+  organizationId: string;
+  ownerScope: "platform_owned" | "organization_owned" | "programme_sponsored";
   redemptionWindowDays: number | "";
+  sharedWithProgrammes: boolean;
   sortOrder: number;
+  sponsoredProgrammeId: string;
   offerExpiresAt: string;
   thumbnailUrl: string;
   thumbnailIconName: string;
@@ -48,6 +52,8 @@ type RewardEditorFormProps = {
   reward: RewardEditorValue;
   campaigns?: AdminCampaignRow[];
   lockDistributionMode?: "direct" | "perk_bundle";
+  organizations?: AdminOrganizationRow[];
+  programmes?: AdminProgrammeRow[];
 };
 
 const fieldTypes = ["text", "tel", "email", "textarea"] as const;
@@ -119,6 +125,8 @@ export function RewardEditorForm({
   reward,
   campaigns = [],
   lockDistributionMode,
+  organizations = [],
+  programmes = [],
 }: RewardEditorFormProps) {
   const [state, formAction] = useActionState(action, { ok: false, message: "" });
   const [distributionMode, setDistributionMode] = useState(lockDistributionMode ?? reward.distributionMode);
@@ -126,6 +134,8 @@ export function RewardEditorForm({
     reward.fulfillmentType === "perk_bundle" ? "manual" : reward.fulfillmentType,
   );
   const [visibilityMode, setVisibilityMode] = useState(reward.visibilityMode);
+  const [ownerScope, setOwnerScope] = useState(reward.ownerScope);
+  const [sharedWithProgrammes, setSharedWithProgrammes] = useState(reward.sharedWithProgrammes);
   const [limitPeriod, setLimitPeriod] = useState(reward.limitPeriod);
   const [perUserLimit, setPerUserLimit] = useState(Math.max(1, reward.perUserLimit || 1));
   const [claimSteps, setClaimSteps] = useState(
@@ -418,6 +428,84 @@ export function RewardEditorForm({
                 : "This reward is hidden from learners until you switch it back on."}
         </p>
       </div>
+
+      <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+        <h2 className="text-sm font-black">Programme ownership</h2>
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          Controls whether programmes can attach this reward for missions and engagement.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <label>
+            <span className={labelClasses()}>Owner</span>
+            <select
+              className={fieldClasses()}
+              name="ownerScope"
+              onChange={(event) => {
+                const nextScope = event.target.value as typeof ownerScope;
+                setOwnerScope(nextScope);
+                if (nextScope !== "platform_owned") {
+                  setSharedWithProgrammes(false);
+                }
+              }}
+              value={ownerScope}
+            >
+              <option value="platform_owned">Platform-owned</option>
+              <option value="organization_owned">Organisation-owned</option>
+              <option value="programme_sponsored">Programme-sponsored</option>
+            </select>
+          </label>
+
+          {ownerScope === "organization_owned" ? (
+            <label>
+              <span className={labelClasses()}>Organisation</span>
+              <select className={fieldClasses()} name="organizationId" defaultValue={reward.organizationId} required>
+                <option value="">Select organisation</option>
+                {organizations.map((organization) => (
+                  <option key={organization.id} value={organization.id}>
+                    {organization.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <input name="organizationId" type="hidden" value="" />
+          )}
+
+          {ownerScope === "programme_sponsored" ? (
+            <label>
+              <span className={labelClasses()}>Sponsored programme</span>
+              <select className={fieldClasses()} name="sponsoredProgrammeId" defaultValue={reward.sponsoredProgrammeId} required>
+                <option value="">Select programme</option>
+                {programmes.map((programme) => (
+                  <option key={programme.id} value={programme.id}>
+                    {programme.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <input name="sponsoredProgrammeId" type="hidden" value="" />
+          )}
+        </div>
+
+        {ownerScope === "platform_owned" ? (
+          <label className="mt-4 flex items-start gap-3 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
+            <input
+              checked={sharedWithProgrammes}
+              className="mt-1"
+              name="sharedWithProgrammes"
+              onChange={(event) => setSharedWithProgrammes(event.target.checked)}
+              type="checkbox"
+            />
+            <span>
+              Share with programmes
+              <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                Allows selected programmes to attach this Project VE reward.
+              </span>
+            </span>
+          </label>
+        ) : null}
+      </section>
 
       <div className="grid gap-4 md:grid-cols-3">
         <label>

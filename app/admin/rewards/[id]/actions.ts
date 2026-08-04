@@ -146,6 +146,20 @@ async function callRewardMutationRpc(
   });
 }
 
+async function callRewardOwnershipRpc(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  rewardId: string,
+  payload: RewardMutationPayload,
+) {
+  return supabase.rpc("admin_set_reward_lms_ownership", {
+    p_organization_id: payload.ownerScope === "platform_owned" ? null : payload.organizationId,
+    p_owner_scope: payload.ownerScope,
+    p_reward_id: rewardId,
+    p_shared_with_programmes: payload.ownerScope === "platform_owned" ? payload.sharedWithProgrammes : false,
+    p_sponsored_programme_id: payload.ownerScope === "programme_sponsored" ? payload.sponsoredProgrammeId : null,
+  });
+}
+
 export async function updateReward(
   previousState: RewardActionState = defaultActionState,
   formData: FormData,
@@ -157,6 +171,12 @@ export async function updateReward(
 
   if (error) {
     return { ok: false, message: error.message };
+  }
+
+  const { error: ownershipError } = await callRewardOwnershipRpc(supabase, payload.rewardId, payload);
+
+  if (ownershipError) {
+    return { ok: false, message: ownershipError.message };
   }
 
   revalidatePath("/admin/rewards");
@@ -190,6 +210,11 @@ export async function createReward(
 
   const result = data as { rewardId?: string } | null;
   const createdRewardId = result?.rewardId ?? rewardId;
+  const { error: ownershipError } = await callRewardOwnershipRpc(supabase, createdRewardId, payload);
+
+  if (ownershipError) {
+    return { ok: false, message: ownershipError.message };
+  }
 
   revalidatePath("/admin/rewards");
   revalidatePath("/admin/rewards/perks");
@@ -235,7 +260,7 @@ export async function setRewardStatus(formData: FormData) {
   const { data: existingReward, error: existingRewardError } = await supabase
     .from("rewards")
     .select(
-      "id, title, description, cost_xp, thumbnail, offer_expires_at, terms, claim_steps, distribution_mode, fulfillment_type, visibility_mode, fulfillment_config, per_user_limit, limit_period, redemption_window_days, sort_order, campaign_id",
+      "id, title, description, cost_xp, thumbnail, offer_expires_at, terms, claim_steps, distribution_mode, fulfillment_type, visibility_mode, fulfillment_config, per_user_limit, limit_period, redemption_window_days, sort_order, campaign_id, owner_scope, organization_id, sponsored_programme_id, shared_with_programmes",
     )
     .eq("id", rewardId);
 
@@ -258,6 +283,8 @@ export async function setRewardStatus(formData: FormData) {
     isEnabled,
     thumbnail: getStoredThumbnail(reward.thumbnail),
     offerExpiresAt: reward.offer_expires_at,
+    organizationId: reward.organization_id,
+    ownerScope: reward.owner_scope ?? "platform_owned",
     terms: reward.terms ?? "",
     claimSteps: Array.isArray(reward.claim_steps)
       ? reward.claim_steps.filter((step): step is string => typeof step === "string")
@@ -275,7 +302,9 @@ export async function setRewardStatus(formData: FormData) {
     perUserLimit: reward.per_user_limit,
     limitPeriod: reward.limit_period,
     redemptionWindowDays: reward.redemption_window_days,
+    sharedWithProgrammes: Boolean(reward.shared_with_programmes),
     sortOrder: reward.sort_order,
+    sponsoredProgrammeId: reward.sponsored_programme_id,
     campaignId: reward.campaign_id,
     totalAvailable: 0,
   });

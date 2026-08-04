@@ -31,9 +31,11 @@ npm run db:verify:local
 `npm run db:reset` rebuilds the local database from migration history. It must
 not consult `supabase/schema.sql`.
 
-Database scripts pin the Supabase CLI through `npx supabase@2.110.0` so reset,
-test, and type-generation behavior does not change silently when a new CLI
-release is published.
+Database scripts use the repo-local `supabase` dev dependency through
+`node scripts/supabase-cli.mjs` so reset, test, and type-generation behavior does
+not change silently when a new CLI release is published. The wrapper also uses a
+writable temp Supabase CLI home, which avoids local validation failures caused by
+`npx` registry lookups or restricted `~/.supabase` writes.
 
 Local role bootstrap lives in:
 
