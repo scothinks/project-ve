@@ -3,11 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import type { Database } from "@/types/database";
 
 type ContentStatus = Database["public"]["Enums"]["content_status"];
+
+const PROGRAMME_MANAGER_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+];
 
 function parseOptionalDateTime(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
@@ -98,7 +104,7 @@ export async function saveProgramme(formData: FormData) {
   const rewardIds = getSortedSelectedIds(formData, "rewardIds");
   const assessmentVersionIds = getSortedSelectedIds(formData, "assessmentVersionIds");
   const completionRuleConfig = parseCompletionRuleConfig(formData);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(PROGRAMME_MANAGER_ROLES);
 
   const { data, error } = await supabase.rpc("admin_upsert_programme", {
     p_assessment_version_ids: assessmentVersionIds,
@@ -160,7 +166,7 @@ export async function setProgrammeStatus(formData: FormData) {
   const programmeId = sanitizePlainTextInput(String(formData.get("programmeId") ?? ""), 80);
   const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/programmes"), 400);
   const status = normalizeStatus(formData.get("status"));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(PROGRAMME_MANAGER_ROLES);
 
   const { error } = await supabase.rpc("admin_set_programme_status", {
     p_programme_id: programmeId,

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   parseBulkPerkRewardPrizesForm,
   parsePerkInventoryMutationForm,
@@ -15,7 +16,7 @@ import {
   parseSavePerkPrizeForm,
   type RewardMutationPayload,
 } from "@/lib/admin-reward-validation";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { ValidationError } from "@/lib/app-errors";
 import { formatValidationIssues } from "@/lib/form-data-validation";
 import { isRewardIconName } from "@/lib/reward-icons";
@@ -30,6 +31,16 @@ const defaultActionState: RewardActionState = {
   ok: false,
   message: "",
 };
+
+const REWARD_MANAGER_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+];
+
+async function requireRewardManager() {
+  return requireAdminWorkspaceRole(REWARD_MANAGER_ROLES);
+}
 
 function requireValidForm<T>(validation: ValidationResult<T>) {
   if (!validation.ok) {
@@ -83,7 +94,7 @@ function slugifyRewardTitle(title: string) {
   return `reward-${slug || "item"}`;
 }
 
-async function getUniqueRewardId(supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"], title: string) {
+async function getUniqueRewardId(supabase: SupabaseClient, title: string) {
   const baseId = slugifyRewardTitle(title);
   let candidate = baseId;
 
@@ -109,7 +120,7 @@ async function getUniqueRewardId(supabase: Awaited<ReturnType<typeof requireAdmi
 }
 
 async function callRewardMutationRpc(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: SupabaseClient,
   rpcName: "admin_update_reward" | "admin_create_reward",
   payload: RewardMutationPayload,
   rewardIdOverride?: string,
@@ -147,7 +158,7 @@ async function callRewardMutationRpc(
 }
 
 async function callRewardOwnershipRpc(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: SupabaseClient,
   rewardId: string,
   payload: RewardMutationPayload,
 ) {
@@ -166,7 +177,7 @@ export async function updateReward(
 ): Promise<RewardActionState> {
   void previousState;
   const payload = requireValidForm(parseRewardPayloadForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
   const { error } = await callRewardMutationRpc(supabase, "admin_update_reward", payload);
 
   if (error) {
@@ -195,7 +206,7 @@ export async function createReward(
 ): Promise<RewardActionState> {
   void previousState;
   const payload = requireValidForm(parseRewardPayloadForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
   const rewardId = await getUniqueRewardId(supabase, payload.title);
   const { data, error } = await callRewardMutationRpc(
     supabase,
@@ -228,7 +239,7 @@ export async function createReward(
 
 export async function toggleRewardEnabled(formData: FormData) {
   const { isEnabled, redirectTo, rewardId } = requireValidForm(parseRewardToggleForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { error } = await supabase.rpc("admin_set_reward_enabled", {
     p_reward_id: rewardId,
@@ -255,7 +266,7 @@ export async function toggleRewardEnabled(formData: FormData) {
 
 export async function setRewardStatus(formData: FormData) {
   const { isEnabled, redirectTo, rewardId, status } = requireValidForm(parseRewardStatusForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { data: existingReward, error: existingRewardError } = await supabase
     .from("rewards")
@@ -366,7 +377,7 @@ export async function savePerkPrize(formData: FormData) {
     };
   }
 
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
   const totalWinCap = prizeType === "reward" ? null : input.totalWinCap;
   const availableFrom = prizeType === "reward" ? null : input.availableFrom;
   const expiresAt = prizeType === "reward" ? null : input.expiresAt;
@@ -446,7 +457,7 @@ export async function savePerkPrize(formData: FormData) {
 
 export async function setPerkPrizeEnabled(formData: FormData) {
   const { bundleRewardId, isEnabled, prizeId, redirectTo } = requireValidForm(parsePerkPrizeToggleForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { data: existingPrize, error: existingPrizeError } = await supabase
     .from("perk_bundle_prizes")
@@ -526,7 +537,7 @@ export async function saveBulkPerkRewardPrizes(formData: FormData) {
     sourceRewardIds,
     totalWinCap,
   } = requireValidForm(parseBulkPerkRewardPrizesForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
   const { data: existingPrizes, error: existingPrizesError } = await supabase
     .from("perk_bundle_prizes")
     .select("source_reward_id")
@@ -580,7 +591,7 @@ export async function saveBulkPerkRewardPrizes(formData: FormData) {
 
 export async function deletePerkPrize(formData: FormData) {
   const { bundleRewardId, prizeId } = requireValidForm(parsePerkPrizeIdForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
   const { error } = await supabase.rpc("admin_delete_perk_bundle_prize", {
     p_prize_id: prizeId,
   });
@@ -598,7 +609,7 @@ export async function assignPerkPrizeInventory(formData: FormData) {
   const { availableFrom, bundleRewardId, expiresAt, prizeId, quantity, reason } = requireValidForm(
     parsePerkInventoryMutationForm(formData, "Inventory assignment"),
   );
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { error } = await supabase.rpc("admin_assign_reward_stock_to_perk_prize", {
     p_prize_id: prizeId,
@@ -623,7 +634,7 @@ export async function releasePerkPrizeInventory(formData: FormData) {
   const { bundleRewardId, prizeId, quantity, reason } = requireValidForm(
     parsePerkInventoryMutationForm(formData, "Inventory release"),
   );
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { error } = await supabase.rpc("admin_release_reward_stock_from_perk_prize", {
     p_prize_id: prizeId,
@@ -654,7 +665,7 @@ export async function savePerkReleaseBucket(formData: FormData) {
     sortOrder,
     startsAt,
   } = requireValidForm(parsePerkReleaseBucketForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { error } = await supabase.rpc("admin_upsert_perk_prize_release_bucket", {
     p_bucket_id: bucketId || null,
@@ -678,7 +689,7 @@ export async function savePerkReleaseBucket(formData: FormData) {
 
 export async function deletePerkReleaseBucket(formData: FormData) {
   const { bucketId, bundleRewardId } = requireValidForm(parsePerkReleaseBucketDeleteForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireRewardManager();
 
   const { error } = await supabase.rpc("admin_delete_perk_prize_release_bucket", {
     p_bucket_id: bucketId,

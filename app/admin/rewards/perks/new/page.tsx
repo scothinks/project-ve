@@ -1,10 +1,14 @@
 import { PerkEditorForm } from "@/components/admin/PerkEditorForm";
 import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, requireAdminWorkspaceRole } from "@/lib/admin";
 import { createReward } from "../../[id]/actions";
 
 export default async function NewAdminPerkPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const campaigns = await getAdminCampaigns(supabase);
 
   return (

@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
 import {
   getAdminCampaignsByIds,
   type AdminCampaignRow,
@@ -69,6 +70,7 @@ export async function getAdminRewards(
   supabase: SupabaseClient,
   filters: { campaignId?: string; distributionMode?: "direct" | "perk_bundle" } = {},
 ) {
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
   const baseSelect =
     "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
   let query = supabase
@@ -85,6 +87,29 @@ export async function getAdminRewards(
 
   if (filters.distributionMode) {
     query = query.eq("distribution_mode", filters.distributionMode);
+  }
+
+  if (selectedWorkspaceId !== "platform") {
+    const { data: programmeRows, error: programmeError } = await supabase
+      .from("programmes")
+      .select("id")
+      .eq("organization_id", selectedWorkspaceId);
+
+    if (programmeError) {
+      throw programmeError;
+    }
+
+    const programmeIds = ((programmeRows ?? []) as Array<{ id: string }>).map((row) => row.id);
+    const rewardScopes = [
+      `organization_id.eq.${selectedWorkspaceId}`,
+      "and(owner_scope.eq.platform_owned,shared_with_programmes.eq.true)",
+    ];
+
+    if (programmeIds.length > 0) {
+      rewardScopes.push(`sponsored_programme_id.in.(${programmeIds.join(",")})`);
+    }
+
+    query = query.or(rewardScopes.join(","));
   }
 
   const { data: nextData, error } = await query;

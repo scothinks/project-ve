@@ -2424,9 +2424,6 @@ Validation:
 * `npm run typecheck`
 * `npm run lint`
 * `npm run build`
-* `npm test`
-
----
 
 # LMS-NOTIF-001
 
@@ -2513,6 +2510,53 @@ Tests:
 Validation:
 
 * `npm run test:db`
+
+## P1 closure update
+
+Status: Focused closure implemented on 2026-08-04 for review.
+
+Implemented:
+
+* server-recognised admin workspace context backed by the `project-ve-admin-workspace` cookie;
+* organisation staff access to `/admin` through contextual memberships while organisation learners remain outside the admin product;
+* role-filtered admin navigation for organisation workspaces;
+* platform-admin organisation operations page for creating organisations and adding/updating/suspending/removing contextual memberships through the existing secured RPCs;
+* workspace-scoped course, programme, cohort, reward and reporting data queries;
+* cohort learner pickers scoped to active learner memberships for the selected organisation;
+* enrolment-based learner access for assigned organisation-private/adapted courses and programmes;
+* completion-threshold semantics where selected work contributes to the configured percentage and selected final assessments remain mandatory;
+* tenant-aware reward visibility and redemption eligibility for platform-owned, organisation-owned and programme-sponsored rewards;
+* programme-filtered reporting attribution for mission awards and reward redemptions;
+* role-level route and server-action guards for programme, cohort and reward management surfaces;
+* contextual organisation profile visibility for active organisation members, limited to audience staff who can read that organisation audience;
+* expanded P1 release gate assertions for assignment access, withdrawal, transcript usability, threshold behavior, reward isolation, inventory ownership and programme reporting attribution;
+* browser-level institutional Playwright journey covering organisation creation, contextual memberships, private course seeding, programme creation, cohort roster creation, programme assignment, learner completion/transcript, report-viewer reporting access, management-route denial and outsider private content/reward denial.
+
+Forward migrations:
+
+* `supabase/migrations/20260804100000_lms_p1_closure.sql`
+* `supabase/migrations/20260804103000_lms_organization_profile_visibility.sql`
+
+Tests:
+
+* `supabase/tests/database/lms_p1_release_gate.sql`
+* `tests/e2e/remediation-flows.spec.ts`
+
+Validation:
+
+* `npm run db:reset`
+* `npm run test:db`
+* `npm run db:types:local`
+* `npm run db:types:local:check`
+* `npm run typecheck`
+* `npm run lint`
+* `npm run build`
+* `npm test`
+* `npm run test:e2e`
+
+Known remaining review item:
+
+* None for the authorised P1 Hybrid LMS foundation closure scope.
 
 ---
 

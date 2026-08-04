@@ -2,10 +2,10 @@ import { AdminNoticeBanner, AdminPageHeader } from "@/components/admin/AdminPrim
 import { CohortEditorForm } from "@/components/admin/CohortEditorForm";
 import {
   getAdminCourses,
+  getAdminOrganizationLearners,
   getAdminOrganizations,
   getAdminProgrammes,
-  getAdminUsers,
-  requireAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -17,13 +17,18 @@ export default async function NewCohortPage({
 }: {
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
-  const { supabase } = await requireAdmin();
-  const [courses, organizations, programmes, users] = await Promise.all([
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+    "instructor",
+  ]);
+  const [courses, organizations, programmes] = await Promise.all([
     getAdminCourses(supabase),
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
-    getAdminUsers(supabase),
   ]);
+  const users = await getAdminOrganizationLearners(supabase, organizations[0]?.id);
   const notice = firstSearchValue((await searchParams)?.notice);
 
   return (

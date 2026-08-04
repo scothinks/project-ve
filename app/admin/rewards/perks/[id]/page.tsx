@@ -12,7 +12,7 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminRewardDetail, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminRewardDetail, requireAdminWorkspaceRole } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 import { formatRewardDate } from "@/lib/rewards";
@@ -164,7 +164,11 @@ function formatPercent(value: number) {
 export default async function AdminPerkDetailPage({ params, searchParams }: AdminPerkDetailPageProps) {
   const { id } = await params;
   const { notice, prizePage, drawPage, focusPrize } = await searchParams;
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [detail, campaigns] = await Promise.all([
     getAdminRewardDetail(supabase, id),
     getAdminCampaigns(supabase),

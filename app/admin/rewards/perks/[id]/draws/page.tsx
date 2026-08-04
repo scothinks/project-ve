@@ -7,7 +7,7 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminPerkDraws, getAdminRewardDetail, requireAdmin } from "@/lib/admin";
+import { getAdminPerkDraws, getAdminRewardDetail, requireAdminWorkspaceRole } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 
@@ -19,7 +19,11 @@ type AdminPerkDrawsPageProps = {
 export default async function AdminPerkDrawsPage({ params, searchParams }: AdminPerkDrawsPageProps) {
   const { id } = await params;
   const { page } = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const detail = await getAdminRewardDetail(supabase, id);
 
   if (!detail) {

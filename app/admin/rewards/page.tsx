@@ -8,7 +8,7 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminRewards, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
@@ -129,7 +129,11 @@ type AdminRewardsPageProps = {
 
 export default async function AdminRewardsPage({ searchParams }: AdminRewardsPageProps) {
   const { campaign, page, notice } = await searchParams;
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [rewards, campaigns] = await Promise.all([
     getAdminRewards(supabase, { campaignId: campaign, distributionMode: "direct" }),
     getAdminCampaigns(supabase),

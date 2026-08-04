@@ -4,10 +4,10 @@ import { CohortEditorForm } from "@/components/admin/CohortEditorForm";
 import {
   getAdminCohort,
   getAdminCourses,
+  getAdminOrganizationLearners,
   getAdminOrganizations,
   getAdminProgrammes,
-  getAdminUsers,
-  requireAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -22,19 +22,25 @@ export default async function CohortWorkspacePage({
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
   const { id } = await params;
-  const { supabase } = await requireAdmin();
-  const [cohort, courses, organizations, programmes, users] = await Promise.all([
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+    "instructor",
+  ]);
+  const [cohort, courses, organizations, programmes] = await Promise.all([
     getAdminCohort(supabase, id),
     getAdminCourses(supabase),
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
-    getAdminUsers(supabase),
   ]);
   const notice = firstSearchValue((await searchParams)?.notice);
 
   if (!cohort) {
     notFound();
   }
+
+  const users = await getAdminOrganizationLearners(supabase, cohort.organization_id);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
 import type { Database } from "@/types/database";
 import type { AdminCourseRow } from "@/features/learning/admin/data";
 import type { AdminProfileRow } from "@/features/users/admin/data";
@@ -134,7 +135,8 @@ function countByCohortId(rows: Array<{ cohort_id: string | null }>) {
 export async function getAdminCohorts(
   supabase: SupabaseClient<Database>,
 ): Promise<AdminCohortRow[]> {
-  const { data, error } = await supabase
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  let query = supabase
     .from("cohorts")
     .select(`
       id,
@@ -151,6 +153,12 @@ export async function getAdminCohorts(
       organization:organizations!cohorts_organization_id_fkey(id, name, slug)
     `)
     .order("updated_at", { ascending: false });
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw error;

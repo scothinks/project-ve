@@ -14,7 +14,7 @@ import {
   getAdminOrganizations,
   getAdminProgrammes,
   getAdminRewardDetail,
-  requireAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
@@ -61,7 +61,11 @@ function getInventoryValue(payload: Record<string, unknown>, itemType: string) {
 export default async function AdminRewardDetailPage({ params, searchParams }: AdminRewardDetailPageProps) {
   const { id } = await params;
   const { inventoryPage, adjustmentsPage } = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [detail, campaigns, organizations, programmes] = await Promise.all([
     getAdminRewardDetail(supabase, id),
     getAdminCampaigns(supabase),
