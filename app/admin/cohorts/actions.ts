@@ -3,12 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import type { Database } from "@/types/database";
 
 type ContentStatus = Database["public"]["Enums"]["content_status"];
 type ParticipationStatus = Database["public"]["Enums"]["lms_participation_status"];
+
+const COHORT_MANAGER_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "instructor",
+];
 
 function parseOptionalDateTime(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
@@ -84,7 +91,7 @@ export async function saveCohort(formData: FormData) {
   const description = sanitizePlainTextInput(String(formData.get("description") ?? ""), 2000);
   const status = normalizeStatus(formData.get("status"));
   const memberUserIds = getCombinedUserIds(formData, "memberUserIds", "bulkMemberUserIds");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(COHORT_MANAGER_ROLES);
 
   const { data, error } = await supabase.rpc("admin_upsert_cohort", {
     p_cohort_id: cohortId || null,
@@ -131,7 +138,7 @@ export async function assignCourseToAudience(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 160);
   const userIds = getCombinedUserIds(formData, "courseUserIds", "bulkCourseUserIds");
   const cohortIds = formData.get("assignCourseToCohort") === "on" && cohortId ? [cohortId] : [];
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(COHORT_MANAGER_ROLES);
 
   const { error } = await supabase.rpc("admin_assign_course", {
     p_cohort_ids: cohortIds,
@@ -155,7 +162,7 @@ export async function assignProgrammeToAudience(formData: FormData) {
   const programmeId = sanitizePlainTextInput(String(formData.get("programmeId") ?? ""), 80);
   const userIds = getCombinedUserIds(formData, "programmeUserIds", "bulkProgrammeUserIds");
   const cohortIds = formData.get("assignProgrammeToCohort") === "on" && cohortId ? [cohortId] : [];
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(COHORT_MANAGER_ROLES);
 
   const { error } = await supabase.rpc("admin_assign_programme", {
     p_cohort_ids: cohortIds,
@@ -178,7 +185,7 @@ export async function updateEnrolmentStatus(formData: FormData) {
   const cohortId = sanitizePlainTextInput(String(formData.get("cohortId") ?? ""), 80);
   const enrolmentId = sanitizePlainTextInput(String(formData.get("enrolmentId") ?? ""), 80);
   const status = normalizeParticipationStatus(formData.get("status"));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(COHORT_MANAGER_ROLES);
 
   const { error } = await supabase.rpc("admin_update_enrolment_status", {
     p_enrolment_id: enrolmentId,

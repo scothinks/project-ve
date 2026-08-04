@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -21,7 +22,54 @@ type CountableTable =
 export type AdminContext = {
   supabase: SupabaseClient;
   profile: UserProfile;
+  workspace: AdminWorkspace;
 };
+
+export const ADMIN_WORKSPACE_COOKIE = "project-ve-admin-workspace";
+
+export type AdminWorkspace = {
+  id: "platform" | string;
+  type: "platform" | "organization";
+  roles: string[];
+};
+
+const STAFF_ORGANIZATION_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "content_editor",
+  "reviewer",
+  "instructor",
+  "report_viewer",
+] as const;
+
+export async function getSelectedAdminWorkspaceId() {
+  return (await cookies()).get(ADMIN_WORKSPACE_COOKIE)?.value ?? "platform";
+}
+
+async function getOrganizationStaffMemberships(supabase: SupabaseClient, userId: string) {
+  const { data, error } = await supabase
+    .from("organization_memberships")
+    .select("organization_id, role, organizations!inner(id, status)")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .in("role", STAFF_ORGANIZATION_ROLES);
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as Array<{
+    organization_id: string;
+    role: string;
+    organizations: { id: string; status: string } | Array<{ id: string; status: string }> | null;
+  }>).filter((membership) => {
+    const organization = Array.isArray(membership.organizations)
+      ? membership.organizations[0]
+      : membership.organizations;
+    return organization?.status !== "archived";
+  });
+}
 
 export async function requireAdmin(): Promise<AdminContext> {
   const supabase = await createSupabaseServerClient();
@@ -36,11 +84,71 @@ export async function requireAdmin(): Promise<AdminContext> {
     redirect("/login");
   }
 
-  if (!profile || profile.role !== "admin") {
+  if (!profile) {
     redirect("/dashboard");
   }
 
-  return { supabase, profile };
+  if (profile.role === "admin") {
+    const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+    return {
+      profile,
+      supabase,
+      workspace: selectedWorkspaceId === "platform"
+        ? { id: "platform", roles: ["platform_admin"], type: "platform" }
+        : { id: selectedWorkspaceId, roles: ["platform_admin"], type: "organization" },
+    };
+  }
+
+  const memberships = await getOrganizationStaffMemberships(supabase, profile.id);
+
+  if (memberships.length === 0) {
+    redirect("/dashboard");
+  }
+
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  const selectedMembership =
+    memberships.find((membership) => membership.organization_id === selectedWorkspaceId)
+    ?? memberships[0];
+  const selectedOrganizationId = selectedMembership.organization_id;
+  const roles = memberships
+    .filter((membership) => membership.organization_id === selectedOrganizationId)
+    .map((membership) => membership.role);
+
+  return {
+    profile,
+    supabase,
+    workspace: {
+      id: selectedOrganizationId,
+      roles,
+      type: "organization",
+    },
+  };
+}
+
+export async function requirePlatformAdmin(): Promise<AdminContext> {
+  const context = await requireAdmin();
+
+  if (context.profile.role !== "admin") {
+    redirect("/admin");
+  }
+
+  return {
+    ...context,
+    workspace: { id: "platform", roles: ["platform_admin"], type: "platform" },
+  };
+}
+
+export async function requireAdminWorkspaceRole(roles: string[]): Promise<AdminContext> {
+  const context = await requireAdmin();
+
+  if (
+    context.workspace.type === "platform" ||
+    roles.some((role) => context.workspace.roles.includes(role))
+  ) {
+    return context;
+  }
+
+  redirect("/admin");
 }
 
 async function getExactCount(supabase: SupabaseClient, table: CountableTable) {

@@ -9,7 +9,7 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminPerkPrograms, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminPerkPrograms, requireAdminWorkspaceRole } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
@@ -59,7 +59,11 @@ type AdminPerksPageProps = {
 
 export default async function AdminPerksPage({ searchParams }: AdminPerksPageProps) {
   const { campaign, page, notice } = await searchParams;
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [programs, campaigns] = await Promise.all([
     getAdminPerkPrograms(supabase, { campaignId: campaign }),
     getAdminCampaigns(supabase),

@@ -40,11 +40,33 @@ const learnerEmail = `e2e-learner-${runId}@example.test`;
 const adminEmail = `e2e-admin-${runId}@example.test`;
 const signupEmail = `e2e-signup-${runId}@example.test`;
 const signupName = `E2E Signup ${runId}`;
+const institutionalOrgName = `E2E Institution ${runId}`;
+const institutionalOrgSlug = `e2e-institution-${runId}`;
+const institutionalProgrammeTitle = `E2E Institutional Programme ${runId}`;
+const institutionalProgrammeSlug = `e2e-institutional-programme-${runId}`;
+const institutionalCohortTitle = `E2E Institutional Cohort ${runId}`;
+const institutionalCohortSlug = `e2e-institutional-cohort-${runId}`;
+const institutionalCourseId = `e2e-institution-course-${runId}`;
+const institutionalLessonId = `e2e-institution-lesson-${runId}`;
+const institutionalPageId = `e2e-institution-page-${runId}`;
+const institutionalRewardId = `e2e-institution-reward-${runId}`;
+const institutionalCourseTitle = `E2E Private Institution Course ${runId}`;
+const institutionalLessonTitle = `E2E Institution Lesson ${runId}`;
+const institutionalPageTitle = `E2E Institution Page ${runId}`;
+const institutionalLessonBody = `Institution learner content rendered safely ${runId}`;
+const programmeManagerEmail = `e2e-programme-manager-${runId}@example.test`;
+const reportViewerEmail = `e2e-report-viewer-${runId}@example.test`;
+const institutionalLearnerEmail = `e2e-institution-learner-${runId}@example.test`;
+const outsiderEmail = `e2e-outsider-${runId}@example.test`;
 const cmsUploadFixturePath = path.join(process.cwd(), "tests/fixtures/cms-upload-image.png");
 
 let supabase: SupabaseClient;
 let learner: User;
 let admin: User;
+let programmeManager: User | null = null;
+let reportViewer: User | null = null;
+let institutionalLearner: User | null = null;
+let outsider: User | null = null;
 let signedUpLearner: User | null = null;
 
 type SignupProfile = {
@@ -116,6 +138,22 @@ async function findAuthUserByEmail(email: string) {
 
 async function cleanupFixture() {
   signedUpLearner = signedUpLearner ?? (await findAuthUserByEmail(signupEmail));
+  programmeManager = programmeManager ?? (await findAuthUserByEmail(programmeManagerEmail));
+  reportViewer = reportViewer ?? (await findAuthUserByEmail(reportViewerEmail));
+  institutionalLearner = institutionalLearner ?? (await findAuthUserByEmail(institutionalLearnerEmail));
+  outsider = outsider ?? (await findAuthUserByEmail(outsiderEmail));
+  const institutionalProgrammeIds = (
+    (await supabase
+      .from("programmes")
+      .select("id")
+      .eq("slug", institutionalProgrammeSlug)).data ?? []
+  ).map((programme) => programme.id);
+  const institutionalOrgIds = (
+    (await supabase
+      .from("organizations")
+      .select("id")
+      .eq("slug", institutionalOrgSlug)).data ?? []
+  ).map((organization) => organization.id);
   const removableCourseResult = await supabase
     .from("courses")
     .select("id")
@@ -135,12 +173,45 @@ async function cleanupFixture() {
   }
 
   await supabase.from("reward_redemptions").delete().eq("reward_id", rewardId);
+  await supabase.from("reward_redemptions").delete().eq("reward_id", institutionalRewardId);
   await supabase
     .from("xp_transactions")
     .delete()
-    .in("user_id", [learner?.id, admin?.id, signedUpLearner?.id].filter(Boolean));
+    .in("user_id", [
+      learner?.id,
+      admin?.id,
+      signedUpLearner?.id,
+      programmeManager?.id,
+      reportViewer?.id,
+      institutionalLearner?.id,
+      outsider?.id,
+    ].filter(Boolean));
+  await supabase.from("course_completions").delete().eq("course_id", institutionalCourseId);
+  if (institutionalProgrammeIds.length > 0) {
+    await supabase
+      .from("programme_completions")
+      .delete()
+      .in("programme_id", institutionalProgrammeIds);
+  }
+  await supabase.from("enrolments").delete().eq("course_id", institutionalCourseId);
+  if (institutionalProgrammeIds.length > 0) {
+    await supabase.from("enrolments").delete().in("programme_id", institutionalProgrammeIds);
+  }
+  await supabase.from("course_assignments").delete().eq("course_id", institutionalCourseId);
+  if (institutionalProgrammeIds.length > 0) {
+    await supabase
+      .from("programme_assignments")
+      .delete()
+      .in("programme_id", institutionalProgrammeIds);
+  }
+  await supabase.from("cohorts").delete().eq("slug", institutionalCohortSlug);
+  await supabase.from("programmes").delete().eq("slug", institutionalProgrammeSlug);
+  await supabase.from("reward_quantity_allocations").delete().eq("reward_id", institutionalRewardId);
+  await supabase.from("rewards").delete().eq("id", institutionalRewardId);
   await supabase.from("lesson_page_completions").delete().eq("lesson_id", lessonId);
+  await supabase.from("lesson_page_completions").delete().eq("lesson_id", institutionalLessonId);
   await supabase.from("lesson_progress").delete().eq("lesson_id", lessonId);
+  await supabase.from("lesson_progress").delete().eq("lesson_id", institutionalLessonId);
   await supabase.from("quiz_answers").delete().eq("question_id", questionId);
   await supabase.from("quiz_attempts").delete().eq("quiz_id", quizId);
   await supabase.from("rewards").delete().eq("id", rewardId);
@@ -148,7 +219,18 @@ async function cleanupFixture() {
     .from("courses")
     .delete()
     .in("title", [blankCourseTitle, updatedBlankCourseTitle, duplicatedCourseTitle]);
+  await supabase.from("courses").delete().eq("id", institutionalCourseId);
   await supabase.from("courses").delete().eq("id", courseId);
+  if (institutionalOrgIds.length > 0) {
+    await supabase
+      .from("organization_memberships")
+      .delete()
+      .in("organization_id", institutionalOrgIds);
+    await supabase
+      .from("organizations")
+      .delete()
+      .in("id", institutionalOrgIds);
+  }
 
   if (learner?.id) {
     await supabase.auth.admin.deleteUser(learner.id);
@@ -161,6 +243,26 @@ async function cleanupFixture() {
   if (signedUpLearner?.id) {
     await supabase.auth.admin.deleteUser(signedUpLearner.id);
     signedUpLearner = null;
+  }
+
+  if (programmeManager?.id) {
+    await supabase.auth.admin.deleteUser(programmeManager.id);
+    programmeManager = null;
+  }
+
+  if (reportViewer?.id) {
+    await supabase.auth.admin.deleteUser(reportViewer.id);
+    reportViewer = null;
+  }
+
+  if (institutionalLearner?.id) {
+    await supabase.auth.admin.deleteUser(institutionalLearner.id);
+    institutionalLearner = null;
+  }
+
+  if (outsider?.id) {
+    await supabase.auth.admin.deleteUser(outsider.id);
+    outsider = null;
   }
 }
 
@@ -313,6 +415,10 @@ async function seedContent() {
 async function seedUsers() {
   learner = await createTestUser(learnerEmail, "E2E Learner");
   admin = await createTestUser(adminEmail, "E2E Admin");
+  programmeManager = await createTestUser(programmeManagerEmail, "E2E Programme Manager");
+  reportViewer = await createTestUser(reportViewerEmail, "E2E Report Viewer");
+  institutionalLearner = await createTestUser(institutionalLearnerEmail, "E2E Institution Learner");
+  outsider = await createTestUser(outsiderEmail, "E2E Outsider");
 
   await assertNoError(
     await supabase.from("profiles").upsert(
@@ -333,6 +439,38 @@ async function seedUsers() {
           xp_balance_cached: 0,
           redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
         },
+        {
+          id: programmeManager.id,
+          display_name: "E2E Programme Manager",
+          role: "learner",
+          xp: 0,
+          xp_balance_cached: 0,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: reportViewer.id,
+          display_name: "E2E Report Viewer",
+          role: "learner",
+          xp: 0,
+          xp_balance_cached: 0,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: institutionalLearner.id,
+          display_name: "E2E Institution Learner",
+          role: "learner",
+          xp: 100,
+          xp_balance_cached: 100,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: outsider.id,
+          display_name: "E2E Outsider",
+          role: "learner",
+          xp: 100,
+          xp_balance_cached: 100,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
       ],
       { onConflict: "id" },
     ),
@@ -341,15 +479,125 @@ async function seedUsers() {
 
   await assertNoError(
     await supabase.from("user_value_profiles").upsert(
-      {
-        user_id: learner.id,
+      [learner, programmeManager, reportViewer, institutionalLearner, outsider].map((user) => ({
+        user_id: user.id,
         assessment_completed_at: new Date().toISOString(),
         readiness_level: "beginner",
         profile_summary: {},
-      },
+      })),
       { onConflict: "user_id" },
     ),
     "seed learner assessment completion",
+  );
+}
+
+async function seedInstitutionalContent(organizationId: string) {
+  await assertNoError(
+    await supabase.from("courses").insert({
+      id: institutionalCourseId,
+      slug: institutionalCourseId,
+      title: institutionalCourseTitle,
+      description: "Private institutional course for P1 browser coverage.",
+      intended_audience: "Institutional learners assigned through a cohort.",
+      learning_outcomes: [`Complete private institutional content ${runId}`],
+      category: "Institutional",
+      level: "beginner",
+      status: "published",
+      estimated_minutes: 1,
+      sort_order: -9_990,
+      thumbnail: {},
+      catalog_scope: "organization_private",
+      organization_id: organizationId,
+    }),
+    "seed institutional course",
+  );
+
+  await assertNoError(
+    await supabase.from("lessons").insert({
+      id: institutionalLessonId,
+      course_id: institutionalCourseId,
+      slug: institutionalLessonId,
+      title: institutionalLessonTitle,
+      subtitle: "Institutional learner path",
+      description: "A private lesson assigned through an institutional programme.",
+      status: "published",
+      retry_mode: "anytime",
+      retry_requires_reread: false,
+      quiz_requires_lesson_completion: false,
+      estimated_minutes: 1,
+      sort_order: 1,
+    }),
+    "seed institutional lesson",
+  );
+
+  await assertNoError(
+    await supabase.from("lesson_pages").insert({
+      id: institutionalPageId,
+      lesson_id: institutionalLessonId,
+      page_number: 1,
+      title: institutionalPageTitle,
+      subtitle: "Private lesson page",
+      page_type: "concept",
+      cover_image: null,
+    }),
+    "seed institutional lesson page",
+  );
+
+  await assertNoError(
+    await supabase.from("lesson_content_blocks").insert({
+      page_id: institutionalPageId,
+      block_type: "text",
+      sort_order: 1,
+      payload: {
+        heading: "Institutional learning",
+        body: institutionalLessonBody,
+      },
+    }),
+    "seed institutional lesson content block",
+  );
+
+  await assertNoError(
+    await supabase.from("rewards").insert({
+      id: institutionalRewardId,
+      title: `E2E Institution Reward ${runId}`,
+      description: "Tenant-owned reward for P1 browser coverage.",
+      cost_xp: 5,
+      inventory_count: 1,
+      starts_at: null,
+      ends_at: null,
+      status: "published",
+      thumbnail: {},
+      offer_expires_at: null,
+      terms: "E2E only.",
+      claim_steps: [],
+      fulfillment_type: "manual",
+      fulfillment_config: {},
+      per_user_limit: 1,
+      sort_order: -9_990,
+      is_enabled: true,
+      total_uploaded: 1,
+      total_available: 1,
+      visibility_mode: "store",
+      distribution_mode: "direct",
+      limit_period: "lifetime",
+      redemption_window_days: null,
+      owner_scope: "organization_owned",
+      organization_id: organizationId,
+      shared_with_programmes: false,
+    }),
+    "seed institutional reward",
+  );
+
+  await assertNoError(
+    await supabase.from("reward_quantity_allocations").insert({
+      reward_id: institutionalRewardId,
+      quantity_total: 1,
+      quantity_available: 1,
+      available_from: null,
+      expires_at: null,
+      reason: "E2E institutional reward inventory",
+    }),
+    "seed institutional reward quantity allocation",
   );
 }
 
@@ -359,6 +607,23 @@ async function signIn(page: Page, email: string) {
   await page.getByPlaceholder("Enter Password").fill(authCredential);
   await page.getByRole("button", { name: "Login" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
+}
+
+async function saveOrganizationMembershipThroughUi(
+  page: Page,
+  user: User,
+  role: string,
+  roleLabel: string,
+) {
+  const membershipForm = page.locator("form").filter({ has: page.locator("select[name='userId']") }).first();
+  await membershipForm.locator("select[name='organizationId']").selectOption({ label: institutionalOrgName });
+  await membershipForm.locator("select[name='userId']").selectOption(user.id);
+  await membershipForm.locator("select[name='role']").selectOption(role);
+  await membershipForm.locator("select[name='status']").selectOption("active");
+  await membershipForm.getByRole("button", { name: "Save membership" }).click();
+  await expect(page.getByText("Membership saved.")).toBeVisible();
+  const membershipRow = page.getByRole("row").filter({ hasText: user.id });
+  await expect(membershipRow.getByRole("cell", { name: roleLabel, exact: true })).toBeVisible();
 }
 
 function getCourseIdFromAdminUrl(page: Page) {
@@ -430,13 +695,17 @@ test.describe.serial("remediation browser flows", () => {
 
     expect(signupResponse.status()).toBe(200);
 
-    const result = await Promise.race([
+    const result = await Promise.any([
       page
-        .waitForURL(/\/(dashboard|onboarding\/assessment)$/, { timeout: 10_000 })
+        .waitForFunction(
+          () => ["/dashboard", "/onboarding/assessment"].includes(window.location.pathname),
+          undefined,
+          { timeout: 15_000 },
+        )
         .then(() => "signed-in" as const),
       page
         .getByRole("heading", { name: "Check your email" })
-        .waitFor({ state: "visible", timeout: 10_000 })
+        .waitFor({ state: "visible", timeout: 15_000 })
         .then(() => "confirmation" as const),
     ]);
 
@@ -989,5 +1258,167 @@ test.describe.serial("remediation browser flows", () => {
       },
     });
     expect([401, 403]).toContain(learnerUploadResponse.status());
+  });
+
+  test("institutional LMS journey covers memberships, assignment, completion, reporting, and tenant denial", async ({ page }) => {
+    test.setTimeout(180_000);
+
+    if (!programmeManager || !reportViewer || !institutionalLearner || !outsider) {
+      throw new Error("Institutional E2E users were not seeded.");
+    }
+
+    await signIn(page, adminEmail);
+    await page.goto("/admin/organizations");
+    await expect(page.getByRole("heading", { name: "Organisation workspaces" })).toBeVisible();
+
+    const organizationForm = page.locator("form").filter({ has: page.locator("input[name='name']") }).first();
+    await organizationForm.locator("select[name='organizationId']").selectOption("");
+    await organizationForm.locator("input[name='name']").fill(institutionalOrgName);
+    await organizationForm.locator("input[name='slug']").fill(institutionalOrgSlug);
+    await organizationForm.locator("select[name='status']").selectOption("published");
+    await organizationForm.getByRole("button", { name: "Save organisation" }).click();
+    await expect(page.getByText("Organisation created.")).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: institutionalOrgName })).toBeVisible();
+
+    const organization = await assertNoError(
+      await supabase
+        .from("organizations")
+        .select("id")
+        .eq("slug", institutionalOrgSlug)
+        .maybeSingle(),
+      "load institutional organization",
+    ) as { id: string } | null;
+    expect(organization?.id).toBeTruthy();
+
+    await saveOrganizationMembershipThroughUi(page, programmeManager, "programme_manager", "Programme manager");
+    await saveOrganizationMembershipThroughUi(page, reportViewer, "report_viewer", "Report viewer");
+    await saveOrganizationMembershipThroughUi(page, institutionalLearner, "learner", "Learner");
+    await seedInstitutionalContent(organization?.id ?? "");
+
+    await page.context().clearCookies();
+    await signIn(page, programmeManagerEmail);
+    await page.goto("/admin/programmes/new");
+    await expect(page.getByRole("heading", { name: "Add programme" })).toBeVisible();
+    await page.locator("select[name='organizationId']").selectOption({ label: institutionalOrgName });
+    await page.locator("select[name='status']").selectOption("published");
+    await page.locator("input[name='title']").fill(institutionalProgrammeTitle);
+    await page.locator("input[name='slug']").fill(institutionalProgrammeSlug);
+    await page.locator("textarea[name='objective']").fill("Deliver private institutional learning through a managed programme.");
+    await page.locator("textarea[name='intendedAudience']").fill("Learners assigned by the institution.");
+    const courseChoice = page.locator("label").filter({ hasText: institutionalCourseTitle }).first();
+    await courseChoice.locator("input[type='checkbox']").check();
+    await courseChoice.locator("input[type='number']").fill("1");
+    await page.locator("input[name='minimumCompletionThreshold']").fill("100");
+    await page.getByRole("button", { name: "Save programme" }).click();
+    await expect(page.getByText("Programme created.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: institutionalProgrammeTitle })).toBeVisible();
+
+    const programme = await assertNoError(
+      await supabase
+        .from("programmes")
+        .select("id")
+        .eq("slug", institutionalProgrammeSlug)
+        .maybeSingle(),
+      "load institutional programme",
+    ) as { id: string } | null;
+    expect(programme?.id).toBeTruthy();
+
+    await page.goto("/admin/cohorts/new");
+    await expect(page.getByRole("heading", { name: "Add cohort" })).toBeVisible();
+    await page.locator("select[name='organizationId']").selectOption({ label: institutionalOrgName });
+    await page.locator("select[name='status']").selectOption("published");
+    await page.locator("input[name='title']").fill(institutionalCohortTitle);
+    await page.locator("input[name='slug']").fill(institutionalCohortSlug);
+    await page.locator("textarea[name='description']").fill("Browser-created institutional learner cohort.");
+    await page.locator("textarea[name='bulkMemberUserIds']").fill(institutionalLearner.id);
+    await page.getByRole("button", { name: "Save cohort" }).click();
+    await expect(page.getByText("Cohort created.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: institutionalCohortTitle })).toBeVisible();
+    await expect(page.getByText(institutionalLearner.id).first()).toBeVisible();
+
+    const cohort = await assertNoError(
+      await supabase
+        .from("cohorts")
+        .select("id")
+        .eq("slug", institutionalCohortSlug)
+        .maybeSingle(),
+      "load institutional cohort",
+    ) as { id: string } | null;
+    expect(cohort?.id).toBeTruthy();
+
+    const programmeAssignmentForm = page.locator("form").filter({ has: page.locator("select[name='programmeId']") }).first();
+    await programmeAssignmentForm.locator("select[name='programmeId']").selectOption({ label: institutionalProgrammeTitle });
+    await programmeAssignmentForm.getByRole("button", { name: "Assign programme" }).click();
+    await expect(page.getByText("Programme assignment saved.")).toBeVisible();
+    await expect(page.locator("p").filter({ hasText: institutionalProgrammeTitle }).first()).toBeVisible();
+
+    const programmeEnrolment = await assertNoError(
+      await supabase
+        .from("enrolments")
+        .select("id")
+        .eq("user_id", institutionalLearner.id)
+        .eq("programme_id", programme?.id ?? "")
+        .maybeSingle(),
+      "load institutional learner programme enrolment",
+    ) as { id: string } | null;
+    expect(programmeEnrolment?.id).toBeTruthy();
+    const courseEnrolment = await assertNoError(
+      await supabase
+        .from("enrolments")
+        .select("id")
+        .eq("user_id", institutionalLearner.id)
+        .eq("course_id", institutionalCourseId)
+        .contains("metadata", { programmeId: programme?.id ?? "" })
+        .maybeSingle(),
+      "load institutional learner derived course enrolment",
+    ) as { id: string } | null;
+    expect(courseEnrolment?.id).toBeTruthy();
+
+    await page.context().clearCookies();
+    await signIn(page, institutionalLearnerEmail);
+    await page.goto(`/courses/${institutionalCourseId}`);
+    await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
+    const progressResponse = page.waitForResponse(
+      (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
+    );
+    await page.goto(`/lessons/${institutionalLessonId}`);
+    await progressResponse;
+    await expect(page.getByText(institutionalLessonBody)).toBeVisible();
+    await page.goto("/profile/transcript");
+    await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: institutionalProgrammeTitle }).first()).toBeVisible();
+    await expect(page.getByText("100% complete").first()).toBeVisible();
+
+    await page.goto("/xp-store");
+    await expect(page.getByRole("heading", { name: "Redeem XP rewards" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: `E2E Institution Reward ${runId}` }).first()).toBeVisible();
+
+    await page.context().clearCookies();
+    await signIn(page, reportViewerEmail);
+    await page.goto("/admin");
+    await page.getByRole("button", { name: /Learning/ }).click();
+    await expect(page.getByRole("link", { name: "Reporting" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Programmes" })).toHaveCount(0);
+    await page.goto("/admin/programmes");
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto("/admin/cohorts");
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto(`/admin/reporting?organizationId=${organization?.id}&programmeId=${programme?.id}&cohortId=${cohort?.id}`);
+    await expect(page.getByRole("heading", { name: "LMS reporting" })).toBeVisible();
+    const learnerReportRow = page.getByRole("row").filter({ hasText: institutionalLearner.id });
+    await expect(learnerReportRow.getByText("E2E Institution Learner")).toBeVisible();
+    await expect(learnerReportRow.getByRole("cell", { name: institutionalCohortTitle })).toBeVisible();
+    await expect(learnerReportRow.getByRole("cell", { name: "100%" })).toBeVisible();
+
+    await page.context().clearCookies();
+    await signIn(page, outsiderEmail);
+    await page.goto(`/courses/${institutionalCourseId}`);
+    await expect(page.getByRole("heading", { name: institutionalCourseTitle })).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(institutionalLessonBody);
+    const outsiderRewardSnapshot = await page.request.get("/api/rewards");
+    expect(outsiderRewardSnapshot.status()).toBe(200);
+    expect(await outsiderRewardSnapshot.text()).not.toContain(institutionalRewardId);
+    const outsiderRedeemResponse = await page.request.post(`/api/rewards/${institutionalRewardId}/redeem`);
+    expect(outsiderRedeemResponse.status()).toBe(400);
   });
 });

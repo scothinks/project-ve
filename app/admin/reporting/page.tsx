@@ -41,14 +41,16 @@ export default async function AdminLmsReportingPage({
 }) {
   const { supabase } = await requireAdmin();
   const params = (await searchParams) ?? {};
-  const selectedOrganizationId = selectedOrEmpty(firstSearchValue(params.organizationId));
-  const selectedProgrammeId = selectedOrEmpty(firstSearchValue(params.programmeId));
-  const selectedCohortId = selectedOrEmpty(firstSearchValue(params.cohortId));
   const [organizations, programmes, cohorts] = await Promise.all([
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
     getAdminCohorts(supabase),
   ]);
+  const requestedOrganizationId = selectedOrEmpty(firstSearchValue(params.organizationId));
+  const selectedOrganizationId =
+    requestedOrganizationId || (organizations.length === 1 ? organizations[0]?.id ?? "" : "");
+  const selectedProgrammeId = selectedOrEmpty(firstSearchValue(params.programmeId));
+  const selectedCohortId = selectedOrEmpty(firstSearchValue(params.cohortId));
   const filteredProgrammes = selectedOrganizationId
     ? programmes.filter((programme) => programme.organization_id === selectedOrganizationId)
     : programmes;

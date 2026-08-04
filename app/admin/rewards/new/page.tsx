@@ -1,15 +1,20 @@
 import { RewardEditorForm } from "@/components/admin/RewardEditorForm";
 import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminOrganizations, getAdminProgrammes, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminOrganizations, getAdminProgrammes, requireAdminWorkspaceRole } from "@/lib/admin";
 import { createReward } from "../[id]/actions";
 
 export default async function NewAdminRewardPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [campaigns, organizations, programmes] = await Promise.all([
     getAdminCampaigns(supabase),
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
   ]);
+  const isOrganizationWorkspace = organizations.length === 1;
 
   return (
     <>
@@ -41,8 +46,8 @@ export default async function NewAdminRewardPage() {
             fulfillmentConfig: {},
             perUserLimit: 1,
             limitPeriod: "lifetime",
-            organizationId: "",
-            ownerScope: "platform_owned",
+            organizationId: isOrganizationWorkspace ? organizations[0]?.id ?? "" : "",
+            ownerScope: isOrganizationWorkspace ? "organization_owned" : "platform_owned",
             redemptionWindowDays: "",
             sharedWithProgrammes: false,
             sortOrder: 100,

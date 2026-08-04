@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
 import type { Database } from "@/types/database";
 
 export type AdminProgrammeOrganizationRow = {
@@ -98,7 +99,8 @@ function countByProgrammeId(rows: Array<{ programme_id: string }>) {
 export async function getAdminProgrammes(
   supabase: SupabaseClient<Database>,
 ): Promise<AdminProgrammeRow[]> {
-  const { data, error } = await supabase
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  let query = supabase
     .from("programmes")
     .select(`
       id,
@@ -118,6 +120,12 @@ export async function getAdminProgrammes(
       organization:organizations!programmes_organization_id_fkey(id, name, slug)
     `)
     .order("updated_at", { ascending: false });
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw error;

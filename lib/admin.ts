@@ -2,7 +2,10 @@ import "server-only";
 
 export {
   getAdminOverview,
+  getSelectedAdminWorkspaceId,
   requireAdmin,
+  requireAdminWorkspaceRole,
+  requirePlatformAdmin,
   type AdminContext,
 } from "@/features/admin/application/context";
 
@@ -57,13 +60,16 @@ export {
 } from "@/features/recommendations/admin/data";
 
 export {
+  getAdminOrganizationLearners,
   getAdminUsers,
   type AdminProfileRow,
 } from "@/features/users/admin/data";
 
 export {
+  getAdminOrganizationMemberships,
   getAdminOrganizations,
   getAdminOrganizationContexts,
+  type AdminOrganizationMembershipRow,
   type AdminOrganizationRow,
   type AdminOrganizationContext,
 } from "@/features/organizations/admin/data";

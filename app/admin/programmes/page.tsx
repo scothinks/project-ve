@@ -8,7 +8,7 @@ import {
   adminButtonClasses,
 } from "@/components/admin/AdminPrimitives";
 import { setProgrammeStatus } from "@/app/admin/programmes/actions";
-import { getAdminProgrammes, requireAdmin } from "@/lib/admin";
+import { getAdminProgrammes, requireAdminWorkspaceRole } from "@/lib/admin";
 import { formatRewardDate } from "@/lib/rewards";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -26,7 +26,11 @@ export default async function AdminProgrammesPage({
 }: {
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const programmes = await getAdminProgrammes(supabase);
   const params = (await searchParams) ?? {};
   const notice = firstSearchValue(params.notice);

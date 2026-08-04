@@ -7,7 +7,7 @@ import {
   EmptyAdminState,
   adminButtonClasses,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCohorts, requireAdmin } from "@/lib/admin";
+import { getAdminCohorts, requireAdminWorkspaceRole } from "@/lib/admin";
 import { formatRewardDate } from "@/lib/rewards";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -25,7 +25,12 @@ export default async function AdminCohortsPage({
 }: {
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+    "instructor",
+  ]);
   const cohorts = await getAdminCohorts(supabase);
   const notice = firstSearchValue((await searchParams)?.notice);
 

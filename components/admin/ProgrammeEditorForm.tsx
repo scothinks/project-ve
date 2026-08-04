@@ -303,7 +303,7 @@ export function ProgrammeEditorForm({
 
           <FormSection
             title="Completion rules"
-            subtitle="Selected courses and missions are required for transcript completion."
+            subtitle="Selected courses and missions contribute to the transcript completion percentage. A selected final assessment remains mandatory."
           >
             <label className="block">
               <span className={labelClasses()}>Completion threshold</span>
@@ -315,7 +315,9 @@ export function ProgrammeEditorForm({
                 type="number"
                 defaultValue={Number.isFinite(minimumCompletionThreshold) ? minimumCompletionThreshold : 100}
               />
-              <span className={helperTextClasses()}>Use 100 unless this programme explicitly allows partial completion.</span>
+              <span className={helperTextClasses()}>
+                Use 100 for all selected work. Lower values allow completion once the learner reaches that percentage and completes any final assessment.
+              </span>
             </label>
             <label className="mt-4 block">
               <span className={labelClasses()}>Final assessment</span>
@@ -334,9 +336,9 @@ export function ProgrammeEditorForm({
               <span className={helperTextClasses()}>If selected, keep the same assessment checked in the assessment list.</span>
             </label>
             <div className="mt-4 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
-              {selectedCourseIds.size} selected courses and {selectedMissionIds.size} selected missions will be required.
+              {selectedCourseIds.size} selected courses and {selectedMissionIds.size} selected missions contribute to completion progress.
               <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                Optional programme paths and certificates are deferred to later P1 tickets.
+                Final assessments remain mandatory when selected. Certificates are deferred to P2.
               </span>
             </div>
           </FormSection>

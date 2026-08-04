@@ -8,7 +8,7 @@ import {
   getAdminOrganizations,
   getAdminProgramme,
   getAdminRewards,
-  requireAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -23,7 +23,11 @@ export default async function ProgrammeDetailPage({
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
   const { id } = await params;
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+    "programme_manager",
+  ]);
   const [assessmentVersions, courses, missions, organizations, programme, rewards] = await Promise.all([
     getAdminAssessmentVersionOptions(supabase),
     getAdminCourses(supabase),

@@ -53,3 +53,33 @@ export async function getAdminUsers(supabase: SupabaseClient) {
 
   return (data ?? []) as AdminProfileRow[];
 }
+
+export async function getAdminOrganizationLearners(
+  supabase: SupabaseClient,
+  organizationId: string | null | undefined,
+) {
+  if (!organizationId) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("organization_memberships")
+    .select(`
+      user_id,
+      profile:profiles!organization_memberships_user_id_fkey(${ADMIN_PROFILE_SELECT})
+    `)
+    .eq("organization_id", organizationId)
+    .eq("role", "learner")
+    .eq("status", "active")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as Array<{
+    profile: AdminProfileRow | AdminProfileRow[] | null;
+  }>)
+    .map((row) => Array.isArray(row.profile) ? row.profile[0] ?? null : row.profile)
+    .filter((profile): profile is AdminProfileRow => Boolean(profile));
+}

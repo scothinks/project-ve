@@ -78,7 +78,7 @@ export function CourseDetailCompletionSection({
               </p>
               <h2 className="mt-2 text-lg font-black">Course transcript rules</h2>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                These rules control when assigned learners receive course completion on their transcript.
+                Selected lessons, quizzes and missions contribute to completion progress. A selected final assessment remains mandatory.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -118,6 +118,9 @@ export function CourseDetailCompletionSection({
                 name="minimumCompletionThreshold"
                 type="number"
               />
+              <span className={helperTextClasses()}>
+                Use 100 for all selected work. Lower values allow completion once the learner reaches that percentage and completes any final assessment.
+              </span>
             </label>
           </div>
 
@@ -139,7 +142,7 @@ export function CourseDetailCompletionSection({
 
           <div className="mt-5 grid gap-4 xl:grid-cols-3">
             <div>
-              <p className={labelClasses()}>Required lessons</p>
+              <p className={labelClasses()}>Completion lessons</p>
               <div className="mt-3 space-y-2">
                 {lessons.map((lesson) => (
                   <label
@@ -163,7 +166,7 @@ export function CourseDetailCompletionSection({
             </div>
 
             <div>
-              <p className={labelClasses()}>Required quizzes</p>
+              <p className={labelClasses()}>Completion quizzes</p>
               <div className="mt-3 space-y-2">
                 {quizzes.length > 0 ? quizzes.map((quiz) => {
                   const lesson = lessons.find((item) => item.id === quiz.lesson_id);
@@ -197,7 +200,7 @@ export function CourseDetailCompletionSection({
             </div>
 
             <div>
-              <p className={labelClasses()}>Required missions</p>
+              <p className={labelClasses()}>Completion missions</p>
               <div className="mt-3 space-y-2">
                 {missions.map((mission) => (
                   <label

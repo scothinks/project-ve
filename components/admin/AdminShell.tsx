@@ -5,7 +5,7 @@ import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, MenuIcon } from "@/components/ui/Icons";
 import type { AdminOrganizationContext } from "@/lib/admin";
 import type { UserProfile } from "@/lib/supabase-server";
@@ -207,6 +207,12 @@ type AdminLinkGroup = {
   links: AdminLink[];
 };
 
+type AdminWorkspace = {
+  id: "platform" | string;
+  type: "platform" | "organization";
+  roles: string[];
+};
+
 const adminLinkGroups: AdminLinkGroup[] = [
   {
     id: "home",
@@ -248,6 +254,7 @@ const adminLinkGroups: AdminLinkGroup[] = [
     links: [
       { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
       { href: "/admin/proofs", label: "Proof reviews", icon: ProofsIcon },
+      { href: "/admin/organizations", label: "Organisations", icon: UsersIcon },
       { href: "/admin/users", label: "Users", icon: UsersIcon },
       { href: "/admin/xp-ledger", label: "XP activity", icon: XpLedgerIcon },
     ],
@@ -259,6 +266,72 @@ const adminLinkGroups: AdminLinkGroup[] = [
     links: [{ href: "/admin/xp-settings", label: "XP settings", icon: XpSettingsIcon }],
   },
 ];
+
+function hasAnyRole(workspace: AdminWorkspace, roles: string[]) {
+  return workspace.type === "platform" || roles.some((role) => workspace.roles.includes(role));
+}
+
+function canUseAdminLink(link: AdminLink, workspace: AdminWorkspace) {
+  if (workspace.type === "platform") {
+    return true;
+  }
+
+  if (link.href === "/admin") return true;
+  if (link.href.startsWith("/admin/courses")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "content_editor",
+      "reviewer",
+    ]);
+  }
+  if (link.href.startsWith("/admin/programmes")) {
+    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+  }
+  if (link.href.startsWith("/admin/cohorts")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "instructor",
+    ]);
+  }
+  if (link.href.startsWith("/admin/reporting")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "instructor",
+      "report_viewer",
+    ]);
+  }
+  if (link.href.startsWith("/admin/interventions")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "instructor",
+    ]);
+  }
+  if (link.href.startsWith("/admin/rewards")) {
+    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+  }
+  if (link.href.startsWith("/admin/missions")) {
+    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+  }
+
+  return false;
+}
+
+function filterAdminLinkGroups(groups: AdminLinkGroup[], workspace: AdminWorkspace) {
+  return groups
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => canUseAdminLink(link, workspace)),
+    }))
+    .filter((group) => group.links.length > 0);
+}
 
 const adminLinks = adminLinkGroups.flatMap((group) => group.links);
 
@@ -337,6 +410,8 @@ function getBreadcrumbs(pathname: string) {
     crumbs.push({ href: pathname, label: "Create reward" });
   } else if (pathname.startsWith("/admin/rewards/")) {
     crumbs.push({ href: pathname, label: "Reward workspace" });
+  } else if (pathname.startsWith("/admin/organizations")) {
+    crumbs.push({ href: pathname, label: "Organisation workspaces" });
   } else if (pathname.startsWith("/admin/ads/")) {
     crumbs.push({
       href: pathname,
@@ -460,10 +535,13 @@ function AdminBreadcrumbs({ pathname }: { pathname: string }) {
 function WorkspaceSwitcher({
   collapsed = false,
   contexts,
+  currentWorkspace,
 }: {
   collapsed?: boolean;
   contexts: AdminOrganizationContext[];
+  currentWorkspace: AdminWorkspace;
 }) {
+  const router = useRouter();
   const contextOptions = useMemo(() => contexts.length > 0
     ? contexts
     : [{
@@ -474,22 +552,25 @@ function WorkspaceSwitcher({
       slug: "platform",
       type: "platform" as const,
     }], [contexts]);
-  const [selectedId, setSelectedId] = useState(contextOptions[0]?.id ?? "platform");
+  const [selectedId, setSelectedId] = useState(currentWorkspace.id);
   const selectedContext = useMemo(
     () => contextOptions.find((context) => context.id === selectedId) ?? contextOptions[0],
     [contextOptions, selectedId],
   );
 
   useEffect(() => {
-    const storedValue = window.localStorage.getItem("project-ve-admin-organization-context");
-    if (storedValue && contextOptions.some((context) => context.id === storedValue)) {
-      setSelectedId(storedValue);
+    if (contextOptions.some((context) => context.id === currentWorkspace.id)) {
+      setSelectedId(currentWorkspace.id);
+      return;
     }
-  }, [contextOptions]);
+
+    setSelectedId(contextOptions[0]?.id ?? "platform");
+  }, [contextOptions, currentWorkspace.id]);
 
   function handleChange(value: string) {
     setSelectedId(value);
-    window.localStorage.setItem("project-ve-admin-organization-context", value);
+    document.cookie = `project-ve-admin-workspace=${encodeURIComponent(value)}; path=/admin; SameSite=Lax`;
+    router.refresh();
   }
 
   if (collapsed) {
@@ -539,16 +620,22 @@ function WorkspaceSwitcher({
 
 export function AdminShell({
   children,
+  currentWorkspace,
   organizationContexts,
   profile,
 }: {
   children: ReactNode;
+  currentWorkspace: AdminWorkspace;
   organizationContexts: AdminOrganizationContext[];
   profile: UserProfile;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const visibleLinkGroups = useMemo(
+    () => filterAdminLinkGroups(adminLinkGroups, currentWorkspace),
+    [currentWorkspace],
+  );
   const activeGroupId = getActiveGroupId(pathname);
 
   return (
@@ -589,10 +676,14 @@ export function AdminShell({
             </button>
           </div>
 
-          <WorkspaceSwitcher collapsed={collapsed} contexts={organizationContexts} />
+          <WorkspaceSwitcher
+            collapsed={collapsed}
+            contexts={organizationContexts}
+            currentWorkspace={currentWorkspace}
+          />
 
           <nav className="mt-6 space-y-4 overflow-y-auto pr-1">
-            {adminLinkGroups.map((group) => (
+            {visibleLinkGroups.map((group) => (
               <AdminNavGroup
                 collapsed={collapsed}
                 defaultOpen={group.id === activeGroupId || group.id === "home"}
@@ -635,7 +726,10 @@ export function AdminShell({
               </Link>
             </div>
             <div className="md:hidden">
-              <WorkspaceSwitcher contexts={organizationContexts} />
+              <WorkspaceSwitcher
+                contexts={organizationContexts}
+                currentWorkspace={currentWorkspace}
+              />
             </div>
             <Collapsible.Root className="mt-4" open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]">
@@ -649,7 +743,7 @@ export function AdminShell({
               </Collapsible.Trigger>
               <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 shadow-lg">
                 <nav className="space-y-4">
-                  {adminLinkGroups.map((group) => (
+                  {visibleLinkGroups.map((group) => (
                     <section key={group.id}>
                       <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
                         {group.label}
