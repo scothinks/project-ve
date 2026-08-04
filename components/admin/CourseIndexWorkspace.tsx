@@ -32,6 +32,12 @@ export type CourseIndexCourse = {
   level: string;
   status: string;
   estimated_minutes: number;
+  catalog_scope: string;
+  organization_id: string | null;
+  source_course_id: string | null;
+  source_catalog_version: number | null;
+  upstream_update_available: boolean;
+  catalog_version: number;
   ai_generated: boolean;
   ai_publish_status: string;
   updated_at: string;
@@ -70,6 +76,19 @@ function statusLabel(status: string) {
   if (status === "draft") return "Draft";
   if (status === "archived") return "Archived";
   return status.replaceAll("_", " ");
+}
+
+function catalogScopeLabel(scope: string) {
+  if (scope === "platform") return "Platform";
+  if (scope === "organization_private") return "Private";
+  if (scope === "adapted_platform") return "Adapted";
+  return scope.replaceAll("_", " ");
+}
+
+function catalogScopeTone(scope: string) {
+  if (scope === "organization_private") return "warning" as const;
+  if (scope === "adapted_platform") return "store" as const;
+  return "neutral" as const;
 }
 
 function readinessTone(course: CourseIndexCourse) {
@@ -298,6 +317,11 @@ export function CourseIndexWorkspace({
                 {course.title}
               </Link>
               <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{course.slug}</p>
+              {course.source_course_id ? (
+                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                  Adapted from {course.source_course_id}
+                </p>
+              ) : null}
               <p className="mt-2 line-clamp-2 max-w-md text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
                 {course.description || "No course promise added yet."}
               </p>
@@ -308,9 +332,29 @@ export function CourseIndexWorkspace({
       columnHelper.display({
         id: "scope",
         header: "Scope",
-        cell: () => (
-          <AdminStatusBadge tone="neutral">Project VE</AdminStatusBadge>
-        ),
+        cell: (info) => {
+          const course = info.row.original;
+
+          return (
+            <div className="min-w-[150px]">
+              <AdminStatusBadge tone={catalogScopeTone(course.catalog_scope)}>
+                {catalogScopeLabel(course.catalog_scope)}
+              </AdminStatusBadge>
+              {course.catalog_scope === "adapted_platform" ? (
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  {course.upstream_update_available
+                    ? "Update available"
+                    : `Source v${course.source_catalog_version ?? "unknown"}`}
+                </p>
+              ) : null}
+              {course.catalog_scope !== "platform" && course.organization_id ? (
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  Organisation owned
+                </p>
+              ) : null}
+            </div>
+          );
+        },
       }),
       columnHelper.display({
         id: "metadata",

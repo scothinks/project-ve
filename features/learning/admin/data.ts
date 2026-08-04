@@ -19,6 +19,14 @@ export type AdminCourseRow = {
   status: string;
   sort_order: number;
   estimated_minutes: number;
+  catalog_scope: string;
+  organization_id: string | null;
+  source_course_id: string | null;
+  source_catalog_version: number | null;
+  copied_at: string | null;
+  local_changes: Record<string, unknown>;
+  upstream_update_available: boolean;
+  catalog_version: number;
   ai_text_status: string;
   ai_media_status: string;
   ai_publish_status: string;
@@ -212,7 +220,7 @@ function attachApprovalNames<
 export async function getAdminCourses(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, catalog_scope, organization_id, source_course_id, source_catalog_version, copied_at, local_changes, upstream_update_available, catalog_version, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .order("sort_order", { ascending: true });
 
   if (error) {
@@ -393,7 +401,7 @@ export async function getAdminCourseCategories(supabase: SupabaseClient) {
 export async function getAdminCourse(supabase: SupabaseClient, courseId: string) {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, catalog_scope, organization_id, source_course_id, source_catalog_version, copied_at, local_changes, upstream_update_available, catalog_version, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .eq("id", courseId)
     .maybeSingle();
 

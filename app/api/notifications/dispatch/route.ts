@@ -33,6 +33,11 @@ type ValidPendingDeliveryRow = {
 };
 
 const PUSH_EVENT_PRIORITIES: Record<string, number> = {
+  lms_programme_overdue: 125,
+  lms_programme_due_soon: 122,
+  lms_programme_inactive: 118,
+  lms_programme_assigned: 116,
+  lms_programme_completed: 114,
   continue_learning: 110,
   mission_proof_rejected: 100,
   mission_proof_approved: 95,
@@ -196,6 +201,13 @@ async function handleDispatch(request: NextRequest) {
 
   if (reminderError) {
     return NextResponse.json({ error: reminderError.message }, { status: 400 });
+  }
+
+  const { data: generatedProgrammeReminders, error: programmeReminderError } =
+    await adminSupabase.rpc("generate_lms_programme_notifications");
+
+  if (programmeReminderError) {
+    return NextResponse.json({ error: programmeReminderError.message }, { status: 400 });
   }
 
   const { data, error } = await adminSupabase
@@ -401,6 +413,7 @@ async function handleDispatch(request: NextRequest) {
   return NextResponse.json({
     failed,
     generatedReminders: generatedReminders ?? 0,
+    generatedProgrammeReminders: generatedProgrammeReminders ?? null,
     processed: (data ?? []).length,
     retried,
     sent,

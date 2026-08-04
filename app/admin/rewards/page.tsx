@@ -107,6 +107,22 @@ function formatVisibilityMode(mode: string) {
   return "Hidden";
 }
 
+function formatOwnerScope(reward: { owner_scope: string; shared_with_programmes: boolean }) {
+  if (reward.owner_scope === "platform_owned") {
+    return reward.shared_with_programmes ? "Shared platform" : "Platform";
+  }
+
+  if (reward.owner_scope === "organization_owned") {
+    return "Organisation";
+  }
+
+  if (reward.owner_scope === "programme_sponsored") {
+    return "Programme";
+  }
+
+  return reward.owner_scope.replaceAll("_", " ");
+}
+
 type AdminRewardsPageProps = {
   searchParams: Promise<{ campaign?: string; page?: string; notice?: string }>;
 };
@@ -164,7 +180,7 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
       ) : (
         <>
         <AdminTable
-          columns={["Reward", "Campaign", "Cost", "Fulfillment", "Visibility", "Inventory", "Limit", "Offer ends", "Storefront", "Status", "Action"]}
+          columns={["Reward", "Campaign", "Cost", "Fulfillment", "Owner", "Visibility", "Inventory", "Limit", "Offer ends", "Storefront", "Status", "Action"]}
         >
           {paginatedRewards.items.map((reward) => (
             <tr key={reward.id}>
@@ -189,6 +205,9 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
               </td>
               <td className="whitespace-nowrap px-4 py-4 capitalize">
                 {reward.fulfillment_type.replaceAll("_", " ")}
+              </td>
+              <td className="whitespace-nowrap px-4 py-4">
+                {formatOwnerScope(reward)}
               </td>
               <td className="whitespace-nowrap px-4 py-4">
                 {formatVisibilityMode(reward.visibility_mode)}

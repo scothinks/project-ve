@@ -62,12 +62,67 @@ export {
 } from "@/features/users/admin/data";
 
 export {
+  getAdminOrganizations,
+  getAdminOrganizationContexts,
+  type AdminOrganizationRow,
+  type AdminOrganizationContext,
+} from "@/features/organizations/admin/data";
+
+export {
+  getAdminCohort,
+  getAdminCohorts,
+  type AdminCohortDetail,
+  type AdminCohortMemberRow,
+  type AdminCohortOrganizationRow,
+  type AdminCohortRow,
+  type AdminCourseAssignmentRow,
+  type AdminEnrolmentRow,
+  type AdminProgrammeAssignmentRow,
+} from "@/features/cohorts/admin/data";
+
+export {
+  getAdminAssessmentVersionOptions,
+  getAdminProgramme,
+  getAdminProgrammes,
+  type AdminAssessmentVersionOptionRow,
+  type AdminProgrammeAssessmentRow,
+  type AdminProgrammeCourseRow,
+  type AdminProgrammeDetail,
+  type AdminProgrammeMissionRow,
+  type AdminProgrammeRewardRow,
+  type AdminProgrammeRow,
+} from "@/features/programmes/admin/data";
+
+export {
   getAdminRedemptions,
   getAdminRewards,
   type AdminRedemptionFilters,
   type AdminRedemptionRow,
   type AdminRewardRow,
 } from "@/features/rewards/admin/data";
+
+export {
+  getAdminLmsReporting,
+  parseAdminLmsReporting,
+  type AdminLmsCohortComparison,
+  type AdminLmsLearnerReport,
+  type AdminLmsMissionCompletionReport,
+  type AdminLmsQuizScoreReport,
+  type AdminLmsReporting,
+  type AdminLmsReportingFilters,
+  type AdminLmsReportingSummary,
+  type AdminLmsRewardUsageReport,
+} from "@/features/reporting/admin/data";
+
+export {
+  getAdminLmsInterventions,
+  parseAdminLmsInterventions,
+  type AdminLmsIntervention,
+  type AdminLmsInterventionFilters,
+  type AdminLmsInterventionSeverity,
+  type AdminLmsInterventionStatus,
+  type AdminLmsInterventionType,
+} from "@/features/interventions/admin/data";
 
 export {
   getAdminPerkDraws,

@@ -300,7 +300,7 @@ export async function getAdminPerkPrograms(
 
 export async function getAdminRewardDetail(supabase: SupabaseClient, rewardId: string) {
   const detailSelect =
-    "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, offer_expires_at, updated_at, thumbnail, terms, claim_steps, fulfillment_config, redemption_window_days, sort_order, starts_at, ends_at";
+    "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, offer_expires_at, updated_at, thumbnail, terms, claim_steps, fulfillment_config, redemption_window_days, sort_order, starts_at, ends_at";
   const { data: reward, error } = await supabase
     .from("rewards")
     .select(`${detailSelect}, distribution_mode`)

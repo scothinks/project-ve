@@ -2685,7 +2685,7 @@ Result: PASS
 npm run test:db
 Result: PASS, 7 files / 145 pgTAP tests
 
-npx supabase@2.110.0 test db --linked supabase/tests/database
+node scripts/supabase-cli.mjs test db --linked supabase/tests/database
 Result: PASS, 7 files / 145 pgTAP tests
 
 npm run build
@@ -2732,10 +2732,10 @@ Files=7 / Tests=147
 RPC ACL/classification mismatch query across anon/authenticated/service_role
 Result: 0 mismatches
 
-npx supabase@2.110.0 db push
+node scripts/supabase-cli.mjs db push
 Result: PASS; applied 20260801172803_align_rpc_classification_service_role_acl.sql
 
-npx supabase@2.110.0 test db --linked supabase/tests/database
+node scripts/supabase-cli.mjs test db --linked supabase/tests/database
 Result: PASS, 7 files / 147 pgTAP tests
 ```
 

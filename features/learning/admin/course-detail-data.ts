@@ -189,6 +189,41 @@ export async function getAdminCourseDetailPageData(
 
   if (quizOptions.error) throw quizOptions.error;
 
+  const [
+    courseCompletionRules,
+    completionMissionOptions,
+    completionAssessmentOptions,
+  ] = await Promise.all([
+    supabase
+      .from("course_completion_rules")
+      .select(`
+        course_id,
+        required_lesson_ids,
+        required_quiz_ids,
+        required_mission_ids,
+        required_final_assessment_version_id,
+        minimum_quiz_score,
+        minimum_completion_threshold,
+        updated_at
+      `)
+      .eq("course_id", courseId)
+      .maybeSingle(),
+    supabase
+      .from("missions")
+      .select("id, title, status, category, validation_type")
+      .neq("status", "archived")
+      .order("title", { ascending: true }),
+    supabase
+      .from("assessment_versions")
+      .select("id, slug, title, status")
+      .neq("status", "archived")
+      .order("title", { ascending: true }),
+  ]);
+
+  if (courseCompletionRules.error) throw courseCompletionRules.error;
+  if (completionMissionOptions.error) throw completionMissionOptions.error;
+  if (completionAssessmentOptions.error) throw completionAssessmentOptions.error;
+
   const optionsByQuestionId = new Map<string, AdminQuizOptionRow[]>();
   for (const option of (quizOptions.data ?? []) as AdminQuizOptionRow[]) {
     const existing = optionsByQuestionId.get(option.question_id) ?? [];
@@ -314,6 +349,9 @@ export async function getAdminCourseDetailPageData(
     questionCountByQuizId,
     mediaAssetsByLessonId,
     mediaApprovalBlocked,
+    courseCompletionRules: courseCompletionRules.data ?? null,
+    completionMissionOptions: completionMissionOptions.data ?? [],
+    completionAssessmentOptions: completionAssessmentOptions.data ?? [],
   };
 }
 

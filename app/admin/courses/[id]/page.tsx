@@ -28,6 +28,7 @@ import {
   requestCourseMediaChanges,
   requestCourseTextChanges,
   saveLearningMediaAsset,
+  saveCourseCompletionRules,
   sendCourseForReview,
   unpublishReviewedCourse,
   useLibraryMediaAsset,
@@ -40,6 +41,7 @@ import { getAiMediaConfig } from "@/lib/ai-media-generator";
 import { requireAdmin } from "@/lib/admin";
 import { getAdminCourseDetailPageData } from "@/features/learning/admin/course-detail-data";
 import { CourseDetailExpansionSection } from "@/features/learning/admin/course-detail-expansion-section";
+import { CourseDetailCompletionSection } from "@/features/learning/admin/course-detail-completion-section";
 import { CourseMediaLibraryOverview } from "@/features/learning/admin/course-media-library-overview";
 import { CourseDetailMediaRegistrySection } from "@/features/learning/admin/course-detail-media-registry-section";
 import { CourseDetailShellMediaSection } from "@/features/learning/admin/course-detail-shell-media-section";
@@ -64,6 +66,19 @@ function workflowTone(status: string) {
   if (status === "approved" || status === "ready" || status === "published") return "good" as const;
   if (status === "changes_requested" || status === "not_ready") return "danger" as const;
   if (status === "draft" || status === "generation_ready" || status === "in_review") return "warning" as const;
+  return "neutral" as const;
+}
+
+function catalogScopeLabel(scope: string) {
+  if (scope === "platform") return "Platform catalogue";
+  if (scope === "organization_private") return "Organisation private";
+  if (scope === "adapted_platform") return "Adapted platform course";
+  return scope.replaceAll("_", " ");
+}
+
+function catalogScopeTone(scope: string) {
+  if (scope === "organization_private") return "warning" as const;
+  if (scope === "adapted_platform") return "store" as const;
   return "neutral" as const;
 }
 
@@ -105,6 +120,9 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
     mediaAssetsByLessonId,
     mediaApprovalBlocked,
     readiness,
+    courseCompletionRules,
+    completionMissionOptions,
+    completionAssessmentOptions,
   } = data;
   const mediaConfig = getAiMediaConfig();
   const derivedMinutes = lessons.reduce((total, lesson) => total + lesson.estimated_minutes, 0);
@@ -156,7 +174,12 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
               <AdminStatusBadge tone={workflowTone(course.ai_publish_status)}>
                 {course.ai_publish_status.replaceAll("_", " ")}
               </AdminStatusBadge>
-              <AdminStatusBadge tone="neutral">Project VE</AdminStatusBadge>
+              <AdminStatusBadge tone={catalogScopeTone(course.catalog_scope)}>
+                {catalogScopeLabel(course.catalog_scope)}
+              </AdminStatusBadge>
+              {course.upstream_update_available ? (
+                <AdminStatusBadge tone="warning">Upstream update</AdminStatusBadge>
+              ) : null}
               {course.ai_generated ? (
                 <AdminStatusBadge tone="neutral">AI assisted</AdminStatusBadge>
               ) : (
@@ -224,11 +247,54 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     Ownership scope
                   </p>
                   <div className="mt-3">
-                    <AdminStatusBadge tone="neutral">Project VE</AdminStatusBadge>
+                    <AdminStatusBadge tone={catalogScopeTone(course.catalog_scope)}>
+                      {catalogScopeLabel(course.catalog_scope)}
+                    </AdminStatusBadge>
                   </div>
-                  <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-                    This course currently belongs to the platform catalogue. Organisation and adapted scopes are reserved for later LMS phases.
-                  </p>
+                  <dl className="mt-4 space-y-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                    <div>
+                      <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                        Owner
+                      </dt>
+                      <dd className="mt-1 text-[var(--ve-muted-strong)]">
+                        {course.organization_id ? `Organisation ${course.organization_id}` : "Project VE platform"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                        Version
+                      </dt>
+                      <dd className="mt-1 text-[var(--ve-muted-strong)]">
+                        v{course.catalog_version}
+                        {course.source_catalog_version ? ` · copied from source v${course.source_catalog_version}` : ""}
+                      </dd>
+                    </div>
+                    {course.source_course_id ? (
+                      <div>
+                        <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                          Source course
+                        </dt>
+                        <dd className="mt-1 text-[var(--ve-muted-strong)]">
+                          {course.source_course_id}
+                        </dd>
+                      </div>
+                    ) : null}
+                    {course.copied_at ? (
+                      <div>
+                        <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                          Copied
+                        </dt>
+                        <dd className="mt-1 text-[var(--ve-muted-strong)]">
+                          {formatRewardDate(course.copied_at)}
+                        </dd>
+                      </div>
+                    ) : null}
+                    {course.upstream_update_available ? (
+                      <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-3 py-2 text-[var(--foreground)]">
+                        Source platform content has changed since this adaptation was copied.
+                      </div>
+                    ) : null}
+                  </dl>
                 </AdminCard>
                 <AdminCard>
                   <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
@@ -246,6 +312,15 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                     </AdminStatusBadge>
                   </div>
                 </AdminCard>
+                <CourseDetailCompletionSection
+                  action={saveCourseCompletionRules}
+                  assessments={completionAssessmentOptions}
+                  course={course}
+                  lessons={lessons}
+                  missions={completionMissionOptions}
+                  quizzes={data.quizRows}
+                  rules={courseCompletionRules}
+                />
               </div>
             </section>
             <ContentValueTagEditor

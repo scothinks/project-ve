@@ -1,11 +1,13 @@
 "use client";
 
 import * as Collapsible from "@radix-ui/react-collapsible";
+import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, MenuIcon } from "@/components/ui/Icons";
+import type { AdminOrganizationContext } from "@/lib/admin";
 import type { UserProfile } from "@/lib/supabase-server";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,43 @@ function CoursesIcon({ className }: IconProps) {
       <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 0z" stroke="currentColor" />
       <path d="M5 4v16" stroke="currentColor" />
       <path d="M9 8h6M9 11h6" stroke="currentColor" />
+    </svg>
+  );
+}
+
+function ProgrammesIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M5 5h14v5H5zM5 14h6v5H5zM15 14h4v5h-4z" stroke="currentColor" />
+      <path d="M12 7.5h3M8 16.5h1M17 16.5h.5" stroke="currentColor" />
+    </svg>
+  );
+}
+
+function CohortsIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M8.5 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM15.5 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" />
+      <path d="M4.5 18a4 4 0 0 1 8 0M11.5 18a4 4 0 0 1 8 0" stroke="currentColor" />
+    </svg>
+  );
+}
+
+function ReportingIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M5 19V5M5 19h14" stroke="currentColor" />
+      <path d="M8 15v-4M12 15V8M16 15v-6" stroke="currentColor" />
+      <path d="M8 18h8" stroke="currentColor" />
+    </svg>
+  );
+}
+
+function InterventionsIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M12 4 4 18h16z" stroke="currentColor" />
+      <path d="M12 9v4M12 16h.01" stroke="currentColor" />
     </svg>
   );
 }
@@ -181,6 +220,10 @@ const adminLinkGroups: AdminLinkGroup[] = [
     summary: "Courses and learning content",
     links: [
       { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
+      { href: "/admin/programmes", label: "Programmes", icon: ProgrammesIcon },
+      { href: "/admin/cohorts", label: "Cohorts", icon: CohortsIcon },
+      { href: "/admin/reporting", label: "Reporting", icon: ReportingIcon },
+      { href: "/admin/interventions", label: "Interventions", icon: InterventionsIcon },
       { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
       { href: "/admin/content", label: "Content", icon: ContentIcon },
     ],
@@ -270,6 +313,14 @@ function getBreadcrumbs(pathname: string) {
     crumbs.push({ href: pathname, label: "Create course" });
   } else if (pathname.startsWith("/admin/courses/")) {
     crumbs.push({ href: pathname, label: "Course workspace" });
+  } else if (pathname.startsWith("/admin/programmes/new")) {
+    crumbs.push({ href: pathname, label: "Create programme" });
+  } else if (pathname.startsWith("/admin/programmes/")) {
+    crumbs.push({ href: pathname, label: "Programme workspace" });
+  } else if (pathname.startsWith("/admin/cohorts/new")) {
+    crumbs.push({ href: pathname, label: "Create cohort" });
+  } else if (pathname.startsWith("/admin/cohorts/")) {
+    crumbs.push({ href: pathname, label: "Cohort workspace" });
   } else if (pathname.startsWith("/admin/campaigns/new")) {
     crumbs.push({ href: pathname, label: "Create campaign" });
   } else if (pathname.startsWith("/admin/campaigns/")) {
@@ -406,11 +457,93 @@ function AdminBreadcrumbs({ pathname }: { pathname: string }) {
   );
 }
 
+function WorkspaceSwitcher({
+  collapsed = false,
+  contexts,
+}: {
+  collapsed?: boolean;
+  contexts: AdminOrganizationContext[];
+}) {
+  const contextOptions = useMemo(() => contexts.length > 0
+    ? contexts
+    : [{
+      id: "platform",
+      label: "Project VE platform",
+      role: "platform_admin",
+      roleLabel: "Platform admin",
+      slug: "platform",
+      type: "platform" as const,
+    }], [contexts]);
+  const [selectedId, setSelectedId] = useState(contextOptions[0]?.id ?? "platform");
+  const selectedContext = useMemo(
+    () => contextOptions.find((context) => context.id === selectedId) ?? contextOptions[0],
+    [contextOptions, selectedId],
+  );
+
+  useEffect(() => {
+    const storedValue = window.localStorage.getItem("project-ve-admin-organization-context");
+    if (storedValue && contextOptions.some((context) => context.id === storedValue)) {
+      setSelectedId(storedValue);
+    }
+  }, [contextOptions]);
+
+  function handleChange(value: string) {
+    setSelectedId(value);
+    window.localStorage.setItem("project-ve-admin-organization-context", value);
+  }
+
+  if (collapsed) {
+    return (
+      <div className="mt-6 flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] text-xs font-black text-[var(--ve-green)]">
+        {selectedContext?.type === "platform" ? "P" : "O"}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4">
+      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+        Workspace
+      </p>
+      <Select.Root value={selectedContext?.id ?? "platform"} onValueChange={handleChange}>
+        <Select.Trigger className="mt-2 flex min-h-11 w-full items-center justify-between rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-left text-sm font-black outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
+          <Select.Value />
+          <Select.Icon className="text-[var(--ve-muted)]">v</Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content
+            align="start"
+            className="z-50 min-w-[18rem] overflow-hidden rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-1 shadow-xl"
+            position="popper"
+          >
+            <Select.Viewport>
+              {contextOptions.map((context) => (
+                <Select.Item
+                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ve-panel)]"
+                  key={context.id}
+                  value={context.id}
+                >
+                  <Select.ItemText>{context.label}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
+      <p className="mt-2 text-xs font-semibold text-[var(--ve-muted-strong)]">
+        {selectedContext?.roleLabel ?? "Platform admin"}
+      </p>
+    </div>
+  );
+}
+
 export function AdminShell({
   children,
+  organizationContexts,
   profile,
 }: {
   children: ReactNode;
+  organizationContexts: AdminOrganizationContext[];
   profile: UserProfile;
 }) {
   const pathname = usePathname();
@@ -456,17 +589,7 @@ export function AdminShell({
             </button>
           </div>
 
-          {collapsed ? null : (
-            <div className="mt-6 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-                Workspace
-              </p>
-              <p className="mt-1 text-sm font-black">Project VE platform</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
-                Platform context
-              </p>
-            </div>
-          )}
+          <WorkspaceSwitcher collapsed={collapsed} contexts={organizationContexts} />
 
           <nav className="mt-6 space-y-4 overflow-y-auto pr-1">
             {adminLinkGroups.map((group) => (
@@ -502,12 +625,17 @@ export function AdminShell({
                 </p>
                 <h1 className="text-xl font-black">Admin</h1>
                 <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
-                  Project VE platform
+                  {organizationContexts.length > 1
+                    ? `${organizationContexts.length - 1} organisation contexts`
+                    : "Project VE platform"}
                 </p>
               </div>
               <Link className="text-sm font-black" href="/dashboard">
                 App
               </Link>
+            </div>
+            <div className="md:hidden">
+              <WorkspaceSwitcher contexts={organizationContexts} />
             </div>
             <Collapsible.Root className="mt-4" open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]">

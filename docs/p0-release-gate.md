@@ -38,9 +38,9 @@ The DB suite includes:
 DB tests require:
 
 - Docker daemon running;
-- Supabase CLI available through `npx supabase`;
+- Supabase CLI installed through `npm ci` and available via
+  `node scripts/supabase-cli.mjs`;
 - local Supabase database reachable by the CLI;
-- npm registry access if the Supabase CLI is not already cached.
 
 ## Current P0 Assertions
 

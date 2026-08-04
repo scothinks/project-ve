@@ -13,6 +13,8 @@ import {
 export type AdminRewardRow = {
   id: string;
   campaign_id: string | null;
+  organization_id: string | null;
+  sponsored_programme_id: string | null;
   title: string;
   description: string | null;
   cost_xp: number;
@@ -20,6 +22,8 @@ export type AdminRewardRow = {
   is_enabled: boolean;
   distribution_mode: string;
   fulfillment_type: string;
+  owner_scope: string;
+  shared_with_programmes: boolean;
   visibility_mode: string;
   total_uploaded: number;
   total_available: number;
@@ -66,7 +70,7 @@ export async function getAdminRewards(
   filters: { campaignId?: string; distributionMode?: "direct" | "perk_bundle" } = {},
 ) {
   const baseSelect =
-    "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
+    "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
   let query = supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)
@@ -176,7 +180,7 @@ export async function getAdminRewardsByIds(supabase: SupabaseClient, rewardIds: 
   }
 
   const baseSelect =
-    "id, campaign_id, title, description, cost_xp, status, is_enabled, fulfillment_type, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
+    "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
   const { data, error } = await supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)
