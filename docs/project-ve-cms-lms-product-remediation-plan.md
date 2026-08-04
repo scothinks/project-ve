@@ -1948,12 +1948,12 @@ Passing:
 
 Notes:
 
-* `db:types:check:ci` remains a remote-project CI check because it requires `SUPABASE_PROJECT_REF`; local drift was verified with `db:types:local:check`.
+* CI type drift checking now replays local migrations and runs `db:types:local:check`; `db:types:check:ci` remains available for explicit linked-project drift checks when `SUPABASE_PROJECT_REF` is configured.
 * Supabase CLI execution is now routed through the repo-local `supabase` dev dependency and `scripts/supabase-cli.mjs`, avoiding repeated `npx` registry lookups during local validation.
 
 CI coverage:
 
-* `.github/workflows/ci.yml` still runs the remediation job by installing Chromium, starting local Supabase with `npm run db:start`, running `npm run test:remediation:local`, and stopping Supabase through `scripts/supabase-cli.mjs`.
+* `.github/workflows/ci.yml` runs the database type job against a local migration replay and still runs the remediation job by installing Chromium, starting local Supabase with `npm run db:start`, running `npm run test:remediation:local`, and stopping Supabase through `scripts/supabase-cli.mjs`.
 
 ## Visual Evidence
 

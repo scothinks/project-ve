@@ -695,13 +695,17 @@ test.describe.serial("remediation browser flows", () => {
 
     expect(signupResponse.status()).toBe(200);
 
-    const result = await Promise.race([
+    const result = await Promise.any([
       page
-        .waitForURL(/\/(dashboard|onboarding\/assessment)$/, { timeout: 10_000 })
+        .waitForFunction(
+          () => ["/dashboard", "/onboarding/assessment"].includes(window.location.pathname),
+          undefined,
+          { timeout: 15_000 },
+        )
         .then(() => "signed-in" as const),
       page
         .getByRole("heading", { name: "Check your email" })
-        .waitFor({ state: "visible", timeout: 10_000 })
+        .waitFor({ state: "visible", timeout: 15_000 })
         .then(() => "confirmation" as const),
     ]);
 

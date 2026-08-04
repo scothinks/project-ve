@@ -6497,6 +6497,10 @@ export type Database = {
         Args: { p_programme_id: string; p_reward_id: string }
         Returns: boolean
       }
+      current_user_can_access_reward: {
+        Args: { p_reward_id: string }
+        Returns: boolean
+      }
       current_user_can_edit_course: {
         Args: { p_course_id: string }
         Returns: boolean
@@ -6537,11 +6541,19 @@ export type Database = {
         Args: { p_programme_id: string }
         Returns: boolean
       }
+      current_user_has_course_enrolment: {
+        Args: { p_course_id: string }
+        Returns: boolean
+      }
       current_user_has_organization_role: {
         Args: {
           p_organization_id: string
           p_roles?: Database["public"]["Enums"]["organization_role_key"][]
         }
+        Returns: boolean
+      }
+      current_user_has_programme_enrolment: {
+        Args: { p_programme_id: string }
         Returns: boolean
       }
       current_user_is_admin: { Args: never; Returns: boolean }

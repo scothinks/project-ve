@@ -1241,10 +1241,10 @@ Current cleanup status:
 * Runtime reward-redemption schema-version fallback has been removed.
 * Handwritten Supabase result overrides have been removed across `lib`, `app`, and `components`: no `.returns<T>()`, `maybeSingle<T>()`, or `single<T>()` call sites remain.
 * Converted modules include learner catalog/rewards/recommendations/notifications/value-profile/personalized-recommendations/XP settings, ad decision/reporting paths, admin read models, course admin workflows, and small notification dispatch/push prompt call sites.
-* CI wiring for linked Supabase type drift detection is in place through
-  `.github/workflows/ci.yml`.
-* Repository secret configuration required from the project owner:
-  `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF`.
+* CI wiring for local migration-replay Supabase type drift detection is in place
+  through `.github/workflows/ci.yml`.
+* `db:types:check:ci` remains available for explicit linked-project drift checks
+  when `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` are configured.
 
 ### Required architecture
 
