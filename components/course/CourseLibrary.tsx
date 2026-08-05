@@ -10,10 +10,11 @@ import { cn } from "@/lib/utils";
 
 type CourseLibraryProps = {
   courses: Course[];
+  courseHrefPrefix?: string;
   completedLessonIds?: string[];
 };
 
-export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibraryProps) {
+export function CourseLibrary({ courseHrefPrefix = "/courses", courses, completedLessonIds = [] }: CourseLibraryProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
@@ -118,6 +119,7 @@ export function CourseLibrary({ courses, completedLessonIds = [] }: CourseLibrar
               completedLessonIds={completedLessonIds}
               course={course}
               desktopLayout="horizontal"
+              href={`${courseHrefPrefix.replace(/\/$/, "")}/${encodeURIComponent(course.id)}`}
               key={course.id}
             />
           ))

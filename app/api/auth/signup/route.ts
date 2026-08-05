@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
 import { getRiskContext, verifyTurnstileToken } from "@/lib/auth-risk";
 import {
@@ -28,8 +29,12 @@ export async function POST(request: NextRequest) {
   const password = getStringField(bodyResult.data, "password", issues, { minLength: 8 });
   const rawFullName = getStringField(bodyResult.data, "fullName", issues, { minLength: 2 });
   const captchaToken = getOptionalStringField(bodyResult.data, "captchaToken", issues);
+  const rawNextPath = getOptionalStringField(bodyResult.data, "nextPath", issues, {
+    maxLength: 2048,
+  });
   const email = normalizeEmailInput(rawEmail ?? "");
   const fullName = sanitizePlainTextInput(rawFullName ?? "", 120).trim();
+  const nextPath = getSafeAuthNextPath(rawNextPath);
 
   if (!email) {
     issues.push({ path: "email", message: "Expected a valid email address." });
@@ -85,7 +90,7 @@ export async function POST(request: NextRequest) {
     options: {
       captchaToken: captchaToken ?? undefined,
       emailRedirectTo: `${request.nextUrl.origin}/auth/callback?next=${encodeURIComponent(
-        "/login?confirmed=1",
+        `/login?confirmed=1&next=${encodeURIComponent(nextPath)}`,
       )}`,
       data: {
         display_name: fullName,

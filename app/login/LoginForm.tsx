@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { defaultAuthNextPath, getSafeAuthNextPath } from "@/lib/auth-redirect";
 import {
   normalizeEmailInput,
   normalizeReferralCodeInput,
@@ -21,6 +22,7 @@ type AuthView = {
 
 type LoginFormProps = {
   isDemoMode: boolean;
+  nextPath: string;
   onViewChange?: (view: AuthView) => void;
 };
 
@@ -43,9 +45,10 @@ declare global {
   }
 }
 
-export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
+export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps) {
   const browserSupabase = useMemo(() => createSupabaseBrowserClient(), []);
   const supabase = isDemoMode ? null : browserSupabase;
+  const safeNextPath = getSafeAuthNextPath(nextPath);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,7 +71,9 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
   const showSubmitSpinner = pendingAction === "submit" || isRedirecting;
 
   const submitLabel = isRedirecting
-    ? "Opening dashboard..."
+    ? safeNextPath === defaultAuthNextPath
+      ? "Opening dashboard..."
+      : "Continuing..."
     : isPasswordRecovery
     ? pendingAction === "submit"
       ? "Saving password..."
@@ -81,12 +86,37 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
         ? "Create Account"
         : "Login";
 
-  function openDashboard() {
+  const buildLoginPath = useCallback((params?: Record<string, string>) => {
+    const searchParams = new URLSearchParams();
+
+    if (safeNextPath !== defaultAuthNextPath) {
+      searchParams.set("next", safeNextPath);
+    }
+
+    for (const [key, value] of Object.entries(params ?? {})) {
+      searchParams.set(key, value);
+    }
+
+    const query = searchParams.toString();
+    return query ? `/login?${query}` : "/login";
+  }, [safeNextPath]);
+
+  const getOAuthNextPath = useCallback(() => {
+    const safeReferralCode = referralCode ? normalizeReferralCodeInput(referralCode) : null;
+
+    if (safeNextPath !== defaultAuthNextPath || !safeReferralCode) {
+      return safeNextPath;
+    }
+
+    return `/dashboard?ref=${encodeURIComponent(safeReferralCode)}`;
+  }, [referralCode, safeNextPath]);
+
+  const openDestination = useCallback(() => {
     setPendingAction("redirect");
     window.setTimeout(() => {
-      window.location.replace("/dashboard");
+      window.location.replace(safeNextPath);
     }, 0);
-  }
+  }, [safeNextPath]);
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get("ref");
@@ -115,7 +145,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       setEmailConfirmed(true);
       setReferralCode(null);
       window.localStorage.removeItem(referralStorageKey);
-      window.history.replaceState({}, "", "/login");
+      window.history.replaceState({}, "", buildLoginPath());
     }
 
     const authError = new URLSearchParams(window.location.search).get("auth_error");
@@ -123,9 +153,9 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       setAuthMode("login");
       setMessage(authError);
       setReferralCode(null);
-      window.history.replaceState({}, "", "/login");
+      window.history.replaceState({}, "", buildLoginPath());
     }
-  }, []);
+  }, [buildLoginPath]);
 
   useEffect(() => {
     const siteKey = turnstileSiteKey;
@@ -263,7 +293,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
           return;
         }
       }
-      openDashboard();
+      openDestination();
       return;
     }
 
@@ -307,6 +337,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
           password,
           fullName: safeFullName,
           captchaToken,
+          nextPath: safeNextPath,
         }),
       });
       const data = (await response.json()) as {
@@ -335,7 +366,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
           setPendingAction(null);
           return;
         }
-        openDashboard();
+        openDestination();
         return;
       }
 
@@ -356,7 +387,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       return;
     }
 
-    openDashboard();
+    openDestination();
   }
 
   async function handleGoogleLogin() {
@@ -374,7 +405,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       setPendingAction("google");
       setMessage(null);
       setSuccessMessage(null);
-      openDashboard();
+      openDestination();
       return;
     }
 
@@ -419,9 +450,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          `/dashboard${
-            referralCode ? `?ref=${encodeURIComponent(normalizeReferralCodeInput(referralCode))}` : ""
-          }`,
+          getOAuthNextPath(),
         )}`,
       },
     });
@@ -498,7 +527,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
       email: safeEmail,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          "/login?confirmed=1",
+          buildLoginPath({ confirmed: "1" }),
         )}`,
       },
     });
@@ -547,7 +576,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
     setIsPasswordRecovery(false);
     setAuthMode("login");
     setSuccessMessage("Password updated. You can now log in.");
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", buildLoginPath());
   }
 
   if (confirmationEmail) {
@@ -772,7 +801,7 @@ export function LoginForm({ isDemoMode, onViewChange }: LoginFormProps) {
             setMessage(null);
             setSuccessMessage(null);
             setCanResendConfirmation(false);
-            window.history.replaceState({}, "", "/login");
+            window.history.replaceState({}, "", buildLoginPath());
           }}
           type="button"
         >

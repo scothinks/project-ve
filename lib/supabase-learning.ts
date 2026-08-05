@@ -35,6 +35,9 @@ type CourseRow = {
   estimated_minutes: number;
 };
 
+const courseSelect =
+  "id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes";
+
 type CourseCoverAssetRow = {
   id: string;
   course_id: string | null;
@@ -425,8 +428,9 @@ async function getPublishedCourseByIdOrSlug(
 ): Promise<CourseRow | null> {
   const { data: byId, error: idError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
+    .select(courseSelect)
     .eq("id", idOrSlug)
+    .eq("catalog_scope", "platform")
     .eq("status", "published")
     .maybeSingle();
 
@@ -435,8 +439,9 @@ async function getPublishedCourseByIdOrSlug(
 
   const { data: bySlug, error: slugError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
+    .select(courseSelect)
     .eq("slug", idOrSlug)
+    .eq("catalog_scope", "platform")
     .eq("status", "published")
     .maybeSingle();
 
@@ -677,7 +682,8 @@ export async function getLearningCatalog(supabase: AppSupabaseClient | null): Pr
   try {
     const { data: courses, error: coursesError } = await supabase
       .from("courses")
-      .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
+      .select(courseSelect)
+      .eq("catalog_scope", "platform")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
 
@@ -719,7 +725,8 @@ export async function getLearningCourseSummaries(
   try {
     const { data: courses, error: coursesError } = await supabase
       .from("courses")
-      .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, sort_order, estimated_minutes")
+      .select(courseSelect)
+      .eq("catalog_scope", "platform")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
 
@@ -729,6 +736,72 @@ export async function getLearningCourseSummaries(
   } catch (error) {
     throwLoggedLearningDependencyError(error, {
       operation: "learning.course_summaries.load",
+    });
+  }
+}
+
+export async function getLearningCourseSummariesByIds(
+  supabase: AppSupabaseClient | null,
+  courseIds: string[],
+): Promise<Course[]> {
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.workspace_course_summaries.load",
+    });
+  }
+
+  const uniqueCourseIds = Array.from(new Set(courseIds)).filter(Boolean);
+  if (uniqueCourseIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const { data: courses, error: coursesError } = await supabase
+      .from("courses")
+      .select(courseSelect)
+      .in("id", uniqueCourseIds)
+      .eq("status", "published")
+      .order("sort_order", { ascending: true });
+
+    if (coursesError) throw coursesError;
+    if (!courses || courses.length === 0) return [];
+    return loadMappedPublishedCourseSummaries(supabase, courses as CourseRow[]);
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.workspace_course_summaries.load",
+    });
+  }
+}
+
+export async function getLearningCoursesByIds(
+  supabase: AppSupabaseClient | null,
+  courseIds: string[],
+): Promise<Course[]> {
+  if (!supabase) {
+    throwLoggedLearningDependencyError(new Error("Supabase is required when APP_MODE=live."), {
+      operation: "learning.workspace_courses.load",
+    });
+  }
+
+  const uniqueCourseIds = Array.from(new Set(courseIds)).filter(Boolean);
+  if (uniqueCourseIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const { data: courses, error: coursesError } = await supabase
+      .from("courses")
+      .select(courseSelect)
+      .in("id", uniqueCourseIds)
+      .eq("status", "published")
+      .order("sort_order", { ascending: true });
+
+    if (coursesError) throw coursesError;
+    if (!courses || courses.length === 0) return [];
+    return loadMappedPublishedCourses(supabase, courses as CourseRow[]);
+  } catch (error) {
+    throwLoggedLearningDependencyError(error, {
+      operation: "learning.workspace_courses.load",
     });
   }
 }

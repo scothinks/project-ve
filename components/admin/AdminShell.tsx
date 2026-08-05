@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, MenuIcon } from "@/components/ui/Icons";
-import type { AdminOrganizationContext } from "@/lib/admin";
+import type { AdminOrganizationContext, AdminWorkspace as ResolvedAdminWorkspace } from "@/lib/admin";
 import type { UserProfile } from "@/lib/supabase-server";
 import { cn } from "@/lib/utils";
 
@@ -207,12 +207,6 @@ type AdminLinkGroup = {
   links: AdminLink[];
 };
 
-type AdminWorkspace = {
-  id: "platform" | string;
-  type: "platform" | "organization";
-  roles: string[];
-};
-
 const adminLinkGroups: AdminLinkGroup[] = [
   {
     id: "home",
@@ -267,11 +261,11 @@ const adminLinkGroups: AdminLinkGroup[] = [
   },
 ];
 
-function hasAnyRole(workspace: AdminWorkspace, roles: string[]) {
+function hasAnyRole(workspace: ResolvedAdminWorkspace, roles: string[]) {
   return workspace.type === "platform" || roles.some((role) => workspace.roles.includes(role));
 }
 
-function canUseAdminLink(link: AdminLink, workspace: AdminWorkspace) {
+function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
   if (workspace.type === "platform") {
     return true;
   }
@@ -324,7 +318,7 @@ function canUseAdminLink(link: AdminLink, workspace: AdminWorkspace) {
   return false;
 }
 
-function filterAdminLinkGroups(groups: AdminLinkGroup[], workspace: AdminWorkspace) {
+function filterAdminLinkGroups(groups: AdminLinkGroup[], workspace: ResolvedAdminWorkspace) {
   return groups
     .map((group) => ({
       ...group,
@@ -539,18 +533,22 @@ function WorkspaceSwitcher({
 }: {
   collapsed?: boolean;
   contexts: AdminOrganizationContext[];
-  currentWorkspace: AdminWorkspace;
+  currentWorkspace: ResolvedAdminWorkspace;
 }) {
   const router = useRouter();
   const contextOptions = useMemo(() => contexts.length > 0
     ? contexts
     : [{
+      accentToken: "green",
       id: "platform",
       label: "Project VE platform",
+      logoUrl: null,
       role: "platform_admin",
       roleLabel: "Platform admin",
+      shortName: "Project VE",
       slug: "platform",
       type: "platform" as const,
+      verificationStatus: "verified",
     }], [contexts]);
   const [selectedId, setSelectedId] = useState(currentWorkspace.id);
   const selectedContext = useMemo(
@@ -573,10 +571,12 @@ function WorkspaceSwitcher({
     router.refresh();
   }
 
+  const selectedLabel = selectedContext?.shortName ?? selectedContext?.label ?? "Project VE platform";
+
   if (collapsed) {
     return (
       <div className="mt-6 flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] text-xs font-black text-[var(--ve-green)]">
-        {selectedContext?.type === "platform" ? "P" : "O"}
+        {selectedContext?.type === "platform" ? "P" : selectedLabel.slice(0, 2).toUpperCase()}
       </div>
     );
   }
@@ -614,6 +614,11 @@ function WorkspaceSwitcher({
       <p className="mt-2 text-xs font-semibold text-[var(--ve-muted-strong)]">
         {selectedContext?.roleLabel ?? "Platform admin"}
       </p>
+      {selectedContext?.type === "organization" ? (
+        <p className="mt-1 text-xs font-black capitalize text-[var(--ve-green)]">
+          {selectedContext.verificationStatus.replaceAll("_", " ")}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -625,7 +630,7 @@ export function AdminShell({
   profile,
 }: {
   children: ReactNode;
-  currentWorkspace: AdminWorkspace;
+  currentWorkspace: ResolvedAdminWorkspace;
   organizationContexts: AdminOrganizationContext[];
   profile: UserProfile;
 }) {

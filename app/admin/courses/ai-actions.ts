@@ -49,9 +49,15 @@ import {
   getAiMediaConfig,
 } from "@/lib/ai-media-generator";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+import {
+  requireAdminCourseAiAuthoring,
+  requireAdminLessonAiAuthoring,
+  requireAdminWorkspaceAiAuthoring,
+} from "@/features/organizations/admin/entitlement-guards";
 
 export async function generateAiCourseDraft(formData: FormData) {
   const admin = await requireAdmin();
+  await requireAdminWorkspaceAiAuthoring(admin, "/admin/courses");
   const { supabase, profile } = admin;
   const input = parseAiGenerationInput(formData);
   const result = await requestAiCourseDraftJob(supabase, profile.id, input);
@@ -66,9 +72,11 @@ export async function generateAiCourseDraft(formData: FormData) {
 }
 
 export async function extendCourseWithAiLessons(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const admin = await requireAdmin();
+  const { supabase, profile } = admin;
   const input = parseAiGenerationInput(formData);
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
+  await requireAdminCourseAiAuthoring(admin, courseId, `/admin/courses/${courseId}`);
   const continuityInstruction = getContinuityInstruction(formData);
   const result = await requestAiLessonExtensionJob(
     supabase,
@@ -130,9 +138,11 @@ export async function requestLessonTextChanges(formData: FormData) {
 }
 
 export async function reviseCourseTextWithAi(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const admin = await requireAdmin();
+  const { supabase, profile } = admin;
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  await requireAdminCourseAiAuthoring(admin, courseId, redirectTo);
   const requestedFeedback = sanitizePlainTextInput(String(formData.get("revisionRequest") ?? ""), 3000).trim();
   const result = await requestAiCourseTextRevisionJob(
     supabase,
@@ -151,9 +161,11 @@ export async function reviseCourseTextWithAi(formData: FormData) {
 }
 
 export async function generateCourseMediaAssets(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const admin = await requireAdmin();
+  const { supabase, profile } = admin;
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}`);
+  await requireAdminCourseAiAuthoring(admin, courseId, redirectTo);
   const replaceExisting = parseBooleanFlag(formData.get("replaceExisting"));
   const applyMediaFeedback = parseBooleanFlag(formData.get("applyMediaFeedback"));
   const mediaConfig = getAiMediaConfig();
@@ -222,9 +234,11 @@ export async function requestCourseMediaChanges(formData: FormData) {
 }
 
 export async function generateLessonMediaAssets(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const admin = await requireAdmin();
+  const { supabase, profile } = admin;
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120);
   const redirectTo = getRedirectTarget(formData, `/admin/courses/lessons/${lessonId}`);
+  await requireAdminLessonAiAuthoring(admin, lessonId, redirectTo);
   const replaceExisting = parseBooleanFlag(formData.get("replaceExisting"));
   const applyMediaFeedback = parseBooleanFlag(formData.get("applyMediaFeedback"));
   const mediaConfig = getAiMediaConfig();
@@ -278,11 +292,13 @@ export async function approveLessonManualMedia(formData: FormData) {
 }
 
 export async function generateLearningMediaAsset(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const admin = await requireAdmin();
+  const { supabase, profile } = admin;
   const assetId = sanitizePlainTextInput(String(formData.get("assetId") ?? ""), 120);
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
   const lessonId = sanitizePlainTextInput(String(formData.get("lessonId") ?? ""), 120) || null;
   const redirectTo = getRedirectTarget(formData, lessonId ? `/admin/courses/lessons/${lessonId}` : `/admin/courses/${courseId}`);
+  await requireAdminCourseAiAuthoring(admin, courseId, redirectTo);
   const mediaConfig = getAiMediaConfig();
 
   if (!mediaConfig.canGenerate) {
