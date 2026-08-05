@@ -7,6 +7,7 @@ export {
   requireAdminWorkspaceRole,
   requirePlatformAdmin,
   type AdminContext,
+  type AdminWorkspace,
 } from "@/features/admin/application/context";
 
 export {
@@ -66,12 +67,20 @@ export {
 } from "@/features/users/admin/data";
 
 export {
+  getAdminOrganizationEntitlementOverrides,
+  getAdminOrganizationInvitations,
   getAdminOrganizationMemberships,
   getAdminOrganizations,
   getAdminOrganizationContexts,
+  getAdminOrganizationPlanAssignments,
+  getAdminOrganizationPlans,
+  type AdminOrganizationEntitlementOverrideRow,
+  type AdminOrganizationInvitationRow,
   type AdminOrganizationMembershipRow,
   type AdminOrganizationRow,
   type AdminOrganizationContext,
+  type AdminOrganizationPlanAssignmentRow,
+  type AdminOrganizationPlanRow,
 } from "@/features/organizations/admin/data";
 
 export {

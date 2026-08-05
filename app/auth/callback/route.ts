@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
+import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { getRiskContext } from "@/lib/auth-risk";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
 import {
@@ -24,13 +25,7 @@ type UserValueProfileStatusRow = {
 const freshOAuthWindowMs = 5 * 60 * 1000;
 
 function getSafeNextUrl(request: NextRequest) {
-  const next = request.nextUrl.searchParams.get("next");
-
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return next;
+  return getSafeAuthNextPath(request.nextUrl.searchParams.get("next"));
 }
 
 function createLoginRedirect(request: NextRequest, message: string) {

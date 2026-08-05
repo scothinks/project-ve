@@ -46,6 +46,20 @@ function MissionIcon() {
   );
 }
 
+function OrgModeIcon() {
+  return (
+    <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M5 20V7.8c0-.7.4-1.2 1-1.4l6-2.4 6 2.4c.6.2 1 .8 1 1.4V20"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+      <path d="M9 20v-4h6v4M8.5 10h.01M12 10h.01M15.5 10h.01M8.5 13h.01M15.5 13h.01" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" />
+    </svg>
+  );
+}
+
 const items = [
   {
     href: "/dashboard",
@@ -71,24 +85,30 @@ const items = [
     icon: "XP",
     activeClassName: "bg-[var(--ve-store-soft)] text-[#a66d00]",
   },
+  {
+    href: "/org",
+    label: "Org Mode",
+    icon: <OrgModeIcon />,
+    activeClassName: "bg-[var(--ve-panel-soft)] text-[var(--foreground)]",
+  },
 ] satisfies Array<{ href: string; label: string; icon: ReactNode; activeClassName: string }>;
 
 export function BottomNav({ active }: { active: string }) {
   return (
-    <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-6 pb-5 pt-3 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
-      <div className="mx-auto grid max-w-[22rem] grid-cols-4 gap-2 md:max-w-[26rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
+    <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 pb-5 pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
+      <div className="mx-auto grid max-w-[25rem] grid-cols-5 gap-1.5 sm:gap-2 md:max-w-[30rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
         {items.map((item) => {
           const isActive = item.label === active;
           return (
             <Link
               className={cn(
-                "flex h-12 flex-col items-center justify-center rounded-[18px] text-[10px] font-semibold text-[var(--ve-muted)] lg:h-[4.25rem] lg:rounded-[22px]",
+                "flex h-12 flex-col items-center justify-center rounded-[16px] text-center text-[9px] font-semibold leading-3 text-[var(--ve-muted)] sm:text-[10px] lg:h-[4.25rem] lg:rounded-[22px]",
                 isActive && item.activeClassName,
               )}
               href={item.href}
               key={item.href}
             >
-              <span className="grid h-5 place-items-center text-base font-black leading-none">
+              <span className="mb-0.5 grid h-5 place-items-center text-base font-black leading-none">
                 {item.icon}
               </span>
               {item.label}

@@ -2985,6 +2985,192 @@ export type Database = {
           },
         ]
       }
+      organization_creation_attempts: {
+        Row: {
+          attempted_slug: string
+          blocked_reason: string | null
+          created_at: string
+          id: string
+          organization_id: string | null
+          succeeded: boolean
+          user_id: string
+        }
+        Insert: {
+          attempted_slug: string
+          blocked_reason?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          succeeded?: boolean
+          user_id: string
+        }
+        Update: {
+          attempted_slug?: string
+          blocked_reason?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          succeeded?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_creation_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_creation_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_entitlement_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ended_at: string | null
+          entitlements: Json
+          id: string
+          organization_id: string
+          reason: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          entitlements?: Json
+          id?: string
+          organization_id: string
+          reason?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          entitlements?: Json
+          id?: string
+          organization_id?: string
+          reason?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_entitlement_overrides_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_entitlement_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invited_by: string | null
+          invited_user_id: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status: Database["public"]["Enums"]["organization_invitation_status"]
+          target_id: string | null
+          target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_user_id?: string | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_invitation_status"]
+          target_id?: string | null
+          target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_user_id?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_invitation_status"]
+          target_id?: string | null
+          target_type?: Database["public"]["Enums"]["organization_invitation_target_type"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_invited_user_id_fkey"
+            columns: ["invited_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["role"]
+          },
+        ]
+      }
       organization_memberships: {
         Row: {
           created_at: string
@@ -3047,6 +3233,94 @@ export type Database = {
           },
         ]
       }
+      organization_plan_assignments: {
+        Row: {
+          assigned_by: string | null
+          billing_status: Database["public"]["Enums"]["organization_billing_status"]
+          created_at: string
+          ended_at: string | null
+          id: string
+          organization_id: string
+          plan_key: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          billing_status?: Database["public"]["Enums"]["organization_billing_status"]
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id: string
+          plan_key: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string | null
+          billing_status?: Database["public"]["Enums"]["organization_billing_status"]
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string
+          plan_key?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_plan_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_plan_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_plan_assignments_plan_key_fkey"
+            columns: ["plan_key"]
+            isOneToOne: false
+            referencedRelation: "organization_plans"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      organization_plans: {
+        Row: {
+          created_at: string
+          description: string
+          entitlements: Json
+          key: string
+          name: string
+          status: Database["public"]["Enums"]["organization_plan_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          entitlements?: Json
+          key: string
+          name: string
+          status?: Database["public"]["Enums"]["organization_plan_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          entitlements?: Json
+          key?: string
+          name?: string
+          status?: Database["public"]["Enums"]["organization_plan_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organization_roles: {
         Row: {
           description: string
@@ -3070,31 +3344,58 @@ export type Database = {
       }
       organizations: {
         Row: {
+          accent_token: Database["public"]["Enums"]["organization_accent_token"]
           created_at: string
           created_by: string | null
+          creation_source: Database["public"]["Enums"]["organization_creation_source"]
+          description: string
           id: string
+          lifecycle_status: Database["public"]["Enums"]["organization_lifecycle_status"]
+          logo_url: string | null
           name: string
+          short_name: string | null
           slug: string
           status: Database["public"]["Enums"]["content_status"]
+          support_email: string | null
+          support_phone: string | null
           updated_at: string
+          verification_status: Database["public"]["Enums"]["organization_verification_status"]
         }
         Insert: {
+          accent_token?: Database["public"]["Enums"]["organization_accent_token"]
           created_at?: string
           created_by?: string | null
+          creation_source?: Database["public"]["Enums"]["organization_creation_source"]
+          description?: string
           id?: string
+          lifecycle_status?: Database["public"]["Enums"]["organization_lifecycle_status"]
+          logo_url?: string | null
           name: string
+          short_name?: string | null
           slug: string
           status?: Database["public"]["Enums"]["content_status"]
+          support_email?: string | null
+          support_phone?: string | null
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["organization_verification_status"]
         }
         Update: {
+          accent_token?: Database["public"]["Enums"]["organization_accent_token"]
           created_at?: string
           created_by?: string | null
+          creation_source?: Database["public"]["Enums"]["organization_creation_source"]
+          description?: string
           id?: string
+          lifecycle_status?: Database["public"]["Enums"]["organization_lifecycle_status"]
+          logo_url?: string | null
           name?: string
+          short_name?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["content_status"]
+          support_email?: string | null
+          support_phone?: string | null
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["organization_verification_status"]
         }
         Relationships: [
           {
@@ -5670,6 +5971,16 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_assign_organization_plan: {
+        Args: {
+          p_billing_status?: Database["public"]["Enums"]["organization_billing_status"]
+          p_entitlement_overrides?: Json
+          p_organization_id: string
+          p_override_reason?: string
+          p_plan_key: string
+        }
+        Returns: Json
+      }
       admin_assign_programme: {
         Args: {
           p_cohort_ids: string[]
@@ -5746,6 +6057,18 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_create_organization_invitation: {
+        Args: {
+          p_email: string
+          p_expires_at?: string
+          p_invited_user_id: string
+          p_organization_id: string
+          p_role: Database["public"]["Enums"]["organization_role_key"]
+          p_target_id: string
+          p_target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
+        }
+        Returns: Json
+      }
       admin_create_organization_private_course: {
         Args: {
           p_category: string
@@ -5973,6 +6296,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_revoke_organization_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: Json
+      }
       admin_reward_assignment_counts: {
         Args: { p_reward_ids?: string[] }
         Returns: {
@@ -6126,6 +6453,20 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_update_organization_profile: {
+        Args: {
+          p_accent_token: Database["public"]["Enums"]["organization_accent_token"]
+          p_description: string
+          p_lifecycle_status: Database["public"]["Enums"]["organization_lifecycle_status"]
+          p_logo_url: string
+          p_organization_id: string
+          p_short_name: string
+          p_support_email: string
+          p_support_phone: string
+          p_verification_status: Database["public"]["Enums"]["organization_verification_status"]
+        }
+        Returns: Json
+      }
       admin_update_quiz: {
         Args: {
           p_quiz_id: string
@@ -6493,6 +6834,17 @@ export type Database = {
         Returns: Json
       }
       create_ad_make_good_recommendations: { Args: never; Returns: Json }
+      create_self_service_organization: {
+        Args: {
+          p_description: string
+          p_name: string
+          p_short_name: string
+          p_slug: string
+          p_support_email: string
+          p_terms_accepted: boolean
+        }
+        Returns: Json
+      }
       current_programme_can_use_reward: {
         Args: { p_programme_id: string; p_reward_id: string }
         Returns: boolean
@@ -6509,12 +6861,20 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      current_user_can_enter_organization: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
       current_user_can_manage_organization: {
         Args: { p_organization_id: string }
         Returns: boolean
       }
       current_user_can_manage_organization_audience: {
         Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_manage_organization_invitation: {
+        Args: { p_invitation_id: string }
         Returns: boolean
       }
       current_user_can_manage_organization_programmes: {
@@ -6535,6 +6895,10 @@ export type Database = {
       }
       current_user_can_read_organization_audience: {
         Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_organization_invitation: {
+        Args: { p_invitation_id: string }
         Returns: boolean
       }
       current_user_can_read_programme: {
@@ -6754,6 +7118,26 @@ export type Database = {
         Args: { p_event_type: string }
         Returns: boolean
       }
+      organization_allows_learner_entry: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      organization_entitlement_allows_integer: {
+        Args: {
+          p_entitlement_key: string
+          p_organization_id: string
+          p_requested_value: number
+        }
+        Returns: boolean
+      }
+      organization_entitlement_value: {
+        Args: { p_entitlement_key: string; p_organization_id: string }
+        Returns: Json
+      }
+      organization_learning_storage_bytes: {
+        Args: { p_organization_id: string }
+        Returns: number
+      }
       perk_prize_release_bucket_allows: {
         Args: { p_now?: string; p_prize_id: string }
         Returns: boolean
@@ -6920,6 +7304,14 @@ export type Database = {
             }
             Returns: undefined
           }
+      resolve_organization_entitlements: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      respond_organization_invitation: {
+        Args: { p_action: string; p_invitation_id: string }
+        Returns: Json
+      }
       reward_available_inventory_counts: {
         Args: never
         Returns: {
@@ -7139,11 +7531,45 @@ export type Database = {
         | "referral_friend_completed_lessons"
         | "proof_upload"
         | "manual_review"
+      organization_accent_token:
+        | "green"
+        | "mission"
+        | "store"
+        | "violet"
+        | "slate"
+      organization_billing_status:
+        | "free"
+        | "trial"
+        | "active"
+        | "past_due"
+        | "cancelled"
+        | "sponsored"
+      organization_creation_source:
+        | "platform_admin"
+        | "self_service"
+        | "sales_assisted"
+        | "imported"
+      organization_invitation_status:
+        | "pending"
+        | "accepted"
+        | "expired"
+        | "revoked"
+        | "declined"
+      organization_invitation_target_type:
+        | "organization"
+        | "programme"
+        | "cohort"
+      organization_lifecycle_status:
+        | "trial"
+        | "active"
+        | "suspended"
+        | "archived"
       organization_membership_status:
         | "active"
         | "invited"
         | "suspended"
         | "removed"
+      organization_plan_status: "active" | "retired"
       organization_role_key:
         | "organisation_owner"
         | "organisation_admin"
@@ -7153,6 +7579,11 @@ export type Database = {
         | "instructor"
         | "report_viewer"
         | "learner"
+      organization_verification_status:
+        | "unverified"
+        | "verification_pending"
+        | "verified"
+        | "rejected"
       programme_course_requirement: "required" | "optional"
       quiz_answer_status:
         | "earned"
@@ -7409,12 +7840,52 @@ export const Constants = {
         "proof_upload",
         "manual_review",
       ],
+      organization_accent_token: [
+        "green",
+        "mission",
+        "store",
+        "violet",
+        "slate",
+      ],
+      organization_billing_status: [
+        "free",
+        "trial",
+        "active",
+        "past_due",
+        "cancelled",
+        "sponsored",
+      ],
+      organization_creation_source: [
+        "platform_admin",
+        "self_service",
+        "sales_assisted",
+        "imported",
+      ],
+      organization_invitation_status: [
+        "pending",
+        "accepted",
+        "expired",
+        "revoked",
+        "declined",
+      ],
+      organization_invitation_target_type: [
+        "organization",
+        "programme",
+        "cohort",
+      ],
+      organization_lifecycle_status: [
+        "trial",
+        "active",
+        "suspended",
+        "archived",
+      ],
       organization_membership_status: [
         "active",
         "invited",
         "suspended",
         "removed",
       ],
+      organization_plan_status: ["active", "retired"],
       organization_role_key: [
         "organisation_owner",
         "organisation_admin",
@@ -7424,6 +7895,12 @@ export const Constants = {
         "instructor",
         "report_viewer",
         "learner",
+      ],
+      organization_verification_status: [
+        "unverified",
+        "verification_pending",
+        "verified",
+        "rejected",
       ],
       programme_course_requirement: ["required", "optional"],
       quiz_answer_status: [

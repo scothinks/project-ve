@@ -121,6 +121,30 @@ from public.organizations
 where slug = 'lms-p1-release-beta'
 \gset
 
+insert into public.organization_plan_assignments (
+  organization_id,
+  plan_key,
+  billing_status,
+  assigned_by
+)
+values
+  (
+    :'p1_alpha_org_id'::uuid,
+    'team',
+    'active',
+    :'TEST_ADMIN_USER_ID'::uuid
+  ),
+  (
+    :'p1_beta_org_id'::uuid,
+    'team',
+    'active',
+    :'TEST_ADMIN_USER_ID'::uuid
+  )
+on conflict (organization_id) where ended_at is null do update
+  set plan_key = excluded.plan_key,
+      billing_status = excluded.billing_status,
+      assigned_by = excluded.assigned_by;
+
 insert into public.organization_memberships (
   organization_id,
   user_id,

@@ -11,9 +11,10 @@ Use this skill before beginning any Project VE task. Keep it active while planni
 
 1. Read the current task against `docs/project-ve-engineering-remediation-plan.md`.
 2. For admin/CMS/LMS/product work, also read `docs/project-ve-cms-lms-product-remediation-plan.md`.
-3. Check `git status -sb` and avoid reverting user changes.
-4. Identify whether the task touches architecture, DB/RLS/RPCs, auth, notifications, XP, AI generation, CMS workflows, tests, CI, or remediation docs.
-5. Pick the narrowest implementation that matches existing repo patterns.
+3. For P1.5 Org Mode or institutional pilot readiness work, also read `docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md`; it takes precedence over earlier assumptions where it conflicts.
+4. Check `git status -sb` and avoid reverting user changes.
+5. Identify whether the task touches architecture, DB/RLS/RPCs, auth, notifications, XP, AI generation, CMS workflows, tests, CI, or remediation docs.
+6. Pick the narrowest implementation that matches existing repo patterns.
 
 ## Architecture
 
@@ -51,10 +52,19 @@ Use this skill before beginning any Project VE task. Keep it active while planni
 - Replace native `window.alert()` and `window.confirm()` in P0 CMS workflows with accessible dialogs, toasts, inline validation, and recoverable error states.
 - Preserve learner-facing rendering compatibility when adding CMS authoring capability.
 
+## P1.5 Product Work
+
+- Treat `docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md` as authoritative for Org Mode and institutional pilot readiness.
+- Implement only one authorised P1.5 batch at a time.
+- P1.5A is the first authorised implementation pass; stop for review after completing it.
+- Do not begin P1.5B or P2 without explicit approval.
+- Generalise existing missions, XP, learner, organisation, assessment and reward systems; do not create parallel systems for capabilities Project Ve already has.
+
 ## Documentation
 
 - Update remediation/status docs in the same change when a task closes or a gate changes.
 - Update `docs/project-ve-cms-lms-product-remediation-plan.md` when CMS/LMS product scope, gates, or completion status changes.
+- Update `docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md` when P1.5 scope, gates, or completion status changes.
 - Do not leave "next action" or "partial" notes stale after validation proves completion.
 - Prefer exact command/results summaries over vague status language.
 

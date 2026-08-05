@@ -24,6 +24,18 @@ Project Ve’s differentiating product thesis is:
 
 > A values-formation and behaviour-change platform combining assessment, personalised learning, practical missions, reinforcement, institutional programmes and measurable outcomes.
 
+## Current governing addenda
+
+The Phase 1.5 scope now lives in:
+
+```text
+docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md
+```
+
+That addendum is the authoritative product reference for Org Mode and institutional pilot readiness. It inserts Phase 1.5 between the completed P1 Hybrid LMS foundation and P2 Enterprise and institutional expansion.
+
+Do not begin P2 work until the required Phase 1.5 batches have been implemented, tested, accepted and closed.
+
 ---
 
 # 0. EXECUTION INSTRUCTION
@@ -1965,15 +1977,12 @@ The browser proof is captured by the local Playwright gate rather than static sc
 * True curriculum sections/modules remain a later structural enhancement; P0 keeps a lesson outline that can support sections later.
 * AI generation tests use deterministic planner/domain paths and do not call live external models.
 
-## Deferred P1/P2 Work
+## Deferred P1.5/P2 Work
 
-* Hybrid LMS programme, organisation, cohort and institution scopes.
-* Cohort progress, facilitator assignment and programme reporting.
-* Institution-specific missions, rewards and reporting.
-* Advanced analytics and multi-tenant governance.
-* Commercial deployment hardening such as custom domains, tenant-specific policies and regional hosting decisions where justified.
+* P1.5 Org Mode and institutional pilot readiness, as defined in `docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md`.
+* P2 enterprise and institutional expansion.
 
-Do not begin P1 until P0 has been reviewed and explicitly approved.
+Do not begin P2 until Phase 1.5 has been reviewed, accepted and closed.
 
 ---
 
@@ -2560,9 +2569,32 @@ Known remaining review item:
 
 ---
 
-# P2: INSTITUTIONAL SOPHISTICATION
+# P1.5: ORG MODE AND INSTITUTIONAL PILOT READINESS
 
-**Do not implement until P1 is separately reviewed and approved.**
+**Governing document:** `docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md`
+
+P1.5 inserts an ordered stop-and-review phase between the completed P1 Hybrid LMS foundation and P2 enterprise expansion.
+
+Implement only one authorised P1.5 batch at a time:
+
+```text
+P1.5A  Org Mode, plans and self-service organisations
+P1.5B  Organisation-configurable missions
+P1.5C  Scoped and white-labelled XP
+P1.5D  Contextual assessments and recommendations
+P1.5E  Institutional supervision and operations
+P1.5F  Final Phase 1 UI cleanup
+```
+
+The first authorised implementation pass is P1.5A only. P1.5A is implemented for review as of 2026-08-05; stop here until product review accepts P1.5A and explicitly authorises P1.5B. Do not begin P1.5B without explicit approval.
+
+Where the P1.5 addendum conflicts with earlier assumptions in this product plan, the P1.5 addendum takes precedence.
+
+---
+
+# P2: ENTERPRISE AND INSTITUTIONAL EXPANSION
+
+**Do not implement until P1.5 is separately reviewed, accepted and closed.**
 
 ---
 
@@ -2763,7 +2795,7 @@ Keep those concepts separate.
 Authorised now:
 
 ```text
-P0 CMS remediation
+P1.5A Org Mode, plans and self-service organisations
 ↓
 Stop
 ↓
@@ -2773,17 +2805,39 @@ Product review
 Future, only after approval:
 
 ```text
-P1 Hybrid LMS foundation
+P1.5B Organisation-configurable missions
 ↓
 Stop
 ↓
-Architecture and product review
+Product review
 ↓
-P2 Institutional sophistication
+P1.5C Scoped and white-labelled XP
+↓
+Stop
+↓
+Product review
+↓
+P1.5D Contextual assessments and recommendations
+↓
+Stop
+↓
+Product review
+↓
+P1.5E Institutional supervision and operations
+↓
+Stop
+↓
+Product review
+↓
+P1.5F Final Phase 1 UI cleanup
+↓
+Stop
+↓
+P2 Enterprise and institutional expansion
 ```
 
 Do not collapse these phases.
 
-Do not implement organisations, programmes, cohorts or tenant rewards during P0 merely because the future tickets are documented here.
+P0 CMS remediation and P1 Hybrid LMS foundation are closed. Do not reopen or replace accepted P0/P1 architecture unless a Phase 1.5 ticket explicitly requires a narrow extension.
 
-The immediate objective is to prove that Project Ve can provide a professional authoring and publishing experience before expanding the operating model.
+The immediate objective is product review of implemented P1.5A without beginning later P1.5 batches or P2.
