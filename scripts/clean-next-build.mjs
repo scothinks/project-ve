@@ -1,0 +1,9 @@
+import { rmSync } from "node:fs";
+import { resolve } from "node:path";
+
+rmSync(resolve(process.cwd(), ".next"), {
+  force: true,
+  maxRetries: 5,
+  recursive: true,
+  retryDelay: 100,
+});

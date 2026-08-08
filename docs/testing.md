@@ -119,19 +119,23 @@ validated with `Files=7, Tests=140, Result: PASS`.
 `npm run test:e2e` now runs the Playwright remediation browser suite against
 local Supabase. The suite creates throwaway users/content and covers real
 signup, password login, learner lesson progress plus quiz XP, reward
-redemption/history, and the admin course status workflow. For local E2E only,
-the runner disables the public Turnstile widget and enables a local-only
-verification bypass fenced to `PROJECT_VE_LOCAL_E2E=1`, non-Vercel execution,
-and the local Supabase URL.
+redemption/history, the admin course status workflow, the CMS authoring
+workspace, and the institutional Org Mode journey. For local E2E only, the
+runner disables the public Turnstile widget, forces a fresh `.next` production
+build for the Playwright server, and enables a local-only verification bypass
+fenced to `PROJECT_VE_LOCAL_E2E=1`, non-Vercel execution, and the local Supabase
+URL.
 
 Latest local remediation gate:
 
 ```text
 npm run test:remediation:local
 Result: PASS
-pgTAP: Files=7, Tests=147
+pgTAP: Files=22, Tests=445
+Repository contracts: PASS
+Quiz XP concurrency regression: PASS
 Economic integrity regression: PASS
-Playwright: 5 passed
+Playwright: 7 passed
 ```
 
 GitHub Actions now blocks pull requests and pushes on:
