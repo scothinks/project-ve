@@ -12,15 +12,17 @@ type LessonModuleCardProps = {
   lesson: Lesson;
   completed?: boolean;
   desktopLayout?: "stacked" | "horizontal";
+  href?: string;
 };
 
 export function LessonModuleCard({
   lesson,
   completed = false,
   desktopLayout = "stacked",
+  href = `/lessons/${lesson.id}`,
 }: LessonModuleCardProps) {
   return (
-    <Link href={`/lessons/${lesson.id}`} className="block h-full">
+    <Link href={href} className="block h-full">
       <Card
         className={cn(
           "h-full overflow-hidden",

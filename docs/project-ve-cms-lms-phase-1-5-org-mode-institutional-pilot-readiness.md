@@ -1809,6 +1809,34 @@ git diff --check
 
 ---
 
+## P1.5A focused closure pass
+
+**Status:** Closure pass implemented on 2026-08-08 for product review.
+
+The P1.5A acceptance review accepted `P15-ENT-001`, `P15-ORG-001` and `P15-ORG-003`, and required a focused closure pass before P1.5A can be considered closed. This pass resolves the remaining self-service organisation workflow gaps without starting P1.5B.
+
+Implemented:
+
+* self-service organisation owners and admins may manage their own organisation profile identity, members and invitations from the existing management workspace, while plan assignment, verification and lifecycle controls remain platform-admin-only;
+* organisation owners and admins may create and edit organisation-private courses, lessons, lesson pages, lesson blocks and quizzes through the existing CMS authoring routes;
+* Starter organisation authoring now hides unavailable AI, video and audio controls in the CMS and still relies on RPC/database entitlement enforcement for direct-call denial;
+* Starter image upload and delete now work for authorised organisation content editors through trusted course/lesson ownership resolution, storage quota checks and safe storage-object cleanup before database row deletion;
+* Org Mode learner course navigation now preserves organisation context through lesson, quiz and result routes instead of falling back to public-mode paths;
+* organisation notification views now filter user notifications by organisation metadata instead of brittle CTA matching;
+* focused Playwright coverage exercises the self-service owner setup, invitation, private course creation, five-lesson Starter cap, image upload/delete quota release path, AI UI denial and direct video-block rejection.
+
+Validation completed:
+
+```text
+npm run db:verify:local
+npm run typecheck
+npm run lint
+npm run test:e2e
+npm run test:remediation:local
+```
+
+---
+
 # 5. P1.5B: Organisation-configurable missions
 
 ## Ticket P15-MSN-001: Platform mission-type registry
@@ -3651,14 +3679,14 @@ Implement:
 ```text
 P15-ENT-001 - implemented for review
 P15-ORG-001 - implemented for review
-P15-ORG-002 - implemented for review
+P15-ORG-002 - closure pass implemented for review
 P15-ORG-003 - implemented for review
-P15-ORG-004 - implemented for review
-P15-ORG-005 - implemented for review
-P15-ORG-006 - implemented for review
+P15-ORG-004 - closure pass implemented for review
+P15-ORG-005 - closure pass implemented for review
+P15-ORG-006 - closure pass implemented for review
 ```
 
-P1.5A is implemented for review. Stop here until product review accepts P1.5A and explicitly authorises P1.5B.
+P1.5A has a focused closure pass implemented for review. Stop here until product review accepts P1.5A and explicitly authorises P1.5B.
 
 ## Batch P1.5B
 

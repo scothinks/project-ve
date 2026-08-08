@@ -13,6 +13,7 @@ import type { AdminCourseDetailPageData } from "./course-detail-data";
 type MediaRegistryAction = (formData: FormData) => void | Promise<void>;
 
 type CourseDetailMediaRegistrySectionProps = {
+  aiGenerationAvailable?: boolean;
   course: AdminCourseDetailPageData["course"];
   mediaAssets: AdminCourseDetailPageData["mediaAssets"];
   mediaLibraryAssets: AdminCourseDetailPageData["mediaLibraryAssets"];
@@ -76,6 +77,7 @@ function collapsibleBodyClasses() {
 
 export function CourseDetailMediaRegistrySection({
   actions,
+  aiGenerationAvailable = true,
   course,
   hasRequiredImageAssets,
   legacyMediaAssetCount,
@@ -281,6 +283,7 @@ export function CourseDetailMediaRegistrySection({
                       </label>
                     ) : null}
                     <MediaPicker
+                      aiGenerationAvailable={aiGenerationAvailable}
                       canGenerate={canGenerateAsset}
                       caption={asset.caption ?? ""}
                       generateAction={actions.generateLearningMediaAsset}

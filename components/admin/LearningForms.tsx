@@ -179,12 +179,14 @@ function CoursePreview({
 }
 
 export function CourseForm({
+  aiGenerationAvailable = true,
   categories = [],
   course,
   derivedMinutes,
   mediaLibraryAssets = [],
   nextSortOrder = 0,
 }: {
+  aiGenerationAvailable?: boolean;
   categories?: string[];
   course?: AdminCourseRow | null;
   derivedMinutes?: number;
@@ -283,6 +285,7 @@ export function CourseForm({
             subtitle="Learner card image. Choose from media already approved for this course, or use an external URL."
           >
             <MediaPicker
+              aiGenerationAvailable={aiGenerationAvailable}
               assetTypeFilter={["cover", "image", "thumbnail"]}
               fieldNames={{
                 altText: "thumbnailAlt",
@@ -314,10 +317,12 @@ export function CourseForm({
 }
 
 export function LessonForm({
+  aiGenerationAvailable = true,
   lesson,
   courseId,
   mediaLibraryAssets = [],
 }: {
+  aiGenerationAvailable?: boolean;
   lesson?: AdminLessonRow | null;
   courseId: string;
   mediaLibraryAssets?: AdminLearningMediaAssetRow[];
@@ -368,6 +373,7 @@ export function LessonForm({
 
       <FormSection title="Cover image">
         <MediaPicker
+          aiGenerationAvailable={aiGenerationAvailable}
           assetTypeFilter={["cover", "image", "thumbnail"]}
           fieldNames={{
             altText: "coverImageAlt",

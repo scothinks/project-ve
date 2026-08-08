@@ -85,6 +85,7 @@ export default async function OrganizationProfilePage({
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Button href={orgHref(workspace, "/transcript")} variant="soft">Open transcript</Button>
           <Button href={orgHref(workspace, "/learn")} variant="outline">Open learning</Button>
+          <Button href={orgHref(workspace, "/notifications")} variant="outline">Notifications</Button>
         </div>
       </section>
       <BottomNav active="Profile" />

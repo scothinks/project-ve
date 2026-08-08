@@ -97,15 +97,13 @@ select extensions.throws_ok(
   'non-platform admin cannot manage organizations'
 );
 
-select extensions.throws_ok(
+select extensions.lives_ok(
   format(
     $$ select public.admin_upsert_organization_membership(%L::uuid, %L::uuid, 'learner', 'active') $$,
     (select result ->> 'organizationId' from test_lms_org_result),
     :'TEST_ADMIN_USER_ID'
   ),
-  'P0001',
-  'Only a platform admin can manage organization memberships.',
-  'non-platform admin cannot manage organization memberships'
+  'organisation_admin can manage organization memberships in their organization'
 );
 
 select extensions.ok(
@@ -138,7 +136,7 @@ select extensions.is(
     select count(*)::integer
     from public.organization_memberships
   ),
-  2,
+  3,
   'organisation_admin can read memberships for their managed organization plus their own memberships elsewhere'
 );
 
@@ -194,7 +192,7 @@ select extensions.is(
     from public.organization_memberships
     where organization_id in ((select (result ->> 'organizationId')::uuid from test_lms_org_result), :'organization_id'::uuid)
   ),
-  3,
+  4,
   'platform admin can read all organization memberships'
 );
 

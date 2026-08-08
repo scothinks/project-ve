@@ -9,6 +9,7 @@ export type UserNotification = {
   body: string;
   ctaHref: string | null;
   ctaLabel: string | null;
+  data: Record<string, unknown>;
   readAt: string | null;
   createdAt: string;
 };
@@ -30,6 +31,7 @@ type DbUserNotification = {
   body: string;
   cta_href: string | null;
   cta_label: string | null;
+  data: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
 };
@@ -43,6 +45,7 @@ function mapNotification(row: DbUserNotification): UserNotification {
     body: row.body,
     ctaHref: row.cta_href,
     ctaLabel: row.cta_label,
+    data: row.data,
     readAt: row.read_at,
     createdAt: row.created_at,
   };
@@ -55,8 +58,29 @@ export async function getUserNotifications(
 ) {
   const { data, error } = await supabase
     .from("user_notifications")
-    .select("id, category, event_type, title, body, cta_href, cta_label, read_at, created_at")
+    .select("id, category, event_type, title, body, cta_href, cta_label, data, read_at, created_at")
     .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as DbUserNotification[]).map(mapNotification);
+}
+
+export async function getOrganizationUserNotifications(
+  supabase: AppSupabaseClient,
+  userId: string,
+  organizationId: string,
+  limit = 25,
+) {
+  const { data, error } = await supabase
+    .from("user_notifications")
+    .select("id, category, event_type, title, body, cta_href, cta_label, data, read_at, created_at")
+    .eq("user_id", userId)
+    .eq("data->>organizationId", organizationId)
     .order("created_at", { ascending: false })
     .limit(limit);
 

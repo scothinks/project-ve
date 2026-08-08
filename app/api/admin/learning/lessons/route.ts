@@ -65,34 +65,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: syncMinutesError.message }, { status: 500 });
   }
 
-  const { error: quizCreateError } = await supabase
-    .from("quizzes")
-    .upsert(
-      {
-        id: `quiz-${lessonId.replace(/^lesson-/, "")}`,
-        lesson_id: lessonId,
-        title: `${title} quiz`,
-        status: "draft",
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "lesson_id" },
-    );
-
-  if (quizCreateError) {
-    return NextResponse.json({ error: quizCreateError.message }, { status: 500 });
-  }
-
-  const { error: syncQuizError } = await supabase
-    .from("quizzes")
-    .update({
-      status: "draft",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("lesson_id", lessonId);
-
-  if (syncQuizError) {
-    return NextResponse.json({ error: syncQuizError.message }, { status: 500 });
-  }
-
   return NextResponse.json({ lessonId });
 }

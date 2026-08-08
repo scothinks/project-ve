@@ -33,6 +33,7 @@ type MediaPickerUploadContext = {
 };
 
 type MediaPickerProps = {
+  aiGenerationAvailable?: boolean;
   assetTypeFilter?: string[];
   canGenerate?: boolean;
   caption?: string;
@@ -123,6 +124,7 @@ function assetLabel(asset: AdminLearningMediaAssetRow) {
 }
 
 export function MediaPicker({
+  aiGenerationAvailable = true,
   assetTypeFilter,
   canGenerate = false,
   caption = "",
@@ -165,6 +167,12 @@ export function MediaPicker({
   const [uploadStatus, setUploadStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [selectedLibraryAssetId, setSelectedLibraryAssetId] = useState("");
+  const tabs = [
+    ["library", "Choose from library"],
+    ...(aiGenerationAvailable ? [["generate", "Generate with AI"] as const] : []),
+    ["external", "External URL"],
+    ["upload", "Upload"],
+  ] as const;
   const combinedLibraryAssets = useMemo(
     () => [...uploadedAssets, ...libraryAssets],
     [libraryAssets, uploadedAssets],
@@ -316,12 +324,7 @@ export function MediaPicker({
       ) : null}
       <Tabs.Root onValueChange={setActiveTab} value={activeTab}>
         <Tabs.List className="flex flex-wrap gap-2">
-          {[
-            ["library", "Choose from library"],
-            ["generate", "Generate with AI"],
-            ["external", "External URL"],
-            ["upload", "Upload"],
-          ].map(([value, label]) => (
+          {tabs.map(([value, label]) => (
             <Tabs.Trigger className={tabClasses(activeTab === value)} key={value} value={value}>
               {label}
             </Tabs.Trigger>

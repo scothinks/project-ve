@@ -214,8 +214,8 @@ select extensions.throws_ok(
     (select result ->> 'organizationId' from test_org_profile_result)
   ),
   'P0001',
-  'Only a platform admin can update organization profiles.',
-  'non-platform admins cannot update organization profile fields'
+  'Organization manager access required.',
+  'non-manager learners cannot update organization profile fields'
 );
 
 reset role;

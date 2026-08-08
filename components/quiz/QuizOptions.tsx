@@ -9,9 +9,12 @@ import { cn } from "@/lib/utils";
 import { formatXpLabel } from "@/lib/xp-format";
 
 type QuizOptionsProps = {
+  keepLearningHref?: string;
   lessonId: string;
+  lessonHref?: string;
   quizId: string;
   questions: PublicQuizQuestion[];
+  resultHref?: string;
 };
 
 type QuestionResult = {
@@ -76,7 +79,14 @@ type AnswerQuizResponse =
       message: string;
     };
 
-export function QuizOptions({ lessonId, quizId, questions }: QuizOptionsProps) {
+export function QuizOptions({
+  keepLearningHref = "/courses",
+  lessonHref,
+  lessonId,
+  quizId,
+  questions,
+  resultHref,
+}: QuizOptionsProps) {
   const router = useRouter();
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [attemptMode, setAttemptMode] = useState<"earning" | "practice">("earning");
@@ -210,7 +220,7 @@ export function QuizOptions({ lessonId, quizId, questions }: QuizOptionsProps) {
 
     if (result.status === "completed") {
       window.sessionStorage.setItem(`quiz-result:${lessonId}`, JSON.stringify(result.result));
-      router.push(`/results/${lessonId}`);
+      router.push(resultHref ?? `/results/${lessonId}`);
       return;
     }
 
@@ -245,10 +255,10 @@ export function QuizOptions({ lessonId, quizId, questions }: QuizOptionsProps) {
         </p>
         <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">{blockedMessage}</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
-          <Button href={`/lessons/${lessonId}`} variant="outline">
+          <Button href={lessonHref ?? `/lessons/${lessonId}`} variant="outline">
             Review
           </Button>
-          <Button href={isDailyCapBlock ? "/courses" : `/lessons/${lessonId}`}>
+          <Button href={isDailyCapBlock ? keepLearningHref : lessonHref ?? `/lessons/${lessonId}`}>
             {isDailyCapBlock ? "Keep Learning" : "Lesson"}
           </Button>
         </div>

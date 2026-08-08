@@ -11,6 +11,7 @@ import { formatXpLabel } from "@/lib/xp-format";
 type CourseDetailLessonListProps = {
   lessons: Lesson[];
   completedLessonIds: string[];
+  lessonHrefBase?: string;
 };
 
 const lessonsPerPage = 6;
@@ -18,6 +19,7 @@ const lessonsPerPage = 6;
 export function CourseDetailLessonList({
   lessons,
   completedLessonIds,
+  lessonHrefBase,
 }: CourseDetailLessonListProps) {
   const [page, setPage] = useState(1);
   const paginatedLessons = paginateItems(lessons, page, lessonsPerPage);
@@ -35,7 +37,11 @@ export function CourseDetailLessonList({
 
           return (
             <div className="flex h-full flex-col" key={lesson.id}>
-              <LessonModuleCard completed={completed} lesson={lesson} />
+              <LessonModuleCard
+                completed={completed}
+                href={lessonHrefBase ? `${lessonHrefBase}/${lesson.id}` : undefined}
+                lesson={lesson}
+              />
               <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">
                 {lesson.pages.length} pages · {completed ? "Lesson complete" : `${formatXpLabel(getLessonXP(lesson))} total`}
               </p>

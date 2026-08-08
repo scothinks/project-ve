@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildCmsStoragePath, validateImageUpload } from "@/lib/admin-media-upload";
 import { parseOrganizationEntitlements } from "@/features/organizations/entitlements";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+import type { Database } from "@/types/database";
 
 export const runtime = "nodejs";
 
@@ -27,6 +29,99 @@ function storageLimitMessage(maxStorageBytes: number) {
     : "This upload exceeds the organisation storage allowance.";
 }
 
+async function authorizeMediaWrite({
+  organizationId,
+  profileRole,
+  supabase,
+}: {
+  organizationId: string | null;
+  profileRole: string | null | undefined;
+  supabase: SupabaseClient<Database>;
+}) {
+  if (!organizationId) {
+    return profileRole === "admin"
+      ? null
+      : jsonError("Only platform admins can manage platform CMS media.", 403);
+  }
+
+  const { data, error } = await supabase.rpc("current_user_can_edit_organization_content", {
+    p_organization_id: organizationId,
+  });
+
+  if (error) {
+    return jsonError("Could not validate organisation media permissions.", 500);
+  }
+
+  return data
+    ? null
+    : jsonError("Organisation content editor access is required for this media.", 403);
+}
+
+async function resolveMediaCourseContext({
+  adminSupabase,
+  courseIdInput,
+  lessonIdInput,
+}: {
+  adminSupabase: ReturnType<typeof createSupabaseAdminClient>;
+  courseIdInput: string | null;
+  lessonIdInput: string | null;
+}) {
+  let courseId = courseIdInput || null;
+  const lessonId = lessonIdInput || null;
+
+  if (lessonId) {
+    const { data: lesson, error: lessonError } = await adminSupabase
+      .from("lessons")
+      .select("id, course_id")
+      .eq("id", lessonId)
+      .maybeSingle();
+
+    if (lessonError) {
+      return { error: jsonError("Could not validate the lesson media context.", 500) };
+    }
+
+    if (!lesson) {
+      return { error: jsonError("Lesson media context was not found.", 404) };
+    }
+
+    if (courseId && courseId !== lesson.course_id) {
+      return { error: jsonError("Lesson media context does not belong to the selected course.", 400) };
+    }
+
+    courseId = lesson.course_id;
+  }
+
+  if (!courseId && !lessonId) {
+    return { error: jsonError("Upload media after choosing a course or lesson context.", 400) };
+  }
+
+  if (!courseId) {
+    return { error: jsonError("Course media context was not found.", 404) };
+  }
+
+  const { data: courseContext, error: courseContextError } = await adminSupabase
+    .from("courses")
+    .select("id, organization_id")
+    .eq("id", courseId)
+    .maybeSingle();
+
+  if (courseContextError) {
+    return { error: jsonError("Could not validate the course media context.", 500) };
+  }
+
+  if (!courseContext) {
+    return { error: jsonError("Course media context was not found.", 404) };
+  }
+
+  return {
+    courseContext: {
+      id: courseContext.id,
+      organization_id: courseContext.organization_id as string | null,
+    },
+    lessonId,
+  };
+}
+
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
 
@@ -37,10 +132,6 @@ export async function POST(request: Request) {
   const { user, profile } = await getCurrentUserProfile(supabase);
   if (!user) {
     return jsonError("Sign in before uploading media.", 401);
-  }
-
-  if (profile?.role !== "admin") {
-    return jsonError("Only admins can upload CMS media.", 403);
   }
 
   const formData = await request.formData();
@@ -85,49 +176,24 @@ export async function POST(request: Request) {
   }
   let courseId = courseIdInput || null;
   const lessonId = lessonIdInput || null;
-
-  if (lessonId) {
-    const { data: lesson, error: lessonError } = await adminSupabase
-      .from("lessons")
-      .select("id, course_id")
-      .eq("id", lessonId)
-      .maybeSingle();
-
-    if (lessonError) {
-      return jsonError("Could not validate the lesson media context.", 500);
-    }
-
-    if (!lesson) {
-      return jsonError("Lesson media context was not found.", 404);
-    }
-
-    if (courseId && courseId !== lesson.course_id) {
-      return jsonError("Lesson media context does not belong to the selected course.", 400);
-    }
-
-    courseId = lesson.course_id;
+  const resolvedContext = await resolveMediaCourseContext({
+    adminSupabase,
+    courseIdInput: courseId,
+    lessonIdInput: lessonId,
+  });
+  if (resolvedContext.error) {
+    return resolvedContext.error;
   }
+  const { courseContext } = resolvedContext;
+  courseId = courseContext.id;
 
-  if (!courseId && !lessonId) {
-    return jsonError("Upload media after choosing a course or lesson context.", 400);
-  }
-
-  if (!courseId) {
-    return jsonError("Course media context was not found.", 404);
-  }
-
-  const { data: courseContext, error: courseContextError } = await adminSupabase
-    .from("courses")
-    .select("id, organization_id")
-    .eq("id", courseId)
-    .maybeSingle();
-
-  if (courseContextError) {
-    return jsonError("Could not validate the course media context.", 500);
-  }
-
-  if (!courseContext) {
-    return jsonError("Course media context was not found.", 404);
+  const authorizationError = await authorizeMediaWrite({
+    organizationId: courseContext.organization_id,
+    profileRole: profile?.role,
+    supabase,
+  });
+  if (authorizationError) {
+    return authorizationError;
   }
 
   if (courseContext.organization_id) {
@@ -213,4 +279,89 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ asset });
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return jsonError("Supabase is not configured.", 503);
+  }
+
+  const { user, profile } = await getCurrentUserProfile(supabase);
+  if (!user) {
+    return jsonError("Sign in before deleting media.", 401);
+  }
+
+  let assetId = "";
+  try {
+    const body = await request.json() as { assetId?: unknown };
+    assetId = sanitizePlainTextInput(String(body.assetId ?? ""), 80);
+  } catch {
+    return jsonError("Provide a media asset to delete.", 400);
+  }
+
+  if (!assetId) {
+    return jsonError("Provide a media asset to delete.", 400);
+  }
+
+  let adminSupabase: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    adminSupabase = createSupabaseAdminClient();
+  } catch (error) {
+    return jsonError(error instanceof Error ? error.message : "Supabase storage is not configured.", 503);
+  }
+
+  const { data: asset, error: assetError } = await adminSupabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, storage_path")
+    .eq("id", assetId)
+    .maybeSingle();
+
+  if (assetError) {
+    return jsonError("Could not load the media asset.", 500);
+  }
+
+  if (!asset) {
+    return jsonError("Media asset was not found.", 404);
+  }
+
+  const resolvedContext = await resolveMediaCourseContext({
+    adminSupabase,
+    courseIdInput: asset.course_id,
+    lessonIdInput: asset.lesson_id,
+  });
+  if (resolvedContext.error) {
+    return resolvedContext.error;
+  }
+
+  const authorizationError = await authorizeMediaWrite({
+    organizationId: resolvedContext.courseContext.organization_id,
+    profileRole: profile?.role,
+    supabase,
+  });
+  if (authorizationError) {
+    return authorizationError;
+  }
+
+  if (asset.storage_path) {
+    const removeResult = await adminSupabase.storage
+      .from(getMediaBucket())
+      .remove([asset.storage_path]);
+
+    if (removeResult.error) {
+      return jsonError("The storage object could not be deleted.", 500);
+    }
+  }
+
+  const { error: deleteError } = await adminSupabase
+    .from("learning_media_assets")
+    .delete()
+    .eq("id", asset.id);
+
+  if (deleteError) {
+    return jsonError("The media record could not be deleted.", 500);
+  }
+
+  return NextResponse.json({ assetId: asset.id, status: "deleted" });
 }
