@@ -69,7 +69,7 @@ export default async function MyOrganizationsPage({
 
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
-              Org Mode
+              Orgs
             </p>
             <h1 className="mt-2 text-[clamp(2rem,5vw,3.75rem)] font-black leading-none tracking-[-0.05em] text-[var(--foreground)]">
               My Orgs
@@ -233,7 +233,7 @@ export default async function MyOrganizationsPage({
           ) : null}
 
           <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-            Org Mode is invitation-first. There is no public organisation directory and no organisation code entry.
+            Orgs are invitation-first. There is no public organisation directory and no organisation code entry.
             <Link className="ml-1 font-black text-[var(--ve-green)]" href="/org">
               Learn more
             </Link>
@@ -241,7 +241,7 @@ export default async function MyOrganizationsPage({
         </div>
       </section>
 
-      <BottomNav active="Org Mode" />
+      <BottomNav active="Orgs" />
     </main>
   );
 }

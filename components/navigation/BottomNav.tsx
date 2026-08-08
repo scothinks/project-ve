@@ -87,7 +87,7 @@ const items = [
   },
   {
     href: "/org",
-    label: "Org Mode",
+    label: "Orgs",
     icon: <OrgModeIcon />,
     activeClassName: "bg-[var(--ve-panel-soft)] text-[var(--foreground)]",
   },

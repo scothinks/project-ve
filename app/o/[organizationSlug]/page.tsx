@@ -24,7 +24,7 @@ export default async function OrganizationLearnerHomePage({
           </Link>
         </div>
         <SectionHeader
-          eyebrow="Org Mode"
+          eyebrow="Orgs"
           subtitle={`Your active learner workspace is ${organizationName}. This view only shows learning connected to this organisation.`}
         />
 

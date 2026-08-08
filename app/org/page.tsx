@@ -7,8 +7,8 @@ import { createLoginHref } from "@/lib/auth-redirect";
 import { getCurrentUserProfile } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Org Mode | Project Ve",
-  description: "Bring Project Ve learning, missions, points and rewards into a private organisation workspace.",
+  title: "Orgs | Project Ve",
+  description: "Bring Project VE to your world with lessons, missions and rewards for your organisation.",
 };
 
 const capabilityCards = [
@@ -55,13 +55,13 @@ const starterItems = [
 function OrgModePreview() {
   return (
     <div
-      aria-label="Org Mode workspace preview"
+      aria-label="Orgs workspace preview"
       className="relative overflow-hidden rounded-[28px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-[0_24px_70px_rgba(var(--ve-shadow-rgb),0.14)]"
     >
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-            Org Mode
+            Orgs
           </p>
           <h2 className="mt-1 text-lg font-black tracking-[-0.02em] text-[var(--foreground)]">
             Starter workspace
@@ -119,7 +119,7 @@ export default async function OrgModePage() {
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
-      <AppHeader title="Org Mode" backHref={user ? "/dashboard" : "/"} showMenu={false} />
+      <AppHeader title="Orgs" backHref={user ? "/dashboard" : "/"} showMenu={false} />
 
       <section className="px-5 py-6 lg:px-[clamp(2rem,4vw,4.5rem)]">
         <div className="mx-auto max-w-6xl">
@@ -129,19 +129,18 @@ export default async function OrgModePage() {
                 About Project Ve for Organisations
               </p>
               <h1 className="mt-3 max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-black leading-[0.98] tracking-[-0.05em] text-[var(--foreground)]">
-                Org Mode
+                Orgs
               </h1>
               <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-[var(--ve-muted-strong)] sm:text-lg sm:leading-8">
-                Bring Project Ve into a private institutional workspace for values learning,
-                missions, organisation points, manual rewards and reporting while keeping public
-                learning available.
+                Bring Project VE to your world. Design your own lessons, missions, and rewards for
+                your organisation, community, or family.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button className="h-12 px-6 text-sm font-black" href={createHref}>
-                  Create an Organisation
+                  Create Org
                 </Button>
                 <Button className="h-12 px-6 text-sm font-black" href={enterHref} variant="outline">
-                  Enter Org Mode
+                  Enter Org
                 </Button>
               </div>
             </div>
@@ -212,7 +211,7 @@ export default async function OrgModePage() {
         </div>
       </section>
 
-      <BottomNav active="Org Mode" />
+      <BottomNav active="Orgs" />
     </main>
   );
 }
