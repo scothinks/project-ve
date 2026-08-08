@@ -2586,7 +2586,7 @@ P1.5E  Institutional supervision and operations
 P1.5F  Final Phase 1 UI cleanup
 ```
 
-The first authorised implementation pass is P1.5A only. P1.5A is implemented for review as of 2026-08-05; stop here until product review accepts P1.5A and explicitly authorises P1.5B. Do not begin P1.5B without explicit approval.
+The first authorised implementation pass is P1.5A only. P1.5A received a focused closure pass on 2026-08-08 after acceptance review found gaps in self-service organisation management, organisation CMS authoring/media and learner lesson/quiz context preservation. Current closure details and validation evidence live in the P1.5 addendum. Stop here until product review accepts P1.5A and explicitly authorises P1.5B. Do not begin P1.5B without explicit approval.
 
 Where the P1.5 addendum conflicts with earlier assumptions in this product plan, the P1.5 addendum takes precedence.
 

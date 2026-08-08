@@ -188,6 +188,10 @@ export function getCourseResumeTarget(
   course: Course,
   lessonProgress: LessonProgressRecord[],
   completedLessonIds?: Set<string> | string[],
+  hrefs: {
+    lessonHref?: (lessonId: string, pageNumber?: number) => string;
+    quizHref?: (lessonId: string, quizId: string) => string;
+  } = {},
 ): CourseResumeTarget | null {
   const completedIdSet =
     completedLessonIds instanceof Set ? completedLessonIds : new Set(completedLessonIds ?? []);
@@ -232,7 +236,9 @@ export function getCourseResumeTarget(
       nextPage?.order ?? Math.min(readingCandidate.completedPageCount + 1, readingCandidate.lesson.pages.length);
 
     return {
-      href: `/lessons/${readingCandidate.lesson.id}?page=${nextPageNumber}`,
+      href: hrefs.lessonHref
+        ? hrefs.lessonHref(readingCandidate.lesson.id, nextPageNumber)
+        : `/lessons/${readingCandidate.lesson.id}?page=${nextPageNumber}`,
       label: "Continue Course",
     };
   }
@@ -240,7 +246,9 @@ export function getCourseResumeTarget(
   const quizCandidate = startedLessons[0];
   if (quizCandidate) {
     return {
-      href: `/quiz/${quizCandidate.lesson.quiz.id}`,
+      href: hrefs.quizHref
+        ? hrefs.quizHref(quizCandidate.lesson.id, quizCandidate.lesson.quiz.id)
+        : `/quiz/${quizCandidate.lesson.id}`,
       label: "Continue Course",
     };
   }
@@ -257,7 +265,9 @@ export function getCourseResumeTarget(
     course.lessons.every((lesson) => completedIdSet.has(lesson.id));
 
   return {
-    href: `/lessons/${firstAvailableLesson.id}`,
+    href: hrefs.lessonHref
+      ? hrefs.lessonHref(firstAvailableLesson.id)
+      : `/lessons/${firstAvailableLesson.id}`,
     label: isCourseComplete ? "Review Course" : "Start Course",
   };
 }

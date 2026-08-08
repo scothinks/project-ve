@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
-import { requirePlatformAdmin } from "@/features/admin/application/context";
+import {
+  requireAdminWorkspaceRole,
+  requirePlatformAdmin,
+  type AdminContext,
+} from "@/features/admin/application/context";
 import { ORGANIZATION_ENTITLEMENT_KEYS } from "@/features/organizations/entitlements";
 import { normalizeOrganizationAccentToken } from "@/features/organizations/identity";
 import { normalizeEmailInput, sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
@@ -63,6 +67,8 @@ const INTEGER_OVERRIDE_KEYS: OrganizationEntitlementKey[] = [
   "max_open_reward_claims",
   "max_fulfilled_reward_claims_per_month",
 ];
+
+const ORGANIZATION_MANAGER_ROLES = ["organisation_owner", "organisation_admin"];
 
 function normalizeContentStatus(value: FormDataEntryValue | null): ContentStatus {
   const status = String(value ?? "draft");
@@ -163,6 +169,16 @@ function parseEntitlementOverrides(formData: FormData) {
   return overrides;
 }
 
+async function requireOrganizationManagerFor(organizationId: string): Promise<AdminContext> {
+  const context = await requireAdminWorkspaceRole(ORGANIZATION_MANAGER_ROLES);
+
+  if (context.workspace.type === "organization" && context.workspace.id !== organizationId) {
+    throw new Error("You can only manage the selected organisation workspace.");
+  }
+
+  return context;
+}
+
 export async function saveOrganization(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 160);
@@ -190,7 +206,7 @@ export async function saveOrganizationMembership(formData: FormData) {
   const userId = sanitizePlainTextInput(String(formData.get("userId") ?? ""), 80);
   const role = normalizeRole(formData.get("role"));
   const status = normalizeMembershipStatus(formData.get("status"));
-  const { supabase } = await requirePlatformAdmin();
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
 
   const { error } = await supabase.rpc("admin_upsert_organization_membership", {
     p_organization_id: organizationId,
@@ -214,7 +230,7 @@ export async function saveOrganizationInvitation(formData: FormData) {
   const role = normalizeRole(formData.get("role"));
   const { targetId, targetType } = parseInvitationTarget(formData.get("target"));
   const expiresAt = parseExpiry(formData.get("expiresInDays"));
-  const { supabase } = await requirePlatformAdmin();
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
 
   const { error } = await supabase.rpc("admin_create_organization_invitation", {
     p_email: email || null,
@@ -270,7 +286,7 @@ export async function saveOrganizationProfile(formData: FormData) {
   const supportPhone = sanitizePlainTextInput(String(formData.get("supportPhone") ?? ""), 40);
   const verificationStatus = normalizeVerificationStatus(formData.get("verificationStatus"));
   const lifecycleStatus = normalizeLifecycleStatus(formData.get("lifecycleStatus"));
-  const { supabase } = await requirePlatformAdmin();
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
 
   const { error } = await supabase.rpc("admin_update_organization_profile", {
     p_accent_token: accentToken,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   AdminCard,
+  AdminNoticeBanner,
   AdminPageHeader,
   AdminStatCard,
 } from "@/components/admin/AdminPrimitives";
@@ -30,9 +31,15 @@ const priorityLinks = [
   },
 ];
 
-export default async function AdminOverviewPage() {
+export default async function AdminOverviewPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ notice?: string | string[] }>;
+}) {
   const { supabase } = await requireAdmin();
   const overview = await getAdminOverview(supabase);
+  const params = (await searchParams) ?? {};
+  const notice = Array.isArray(params.notice) ? params.notice[0] : params.notice;
 
   return (
     <>
@@ -41,6 +48,7 @@ export default async function AdminOverviewPage() {
         title="Admin overview"
         subtitle="A value-operations console for rewards, missions, user activity, and XP movement."
       />
+      {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         <AdminStatCard label="Users" value={overview.totalUsers.toLocaleString()} />

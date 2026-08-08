@@ -25,12 +25,20 @@ type StoredQuizResult = {
 };
 
 type QuizResultDetailsProps = {
+  lessonsHref?: string;
   lessonId: string;
   retryHref: string;
   questions: QuestionSummary[];
+  storeHref?: string;
 };
 
-export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResultDetailsProps) {
+export function QuizResultDetails({
+  lessonsHref = "/dashboard",
+  lessonId,
+  retryHref,
+  questions,
+  storeHref = "/xp-store",
+}: QuizResultDetailsProps) {
   const [result, setResult] = useState<StoredQuizResult | null | undefined>(undefined);
 
   useEffect(() => {
@@ -155,10 +163,10 @@ export function QuizResultDetails({ lessonId, retryHref, questions }: QuizResult
         <Button className="h-10 px-2 text-xs" href={retryHref} variant="outline">
           Retry
         </Button>
-        <Button className="h-10 px-2 text-xs" href="/xp-store" variant="soft">
+        <Button className="h-10 px-2 text-xs" href={storeHref} variant="soft">
           XP Store
         </Button>
-        <Button className="h-10 px-2 text-xs" href="/dashboard">
+        <Button className="h-10 px-2 text-xs" href={lessonsHref}>
           Lessons
         </Button>
       </section>

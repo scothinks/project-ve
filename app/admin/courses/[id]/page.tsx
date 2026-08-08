@@ -49,6 +49,7 @@ import { CourseDetailWorkflowSection } from "@/features/learning/admin/course-de
 import { CourseReviewPublishSection } from "@/features/learning/admin/course-review-publish-section";
 import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
 import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
+import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 import { formatRewardDate } from "@/lib/rewards";
 
 type CourseDetailPageProps = {
@@ -125,6 +126,10 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
     completionAssessmentOptions,
   } = data;
   const mediaConfig = getAiMediaConfig();
+  const organizationEntitlements = course.organization_id
+    ? (await resolveOrganizationEntitlements(supabase, course.organization_id)).entitlements
+    : null;
+  const aiGenerationAvailable = organizationEntitlements?.aiAuthoringEnabled ?? true;
   const derivedMinutes = lessons.reduce((total, lesson) => total + lesson.estimated_minutes, 0);
   const aiActivity = await getAdminAiActivity(supabase, {
     courseId: course.id,
@@ -203,9 +208,11 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             <Link className={adminButtonClasses("primary")} href={`/admin/courses/${course.id}?tab=review-publish`}>
               Publish
             </Link>
-            <Link className={adminButtonClasses()} href={`/admin/courses/ai/planner?courseId=${course.id}`}>
-              More actions
-            </Link>
+            {aiGenerationAvailable ? (
+              <Link className={adminButtonClasses()} href={`/admin/courses/ai/planner?courseId=${course.id}`}>
+                More actions
+              </Link>
+            ) : null}
           </div>
         </div>
       </AdminCard>
@@ -235,6 +242,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
             <section className="mb-6 grid gap-4 xl:grid-cols-[1fr_0.75fr]">
               <AdminCard>
                 <CourseForm
+                  aiGenerationAvailable={aiGenerationAvailable}
                   categories={categories}
                   course={course}
                   derivedMinutes={derivedMinutes}
@@ -334,14 +342,16 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         }
         curriculum={
           <>
-            <CourseDetailExpansionSection
-              actions={{
-                generateCourseExpansionPlan,
-                generateLessonFromExpansionSuggestion,
-              }}
-              course={course}
-              expansionPlans={expansionPlans}
-            />
+            {aiGenerationAvailable ? (
+              <CourseDetailExpansionSection
+                actions={{
+                  generateCourseExpansionPlan,
+                  generateLessonFromExpansionSuggestion,
+                }}
+                course={course}
+                expansionPlans={expansionPlans}
+              />
+            ) : null}
             <CurriculumOutlineEditor courseId={course.id} lessons={curriculumLessons} />
           </>
         }
@@ -356,6 +366,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   saveLearningMediaAsset,
                   useLibraryMediaAsset,
                 }}
+                aiGenerationAvailable={aiGenerationAvailable}
                 course={course}
                 courseCoverAsset={courseCoverAsset}
                 courseThumbnailAsset={courseThumbnailAsset}
@@ -371,6 +382,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
                   saveLearningMediaAsset,
                   useLibraryMediaAsset,
                 }}
+                aiGenerationAvailable={aiGenerationAvailable}
                 course={course}
                 hasRequiredImageAssets={hasRequiredImageAssets}
                 legacyMediaAssetCount={legacyMediaAssetCount}
@@ -400,33 +412,37 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
               readiness={readiness}
             />
             <div className="space-y-4">
-              <AiActivityPanel activity={aiActivity} courseId={course.id} />
-              <CourseDetailWorkflowSection
-                actions={{
-                  approveCourseMedia,
-                  approveCourseManualMedia,
-                  approveCourseText,
-                  generateCourseMediaAssets,
-                  generatePlannedLessonsFromSelectedPlan,
-                  publishApprovedCourse,
-                  requestCourseMediaChanges,
-                  requestCourseTextChanges,
-                  reviseCourseTextWithAi,
-                }}
-                canPublish={readiness.canPublish}
-                course={course}
-                hasManualCourseMedia={hasManualCourseMedia}
-                hasRequiredImageAssets={hasRequiredImageAssets}
-                mediaApprovalBlocked={mediaApprovalBlocked}
-                mediaConfig={mediaConfig}
-                mediaValidation={mediaValidation}
-                optionalWarningCounts={optionalWarningCounts}
-                plannerShellPlan={plannerShellPlan}
-                plannerShellSelection={plannerShellSelection}
-                showPlannedLessonContinuation={showPlannedLessonContinuation}
-                storedMediaFeedback={storedMediaFeedback}
-                storedTextFeedback={storedTextFeedback}
-              />
+              {aiGenerationAvailable ? (
+                <>
+                  <AiActivityPanel activity={aiActivity} courseId={course.id} />
+                  <CourseDetailWorkflowSection
+                    actions={{
+                      approveCourseMedia,
+                      approveCourseManualMedia,
+                      approveCourseText,
+                      generateCourseMediaAssets,
+                      generatePlannedLessonsFromSelectedPlan,
+                      publishApprovedCourse,
+                      requestCourseMediaChanges,
+                      requestCourseTextChanges,
+                      reviseCourseTextWithAi,
+                    }}
+                    canPublish={readiness.canPublish}
+                    course={course}
+                    hasManualCourseMedia={hasManualCourseMedia}
+                    hasRequiredImageAssets={hasRequiredImageAssets}
+                    mediaApprovalBlocked={mediaApprovalBlocked}
+                    mediaConfig={mediaConfig}
+                    mediaValidation={mediaValidation}
+                    optionalWarningCounts={optionalWarningCounts}
+                    plannerShellPlan={plannerShellPlan}
+                    plannerShellSelection={plannerShellSelection}
+                    showPlannedLessonContinuation={showPlannedLessonContinuation}
+                    storedMediaFeedback={storedMediaFeedback}
+                    storedTextFeedback={storedTextFeedback}
+                  />
+                </>
+              ) : null}
             </div>
           </section>
         }

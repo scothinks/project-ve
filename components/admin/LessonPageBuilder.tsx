@@ -37,6 +37,8 @@ import {
 } from "@/features/learning/admin/lesson-page-builder-ui";
 
 type LessonPageBuilderProps = {
+  aiGenerationAvailable?: boolean;
+  allowedBlockTypes?: string[];
   blocks: AdminLessonBlockRow[];
   initialPageId?: string;
   lesson: AdminLessonRow;
@@ -47,6 +49,8 @@ type LessonPageBuilderProps = {
 const AUTOSAVE_DELAY_MS = 15_000;
 
 export function LessonPageBuilder({
+  aiGenerationAvailable = true,
+  allowedBlockTypes,
   lesson,
   pages: initialPages,
   blocks: initialBlocks,
@@ -359,6 +363,10 @@ export function LessonPageBuilder({
 
   function addDraftBlock(blockType: string, insertIndex?: number) {
     if (!selectedPage) return;
+    if (allowedBlockTypes && !allowedBlockTypes.includes(blockType)) {
+      notify("Block unavailable", "This organisation plan does not include that content block type.");
+      return;
+    }
 
     const block = createDraftBlock(blockType, selectedPage.id, nextBlockSortOrder);
     setBlocks((current) =>
@@ -535,6 +543,8 @@ export function LessonPageBuilder({
         />
 
         <LessonBuilderEditorPanel
+          aiGenerationAvailable={aiGenerationAvailable}
+          allowedBlockTypes={allowedBlockTypes}
           autosaveDelayMs={AUTOSAVE_DELAY_MS}
           autosaveMessage={autosaveMessage}
           autosaveState={autosaveState}
@@ -556,6 +566,7 @@ export function LessonPageBuilder({
         />
 
         <LessonBuilderInspectorPanel
+          aiGenerationAvailable={aiGenerationAvailable}
           autosaveState={autosaveState}
           hasUnsavedChanges={hasUnsavedChanges}
           isSaving={autosaveState === "saving"}

@@ -13,6 +13,7 @@ import type { AdminLessonDetailPageData } from "./lesson-detail-data";
 type LessonMediaAction = (formData: FormData) => void | Promise<void>;
 
 type LessonDetailAiMediaSectionProps = {
+  aiGenerationAvailable?: boolean;
   hasManualLessonMedia: boolean;
   hasRequiredImageAssets: boolean;
   lesson: AdminLessonDetailPageData["lesson"];
@@ -91,6 +92,7 @@ function collapsibleBodyClasses() {
 
 export function LessonDetailAiMediaSection({
   actions,
+  aiGenerationAvailable = true,
   hasManualLessonMedia,
   hasRequiredImageAssets,
   lesson,
@@ -491,6 +493,7 @@ export function LessonDetailAiMediaSection({
                         </div>
                       )}
                       <MediaPicker
+                        aiGenerationAvailable={aiGenerationAvailable}
                         canGenerate={canGenerateAsset}
                         caption={asset.caption ?? ""}
                         generateAction={actions.generateLearningMediaAsset}

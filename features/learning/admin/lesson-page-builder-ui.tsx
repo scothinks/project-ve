@@ -256,12 +256,14 @@ function AddPageButton({ onAddPage }: { onAddPage: () => void }) {
 }
 
 function PageSettingsEditor({
+  aiGenerationAvailable = true,
   mediaLibraryAssets,
   page,
   onChange,
   onSaveNow,
   isSaving,
 }: {
+  aiGenerationAvailable?: boolean;
   mediaLibraryAssets: AdminLearningMediaAssetRow[];
   page: AdminLessonPageRow;
   onChange: (page: AdminLessonPageRow) => void;
@@ -321,6 +323,7 @@ function PageSettingsEditor({
         </label>
       </div>
       <MediaPicker
+        aiGenerationAvailable={aiGenerationAvailable}
         assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
         caption={String(coverImage.caption ?? "")}
         initialAltText={getImageValue(coverImage, "alt")}
@@ -355,6 +358,7 @@ function PageSettingsEditor({
 }
 
 function BlockEditor({
+  aiGenerationAvailable = true,
   block,
   isFirst,
   isLast,
@@ -368,6 +372,7 @@ function BlockEditor({
   onSelect,
   isSaving,
 }: {
+  aiGenerationAvailable?: boolean;
   block: DraftBlock;
   isFirst: boolean;
   isLast: boolean;
@@ -428,6 +433,7 @@ function BlockEditor({
           </>
         ) : null}
         <MediaPicker
+          aiGenerationAvailable={aiGenerationAvailable}
           assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
           caption={String(payload.caption ?? "")}
           initialAltText={String(payload.alt ?? "")}
@@ -847,6 +853,8 @@ function SortablePageCard({
 }
 
 export function LessonBuilderEditorPanel({
+  aiGenerationAvailable = true,
+  allowedBlockTypes,
   selectedPage,
   selectedPageBlocks,
   autosaveState,
@@ -864,6 +872,8 @@ export function LessonBuilderEditorPanel({
   onSelectBlock,
   selectedBlockId,
 }: {
+  aiGenerationAvailable?: boolean;
+  allowedBlockTypes?: string[];
   selectedPage: AdminLessonPageRow | null;
   selectedPageBlocks: DraftBlock[];
   autosaveState: AutosaveState;
@@ -943,7 +953,11 @@ export function LessonBuilderEditorPanel({
               <h3 className="text-sm font-black">Add content</h3>
               <p className="text-xs font-bold text-[var(--ve-muted)]">Choose a position in the canvas</p>
             </div>
-            <BlockInserter insertIndex={0} onAddDraftBlock={onAddDraftBlock} />
+            <BlockInserter
+              allowedBlockTypes={allowedBlockTypes}
+              insertIndex={0}
+              onAddDraftBlock={onAddDraftBlock}
+            />
           </div>
 
           <div className="mt-5 space-y-4">
@@ -962,6 +976,8 @@ export function LessonBuilderEditorPanel({
                         isSaving={isSaving}
                         isSelected={selectedBlockId === block.id}
                         key={block.id}
+                        allowedBlockTypes={allowedBlockTypes}
+                        aiGenerationAvailable={aiGenerationAvailable}
                         mediaLibraryAssets={mediaLibraryAssets}
                         onAddDraftBlock={onAddDraftBlock}
                         onDuplicate={onDuplicateBlock}
@@ -986,15 +1002,21 @@ export function LessonBuilderEditorPanel({
 }
 
 function BlockInserter({
+  allowedBlockTypes,
   insertIndex,
   onAddDraftBlock,
 }: {
+  allowedBlockTypes?: string[];
   insertIndex: number;
   onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
 }) {
+  const availableItems = allowedBlockTypes
+    ? blockToolbarItems.filter((item) => allowedBlockTypes.includes(item.type))
+    : blockToolbarItems;
+
   return (
     <div className="flex flex-wrap gap-2 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-2">
-      {blockToolbarItems.map((item) => (
+      {availableItems.map((item) => (
         <button
           className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
           key={item.type}
@@ -1009,6 +1031,8 @@ function BlockInserter({
 }
 
 function SortableBlockCard({
+  allowedBlockTypes,
+  aiGenerationAvailable = true,
   block,
   index,
   isFirst,
@@ -1024,6 +1048,8 @@ function SortableBlockCard({
   onSaveNow,
   onSelect,
 }: {
+  allowedBlockTypes?: string[];
+  aiGenerationAvailable?: boolean;
   block: DraftBlock;
   index: number;
   isFirst: boolean;
@@ -1069,6 +1095,7 @@ function SortableBlockCard({
         </span>
       </div>
       <BlockEditor
+        aiGenerationAvailable={aiGenerationAvailable}
         block={block}
         isFirst={isFirst}
         isLast={isLast}
@@ -1083,7 +1110,11 @@ function SortableBlockCard({
         onSelect={onSelect}
       />
       <div className="mt-3">
-        <BlockInserter insertIndex={index + 1} onAddDraftBlock={onAddDraftBlock} />
+        <BlockInserter
+          allowedBlockTypes={allowedBlockTypes}
+          insertIndex={index + 1}
+          onAddDraftBlock={onAddDraftBlock}
+        />
       </div>
     </div>
   );
@@ -1149,6 +1180,7 @@ export function LessonBuilderPreviewPanel({
 }
 
 export function LessonBuilderInspectorPanel({
+  aiGenerationAvailable = true,
   autosaveState,
   hasUnsavedChanges,
   isSaving,
@@ -1165,6 +1197,7 @@ export function LessonBuilderInspectorPanel({
   selectedPage,
   selectedPreviewBlocks,
 }: {
+  aiGenerationAvailable?: boolean;
   autosaveState: AutosaveState;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
@@ -1247,8 +1280,9 @@ export function LessonBuilderInspectorPanel({
             ) : null}
           </div>
           <div className="mt-4">
-              <PageSettingsEditor
-                isSaving={isSaving}
+            <PageSettingsEditor
+              aiGenerationAvailable={aiGenerationAvailable}
+              isSaving={isSaving}
                 mediaLibraryAssets={mediaLibraryAssets}
                 onChange={onUpdatePage}
               onSaveNow={onSaveNow}

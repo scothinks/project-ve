@@ -44,7 +44,7 @@ export default async function CreateOrganizationPage({
             </Link>
           </Card>
         </section>
-        <BottomNav active="Org Mode" />
+        <BottomNav active="Orgs" />
       </main>
     );
   }
@@ -162,7 +162,7 @@ export default async function CreateOrganizationPage({
           </aside>
         </div>
       </section>
-      <BottomNav active="Org Mode" />
+      <BottomNav active="Orgs" />
     </main>
   );
 }

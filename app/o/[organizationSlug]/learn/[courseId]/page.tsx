@@ -36,7 +36,13 @@ export default async function OrganizationCourseDetailPage({ params }: OrgCourse
   const completedLessonIds = getCompletedLessonIds(lessonProgress, course.lessons);
   const completedLessonIdList = Array.from(completedLessonIds);
   const { progressPercent } = getCourseProgress(course, completedLessonIds);
-  const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds);
+  const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds, {
+    lessonHref: (lessonId, pageNumber) => {
+      const href = orgHref(workspace, `/learn/${course.id}/lessons/${lessonId}`);
+      return pageNumber ? `${href}?page=${pageNumber}` : href;
+    },
+    quizHref: (lessonId) => orgHref(workspace, `/learn/${course.id}/quiz/${lessonId}`),
+  });
   const heroImage = course.coverImage ?? course.thumbnail;
   const organizationName = workspace.branding.shortName || workspace.branding.name;
 
@@ -97,7 +103,11 @@ export default async function OrganizationCourseDetailPage({ params }: OrgCourse
               Lessons
             </h2>
             <div className="mt-3">
-              <CourseDetailLessonList completedLessonIds={completedLessonIdList} lessons={course.lessons} />
+              <CourseDetailLessonList
+                completedLessonIds={completedLessonIdList}
+                lessonHrefBase={orgHref(workspace, `/learn/${course.id}/lessons`)}
+                lessons={course.lessons}
+              />
             </div>
           </div>
         </div>

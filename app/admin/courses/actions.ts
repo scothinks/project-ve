@@ -249,7 +249,7 @@ async function syncLessonQuizStatus(
 export async function saveCourse(formData: FormData) {
   const input = requireValidForm(parseSaveCourseForm(formData));
   const courseId = input.courseId;
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdmin();
 
   if (input.status === "published") {
     if (!courseId) {
@@ -268,6 +268,36 @@ export async function saveCourse(formData: FormData) {
 
   if (existingCourse.error) throw existingCourse.error;
   const existingCourseData = existingCourse.data as { thumbnail: StoredImagePayload } | null;
+  const thumbnail = mergeImagePayload(
+    input.thumbnail,
+    existingCourseData?.thumbnail ?? null,
+  );
+
+  if (!courseId && workspace.type === "organization") {
+    const { data, error } = await supabase.rpc("admin_create_organization_private_course", {
+      p_organization_id: workspace.id,
+      p_title: input.title,
+      p_description: input.description,
+      p_intended_audience: input.intendedAudience,
+      p_learning_outcomes: input.learningOutcomes,
+      p_category: input.category,
+      p_level: input.level,
+      p_thumbnail: thumbnail,
+      p_sort_order: input.sortOrder,
+      p_estimated_minutes: input.estimatedMinutes,
+    });
+
+    if (error) throw error;
+
+    const result = data as { courseId?: string } | null;
+    revalidatePath("/admin/courses");
+    redirect(
+      appendAdminNotice(
+        `/admin/courses/${result?.courseId ?? ""}`,
+        "Organisation-private course created.",
+      ),
+    );
+  }
 
   const { data, error } = await supabase.rpc("admin_upsert_course", {
     p_course_id: courseId,
@@ -278,10 +308,7 @@ export async function saveCourse(formData: FormData) {
     p_category: input.category,
     p_level: input.level,
     p_status: input.status,
-    p_thumbnail: mergeImagePayload(
-      input.thumbnail,
-      existingCourseData?.thumbnail ?? null,
-    ),
+    p_thumbnail: thumbnail,
     p_sort_order: input.sortOrder,
     p_estimated_minutes: input.estimatedMinutes,
   });

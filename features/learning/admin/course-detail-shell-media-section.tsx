@@ -11,6 +11,7 @@ import type { AdminCourseDetailPageData } from "./course-detail-data";
 type ShellMediaAction = (formData: FormData) => void | Promise<void>;
 
 type CourseDetailShellMediaSectionProps = {
+  aiGenerationAvailable?: boolean;
   course: AdminCourseDetailPageData["course"];
   courseCoverAsset: AdminCourseDetailPageData["courseCoverAsset"];
   courseThumbnailAsset: AdminCourseDetailPageData["courseThumbnailAsset"];
@@ -53,6 +54,7 @@ function collapsibleBodyClasses() {
 
 export function CourseDetailShellMediaSection({
   actions,
+  aiGenerationAvailable = true,
   course,
   courseCoverAsset,
   courseThumbnailAsset,
@@ -130,6 +132,7 @@ export function CourseDetailShellMediaSection({
                   </div>
 
                   <MediaPicker
+                    aiGenerationAvailable={aiGenerationAvailable}
                     canGenerate={mediaConfig.canGenerate}
                     caption={asset.caption ?? ""}
                     generateAction={actions.generateLearningMediaAsset}

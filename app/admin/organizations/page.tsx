@@ -16,7 +16,7 @@ import {
   getAdminCohorts,
   getAdminProgrammes,
   getAdminUsers,
-  requirePlatformAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
 import {
   ORGANIZATION_ACCENT_LABELS,
@@ -95,7 +95,10 @@ export default async function AdminOrganizationsPage({
 }: {
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
-  const { supabase } = await requirePlatformAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole([
+    "organisation_owner",
+    "organisation_admin",
+  ]);
   const [organizations, memberships, invitations, users, programmes, cohorts, plans, planAssignments, entitlementOverrides] = await Promise.all([
     getAdminOrganizations(supabase),
     getAdminOrganizationMemberships(supabase),
@@ -114,13 +117,17 @@ export default async function AdminOrganizationsPage({
   const overridesByOrganization = new Map(
     entitlementOverrides.map((override) => [override.organization_id, override]),
   );
+  const isPlatformWorkspace = workspace.type === "platform";
+  const selectedOrganization = organizations[0] ?? null;
 
   return (
     <>
       <AdminPageHeader
         eyebrow="Organisations"
         title="Organisation workspaces"
-        subtitle="Create institution workspaces and manage contextual memberships for P1 LMS delivery."
+        subtitle={isPlatformWorkspace
+          ? "Create institution workspaces and manage contextual memberships for P1 LMS delivery."
+          : "Manage identity, invitations, and people for the selected organisation workspace."}
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
 
@@ -281,19 +288,38 @@ export default async function AdminOrganizationsPage({
               </label>
               <label className="block">
                 <span className={labelClasses()}>Short name</span>
-                <input className={fieldClasses()} name="shortName" placeholder="Learner-facing name" />
+                <input
+                  className={fieldClasses()}
+                  defaultValue={selectedOrganization?.short_name ?? ""}
+                  name="shortName"
+                  placeholder="Learner-facing name"
+                />
               </label>
               <label className="block">
                 <span className={labelClasses()}>Description</span>
-                <textarea className={`${fieldClasses()} min-h-28 resize-y`} name="description" />
+                <textarea
+                  className={`${fieldClasses()} min-h-28 resize-y`}
+                  defaultValue={selectedOrganization?.description ?? ""}
+                  name="description"
+                />
               </label>
               <label className="block">
                 <span className={labelClasses()}>Logo URL</span>
-                <input className={fieldClasses()} name="logoUrl" placeholder="https://..." type="url" />
+                <input
+                  className={fieldClasses()}
+                  defaultValue={selectedOrganization?.logo_url ?? ""}
+                  name="logoUrl"
+                  placeholder="https://..."
+                  type="url"
+                />
               </label>
               <label className="block">
                 <span className={labelClasses()}>Accent</span>
-                <select className={fieldClasses()} name="accentToken" defaultValue="green">
+                <select
+                  className={fieldClasses()}
+                  name="accentToken"
+                  defaultValue={selectedOrganization?.accent_token ?? "green"}
+                >
                   {ORGANIZATION_ACCENT_TOKENS.map((token) => (
                     <option key={token} value={token}>
                       {ORGANIZATION_ACCENT_LABELS[token]}
@@ -303,43 +329,63 @@ export default async function AdminOrganizationsPage({
               </label>
               <label className="block">
                 <span className={labelClasses()}>Support email</span>
-                <input className={fieldClasses()} name="supportEmail" type="email" />
+                <input
+                  className={fieldClasses()}
+                  defaultValue={selectedOrganization?.support_email ?? ""}
+                  name="supportEmail"
+                  type="email"
+                />
               </label>
               <label className="block">
                 <span className={labelClasses()}>Support phone</span>
-                <input className={fieldClasses()} name="supportPhone" />
+                <input
+                  className={fieldClasses()}
+                  defaultValue={selectedOrganization?.support_phone ?? ""}
+                  name="supportPhone"
+                />
               </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block">
-                  <span className={labelClasses()}>Verification</span>
-                  <select className={fieldClasses()} name="verificationStatus" defaultValue="unverified">
-                    {VERIFICATION_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {status.replaceAll("_", " ")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className={labelClasses()}>Lifecycle</span>
-                  <select className={fieldClasses()} name="lifecycleStatus" defaultValue="active">
-                    {LIFECYCLE_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+              {isPlatformWorkspace ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className={labelClasses()}>Verification</span>
+                    <select
+                      className={fieldClasses()}
+                      name="verificationStatus"
+                      defaultValue={selectedOrganization?.verification_status ?? "unverified"}
+                    >
+                      {VERIFICATION_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {status.replaceAll("_", " ")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className={labelClasses()}>Lifecycle</span>
+                    <select
+                      className={fieldClasses()}
+                      name="lifecycleStatus"
+                      defaultValue={selectedOrganization?.lifecycle_status ?? "active"}
+                    >
+                      {LIFECYCLE_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              ) : null}
               <button className={adminButtonClasses("primary", "w-full")} type="submit">
                 Save identity
               </button>
             </form>
           </AdminCard>
 
-          <AdminCard>
-            <h2 className="text-base font-black">Create or update organisation</h2>
-            <form action={saveOrganization} className="mt-4 space-y-4">
+          {isPlatformWorkspace ? (
+            <AdminCard>
+              <h2 className="text-base font-black">Create or update organisation</h2>
+              <form action={saveOrganization} className="mt-4 space-y-4">
               <label className="block">
                 <span className={labelClasses()}>Existing organisation</span>
                 <select className={fieldClasses()} name="organizationId" defaultValue="">
@@ -367,11 +413,12 @@ export default async function AdminOrganizationsPage({
                   <option value="archived">Archived</option>
                 </select>
               </label>
-              <button className={adminButtonClasses("primary", "w-full")} type="submit">
-                Save organisation
-              </button>
-            </form>
-          </AdminCard>
+                <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                  Save organisation
+                </button>
+              </form>
+            </AdminCard>
+          ) : null}
 
           <AdminCard>
             <h2 className="text-base font-black">Invite learner or staff</h2>
@@ -488,9 +535,10 @@ export default async function AdminOrganizationsPage({
             </form>
           </AdminCard>
 
-          <AdminCard>
-            <h2 className="text-base font-black">Assign plan</h2>
-            <form action={saveOrganizationPlanAssignment} className="mt-4 space-y-4">
+          {isPlatformWorkspace ? (
+            <AdminCard>
+              <h2 className="text-base font-black">Assign plan</h2>
+              <form action={saveOrganizationPlanAssignment} className="mt-4 space-y-4">
               <label className="block">
                 <span className={labelClasses()}>Organisation</span>
                 <select className={fieldClasses()} name="organizationId" required>
@@ -546,11 +594,12 @@ export default async function AdminOrganizationsPage({
                   placeholder="Pilot, sponsored customer, or temporary commercial approval"
                 />
               </label>
-              <button className={adminButtonClasses("primary", "w-full")} type="submit">
-                Save plan assignment
-              </button>
-            </form>
-          </AdminCard>
+                <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                  Save plan assignment
+                </button>
+              </form>
+            </AdminCard>
+          ) : null}
         </aside>
       </section>
     </>

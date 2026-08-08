@@ -58,6 +58,12 @@ const programmeManagerEmail = `e2e-programme-manager-${runId}@example.test`;
 const reportViewerEmail = `e2e-report-viewer-${runId}@example.test`;
 const institutionalLearnerEmail = `e2e-institution-learner-${runId}@example.test`;
 const outsiderEmail = `e2e-outsider-${runId}@example.test`;
+const selfServiceOwnerEmail = `e2e-self-service-owner-${runId}@example.test`;
+const selfServiceOrgName = `E2E Starter Org ${runId}`;
+const selfServiceOrgSlug = `e2e-starter-org-${runId}`;
+const selfServiceOrgShortName = `Starter ${runId}`;
+const selfServiceOrgUpdatedShortName = `Starter Updated ${runId}`;
+const selfServiceCourseTitle = `E2E Starter Owner Course ${runId}`;
 const cmsUploadFixturePath = path.join(process.cwd(), "tests/fixtures/cms-upload-image.png");
 
 let supabase: SupabaseClient;
@@ -68,6 +74,7 @@ let reportViewer: User | null = null;
 let institutionalLearner: User | null = null;
 let outsider: User | null = null;
 let signedUpLearner: User | null = null;
+let selfServiceOwner: User | null = null;
 
 type SignupProfile = {
   display_name: string | null;
@@ -142,6 +149,7 @@ async function cleanupFixture() {
   reportViewer = reportViewer ?? (await findAuthUserByEmail(reportViewerEmail));
   institutionalLearner = institutionalLearner ?? (await findAuthUserByEmail(institutionalLearnerEmail));
   outsider = outsider ?? (await findAuthUserByEmail(outsiderEmail));
+  selfServiceOwner = selfServiceOwner ?? (await findAuthUserByEmail(selfServiceOwnerEmail));
   const institutionalProgrammeIds = (
     (await supabase
       .from("programmes")
@@ -153,6 +161,12 @@ async function cleanupFixture() {
       .from("organizations")
       .select("id")
       .eq("slug", institutionalOrgSlug)).data ?? []
+  ).map((organization) => organization.id);
+  const selfServiceOrgIds = (
+    (await supabase
+      .from("organizations")
+      .select("id")
+      .eq("slug", selfServiceOrgSlug)).data ?? []
   ).map((organization) => organization.id);
   const removableCourseResult = await supabase
     .from("courses")
@@ -185,6 +199,7 @@ async function cleanupFixture() {
       reportViewer?.id,
       institutionalLearner?.id,
       outsider?.id,
+      selfServiceOwner?.id,
     ].filter(Boolean));
   await supabase.from("course_completions").delete().eq("course_id", institutionalCourseId);
   if (institutionalProgrammeIds.length > 0) {
@@ -221,6 +236,12 @@ async function cleanupFixture() {
     .in("title", [blankCourseTitle, updatedBlankCourseTitle, duplicatedCourseTitle]);
   await supabase.from("courses").delete().eq("id", institutionalCourseId);
   await supabase.from("courses").delete().eq("id", courseId);
+  if (selfServiceOrgIds.length > 0) {
+    await supabase
+      .from("courses")
+      .delete()
+      .in("organization_id", selfServiceOrgIds);
+  }
   if (institutionalOrgIds.length > 0) {
     await supabase
       .from("organization_memberships")
@@ -230,6 +251,20 @@ async function cleanupFixture() {
       .from("organizations")
       .delete()
       .in("id", institutionalOrgIds);
+  }
+  if (selfServiceOrgIds.length > 0) {
+    await supabase
+      .from("organization_memberships")
+      .delete()
+      .in("organization_id", selfServiceOrgIds);
+    await supabase
+      .from("organization_invitations")
+      .delete()
+      .in("organization_id", selfServiceOrgIds);
+    await supabase
+      .from("organizations")
+      .delete()
+      .in("id", selfServiceOrgIds);
   }
 
   if (learner?.id) {
@@ -263,6 +298,11 @@ async function cleanupFixture() {
   if (outsider?.id) {
     await supabase.auth.admin.deleteUser(outsider.id);
     outsider = null;
+  }
+
+  if (selfServiceOwner?.id) {
+    await supabase.auth.admin.deleteUser(selfServiceOwner.id);
+    selfServiceOwner = null;
   }
 }
 
@@ -419,6 +459,7 @@ async function seedUsers() {
   reportViewer = await createTestUser(reportViewerEmail, "E2E Report Viewer");
   institutionalLearner = await createTestUser(institutionalLearnerEmail, "E2E Institution Learner");
   outsider = await createTestUser(outsiderEmail, "E2E Outsider");
+  selfServiceOwner = await createTestUser(selfServiceOwnerEmail, "E2E Self Service Owner");
 
   await assertNoError(
     await supabase.from("profiles").upsert(
@@ -471,6 +512,14 @@ async function seedUsers() {
           xp_balance_cached: 100,
           redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
         },
+        {
+          id: selfServiceOwner.id,
+          display_name: "E2E Self Service Owner",
+          role: "learner",
+          xp: 0,
+          xp_balance_cached: 0,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
       ],
       { onConflict: "id" },
     ),
@@ -479,12 +528,14 @@ async function seedUsers() {
 
   await assertNoError(
     await supabase.from("user_value_profiles").upsert(
-      [learner, programmeManager, reportViewer, institutionalLearner, outsider].map((user) => ({
-        user_id: user.id,
-        assessment_completed_at: new Date().toISOString(),
-        readiness_level: "beginner",
-        profile_summary: {},
-      })),
+      [learner, programmeManager, reportViewer, institutionalLearner, outsider, selfServiceOwner]
+        .filter((user): user is User => Boolean(user))
+        .map((user) => ({
+          user_id: user.id,
+          assessment_completed_at: new Date().toISOString(),
+          readiness_level: "beginner",
+          profile_summary: {},
+        })),
       { onConflict: "user_id" },
     ),
     "seed learner assessment completion",
@@ -748,6 +799,215 @@ test.describe.serial("remediation browser flows", () => {
 
   test("password login stays reachable", async ({ page }) => {
     await signIn(page, learnerEmail);
+  });
+
+  test("self-service Starter owner can manage org setup and create only five lessons", async ({ page }) => {
+    test.setTimeout(180_000);
+
+    if (!selfServiceOwner) {
+      throw new Error("Self-service owner was not seeded.");
+    }
+
+    await signIn(page, selfServiceOwnerEmail);
+    await page.goto("/org/create");
+    await page.getByLabel("Organisation name").fill(selfServiceOrgName);
+    await page.getByLabel("Web address").fill(selfServiceOrgSlug);
+    await page.getByLabel("Short name").fill(selfServiceOrgShortName);
+    await page.getByLabel("Description").fill("Browser-created Starter organisation for P1.5A acceptance.");
+    await page.getByLabel("Support email").fill(selfServiceOwnerEmail);
+    await page.getByLabel(/I confirm I can create this organisation workspace/).check();
+    await page.getByRole("button", { name: "Create organisation" }).click();
+    await expect(page).toHaveURL(/\/admin/);
+    await expect(page.getByText("Organisation created. Continue setup in your new workspace.")).toBeVisible();
+
+    const organization = await assertNoError(
+      await supabase
+        .from("organizations")
+        .select("id, creation_source, verification_status, lifecycle_status")
+        .eq("slug", selfServiceOrgSlug)
+        .maybeSingle(),
+      "load self-service organization",
+    ) as {
+      creation_source: string;
+      id: string;
+      lifecycle_status: string;
+      verification_status: string;
+    } | null;
+    expect(organization?.id).toBeTruthy();
+    expect(organization?.creation_source).toBe("self_service");
+    expect(organization?.verification_status).toBe("unverified");
+
+    const ownerMembership = await assertNoError(
+      await supabase
+        .from("organization_memberships")
+        .select("id")
+        .eq("organization_id", organization?.id ?? "")
+        .eq("user_id", selfServiceOwner.id)
+        .eq("role", "organisation_owner")
+        .eq("status", "active")
+        .maybeSingle(),
+      "load self-service owner membership",
+    ) as { id: string } | null;
+    expect(ownerMembership?.id).toBeTruthy();
+
+    await page.goto("/admin/organizations");
+    await expect(page.getByRole("heading", { name: "Organisation workspaces" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create or update organisation" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Assign plan" })).toHaveCount(0);
+    const identityForm = page.locator("form").filter({ has: page.locator("input[name='shortName']") }).first();
+    await identityForm.locator("input[name='shortName']").fill(selfServiceOrgUpdatedShortName);
+    await identityForm.locator("textarea[name='description']").fill("Updated by the organisation owner through their workspace.");
+    await identityForm.getByRole("button", { name: "Save identity" }).click();
+    await expect(page.getByText("Organisation profile updated.")).toBeVisible();
+    await expect(page.getByText(selfServiceOrgUpdatedShortName).first()).toBeVisible();
+
+    const invitationForm = page.locator("form").filter({ has: page.locator("input[name='email']") }).first();
+    await invitationForm.locator("select[name='organizationId']").selectOption({ label: selfServiceOrgUpdatedShortName });
+    await invitationForm.locator("input[name='email']").fill(learnerEmail);
+    await invitationForm.locator("select[name='role']").selectOption("learner");
+    await invitationForm.getByRole("button", { name: "Create invitation" }).click();
+    await expect(page.getByText("Invitation created.")).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: learnerEmail })).toBeVisible();
+
+    await page.goto("/admin/courses/new");
+    await expect(page.getByRole("heading", { name: "Add course" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Generate with AI" })).toHaveCount(0);
+    await page.getByLabel("Title").fill(selfServiceCourseTitle);
+    await page.getByLabel("Description").fill("Organisation-private course created by the self-service owner.");
+    await page.getByLabel("Intended audience").fill("Starter organisation learners.");
+    await page.getByLabel("Learning outcomes").fill("Create a course through Org Mode\nRespect Starter lesson limits");
+    await page.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByText("Organisation-private course created.")).toBeVisible();
+
+    const selfServiceCourseId = getCourseIdFromAdminUrl(page);
+    const selfServiceCourse = await assertNoError(
+      await supabase
+        .from("courses")
+        .select("id, catalog_scope, organization_id")
+        .eq("id", selfServiceCourseId)
+        .maybeSingle(),
+      "load self-service course",
+    ) as { catalog_scope: string; id: string; organization_id: string | null } | null;
+    expect(selfServiceCourse?.catalog_scope).toBe("organization_private");
+    expect(selfServiceCourse?.organization_id).toBe(organization?.id);
+
+    let firstStarterLessonId = "";
+
+    for (let index = 1; index <= 5; index += 1) {
+      await page.goto(`/admin/courses/${selfServiceCourseId}?tab=curriculum`);
+      await page.getByRole("button", { name: "Create lesson" }).click();
+      await expect(page).toHaveURL(/\/admin\/courses\/lessons\//);
+      await expect(page.getByText("Lesson created.")).toBeVisible();
+      if (!firstStarterLessonId) {
+        firstStarterLessonId = page.url().split("/admin/courses/lessons/")[1]?.split("?")[0] ?? "";
+        await expect(page.getByRole("tab", { name: "Generate with AI" })).toHaveCount(0);
+        await page.getByRole("button", { name: "+ Add page" }).click();
+        await expect(page.getByRole("button", { name: "+ Text" })).toBeVisible();
+        await expect(page.getByRole("button", { name: "+ Image" })).toBeVisible();
+        await expect(page.getByRole("button", { name: "+ Video" })).toHaveCount(0);
+        await expect(page.getByRole("button", { name: "+ Audio" })).toHaveCount(0);
+      }
+    }
+
+    const uploadResponse = await page.request.post("/api/admin/learning/media/upload", {
+      multipart: {
+        altText: `Starter owner image ${runId}`,
+        assetType: "image",
+        courseId: selfServiceCourseId,
+        file: {
+          buffer: readFileSync(cmsUploadFixturePath),
+          mimeType: "image/png",
+          name: "starter-owner-image.png",
+        },
+        lessonId: firstStarterLessonId,
+        placement: "lesson_image",
+      },
+    });
+    const uploadResponseText = await uploadResponse.text();
+    expect(uploadResponse.status(), uploadResponseText).toBe(200);
+    const parsedUploadPayload = JSON.parse(uploadResponseText) as {
+      asset?: { id?: string; storage_path?: string | null };
+    };
+    const uploadPayload = parsedUploadPayload;
+    expect(uploadPayload.asset?.id).toBeTruthy();
+    expect(uploadPayload.asset?.storage_path).toBeTruthy();
+
+    const uploadedStarterAsset = await assertNoError(
+      await supabase
+        .from("learning_media_assets")
+        .select("id, storage_path")
+        .eq("id", uploadPayload.asset?.id ?? "")
+        .maybeSingle(),
+      "load starter uploaded media asset",
+    ) as { id: string; storage_path: string | null } | null;
+    expect(uploadedStarterAsset?.storage_path).toBe(uploadPayload.asset?.storage_path);
+
+    const deleteResponse = await page.request.delete("/api/admin/learning/media/upload", {
+      data: { assetId: uploadPayload.asset?.id },
+    });
+    expect(deleteResponse.status(), await deleteResponse.text()).toBe(200);
+
+    const deletedStarterAsset = await assertNoError(
+      await supabase
+        .from("learning_media_assets")
+        .select("id")
+        .eq("id", uploadPayload.asset?.id ?? "")
+        .maybeSingle(),
+      "verify starter uploaded media asset was deleted",
+    ) as { id: string } | null;
+    expect(deletedStarterAsset).toBeNull();
+
+    const storagePath = uploadPayload.asset?.storage_path ?? "";
+    const storageDirectory = storagePath.split("/").slice(0, -1).join("/");
+    const storageName = storagePath.split("/").at(-1) ?? "";
+    const listedObjects = await supabase.storage
+      .from(process.env.LEARNING_MEDIA_BUCKET || "learning-media")
+      .list(storageDirectory);
+    if (listedObjects.error) {
+      throw new Error(`verify starter storage deletion: ${listedObjects.error.message}`);
+    }
+    expect(listedObjects.data.some((object) => object.name === storageName)).toBe(false);
+
+    const deniedVideoBlockResponse = await page.request.post("/api/admin/learning/builder", {
+      data: {
+        lessonId: firstStarterLessonId,
+        pages: [
+          {
+            id: "draft-starter-denied-page",
+            title: "Starter denied page",
+            page_type: "concept",
+            page_number: 1,
+          },
+        ],
+        blocks: [
+          {
+            id: "draft-starter-denied-video",
+            page_id: "draft-starter-denied-page",
+            block_type: "video",
+            sort_order: 1,
+            payload: {
+              src: "https://example.test/video.mp4",
+              title: "Denied video",
+            },
+          },
+        ],
+      },
+    });
+    expect(deniedVideoBlockResponse.status()).toBe(500);
+    await expect(deniedVideoBlockResponse.text()).resolves.toContain("Video and audio lessons are available on paid organisation plans.");
+
+    await page.goto(`/admin/courses/${selfServiceCourseId}?tab=curriculum`);
+    await page.getByRole("button", { name: "Create lesson" }).click();
+    await expect(page.getByText("Starter organisations can create up to five lessons.")).toBeVisible();
+
+    const lessonCountResult = await supabase
+      .from("lessons")
+      .select("id", { count: "exact", head: true })
+      .eq("course_id", selfServiceCourseId);
+    if (lessonCountResult.error) {
+      throw new Error(`count self-service lessons: ${lessonCountResult.error.message}`);
+    }
+    expect(lessonCountResult.count).toBe(5);
   });
 
   test("learner completes a lesson page and earns quiz XP through supported APIs", async ({ page }) => {
@@ -1048,11 +1308,20 @@ test.describe.serial("remediation browser flows", () => {
     expect(authoredBlocks.length).toBeGreaterThanOrEqual(4);
     expect(JSON.stringify(authoredBlocks)).toContain("<strong>");
     expect(JSON.stringify(authoredBlocks)).toContain(authoredTextBody);
+    const authoredQuiz = await assertNoError(
+      await supabase
+        .from("quizzes")
+        .select("id")
+        .eq("lesson_id", authoredLessonId)
+        .maybeSingle(),
+      "load authored quiz",
+    ) as { id: string } | null;
+    expect(authoredQuiz?.id).toBeTruthy();
     const authoredQuestions = await assertNoError(
       await supabase
         .from("quiz_questions")
         .select("id, prompt, question_order, question_type")
-        .eq("quiz_id", `quiz-${authoredLessonId.replace(/^lesson-/, "")}`)
+        .eq("quiz_id", authoredQuiz?.id ?? "")
         .order("question_order", { ascending: true }),
       "load authored questions",
     );

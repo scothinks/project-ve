@@ -24,7 +24,7 @@ export default async function OrganizationLearnerHomePage({
           </Link>
         </div>
         <SectionHeader
-          eyebrow="Org Mode"
+          eyebrow="Orgs"
           subtitle={`Your active learner workspace is ${organizationName}. This view only shows learning connected to this organisation.`}
         />
 
@@ -45,6 +45,7 @@ export default async function OrganizationLearnerHomePage({
           <Button href={orgHref(workspace, "/learn")} variant="soft">Open learning workspace</Button>
           <Button href={orgHref(workspace, "/missions")} variant="outline">Missions</Button>
           <Button href={orgHref(workspace, "/rewards")} variant="outline">Rewards</Button>
+          <Button href={orgHref(workspace, "/notifications")} variant="outline">Notifications</Button>
           <Button href={orgHref(workspace, "/profile")} variant="outline">Profile</Button>
         </div>
       </section>

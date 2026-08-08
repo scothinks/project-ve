@@ -29,6 +29,7 @@ import { LessonDetailAiMediaSection } from "@/features/learning/admin/lesson-det
 import { getAdminLessonDetailPageData } from "@/features/learning/admin/lesson-detail-data";
 import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
 import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
+import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 
 type LessonDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -64,6 +65,21 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
     valueTags,
   } = data;
   const mediaConfig = getAiMediaConfig();
+  const { data: courseContext, error: courseContextError } = await supabase
+    .from("courses")
+    .select("organization_id")
+    .eq("id", lesson.course_id)
+    .maybeSingle();
+
+  if (courseContextError) {
+    throw courseContextError;
+  }
+
+  const organizationEntitlements = courseContext?.organization_id
+    ? (await resolveOrganizationEntitlements(supabase, courseContext.organization_id)).entitlements
+    : null;
+  const aiGenerationAvailable = organizationEntitlements?.aiAuthoringEnabled ?? true;
+  const allowedBlockTypes = organizationEntitlements?.allowedLessonBlockTypes;
   const aiActivity = await getAdminAiActivity(supabase, {
     courseId: lesson.course_id,
   });
@@ -99,43 +115,55 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         </AdminCard>
       </section>
 
-      <div className="mb-6">
-        <AiActivityPanel activity={aiActivity} courseId={lesson.course_id} />
-      </div>
+      {aiGenerationAvailable ? (
+        <div className="mb-6">
+          <AiActivityPanel activity={aiActivity} courseId={lesson.course_id} />
+        </div>
+      ) : null}
 
-      <LessonDetailAiMediaSection
-        actions={{
-          approveLearningMediaAsset,
-          approveLessonManualMedia,
-          approveLessonMedia,
-          approveLessonText,
-          generateLearningMediaAsset,
-          generateLessonMediaAssets,
-          requestLessonMediaChanges,
-          requestLessonTextChanges,
-          saveLearningMediaAsset,
-          useLibraryMediaAsset,
-        }}
-        hasManualLessonMedia={hasManualLessonMedia}
-        hasRequiredImageAssets={hasRequiredImageAssets}
-        lesson={lesson}
-        mediaApprovalBlocked={mediaApprovalBlocked}
-        mediaAssets={mediaAssets}
-        mediaConfig={mediaConfig}
-        mediaLibraryAssets={mediaLibraryAssets}
-        mediaValidation={mediaValidation}
-        storedMediaFeedback={storedMediaFeedback}
-        storedTextFeedback={storedTextFeedback}
-      />
+      {aiGenerationAvailable ? (
+        <LessonDetailAiMediaSection
+          actions={{
+            approveLearningMediaAsset,
+            approveLessonManualMedia,
+            approveLessonMedia,
+            approveLessonText,
+            generateLearningMediaAsset,
+            generateLessonMediaAssets,
+            requestLessonMediaChanges,
+            requestLessonTextChanges,
+            saveLearningMediaAsset,
+            useLibraryMediaAsset,
+          }}
+          aiGenerationAvailable={aiGenerationAvailable}
+          hasManualLessonMedia={hasManualLessonMedia}
+          hasRequiredImageAssets={hasRequiredImageAssets}
+          lesson={lesson}
+          mediaApprovalBlocked={mediaApprovalBlocked}
+          mediaAssets={mediaAssets}
+          mediaConfig={mediaConfig}
+          mediaLibraryAssets={mediaLibraryAssets}
+          mediaValidation={mediaValidation}
+          storedMediaFeedback={storedMediaFeedback}
+          storedTextFeedback={storedTextFeedback}
+        />
+      ) : null}
 
       <details className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
         <summary className="cursor-pointer text-lg font-black">Lesson setup</summary>
         <div className="mt-5">
-          <LessonForm courseId={lesson.course_id} lesson={lesson} mediaLibraryAssets={mediaLibraryAssets} />
+          <LessonForm
+            aiGenerationAvailable={aiGenerationAvailable}
+            courseId={lesson.course_id}
+            lesson={lesson}
+            mediaLibraryAssets={mediaLibraryAssets}
+          />
         </div>
       </details>
 
       <LessonPageBuilder
+        aiGenerationAvailable={aiGenerationAvailable}
+        allowedBlockTypes={allowedBlockTypes}
         blocks={blocks}
         initialPageId={selectedPageId}
         lesson={lesson}
