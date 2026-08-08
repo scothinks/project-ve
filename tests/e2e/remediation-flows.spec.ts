@@ -1376,7 +1376,7 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.context().clearCookies();
     await signIn(page, institutionalLearnerEmail);
-    await page.goto(`/courses/${institutionalCourseId}`);
+    await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     const progressResponse = page.waitForResponse(
       (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
@@ -1384,13 +1384,13 @@ test.describe.serial("remediation browser flows", () => {
     await page.goto(`/lessons/${institutionalLessonId}`);
     await progressResponse;
     await expect(page.getByText(institutionalLessonBody)).toBeVisible();
-    await page.goto("/profile/transcript");
+    await page.goto(`/o/${institutionalOrgSlug}/transcript`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: institutionalProgrammeTitle }).first()).toBeVisible();
     await expect(page.getByText("100% complete").first()).toBeVisible();
 
-    await page.goto("/xp-store");
-    await expect(page.getByRole("heading", { name: "Redeem XP rewards" })).toBeVisible();
+    await page.goto(`/o/${institutionalOrgSlug}/rewards`);
+    await expect(page.getByRole("heading", { name: `${institutionalOrgName} Rewards` })).toBeVisible();
     await expect(page.getByRole("heading", { name: `E2E Institution Reward ${runId}` }).first()).toBeVisible();
 
     await page.context().clearCookies();

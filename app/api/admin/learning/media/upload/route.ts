@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildCmsStoragePath, validateImageUpload } from "@/lib/admin-media-upload";
+import { parseOrganizationEntitlements } from "@/features/organizations/entitlements";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
@@ -18,6 +19,12 @@ function getText(formData: FormData, key: string, maxLength = 120) {
 
 function getMediaBucket() {
   return process.env.LEARNING_MEDIA_BUCKET || "learning-media";
+}
+
+function storageLimitMessage(maxStorageBytes: number) {
+  return maxStorageBytes === 100 * 1024 * 1024
+    ? "Starter organisations include 100 MB of image storage."
+    : "This upload exceeds the organisation storage allowance.";
 }
 
 export async function POST(request: Request) {
@@ -105,6 +112,49 @@ export async function POST(request: Request) {
     return jsonError("Upload media after choosing a course or lesson context.", 400);
   }
 
+  if (!courseId) {
+    return jsonError("Course media context was not found.", 404);
+  }
+
+  const { data: courseContext, error: courseContextError } = await adminSupabase
+    .from("courses")
+    .select("id, organization_id")
+    .eq("id", courseId)
+    .maybeSingle();
+
+  if (courseContextError) {
+    return jsonError("Could not validate the course media context.", 500);
+  }
+
+  if (!courseContext) {
+    return jsonError("Course media context was not found.", 404);
+  }
+
+  if (courseContext.organization_id) {
+    const [
+      entitlementsResult,
+      storageUsageResult,
+    ] = await Promise.all([
+      supabase.rpc("resolve_organization_entitlements", {
+        p_organization_id: courseContext.organization_id,
+      }),
+      supabase.rpc("organization_learning_storage_bytes", {
+        p_organization_id: courseContext.organization_id,
+      }),
+    ]);
+
+    if (entitlementsResult.error || storageUsageResult.error) {
+      return jsonError("Could not validate the organisation storage allowance.", 500);
+    }
+
+    const entitlements = parseOrganizationEntitlements(entitlementsResult.data);
+    const usedStorageBytes = Number(storageUsageResult.data ?? 0);
+
+    if (usedStorageBytes + validation.value.size > entitlements.maxStorageBytes) {
+      return jsonError(storageLimitMessage(entitlements.maxStorageBytes), 400);
+    }
+  }
+
   const contextId = lessonId ?? courseId;
   const storagePath = buildCmsStoragePath({
     contextId,
@@ -156,6 +206,9 @@ export async function POST(request: Request) {
 
   if (insertError) {
     await adminSupabase.storage.from(bucket).remove([storagePath]);
+    if (insertError.code === "23514") {
+      return jsonError(insertError.message, 400);
+    }
     return jsonError("The image was uploaded, but the media record could not be saved.", 500);
   }
 

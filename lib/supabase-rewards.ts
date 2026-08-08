@@ -16,6 +16,9 @@ type JsonRecord = Record<string, unknown>;
 type DbReward = {
   id: string;
   campaign_id: string | null;
+  organization_id: string | null;
+  owner_scope: "platform_owned" | "organization_owned" | "programme_sponsored";
+  sponsored_programme_id: string | null;
   title: string;
   description: string | null;
   cost_xp: number;
@@ -167,17 +170,22 @@ function mapRedemption(redemption: DbRedemption): RewardRedemption {
   };
 }
 
-async function getPublishedRewards(supabase: AppSupabaseClient) {
+async function getPublishedRewards(supabase: AppSupabaseClient, mode: "all_visible" | "platform") {
   const baseSelect =
-    "id, campaign_id, title, description, cost_xp, thumbnail, starts_at, ends_at, offer_expires_at, terms, claim_steps, fulfillment_type, fulfillment_config, per_user_limit, limit_period, redemption_window_days, total_available";
+    "id, campaign_id, organization_id, owner_scope, sponsored_programme_id, title, description, cost_xp, thumbnail, starts_at, ends_at, offer_expires_at, terms, claim_steps, fulfillment_type, fulfillment_config, per_user_limit, limit_period, redemption_window_days, total_available";
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("rewards")
     .select(`${baseSelect}, visibility_mode, distribution_mode`)
     .eq("status", "published")
     .eq("is_enabled", true)
-    .eq("visibility_mode", "store")
-    .order("sort_order", { ascending: true });
+    .eq("visibility_mode", "store");
+
+  if (mode === "platform") {
+    query = query.eq("owner_scope", "platform_owned");
+  }
+
+  const { data, error } = await query.order("sort_order", { ascending: true });
 
   if (error) {
     throw error;
@@ -193,7 +201,17 @@ export async function getRewardStoreSnapshot(
 ): Promise<RewardStoreSnapshot> {
   void userId;
 
-  const rewards = await getPublishedRewards(supabase);
+  const rewards = await getPublishedRewards(supabase, "platform");
+  return getRewardStoreSnapshotFromRows(supabase, userId, xpBalance, rewards);
+}
+
+async function getRewardStoreSnapshotFromRows(
+  supabase: AppSupabaseClient,
+  userId: string,
+  xpBalance: number,
+  rewards: DbReward[],
+): Promise<RewardStoreSnapshot> {
+  void userId;
 
   const { data: inventoryCounts, error: inventoryCountsError } = await supabase.rpc(
     "reward_available_inventory_counts",
@@ -231,5 +249,40 @@ export async function getRewardStoreSnapshot(
     xpBalance,
     rewards: rewardsWithLiveInventory.map(mapReward),
     redemptions: ((redemptions ?? []) as DbRedemption[]).map(mapRedemption),
+  };
+}
+
+export async function getOrganizationRewardStoreSnapshot(
+  supabase: AppSupabaseClient,
+  userId: string,
+  xpBalance: number,
+  workspace: {
+    organizationId: string;
+    programmeIds: string[];
+  },
+): Promise<RewardStoreSnapshot> {
+  const programmeIds = new Set(workspace.programmeIds);
+  const rewards = (await getPublishedRewards(supabase, "all_visible")).filter((reward) => {
+    if (reward.owner_scope === "organization_owned") {
+      return reward.organization_id === workspace.organizationId;
+    }
+
+    if (reward.owner_scope === "programme_sponsored") {
+      return (
+        reward.organization_id === workspace.organizationId
+        && reward.sponsored_programme_id !== null
+        && programmeIds.has(reward.sponsored_programme_id)
+      );
+    }
+
+    return false;
+  });
+
+  const snapshot = await getRewardStoreSnapshotFromRows(supabase, userId, xpBalance, rewards);
+  const rewardIds = new Set(snapshot.rewards.map((reward) => reward.id));
+
+  return {
+    ...snapshot,
+    redemptions: snapshot.redemptions.filter((redemption) => rewardIds.has(redemption.rewardId)),
   };
 }

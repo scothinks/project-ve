@@ -9,6 +9,7 @@ import {
   type UserProfile,
 } from "@/lib/supabase-server";
 import { isLiveMode } from "@/lib/app-mode";
+import { organizationAllowsLearnerEntry } from "@/features/organizations/identity";
 
 type CountableTable =
   | "profiles"
@@ -29,8 +30,30 @@ export const ADMIN_WORKSPACE_COOKIE = "project-ve-admin-workspace";
 
 export type AdminWorkspace = {
   id: "platform" | string;
+  organizationIdentity?: AdminWorkspaceOrganizationIdentity;
   type: "platform" | "organization";
   roles: string[];
+};
+
+export type AdminWorkspaceOrganizationIdentity = {
+  accentToken: string;
+  lifecycleStatus: string;
+  logoUrl: string | null;
+  name: string;
+  shortName: string | null;
+  slug: string;
+  verificationStatus: string;
+};
+
+type AdminWorkspaceOrganizationRow = {
+  accent_token?: string;
+  lifecycle_status?: string;
+  logo_url?: string | null;
+  name: string;
+  short_name?: string | null;
+  slug: string;
+  status?: string;
+  verification_status?: string;
 };
 
 const STAFF_ORGANIZATION_ROLES = [
@@ -50,7 +73,7 @@ export async function getSelectedAdminWorkspaceId() {
 async function getOrganizationStaffMemberships(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
     .from("organization_memberships")
-    .select("organization_id, role, organizations!inner(id, status)")
+    .select("organization_id, role, organizations!inner(id, name, short_name, slug, status, lifecycle_status, verification_status, accent_token, logo_url)")
     .eq("user_id", userId)
     .eq("status", "active")
     .in("role", STAFF_ORGANIZATION_ROLES);
@@ -62,13 +85,48 @@ async function getOrganizationStaffMemberships(supabase: SupabaseClient, userId:
   return ((data ?? []) as Array<{
     organization_id: string;
     role: string;
-    organizations: { id: string; status: string } | Array<{ id: string; status: string }> | null;
+    organizations: AdminWorkspaceOrganizationRow | AdminWorkspaceOrganizationRow[] | null;
   }>).filter((membership) => {
     const organization = Array.isArray(membership.organizations)
       ? membership.organizations[0]
       : membership.organizations;
-    return organization?.status !== "archived";
+    return organization ? organizationAllowsLearnerEntry({
+      lifecycle_status: organization.lifecycle_status ?? "active",
+      status: organization.status ?? "archived",
+    }) : false;
   });
+}
+
+function mapOrganizationIdentity(
+  organization: AdminWorkspaceOrganizationRow | null | undefined,
+): AdminWorkspaceOrganizationIdentity | undefined {
+  if (!organization) {
+    return undefined;
+  }
+
+  return {
+    accentToken: organization.accent_token ?? "green",
+    lifecycleStatus: organization.lifecycle_status ?? "active",
+    logoUrl: organization.logo_url ?? null,
+    name: organization.name,
+    shortName: organization.short_name ?? null,
+    slug: organization.slug,
+    verificationStatus: organization.verification_status ?? "unverified",
+  };
+}
+
+async function getOrganizationIdentityById(supabase: SupabaseClient, organizationId: string) {
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("name, short_name, slug, lifecycle_status, verification_status, accent_token, logo_url")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapOrganizationIdentity(data);
 }
 
 export async function requireAdmin(): Promise<AdminContext> {
@@ -90,12 +148,16 @@ export async function requireAdmin(): Promise<AdminContext> {
 
   if (profile.role === "admin") {
     const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+    const organizationIdentity = selectedWorkspaceId === "platform"
+      ? undefined
+      : await getOrganizationIdentityById(supabase, selectedWorkspaceId);
+
     return {
       profile,
       supabase,
       workspace: selectedWorkspaceId === "platform"
         ? { id: "platform", roles: ["platform_admin"], type: "platform" }
-        : { id: selectedWorkspaceId, roles: ["platform_admin"], type: "organization" },
+        : { id: selectedWorkspaceId, organizationIdentity, roles: ["platform_admin"], type: "organization" },
     };
   }
 
@@ -110,6 +172,9 @@ export async function requireAdmin(): Promise<AdminContext> {
     memberships.find((membership) => membership.organization_id === selectedWorkspaceId)
     ?? memberships[0];
   const selectedOrganizationId = selectedMembership.organization_id;
+  const selectedOrganization = Array.isArray(selectedMembership.organizations)
+    ? selectedMembership.organizations[0]
+    : selectedMembership.organizations;
   const roles = memberships
     .filter((membership) => membership.organization_id === selectedOrganizationId)
     .map((membership) => membership.role);
@@ -119,6 +184,7 @@ export async function requireAdmin(): Promise<AdminContext> {
     supabase,
     workspace: {
       id: selectedOrganizationId,
+      organizationIdentity: mapOrganizationIdentity(selectedOrganization),
       roles,
       type: "organization",
     },

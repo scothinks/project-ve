@@ -32,11 +32,15 @@ import {
 } from "@/features/rewards/learner/xp-store-ui";
 
 export function XPStore({
+  disableRedemption = false,
   initialAuthRequired = false,
   initialSnapshot = null,
+  workspaceLabel = "XP",
 }: {
+  disableRedemption?: boolean;
   initialAuthRequired?: boolean;
   initialSnapshot?: RewardStoreSnapshot | null;
+  workspaceLabel?: string;
 }) {
   const [snapshot, setSnapshot] = useState<RewardStoreSnapshot | null>(initialSnapshot);
   const [tab, setTab] = useState<Tab>("store");
@@ -257,7 +261,7 @@ export function XPStore({
               </Card>
             ) : paginatedRewards.items.map((reward) => {
             const expanded = expandedRewardId === reward.id;
-            const canRedeem = snapshot.xpBalance >= reward.costXp && !reward.isSoldOut;
+            const canRedeem = !disableRedemption && snapshot.xpBalance >= reward.costXp && !reward.isSoldOut;
 
             return (
               <Card className="overflow-hidden p-5" key={reward.id} variant="store">
@@ -295,7 +299,9 @@ export function XPStore({
                         type="button"
                         variant={canRedeem ? "primary" : "outline"}
                       >
-                        {reward.isSoldOut
+                        {disableRedemption
+                          ? "View only"
+                          : reward.isSoldOut
                           ? "Sold Out"
                           : "Redeem"}
                       </Button>
@@ -475,8 +481,8 @@ export function XPStore({
             <h2 className="mt-2 text-xl font-black">{confirmReward.title}</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               {confirmReward.distributionMode === "perk_bundle"
-                ? `This will spend ${formatXpLabel(confirmReward.costXp)} to reveal a surprise reward.`
-                : `This will redeem ${formatXpLabel(confirmReward.costXp)} and add the reward to your history.`}
+                ? `This will spend ${formatXpLabel(confirmReward.costXp)} ${workspaceLabel} to reveal a surprise reward.`
+                : `This will redeem ${formatXpLabel(confirmReward.costXp)} ${workspaceLabel} and add the reward to your history.`}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <Button

@@ -4,6 +4,8 @@ out
 dist
 .DS_Store
 coverage
+playwright-report/
+test-results/
 *.tsbuildinfo
 supabase/.branches/
 supabase/.temp/

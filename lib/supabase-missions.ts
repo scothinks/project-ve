@@ -626,6 +626,7 @@ function getReferralShareUrl(origin: string, referralCode: string) {
 }
 
 export async function getSupabaseMissionSummaries({
+  missionIds,
   syncAwards = false,
   supabase,
   userId,
@@ -636,15 +637,27 @@ export async function getSupabaseMissionSummaries({
   supabase: SupabaseClient;
   userId: string;
   referralCode: string | null;
+  missionIds?: string[];
   origin: string;
 }): Promise<UserMissionSummary[]> {
-  const { data: missions, error } = await supabase
+  const uniqueMissionIds = missionIds ? Array.from(new Set(missionIds)).filter(Boolean) : null;
+
+  if (uniqueMissionIds && uniqueMissionIds.length === 0) {
+    return [];
+  }
+
+  let query = supabase
     .from("missions")
     .select(
       "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, starts_at, ends_at, rewards:rewards!missions_reward_id_fkey(id, title, fulfillment_type, fulfillment_config)",
     )
-    .eq("status", "published")
-    .order("sort_order", { ascending: true });
+    .eq("status", "published");
+
+  if (uniqueMissionIds) {
+    query = query.in("id", uniqueMissionIds);
+  }
+
+  const { data: missions, error } = await query.order("sort_order", { ascending: true });
 
   if (error) {
     throw error;

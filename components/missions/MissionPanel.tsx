@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 import { PaginationControls } from "@/components/ui/PaginationControls";
@@ -16,6 +16,8 @@ type MissionResponse = {
 };
 
 type MissionPanelProps = {
+  apiPath?: string;
+  initialMissions?: UserMissionSummary[];
   maxItems?: number;
   mode?: "full" | "featured";
 };
@@ -296,9 +298,14 @@ function MissionActionButton({
   );
 }
 
-export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
-  const [missions, setMissions] = useState<UserMissionSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MissionPanel({
+  apiPath = "/api/missions",
+  initialMissions,
+  maxItems,
+  mode = "full",
+}: MissionPanelProps) {
+  const [missions, setMissions] = useState<UserMissionSummary[]>(initialMissions ?? []);
+  const [loading, setLoading] = useState(!initialMissions);
   const [message, setMessage] = useState<string | null>(null);
   const [copiedMissionId, setCopiedMissionId] = useState<string | null>(null);
   const [activeProofMissionId, setActiveProofMissionId] = useState<string | null>(null);
@@ -307,10 +314,10 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
   const [submittingProofField, setSubmittingProofField] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  async function loadMissions() {
+  const loadMissions = useCallback(async function loadMissions() {
     setLoading(true);
     try {
-      const response = await fetch("/api/missions");
+      const response = await fetch(apiPath);
       const data = (await response.json()) as Partial<MissionResponse> & { error?: string };
 
       if (!response.ok) {
@@ -326,11 +333,13 @@ export function MissionPanel({ maxItems, mode = "full" }: MissionPanelProps) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [apiPath]);
 
   useEffect(() => {
-    void loadMissions();
-  }, []);
+    if (!initialMissions) {
+      void loadMissions();
+    }
+  }, [initialMissions, loadMissions]);
 
   const activeProofMission = activeProofMissionId
     ? missions.find((mission) => mission.id === activeProofMissionId) ?? null

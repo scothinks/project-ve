@@ -16,6 +16,7 @@ import {
 } from "@/features/learning/admin/planner-model";
 import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
 import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
+import { requireAdminWorkspaceAiAuthoring } from "@/features/organizations/admin/entitlement-guards";
 import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { getAdminAiCoursePlans, getAdminCourses, requireAdmin } from "@/lib/admin";
 
@@ -79,7 +80,9 @@ type PlannerPageProps = {
 
 export default async function AdminAiCoursePlannerPage({ searchParams }: PlannerPageProps) {
   const config = getAiLearningConfig();
-  const { supabase } = await requireAdmin();
+  const admin = await requireAdmin();
+  await requireAdminWorkspaceAiAuthoring(admin, "/admin/courses");
+  const { supabase } = admin;
   const { notice, courseId, plan } = (await searchParams) ?? {};
   const [courses, newCoursePlans, expansionPlans] = await Promise.all([
     getAdminCourses(supabase),

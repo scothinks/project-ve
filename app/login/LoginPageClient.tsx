@@ -12,9 +12,10 @@ const defaultView = {
 
 type LoginPageClientProps = {
   isDemoMode: boolean;
+  nextPath: string;
 };
 
-export function LoginPageClient({ isDemoMode }: LoginPageClientProps) {
+export function LoginPageClient({ isDemoMode, nextPath }: LoginPageClientProps) {
   const [view, setView] = useState(defaultView);
 
   return (
@@ -63,7 +64,7 @@ export function LoginPageClient({ isDemoMode }: LoginPageClientProps) {
             <p className="mt-4 text-[13px] font-medium text-[var(--ve-muted)] lg:text-sm">
               {view.subtitle}
             </p>
-            <LoginForm isDemoMode={isDemoMode} onViewChange={setView} />
+            <LoginForm isDemoMode={isDemoMode} nextPath={nextPath} onViewChange={setView} />
           </div>
 
           <div className="mx-auto mt-12 h-1 w-[102px] rounded-full bg-[var(--ve-line)] lg:hidden" />
