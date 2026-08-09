@@ -1811,7 +1811,7 @@ git diff --check
 
 ## P1.5A focused closure pass
 
-**Status:** Closure pass implemented on 2026-08-08 for product review.
+**Status:** Formally closed on 2026-08-09.
 
 The P1.5A acceptance review accepted `P15-ENT-001`, `P15-ORG-001` and `P15-ORG-003`, and required a focused closure pass before P1.5A can be considered closed. This pass resolves the remaining self-service organisation workflow gaps without starting P1.5B.
 
@@ -1824,6 +1824,7 @@ Implemented:
 * Org Mode learner course navigation now preserves organisation context through lesson, quiz and result routes instead of falling back to public-mode paths;
 * organisation notification views now filter user notifications by organisation metadata instead of brittle CTA matching;
 * focused Playwright coverage exercises the self-service owner setup, invitation, private course creation, five-lesson Starter cap, image upload/delete quota release path, AI UI denial and direct video-block rejection.
+* final Playwright closure coverage drives the existing institutional learner journey through the organisation course UI, contextual lesson route, contextual quiz route, contextual result route, organisation course return, organisation notifications and explicit return to public Project Ve.
 
 Validation completed:
 
@@ -1833,6 +1834,14 @@ npm run typecheck
 npm run lint
 npm run test:e2e
 npm run test:remediation:local
+```
+
+Final closure amendment validation:
+
+```text
+npm run typecheck
+npm run lint
+npm run test:e2e
 ```
 
 ---
@@ -3679,14 +3688,14 @@ Implement:
 ```text
 P15-ENT-001 - implemented for review
 P15-ORG-001 - implemented for review
-P15-ORG-002 - closure pass implemented for review
+P15-ORG-002 - closed
 P15-ORG-003 - implemented for review
-P15-ORG-004 - closure pass implemented for review
-P15-ORG-005 - closure pass implemented for review
-P15-ORG-006 - closure pass implemented for review
+P15-ORG-004 - closed
+P15-ORG-005 - closed
+P15-ORG-006 - closed
 ```
 
-P1.5A has a focused closure pass implemented for review. Stop here until product review accepts P1.5A and explicitly authorises P1.5B.
+P1.5A is formally closed after the contextual learner browser journey amendment passed. P1.5B is the next batch; do not begin implementation until explicitly requested.
 
 ## Batch P1.5B
 

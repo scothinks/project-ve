@@ -49,6 +49,12 @@ const institutionalCohortSlug = `e2e-institutional-cohort-${runId}`;
 const institutionalCourseId = `e2e-institution-course-${runId}`;
 const institutionalLessonId = `e2e-institution-lesson-${runId}`;
 const institutionalPageId = `e2e-institution-page-${runId}`;
+const institutionalQuizId = `e2e-institution-quiz-${runId}`;
+const institutionalQuestionId = `e2e-institution-question-${runId}`;
+const institutionalCorrectOptionId = `e2e-institution-option-correct-${runId}`;
+const institutionalWrongOptionId = `e2e-institution-option-wrong-${runId}`;
+const institutionalNotificationTitle = `E2E Institution Notice ${runId}`;
+const institutionalGlobalNotificationTitle = `E2E Global Notice ${runId}`;
 const institutionalRewardId = `e2e-institution-reward-${runId}`;
 const institutionalCourseTitle = `E2E Private Institution Course ${runId}`;
 const institutionalLessonTitle = `E2E Institution Lesson ${runId}`;
@@ -229,6 +235,12 @@ async function cleanupFixture() {
   await supabase.from("lesson_progress").delete().eq("lesson_id", institutionalLessonId);
   await supabase.from("quiz_answers").delete().eq("question_id", questionId);
   await supabase.from("quiz_attempts").delete().eq("quiz_id", quizId);
+  await supabase.from("quiz_answers").delete().eq("question_id", institutionalQuestionId);
+  await supabase.from("quiz_attempts").delete().eq("quiz_id", institutionalQuizId);
+  await supabase
+    .from("user_notifications")
+    .delete()
+    .in("title", [institutionalNotificationTitle, institutionalGlobalNotificationTitle]);
   await supabase.from("rewards").delete().eq("id", rewardId);
   await supabase
     .from("courses")
@@ -608,6 +620,49 @@ async function seedInstitutionalContent(organizationId: string) {
   );
 
   await assertNoError(
+    await supabase.from("quizzes").insert({
+      id: institutionalQuizId,
+      lesson_id: institutionalLessonId,
+      title: "Institutional E2E quiz",
+      status: "published",
+    }),
+    "seed institutional quiz",
+  );
+
+  await assertNoError(
+    await supabase.from("quiz_questions").insert({
+      id: institutionalQuestionId,
+      quiz_id: institutionalQuizId,
+      question_order: 1,
+      question_type: "single_choice",
+      prompt: `Which path keeps the institution learner in context ${runId}?`,
+      explanation: "Organisation learners should stay on organisation routes until they intentionally return.",
+      xp: 5,
+    }),
+    "seed institutional quiz question",
+  );
+
+  await assertNoError(
+    await supabase.from("quiz_options").insert([
+      {
+        id: institutionalCorrectOptionId,
+        question_id: institutionalQuestionId,
+        option_order: 1,
+        label: "Stay inside the organisation workspace",
+        is_correct: true,
+      },
+      {
+        id: institutionalWrongOptionId,
+        question_id: institutionalQuestionId,
+        option_order: 2,
+        label: "Jump to the public lesson route",
+        is_correct: false,
+      },
+    ]),
+    "seed institutional quiz options",
+  );
+
+  await assertNoError(
     await supabase.from("rewards").insert({
       id: institutionalRewardId,
       title: `E2E Institution Reward ${runId}`,
@@ -649,6 +704,38 @@ async function seedInstitutionalContent(organizationId: string) {
       reason: "E2E institutional reward inventory",
     }),
     "seed institutional reward quantity allocation",
+  );
+
+  if (!institutionalLearner?.id) {
+    throw new Error("Institutional learner must be seeded before institutional notifications.");
+  }
+
+  await assertNoError(
+    await supabase.from("user_notifications").insert([
+      {
+        user_id: institutionalLearner.id,
+        event_type: "organization_contextual_e2e",
+        category: "system",
+        title: institutionalNotificationTitle,
+        body: "Organisation-scoped notification for contextual learner journey coverage.",
+        dedupe_key: `e2e-institution-notification-${runId}`,
+        cta_label: "Open organisation",
+        cta_href: `/o/${institutionalOrgSlug}`,
+        data: { organizationId },
+      },
+      {
+        user_id: institutionalLearner.id,
+        event_type: "global_contextual_e2e",
+        category: "system",
+        title: institutionalGlobalNotificationTitle,
+        body: "Global notification that must not appear on the organisation notification page.",
+        dedupe_key: `e2e-global-notification-${runId}`,
+        cta_label: "Open dashboard",
+        cta_href: "/dashboard",
+        data: {},
+      },
+    ]),
+    "seed institutional notifications",
   );
 }
 
@@ -1650,9 +1737,36 @@ test.describe.serial("remediation browser flows", () => {
     const progressResponse = page.waitForResponse(
       (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
     );
-    await page.goto(`/lessons/${institutionalLessonId}`);
+    await page.getByRole("link", { name: new RegExp(institutionalLessonTitle) }).first().click();
+    await expect(page).toHaveURL(
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/lessons/${institutionalLessonId}$`),
+    );
     await progressResponse;
     await expect(page.getByText(institutionalLessonBody)).toBeVisible();
+    await page.getByRole("link", { name: "Take Quiz" }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/quiz/${institutionalLessonId}$`),
+    );
+    await expect(page.getByRole("heading", { name: "Institutional E2E quiz" })).toBeVisible();
+    await page.getByRole("button", { name: "Stay inside the organisation workspace" }).click();
+    await page.getByRole("button", { name: "View result" }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}$`),
+    );
+    await expect(page.getByText("You earned 5 XP!")).toBeVisible();
+    await page.getByRole("link", { name: "Lessons" }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}$`));
+    await page.goto(`/o/${institutionalOrgSlug}`);
+    await page.getByRole("link", { name: "Notifications" }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/notifications$`));
+    await expect(page.getByRole("heading", { name: institutionalNotificationTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { name: institutionalGlobalNotificationTitle })).toHaveCount(0);
+    await page.goto(`/o/${institutionalOrgSlug}`);
+    await page.getByRole("link", { name: "Return to Project Ve" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}`);
+    await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     await page.goto(`/o/${institutionalOrgSlug}/transcript`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: institutionalProgrammeTitle }).first()).toBeVisible();
