@@ -47,8 +47,10 @@ export {
   getAdminMission,
   getAdminMissionRewardCandidates,
   getAdminMissions,
+  getAdminMissionTypes,
   getAdminProofSubmissions,
   type AdminMissionRow,
+  type AdminMissionTypeRow,
   type AdminProofRow,
   type AdminProofSubmission,
 } from "@/features/missions/admin/data";

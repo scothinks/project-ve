@@ -3,7 +3,11 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserProfile } from "@/lib/supabase-server";
 import { getLearningCourseSummariesByIds, getLearningCoursesByIds } from "@/lib/supabase-learning";
-import { getSupabaseMissionSummaries } from "@/lib/supabase-missions";
+import {
+  getSupabaseMissionSummaries,
+  type MissionExecutionContexts,
+  type MissionPresentationOverrides,
+} from "@/lib/supabase-missions";
 import { getOrganizationRewardStoreSnapshot } from "@/lib/supabase-rewards";
 export { filterTranscriptForOrganizationWorkspace } from "@/features/organizations/application/learner-workspace-domain";
 import type { Course } from "@/lib/lessons";
@@ -119,6 +123,69 @@ async function getProgrammeMissionIds(
 
   if (error) throw error;
   return unique((data ?? []).map((row) => row.mission_id));
+}
+
+async function getProgrammeMissionSummaryContext(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  programmeIds: string[],
+) {
+  if (programmeIds.length === 0) {
+    return {
+      executionContexts: {} satisfies MissionExecutionContexts,
+      presentationOverrides: {} satisfies MissionPresentationOverrides,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("programme_missions")
+    .select(
+      "mission_id, programme_id, starts_at, due_at, is_required, xp_account_id, reward_xp_override, presentation_overrides",
+    )
+    .in("programme_id", programmeIds)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+
+  const executionContexts: MissionExecutionContexts = {};
+  const presentationOverrides: MissionPresentationOverrides = {};
+
+  for (const row of data ?? []) {
+    if (!executionContexts[row.mission_id]) {
+      executionContexts[row.mission_id] = {
+        organizationId,
+        programmeId: row.programme_id,
+        programmeMissionId: row.mission_id,
+        startsAt: row.starts_at,
+        dueAt: row.due_at,
+        isRequired: row.is_required,
+        xpAccountId: row.xp_account_id,
+        rewardXpOverride: row.reward_xp_override,
+      };
+    }
+
+    if (presentationOverrides[row.mission_id]) continue;
+
+    const config =
+      row.presentation_overrides
+      && typeof row.presentation_overrides === "object"
+      && !Array.isArray(row.presentation_overrides)
+        ? row.presentation_overrides as Record<string, unknown>
+        : {};
+    const title = typeof config.title === "string" && config.title.trim() ? config.title.trim() : undefined;
+    const description =
+      typeof config.shortDescription === "string" && config.shortDescription.trim()
+        ? config.shortDescription.trim()
+        : typeof config.description === "string" && config.description.trim()
+          ? config.description.trim()
+          : undefined;
+
+    if (title || description) {
+      presentationOverrides[row.mission_id] = { title, description };
+    }
+  }
+
+  return { executionContexts, presentationOverrides };
 }
 
 async function getOrganizationCourseIds(
@@ -267,8 +334,16 @@ export async function getOrganizationWorkspaceMissions({
 }): Promise<UserMissionSummary[]> {
   if (!profile) return [];
 
+  const missionSummaryContext = await getProgrammeMissionSummaryContext(
+    supabase,
+    workspace.organizationId,
+    workspace.programmeIds,
+  );
+
   return getSupabaseMissionSummaries({
     missionIds: workspace.missionIds,
+    missionExecutionContexts: missionSummaryContext.executionContexts,
+    missionPresentationOverrides: missionSummaryContext.presentationOverrides,
     origin,
     referralCode: profile.referral_code ?? null,
     supabase,

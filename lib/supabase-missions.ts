@@ -31,9 +31,30 @@ type DbMission = {
   repeatability: MissionRepeatability;
   validation_type: MissionValidationRule["type"];
   validation_config: Record<string, unknown>;
+  presentation_config?: Record<string, unknown> | null;
   starts_at: string | null;
   ends_at: string | null;
 };
+
+export type MissionPresentationOverride = {
+  description?: string;
+  title?: string;
+};
+
+export type MissionPresentationOverrides = Record<string, MissionPresentationOverride>;
+
+export type MissionExecutionContext = {
+  organizationId: string;
+  programmeId: string;
+  programmeMissionId: string;
+  startsAt: string | null;
+  dueAt: string | null;
+  isRequired: boolean;
+  xpAccountId: string | null;
+  rewardXpOverride: number | null;
+};
+
+export type MissionExecutionContexts = Record<string, MissionExecutionContext>;
 
 function normalizeMissionReward(
   value: unknown,
@@ -82,6 +103,11 @@ function normalizeProofFieldList(value: unknown): MissionProofField[] {
     );
 
   return fields.length > 0 ? fields : ["text"];
+}
+
+function getPresentationText(config: Record<string, unknown> | null | undefined, key: string) {
+  const value = config?.[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
 type MissionProgress = {
@@ -141,6 +167,35 @@ function getMissionPeriodScope(mission: DbMission) {
       return "referral";
     case "once":
       return "lifetime";
+  }
+}
+
+function getMissionAwardScope(mission: DbMission, executionContext?: MissionExecutionContext) {
+  const periodScope = getMissionPeriodScope(mission);
+
+  if (!executionContext || mission.repeatability === "per_referral") {
+    return periodScope;
+  }
+
+  return `programme:${executionContext.programmeId}:${periodScope}`;
+}
+
+function getReferralAwardScope(referredUserId: string, executionContext?: MissionExecutionContext) {
+  const referralScope = `referral:${referredUserId}`;
+  return executionContext ? `programme:${executionContext.programmeId}:${referralScope}` : referralScope;
+}
+
+function assertMissionExecutionWindow(executionContext?: MissionExecutionContext) {
+  if (!executionContext) return;
+
+  const now = Date.now();
+
+  if (executionContext.startsAt && new Date(executionContext.startsAt).getTime() > now) {
+    throw new Error("Programme mission is not available yet.");
+  }
+
+  if (executionContext.dueAt && new Date(executionContext.dueAt).getTime() <= now) {
+    throw new Error("Programme mission is past its due date.");
   }
 }
 
@@ -365,11 +420,26 @@ async function getReferralProgress(
   userId: string,
   requiredFriendLessonCount: number,
   minimumAccountAgeHours = 24,
+  executionContext?: MissionExecutionContext,
 ) {
-  const { data: referrals, error: referralError } = await supabase
+  let referralQuery = supabase
     .from("referral_attributions")
     .select("referred_user_id, created_at")
     .eq("referrer_user_id", userId);
+
+  if (executionContext) {
+    referralQuery = referralQuery
+      .eq("organization_id", executionContext.organizationId)
+      .eq("programme_id", executionContext.programmeId)
+      .eq("programme_mission_id", executionContext.programmeMissionId);
+  } else {
+    referralQuery = referralQuery
+      .is("organization_id", null)
+      .is("programme_id", null)
+      .is("programme_mission_id", null);
+  }
+
+  const { data: referrals, error: referralError } = await referralQuery;
 
   if (referralError) {
     throw referralError;
@@ -430,6 +500,7 @@ async function getProofProgress(
   supabase: SupabaseClient,
   userId: string,
   mission: DbMission,
+  executionContext?: MissionExecutionContext,
 ): Promise<{
   progress: MissionProgress;
   reviewStatus?: "submitted" | "approved" | "rejected";
@@ -440,7 +511,7 @@ async function getProofProgress(
   const requiredFields = normalizeProofFieldList(mission.validation_config.requiredFields);
   const requirementMode = normalizeProofRequirementMode(mission.validation_config.requirementMode);
   const requiresManualReview = Boolean(mission.validation_config.requiresManualReview);
-  const awardScope = getMissionPeriodScope(mission);
+  const awardScope = getMissionAwardScope(mission, executionContext);
   const { data, error } = await supabase
     .from("mission_proofs")
     .select("proof_type, status, created_at")
@@ -520,6 +591,7 @@ async function getMissionProgress(
   supabase: SupabaseClient,
   userId: string,
   mission: DbMission,
+  executionContext?: MissionExecutionContext,
 ): Promise<MissionProgressResult> {
   switch (mission.validation_type) {
     case "lesson_completed":
@@ -563,6 +635,7 @@ async function getMissionProgress(
         userId,
         requiredFriendLessonCount,
         minimumAccountAgeHours,
+        executionContext,
       );
       return {
         progress: {
@@ -574,7 +647,7 @@ async function getMissionProgress(
       };
     }
     case "proof_upload":
-      return await getProofProgress(supabase, userId, mission);
+      return await getProofProgress(supabase, userId, mission, executionContext);
     case "manual_review":
       return {
         progress: { progressCount: 0, targetCount: 1, valid: false },
@@ -587,19 +660,25 @@ async function syncMissionAwards(
   userId: string,
   mission: DbMission,
   progressResult: MissionProgressResult,
+  executionContext?: MissionExecutionContext,
 ) {
   if (mission.repeatability === "per_referral") {
     const qualifiedIds = progressResult.referralProgress?.qualifiedIds ?? [];
 
     for (const referredUserId of qualifiedIds) {
-      await awardMissionXp(supabase, userId, mission, `referral:${referredUserId}`);
+      await awardMissionXp(
+        supabase,
+        userId,
+        mission,
+        getReferralAwardScope(referredUserId, executionContext),
+      );
     }
 
     return;
   }
 
   if (progressResult.progress.valid) {
-    await awardMissionXp(supabase, userId, mission, getMissionPeriodScope(mission));
+    await awardMissionXp(supabase, userId, mission, getMissionAwardScope(mission, executionContext));
   }
 }
 
@@ -607,12 +686,27 @@ async function getAwardedCount(
   supabase: SupabaseClient,
   userId: string,
   missionId: string,
+  executionContext?: MissionExecutionContext,
 ) {
-  const { count, error } = await supabase
+  let query = supabase
     .from("mission_awards")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .eq("mission_id", missionId);
+
+  if (executionContext) {
+    query = query
+      .eq("organization_id", executionContext.organizationId)
+      .eq("programme_id", executionContext.programmeId)
+      .eq("programme_mission_id", executionContext.programmeMissionId);
+  } else {
+    query = query
+      .is("organization_id", null)
+      .is("programme_id", null)
+      .is("programme_mission_id", null);
+  }
+
+  const { count, error } = await query;
 
   if (error) {
     throw error;
@@ -625,8 +719,133 @@ function getReferralShareUrl(origin: string, referralCode: string) {
   return `${origin.replace(/\/$/, "")}/invite/${encodeURIComponent(referralCode)}`;
 }
 
+function normalizeContextualReferralTokenResult(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const result = value as { token?: unknown };
+  return typeof result.token === "string" && result.token.trim()
+    ? result.token.trim()
+    : null;
+}
+
+async function getContextualReferralToken(
+  supabase: SupabaseClient,
+  executionContext?: MissionExecutionContext,
+) {
+  if (!executionContext) {
+    return null;
+  }
+
+  const { data, error } = await supabase.rpc("ensure_contextual_referral_token", {
+    p_programme_id: executionContext.programmeId,
+    p_programme_mission_id: executionContext.programmeMissionId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return normalizeContextualReferralTokenResult(data);
+}
+
+function normalizeProgrammeRelation(value: unknown): { organization_id: string; status: string } | null {
+  const relation = Array.isArray(value) ? value[0] : value;
+
+  if (!relation || typeof relation !== "object") {
+    return null;
+  }
+
+  const row = relation as { organization_id?: unknown; status?: unknown };
+
+  if (typeof row.organization_id !== "string" || typeof row.status !== "string") {
+    return null;
+  }
+
+  return {
+    organization_id: row.organization_id,
+    status: row.status,
+  };
+}
+
+async function resolveMissionExecutionContext({
+  missionId,
+  programmeId,
+  supabase,
+  userId,
+}: {
+  missionId: string;
+  programmeId?: string | null;
+  supabase: SupabaseClient;
+  userId: string;
+}): Promise<MissionExecutionContext | undefined> {
+  void userId;
+
+  if (!programmeId) {
+    return undefined;
+  }
+
+  const { data, error } = await supabase
+    .from("programme_missions")
+    .select(
+      "mission_id, programme_id, starts_at, due_at, is_required, xp_account_id, reward_xp_override, programmes!inner(organization_id, status)",
+    )
+    .eq("mission_id", missionId)
+    .eq("programme_id", programmeId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  const row = data as
+    | {
+        due_at: string | null;
+        is_required: boolean | null;
+        mission_id: string | null;
+        programme_id: string | null;
+        programmes?: unknown;
+        reward_xp_override: number | null;
+        starts_at: string | null;
+        xp_account_id: string | null;
+      }
+    | null;
+  const programme = normalizeProgrammeRelation(row?.programmes);
+
+  if (!row || !row.mission_id || !row.programme_id || !programme || programme.status !== "published") {
+    throw new Error("Programme mission context is not available.");
+  }
+
+  const { data: canEnter, error: canEnterError } = await supabase.rpc(
+    "current_user_can_enter_organization",
+    { p_organization_id: programme.organization_id },
+  );
+
+  if (canEnterError) {
+    throw canEnterError;
+  }
+
+  if (!canEnter) {
+    throw new Error("Programme mission context is not available.");
+  }
+
+  return {
+    organizationId: programme.organization_id,
+    programmeId: row.programme_id,
+    programmeMissionId: row.mission_id,
+    startsAt: row.starts_at,
+    dueAt: row.due_at,
+    isRequired: row.is_required ?? true,
+    xpAccountId: row.xp_account_id,
+    rewardXpOverride: row.reward_xp_override,
+  };
+}
+
 export async function getSupabaseMissionSummaries({
   missionIds,
+  missionExecutionContexts,
+  missionPresentationOverrides,
   syncAwards = false,
   supabase,
   userId,
@@ -638,6 +857,8 @@ export async function getSupabaseMissionSummaries({
   userId: string;
   referralCode: string | null;
   missionIds?: string[];
+  missionExecutionContexts?: MissionExecutionContexts;
+  missionPresentationOverrides?: MissionPresentationOverrides;
   origin: string;
 }): Promise<UserMissionSummary[]> {
   const uniqueMissionIds = missionIds ? Array.from(new Set(missionIds)).filter(Boolean) : null;
@@ -649,7 +870,7 @@ export async function getSupabaseMissionSummaries({
   let query = supabase
     .from("missions")
     .select(
-      "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, starts_at, ends_at, rewards:rewards!missions_reward_id_fkey(id, title, fulfillment_type, fulfillment_config)",
+      "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, presentation_config, starts_at, ends_at, rewards:rewards!missions_reward_id_fkey(id, title, fulfillment_type, fulfillment_config)",
     )
     .eq("status", "published");
 
@@ -669,16 +890,27 @@ export async function getSupabaseMissionSummaries({
   })) as DbMission[];
 
   return Promise.all(missionRows.map(async (mission): Promise<UserMissionSummary> => {
+    const missionExecutionContext = missionExecutionContexts?.[mission.id];
+    const missionOverride = missionPresentationOverrides?.[mission.id];
+    const title =
+      missionOverride?.title
+      ?? getPresentationText(mission.presentation_config, "title")
+      ?? mission.title;
+    const description =
+      missionOverride?.description
+      ?? getPresentationText(mission.presentation_config, "shortDescription")
+      ?? getPresentationText(mission.presentation_config, "description")
+      ?? mission.description;
     const [progressResult, awardedCount] = await Promise.all([
-      getMissionProgress(supabase, userId, mission),
-      getAwardedCount(supabase, userId, mission.id),
+      getMissionProgress(supabase, userId, mission, missionExecutionContext),
+      getAwardedCount(supabase, userId, mission.id, missionExecutionContext),
     ]);
 
     if (syncAwards) {
-      await syncMissionAwards(supabase, userId, mission, progressResult);
+      await syncMissionAwards(supabase, userId, mission, progressResult, missionExecutionContext);
     }
 
-    const awardScope = getMissionPeriodScope(mission);
+    const awardScope = getMissionAwardScope(mission, missionExecutionContext);
     const hasCurrentAward =
       mission.repeatability === "per_referral"
         ? awardedCount > 0
@@ -700,11 +932,18 @@ export async function getSupabaseMissionSummaries({
       mission.validation_type === "referral_friend_completed_lessons"
         ? Math.max(1, Number(mission.validation_config.requiredFriendLessonCount ?? 1))
         : 0;
-    const referral =
-      mission.validation_type === "referral_friend_completed_lessons" && referralCode
+    const referralInviteCode =
+      mission.validation_type === "referral_friend_completed_lessons"
+        ? missionExecutionContext
+          ? await getContextualReferralToken(supabase, missionExecutionContext)
+          : referralCode
+        : null;
+    const referralWithShareUrl =
+      mission.validation_type === "referral_friend_completed_lessons"
+        && referralInviteCode
         ? {
-            code: referralCode,
-            shareUrl: getReferralShareUrl(origin, referralCode),
+            code: referralInviteCode,
+            shareUrl: getReferralShareUrl(origin, referralInviteCode),
             requiredFriendLessonCount,
             invitedCount: progressResult.referralProgress?.invitedCount ?? 0,
             qualifiedCount: progressResult.referralProgress?.qualifiedIds.length ?? 0,
@@ -714,11 +953,11 @@ export async function getSupabaseMissionSummaries({
 
     return {
       id: mission.id,
-      title: mission.title,
-      description: mission.description,
+      title,
+      description,
       category: mission.category,
       rewardType: mission.reward_type,
-      rewardXp: mission.reward_xp,
+      rewardXp: missionExecutionContext?.rewardXpOverride ?? mission.reward_xp,
       rewardId: mission.reward_id,
       rewardTitle: mission.rewards?.title ?? null,
       rewardFulfillmentType: mission.rewards?.fulfillment_type ?? null,
@@ -736,17 +975,31 @@ export async function getSupabaseMissionSummaries({
       autoAwards: true,
       completionLabel: status === "completed" ? getMissionCompletionLabel(mission) : undefined,
       availableAgainAt: status === "completed" ? getMissionAvailableAgainAt(mission) : undefined,
-      referral,
+      programmeContext: missionExecutionContext
+        ? {
+            organizationId: missionExecutionContext.organizationId,
+            programmeId: missionExecutionContext.programmeId,
+            programmeMissionId: missionExecutionContext.programmeMissionId,
+            startsAt: missionExecutionContext.startsAt,
+            dueAt: missionExecutionContext.dueAt,
+            isRequired: missionExecutionContext.isRequired,
+            xpAccountId: missionExecutionContext.xpAccountId,
+            rewardXpOverride: missionExecutionContext.rewardXpOverride,
+          }
+        : undefined,
+      referral: referralWithShareUrl,
     };
   }));
 }
 
 export async function submitSupabaseMissionProof({
+  programmeId,
   supabase,
   userId,
   missionId,
   proof,
 }: {
+  programmeId?: string | null;
   supabase: SupabaseClient;
   userId: string;
   missionId: string;
@@ -782,6 +1035,14 @@ export async function submitSupabaseMissionProof({
     throw new Error("This mission does not accept proof uploads.");
   }
 
+  const missionExecutionContext = await resolveMissionExecutionContext({
+    missionId: normalizedMission.id,
+    programmeId,
+    supabase,
+    userId,
+  });
+  assertMissionExecutionWindow(missionExecutionContext);
+
   const requiredFields = normalizeProofFieldList(normalizedMission.validation_config.requiredFields);
   const requirementMode = normalizeProofRequirementMode(normalizedMission.validation_config.requirementMode);
   const allowedFieldSet = new Set(requiredFields);
@@ -797,7 +1058,7 @@ export async function submitSupabaseMissionProof({
     );
   }
 
-  const awardScope = getMissionPeriodScope(normalizedMission);
+  const awardScope = getMissionAwardScope(normalizedMission, missionExecutionContext);
   const requiresManualReview = Boolean(normalizedMission.validation_config.requiresManualReview);
   const replaceableStatuses = ["submitted", "rejected"];
 
@@ -837,9 +1098,13 @@ export async function submitSupabaseMissionProof({
       user_id: userId,
       mission_id: normalizedMission.id,
       award_scope: awardScope,
+      organization_id: missionExecutionContext?.organizationId ?? null,
+      programme_id: missionExecutionContext?.programmeId ?? null,
+      programme_mission_id: missionExecutionContext?.programmeMissionId ?? null,
       proof_type: item.type,
       value: item.value,
       status: requiresManualReview ? "submitted" : "approved",
+      xp_account_id: missionExecutionContext?.xpAccountId ?? null,
     })),
   );
 
@@ -847,10 +1112,10 @@ export async function submitSupabaseMissionProof({
     throw insertError;
   }
 
-  const progress = await getMissionProgress(supabase, userId, normalizedMission);
+  const progress = await getMissionProgress(supabase, userId, normalizedMission, missionExecutionContext);
 
   if (progress.progress.valid) {
-    await syncMissionAwards(supabase, userId, normalizedMission, progress);
+    await syncMissionAwards(supabase, userId, normalizedMission, progress, missionExecutionContext);
   }
 
   return {
@@ -859,13 +1124,13 @@ export async function submitSupabaseMissionProof({
     message: requiresManualReview
       ? `Proof submitted. We will review it before awarding ${getMissionRewardLabel({
           rewardType: normalizedMission.reward_type,
-          rewardXp: normalizedMission.reward_xp,
+          rewardXp: missionExecutionContext?.rewardXpOverride ?? normalizedMission.reward_xp,
           rewardTitle: normalizedMission.rewards?.title ?? null,
           rewardFulfillmentConfig: normalizedMission.rewards?.fulfillment_config ?? null,
         })}.`
       : `Proof received. ${getMissionRewardLabel({
           rewardType: normalizedMission.reward_type,
-          rewardXp: normalizedMission.reward_xp,
+          rewardXp: missionExecutionContext?.rewardXpOverride ?? normalizedMission.reward_xp,
           rewardTitle: normalizedMission.rewards?.title ?? null,
           rewardFulfillmentConfig: normalizedMission.rewards?.fulfillment_config ?? null,
         })} has been awarded.`,

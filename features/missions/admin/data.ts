@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
 
 export type AdminMissionRewardRow = {
   id: string;
@@ -26,6 +27,16 @@ export type AdminMissionRow = {
   title: string;
   description: string;
   category: string;
+  catalog_scope: string;
+  organization_id: string | null;
+  source_mission_id: string | null;
+  source_catalog_version: number;
+  local_changes: Record<string, unknown>;
+  upstream_update_available: boolean;
+  mission_type_key: string;
+  presentation_config: Record<string, unknown>;
+  configuration_version: number;
+  reward_mode: string;
   reward_type: "xp" | "reward";
   reward_xp: number | null;
   reward_id: string | null;
@@ -37,6 +48,17 @@ export type AdminMissionRow = {
   starts_at: string | null;
   ends_at: string | null;
   sort_order: number;
+};
+
+export type AdminMissionTypeRow = {
+  key: string;
+  name: string;
+  description: string;
+  status: string;
+  supported_repeatability: string[];
+  supported_reward_modes: string[];
+  learner_interaction_type: string;
+  handler_version: number;
 };
 
 export type AdminProofRow = {
@@ -102,13 +124,20 @@ async function getProfilesByIds(
   return new Map(((data ?? []) as AdminProofProfileRow[]).map((profile) => [profile.id, profile]));
 }
 
-export async function getAdminMissions(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: string) {
+  const selectedWorkspaceId = workspaceId ?? await getSelectedAdminWorkspaceId();
+  let query = supabase
     .from("missions")
     .select(
-      "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
+      "id, title, description, category, catalog_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
     .order("sort_order", { ascending: true });
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.or(`catalog_scope.eq.platform,organization_id.eq.${selectedWorkspaceId}`);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw error;
@@ -121,7 +150,7 @@ export async function getAdminMission(supabase: SupabaseClient, missionId: strin
   const { data, error } = await supabase
     .from("missions")
     .select(
-      "id, title, description, category, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
+      "id, title, description, category, catalog_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
     .eq("id", missionId)
     .maybeSingle();
@@ -131,6 +160,20 @@ export async function getAdminMission(supabase: SupabaseClient, missionId: strin
   }
 
   return data as unknown as AdminMissionRow | null;
+}
+
+export async function getAdminMissionTypes(supabase: SupabaseClient) {
+  const { data, error } = await supabase
+    .from("mission_types")
+    .select("key, name, description, status, supported_repeatability, supported_reward_modes, learner_interaction_type, handler_version")
+    .eq("status", "active")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as AdminMissionTypeRow[];
 }
 
 export async function getAdminMissionRewardCandidates(supabase: SupabaseClient) {

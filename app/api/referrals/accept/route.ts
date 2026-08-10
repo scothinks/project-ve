@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getOptionalStringField,
+  getEnumField,
   getStringField,
   readJsonObject,
   validationErrorResponse,
@@ -17,6 +18,13 @@ export async function POST(request: Request) {
 
   const issues: ValidationIssue[] = [];
   const referralCode = getStringField(bodyResult.data, "referralCode", issues);
+  const referralKind = getEnumField(
+    bodyResult.data,
+    "referralKind",
+    ["public", "contextual"] as const,
+    issues,
+    { required: false },
+  ) ?? "public";
   getOptionalStringField(bodyResult.data, "referredUserHint", issues);
 
   if (issues.length > 0 || !referralCode) {
@@ -44,9 +52,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase.rpc("accept_referral", {
-      p_referral_code: referralCode,
-    });
+    const { data, error } = referralKind === "contextual"
+      ? await supabase.rpc("accept_contextual_referral", {
+          p_token: referralCode,
+        })
+      : await supabase.rpc("accept_referral", {
+          p_referral_code: referralCode,
+        });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

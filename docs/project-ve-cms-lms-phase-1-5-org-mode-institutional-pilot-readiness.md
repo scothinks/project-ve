@@ -3709,6 +3709,82 @@ P15-MSN-004
 P15-MSN-005
 ```
 
+Implementation kickoff began on 2026-08-09 after explicit approval.
+
+Foundation implemented for review:
+
+* `P15-MSN-001`: forward migration adds the platform-controlled `mission_types` registry, seeds all existing executable mission capabilities, maps existing mission validation types to registry keys, validates mission configuration server-side, and records handler metadata.
+* `P15-MSN-002`: forward migration extends `missions` with platform, organisation-private and adapted-platform catalogue fields, organisation mission type entitlements, provenance fields, presentation configuration, reward mode guardrails, Starter active mission/type/reward-mode enforcement, and organisation mission create/adapt RPCs.
+* `P15-MSN-003`: forward migration extends `programme_missions` with delivery dates, required flag, nullable future `xp_account_id`, reward override placeholder, presentation overrides and delivery config; programme mission ownership is enforced by trigger. The nullable XP account field is intentionally not wired to an XP account model before P1.5C.
+* `P15-MSN-004`: forward migration adds contextual referral tokens, scoped referral attribution context, unblocks multiple contextual referral links per learner by replacing global referred-user uniqueness with scoped uniqueness, and adds an authenticated contextual referral acceptance RPC.
+* `P15-MSN-005`: forward migration adds trusted organisation/programme/programme-mission/XP-account context columns to mission awards and proofs, plus organisation proof/award read policies.
+* App data layer now applies mission `presentation_config` and programme mission `presentation_overrides` to learner mission summaries without allowing browser-selected reward or XP account context.
+* Admin mission workflow now exposes organisation-scoped create/adapt/edit entry points for entitled mission types, keeps platform mission editing platform-admin-only, routes organisation mission publishing through contextual RPC authorization, and lets adapted missions update local presentation while preserving source execution provenance.
+* Programme builder mission rows now expose P1.5B delivery controls for dates, required/optional status, point overrides, programme-specific wording and learner preview; the companion RPC rejects unattached mission ids and browser-supplied XP account ids until P1.5C XP accounts are enabled.
+* Programme create/edit catalogue loading now uses the resolved admin workspace instead of the raw workspace cookie for courses, missions and direct rewards, so organisation staff cannot lose private catalogue rows when a stale `platform` workspace cookie is present.
+* Contextual invite routing now resolves published organisation referral tokens on `/invite/[code]`, renders organisation-specific copy, carries `refKind=contextual` through login/dashboard capture and applies attribution through `accept_contextual_referral` after authentication.
+* Learner mission execution now resolves programme mission context through trusted server/database paths: organisation workspace mission summaries carry verified programme context, proof submissions write organisation/programme/programme-mission context, and programme-scoped awards enforce delivery dates plus point overrides before recording `mission_awards`/`xp_transactions`.
+* Contextual referral qualification now issues programme mission referral tokens through `ensure_contextual_referral_token`, separates public and contextual referral progress, and awards per-referral programme mission XP only through the scoped `programme:<programmeId>:referral:<referredUserId>` award path with programme context and point overrides.
+Validation completed during kickoff:
+
+```bash
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_organization_missions.sql
+npm run db:types:local:check
+npm run test:db
+npm run test:unit
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+Learner mission execution validation completed on 2026-08-10:
+
+```bash
+npm run typecheck
+npm run lint
+git diff --check
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_organization_missions.sql
+npm run build
+npm run test:db
+```
+
+Organisation mission edit workflow validation completed on 2026-08-10:
+
+```bash
+npm run typecheck
+npm run lint
+git diff --check
+npm run db:reset
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 -f supabase/tests/database/lms_organization_missions.sql
+npm run build
+npm run test:db
+```
+
+Contextual referral qualification validation completed on 2026-08-10:
+
+```bash
+npm run typecheck
+npm run lint
+git diff --check
+npm run db:reset
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 -o /tmp/p15b-lms-org-missions.tap -f supabase/tests/database/lms_organization_missions.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run build
+npm run test:db
+npm run test:unit
+```
+
+P1.5B closure gate passed on 2026-08-10:
+
+```bash
+npm run test:remediation:local
+```
+
+Result: `db:reset`, generated type drift check, 23-file/484-test pgTAP suite, repository contracts, quiz XP concurrency, economic integrity and 8/8 Playwright E2E flows passed.
+
 Then stop for review.
 
 ## Batch P1.5C

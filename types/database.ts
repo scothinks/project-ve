@@ -1886,6 +1886,69 @@ export type Database = {
           },
         ]
       }
+      contextual_referral_tokens: {
+        Row: {
+          created_at: string
+          destination: string
+          eligibility_policy: Json
+          expires_at: string | null
+          id: string
+          organization_id: string | null
+          presentation_config: Json
+          programme_id: string | null
+          programme_mission_id: string | null
+          referrer_user_id: string
+          status: Database["public"]["Enums"]["content_status"]
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          destination?: string
+          eligibility_policy?: Json
+          expires_at?: string | null
+          id?: string
+          organization_id?: string | null
+          presentation_config?: Json
+          programme_id?: string | null
+          programme_mission_id?: string | null
+          referrer_user_id: string
+          status?: Database["public"]["Enums"]["content_status"]
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          eligibility_policy?: Json
+          expires_at?: string | null
+          id?: string
+          organization_id?: string | null
+          presentation_config?: Json
+          programme_id?: string | null
+          programme_mission_id?: string | null
+          referrer_user_id?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contextual_referral_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contextual_referral_tokens_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_assignments: {
         Row: {
           assigned_by: string | null
@@ -2777,8 +2840,12 @@ export type Database = {
           awarded_at: string
           id: string
           mission_id: string
+          organization_id: string | null
+          programme_id: string | null
+          programme_mission_id: string | null
           reward_redemption_id: string | null
           user_id: string
+          xp_account_id: string | null
           xp_transaction_id: string | null
         }
         Insert: {
@@ -2786,8 +2853,12 @@ export type Database = {
           awarded_at?: string
           id?: string
           mission_id: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           reward_redemption_id?: string | null
           user_id: string
+          xp_account_id?: string | null
           xp_transaction_id?: string | null
         }
         Update: {
@@ -2795,8 +2866,12 @@ export type Database = {
           awarded_at?: string
           id?: string
           mission_id?: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           reward_redemption_id?: string | null
           user_id?: string
+          xp_account_id?: string | null
           xp_transaction_id?: string | null
         }
         Relationships: [
@@ -2805,6 +2880,20 @@ export type Database = {
             columns: ["mission_id"]
             isOneToOne: false
             referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_awards_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_awards_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
             referencedColumns: ["id"]
           },
           {
@@ -2829,6 +2918,9 @@ export type Database = {
           created_at: string
           id: string
           mission_id: string
+          organization_id: string | null
+          programme_id: string | null
+          programme_mission_id: string | null
           proof_type: Database["public"]["Enums"]["mission_proof_type"]
           rejection_reason: string | null
           reviewed_at: string | null
@@ -2837,12 +2929,16 @@ export type Database = {
           updated_at: string
           user_id: string
           value: string
+          xp_account_id: string | null
         }
         Insert: {
           award_scope: string
           created_at?: string
           id?: string
           mission_id: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           proof_type: Database["public"]["Enums"]["mission_proof_type"]
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -2851,12 +2947,16 @@ export type Database = {
           updated_at?: string
           user_id: string
           value: string
+          xp_account_id?: string | null
         }
         Update: {
           award_scope?: string
           created_at?: string
           id?: string
           mission_id?: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           proof_type?: Database["public"]["Enums"]["mission_proof_type"]
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -2865,6 +2965,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           value?: string
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -2874,69 +2975,176 @@ export type Database = {
             referencedRelation: "missions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "mission_proofs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_proofs_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      mission_types: {
+        Row: {
+          configuration_schema: Json
+          created_at: string
+          description: string
+          handler_version: number
+          key: string
+          learner_interaction_type: string
+          name: string
+          status: Database["public"]["Enums"]["mission_type_status"]
+          supported_repeatability: Database["public"]["Enums"]["mission_repeatability"][]
+          supported_reward_modes: string[]
+          updated_at: string
+        }
+        Insert: {
+          configuration_schema?: Json
+          created_at?: string
+          description?: string
+          handler_version?: number
+          key: string
+          learner_interaction_type?: string
+          name: string
+          status?: Database["public"]["Enums"]["mission_type_status"]
+          supported_repeatability: Database["public"]["Enums"]["mission_repeatability"][]
+          supported_reward_modes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          configuration_schema?: Json
+          created_at?: string
+          description?: string
+          handler_version?: number
+          key?: string
+          learner_interaction_type?: string
+          name?: string
+          status?: Database["public"]["Enums"]["mission_type_status"]
+          supported_repeatability?: Database["public"]["Enums"]["mission_repeatability"][]
+          supported_reward_modes?: string[]
+          updated_at?: string
+        }
+        Relationships: []
       }
       missions: {
         Row: {
+          catalog_scope: Database["public"]["Enums"]["mission_catalog_scope"]
           category: Database["public"]["Enums"]["mission_category"]
+          configuration_version: number
           created_at: string
           description: string
           ends_at: string | null
           id: string
+          local_changes: Json
+          mission_type_key: string
+          organization_id: string | null
+          presentation_config: Json
           repeatability: Database["public"]["Enums"]["mission_repeatability"]
           reward_id: string | null
+          reward_mode: string
           reward_type: string
           reward_xp: number | null
           sort_order: number
+          source_catalog_version: number
+          source_mission_id: string | null
           starts_at: string | null
           status: Database["public"]["Enums"]["content_status"]
           title: string
           updated_at: string
+          upstream_update_available: boolean
           validation_config: Json
           validation_type: Database["public"]["Enums"]["mission_validation_type"]
         }
         Insert: {
+          catalog_scope?: Database["public"]["Enums"]["mission_catalog_scope"]
           category: Database["public"]["Enums"]["mission_category"]
+          configuration_version?: number
           created_at?: string
           description: string
           ends_at?: string | null
           id: string
+          local_changes?: Json
+          mission_type_key: string
+          organization_id?: string | null
+          presentation_config?: Json
           repeatability?: Database["public"]["Enums"]["mission_repeatability"]
           reward_id?: string | null
+          reward_mode?: string
           reward_type?: string
           reward_xp?: number | null
           sort_order?: number
+          source_catalog_version?: number
+          source_mission_id?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           title: string
           updated_at?: string
+          upstream_update_available?: boolean
           validation_config?: Json
           validation_type: Database["public"]["Enums"]["mission_validation_type"]
         }
         Update: {
+          catalog_scope?: Database["public"]["Enums"]["mission_catalog_scope"]
           category?: Database["public"]["Enums"]["mission_category"]
+          configuration_version?: number
           created_at?: string
           description?: string
           ends_at?: string | null
           id?: string
+          local_changes?: Json
+          mission_type_key?: string
+          organization_id?: string | null
+          presentation_config?: Json
           repeatability?: Database["public"]["Enums"]["mission_repeatability"]
           reward_id?: string | null
+          reward_mode?: string
           reward_type?: string
           reward_xp?: number | null
           sort_order?: number
+          source_catalog_version?: number
+          source_mission_id?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           title?: string
           updated_at?: string
+          upstream_update_available?: boolean
           validation_config?: Json
           validation_type?: Database["public"]["Enums"]["mission_validation_type"]
         }
         Relationships: [
           {
+            foreignKeyName: "missions_mission_type_key_fkey"
+            columns: ["mission_type_key"]
+            isOneToOne: false
+            referencedRelation: "mission_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "missions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "missions_reward_id_fkey"
             columns: ["reward_id"]
             isOneToOne: false
             referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "missions_source_mission_id_fkey"
+            columns: ["source_mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
             referencedColumns: ["id"]
           },
         ]
@@ -3229,6 +3437,55 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_mission_type_entitlements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          mission_type_key: string
+          organization_id: string
+          status: Database["public"]["Enums"]["content_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          mission_type_key: string
+          organization_id: string
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          mission_type_key?: string
+          organization_id?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_mission_type_entitlements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_mission_type_entitlements_mission_type_key_fkey"
+            columns: ["mission_type_key"]
+            isOneToOne: false
+            referencedRelation: "mission_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "organization_mission_type_entitlements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -3962,21 +4219,42 @@ export type Database = {
       programme_missions: {
         Row: {
           created_at: string
+          delivery_config: Json
+          due_at: string | null
+          is_required: boolean
           mission_id: string
+          presentation_overrides: Json
           programme_id: string
+          reward_xp_override: number | null
           sort_order: number
+          starts_at: string | null
+          xp_account_id: string | null
         }
         Insert: {
           created_at?: string
+          delivery_config?: Json
+          due_at?: string | null
+          is_required?: boolean
           mission_id: string
+          presentation_overrides?: Json
           programme_id: string
+          reward_xp_override?: number | null
           sort_order: number
+          starts_at?: string | null
+          xp_account_id?: string | null
         }
         Update: {
           created_at?: string
+          delivery_config?: Json
+          due_at?: string | null
+          is_required?: boolean
           mission_id?: string
+          presentation_overrides?: Json
           programme_id?: string
+          reward_xp_override?: number | null
           sort_order?: number
+          starts_at?: string | null
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -4488,8 +4766,14 @@ export type Database = {
       }
       referral_attributions: {
         Row: {
+          contextual_referral_token_id: string | null
           created_at: string
+          destination: string | null
+          eligibility_policy: Json
           id: string
+          organization_id: string | null
+          programme_id: string | null
+          programme_mission_id: string | null
           qualified_at: string | null
           referral_code: string
           referred_user_id: string
@@ -4498,8 +4782,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          contextual_referral_token_id?: string | null
           created_at?: string
+          destination?: string | null
+          eligibility_policy?: Json
           id?: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           qualified_at?: string | null
           referral_code: string
           referred_user_id: string
@@ -4508,8 +4798,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          contextual_referral_token_id?: string | null
           created_at?: string
+          destination?: string | null
+          eligibility_policy?: Json
           id?: string
+          organization_id?: string | null
+          programme_id?: string | null
+          programme_mission_id?: string | null
           qualified_at?: string | null
           referral_code?: string
           referred_user_id?: string
@@ -4517,7 +4813,29 @@ export type Database = {
           status?: Database["public"]["Enums"]["referral_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "referral_attributions_contextual_referral_token_id_fkey"
+            columns: ["contextual_referral_token_id"]
+            isOneToOne: false
+            referencedRelation: "contextual_referral_tokens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_attributions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_attributions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_link_visits: {
         Row: {
@@ -5924,11 +6242,24 @@ export type Database = {
       }
     }
     Functions: {
+      accept_contextual_referral: { Args: { p_token: string }; Returns: Json }
       accept_referral: { Args: { p_referral_code: string }; Returns: Json }
       admin_adapt_platform_course: {
         Args: {
           p_organization_id: string
           p_source_course_id: string
+          p_title?: string
+        }
+        Returns: Json
+      }
+      admin_adapt_platform_mission: {
+        Args: {
+          p_description?: string
+          p_mission_id: string
+          p_organization_id: string
+          p_presentation_config?: Json
+          p_source_mission_id: string
+          p_status?: Database["public"]["Enums"]["content_status"]
           p_title?: string
         }
         Returns: Json
@@ -6066,6 +6397,26 @@ export type Database = {
           p_role: Database["public"]["Enums"]["organization_role_key"]
           p_target_id: string
           p_target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
+        }
+        Returns: Json
+      }
+      admin_create_organization_mission: {
+        Args: {
+          p_category: Database["public"]["Enums"]["mission_category"]
+          p_description: string
+          p_ends_at?: string
+          p_mission_id: string
+          p_mission_type_key: string
+          p_organization_id: string
+          p_presentation_config?: Json
+          p_repeatability: Database["public"]["Enums"]["mission_repeatability"]
+          p_reward_xp: number
+          p_sort_order?: number
+          p_starts_at?: string
+          p_status?: Database["public"]["Enums"]["content_status"]
+          p_title: string
+          p_validation_config?: Json
+          p_validation_type: Database["public"]["Enums"]["mission_validation_type"]
         }
         Returns: Json
       }
@@ -6453,6 +6804,24 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_update_organization_mission: {
+        Args: {
+          p_category: Database["public"]["Enums"]["mission_category"]
+          p_description: string
+          p_ends_at?: string
+          p_mission_id: string
+          p_presentation_config?: Json
+          p_repeatability: Database["public"]["Enums"]["mission_repeatability"]
+          p_reward_xp: number
+          p_sort_order?: number
+          p_starts_at?: string
+          p_status?: Database["public"]["Enums"]["content_status"]
+          p_title: string
+          p_validation_config?: Json
+          p_validation_type: Database["public"]["Enums"]["mission_validation_type"]
+        }
+        Returns: Json
+      }
       admin_update_organization_profile: {
         Args: {
           p_accent_token: Database["public"]["Enums"]["organization_accent_token"]
@@ -6465,6 +6834,10 @@ export type Database = {
           p_support_phone: string
           p_verification_status: Database["public"]["Enums"]["organization_verification_status"]
         }
+        Returns: Json
+      }
+      admin_update_programme_mission_delivery: {
+        Args: { p_mission_delivery_configs: Json; p_programme_id: string }
         Returns: Json
       }
       admin_update_quiz: {
@@ -6877,6 +7250,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: boolean
       }
+      current_user_can_manage_organization_missions: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
       current_user_can_manage_organization_programmes: {
         Args: { p_organization_id: string }
         Returns: boolean
@@ -6922,6 +7299,10 @@ export type Database = {
       }
       current_user_is_admin: { Args: never; Returns: boolean }
       email_domain: { Args: { email: string }; Returns: string }
+      ensure_contextual_referral_token: {
+        Args: { p_programme_id: string; p_programme_mission_id: string }
+        Returns: Json
+      }
       evaluate_course_completion: {
         Args: { p_course_id: string }
         Returns: Json
@@ -7308,6 +7689,7 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      resolve_referral_invite: { Args: { p_token: string }; Returns: Json }
       respond_organization_invitation: {
         Args: { p_action: string; p_invitation_id: string }
         Returns: Json
@@ -7511,6 +7893,10 @@ export type Database = {
         | "platform_owned"
         | "organization_owned"
         | "programme_sponsored"
+      mission_catalog_scope:
+        | "platform"
+        | "organization_private"
+        | "adapted_platform"
       mission_category:
         | "course"
         | "referral"
@@ -7524,6 +7910,7 @@ export type Database = {
         | "weekly"
         | "campaign"
         | "per_referral"
+      mission_type_status: "active" | "retired"
       mission_validation_type:
         | "course_completed"
         | "lesson_completed"
@@ -7817,6 +8204,11 @@ export const Constants = {
         "organization_owned",
         "programme_sponsored",
       ],
+      mission_catalog_scope: [
+        "platform",
+        "organization_private",
+        "adapted_platform",
+      ],
       mission_category: [
         "course",
         "referral",
@@ -7832,6 +8224,7 @@ export const Constants = {
         "campaign",
         "per_referral",
       ],
+      mission_type_status: ["active", "retired"],
       mission_validation_type: [
         "course_completed",
         "lesson_completed",

@@ -6,12 +6,18 @@ import { Button } from "@/components/ui/Button";
 import { defaultAuthNextPath, getSafeAuthNextPath } from "@/lib/auth-redirect";
 import {
   normalizeEmailInput,
-  normalizeReferralCodeInput,
   sanitizePlainTextInput,
 } from "@/lib/input-safety";
+import {
+  contextualReferralStorageKey,
+  normalizeReferralInviteKind,
+  normalizeReferralInviteToken,
+  publicReferralStorageKey,
+  referralKindStorageKey,
+  type ReferralInviteKind,
+} from "@/lib/referral-invites";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 
-const referralStorageKey = "project-ve-referral-code";
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 const isGoogleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
 
@@ -57,6 +63,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [remember, setRemember] = useState(true);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralKind, setReferralKind] = useState<ReferralInviteKind>("public");
   const [message, setMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
@@ -102,14 +109,21 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
   }, [safeNextPath]);
 
   const getOAuthNextPath = useCallback(() => {
-    const safeReferralCode = referralCode ? normalizeReferralCodeInput(referralCode) : null;
+    const safeReferralCode = referralCode
+      ? normalizeReferralInviteToken(referralCode, referralKind)
+      : null;
 
     if (safeNextPath !== defaultAuthNextPath || !safeReferralCode) {
       return safeNextPath;
     }
 
-    return `/dashboard?ref=${encodeURIComponent(safeReferralCode)}`;
-  }, [referralCode, safeNextPath]);
+    const params = new URLSearchParams({ ref: safeReferralCode });
+    if (referralKind === "contextual") {
+      params.set("refKind", "contextual");
+    }
+
+    return `/dashboard?${params.toString()}`;
+  }, [referralCode, referralKind, safeNextPath]);
 
   const openDestination = useCallback(() => {
     setPendingAction("redirect");
@@ -119,18 +133,31 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
   }, [safeNextPath]);
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("ref");
-    const storedCode = window.localStorage.getItem(referralStorageKey);
-    const safeCode = code ? normalizeReferralCodeInput(code) : null;
-    const safeStoredCode = storedCode ? normalizeReferralCodeInput(storedCode) : null;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("ref");
+    const queryKind = params.get("refKind");
+    const storedKind = window.localStorage.getItem(referralKindStorageKey);
+    const hasStoredContextual = Boolean(window.localStorage.getItem(contextualReferralStorageKey));
+    const kind = code
+      ? normalizeReferralInviteKind(queryKind)
+      : normalizeReferralInviteKind(storedKind ?? (hasStoredContextual ? "contextual" : "public"));
+    const storageKey = kind === "contextual" ? contextualReferralStorageKey : publicReferralStorageKey;
+    const storedCode = window.localStorage.getItem(storageKey);
+    const safeCode = code ? normalizeReferralInviteToken(code, kind) : null;
+    const safeStoredCode = storedCode ? normalizeReferralInviteToken(storedCode, kind) : null;
     const activeCode = safeCode ?? safeStoredCode;
 
     if (safeCode) {
-      window.localStorage.setItem(referralStorageKey, safeCode);
+      window.localStorage.setItem(referralKindStorageKey, kind);
+      window.localStorage.setItem(storageKey, safeCode);
+      window.localStorage.removeItem(
+        kind === "contextual" ? publicReferralStorageKey : contextualReferralStorageKey,
+      );
     }
 
     if (activeCode) {
       setReferralCode(activeCode);
+      setReferralKind(kind);
       setAuthMode("signup");
     }
 
@@ -144,7 +171,9 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       setAuthMode("login");
       setEmailConfirmed(true);
       setReferralCode(null);
-      window.localStorage.removeItem(referralStorageKey);
+      window.localStorage.removeItem(publicReferralStorageKey);
+      window.localStorage.removeItem(contextualReferralStorageKey);
+      window.localStorage.removeItem(referralKindStorageKey);
       window.history.replaceState({}, "", buildLoginPath());
     }
 
@@ -153,6 +182,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       setAuthMode("login");
       setMessage(authError);
       setReferralCode(null);
+      window.localStorage.removeItem(referralKindStorageKey);
       window.history.replaceState({}, "", buildLoginPath());
     }
   }, [buildLoginPath]);
@@ -238,8 +268,14 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
   }, [authMode, confirmationEmail, emailConfirmed, isPasswordRecovery, onViewChange]);
 
   async function applyReferralIfNeeded() {
-    const code = normalizeReferralCodeInput(
-      referralCode ?? window.localStorage.getItem(referralStorageKey) ?? "",
+    const storedKind = window.localStorage.getItem(referralKindStorageKey);
+    const kind = referralCode
+      ? referralKind
+      : normalizeReferralInviteKind(storedKind);
+    const storageKey = kind === "contextual" ? contextualReferralStorageKey : publicReferralStorageKey;
+    const code = normalizeReferralInviteToken(
+      referralCode ?? window.localStorage.getItem(storageKey) ?? "",
+      kind,
     );
 
     if (!code) {
@@ -253,6 +289,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       },
       body: JSON.stringify({
         referralCode: code,
+        referralKind: kind,
         referredUserHint: normalizeEmailInput(email),
       }),
     });
@@ -262,7 +299,9 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       throw new Error(data.error ?? "Could not apply referral.");
     }
 
-    window.localStorage.removeItem(referralStorageKey);
+    window.localStorage.removeItem(publicReferralStorageKey);
+    window.localStorage.removeItem(contextualReferralStorageKey);
+    window.localStorage.removeItem(referralKindStorageKey);
   }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -640,7 +679,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       {referralCode && authMode === "signup" ? (
         <p className="px-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
           <span className="font-black text-[var(--ve-green)]">Invite active.</span>{" "}
-          Create an account to continue.
+          Create an account to continue{referralKind === "contextual" ? " in this organisation programme." : "."}
         </p>
       ) : null}
 

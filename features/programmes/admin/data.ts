@@ -43,6 +43,13 @@ export type AdminProgrammeMissionRow = {
   programme_id: string;
   mission_id: string;
   sort_order: number;
+  starts_at: string | null;
+  due_at: string | null;
+  is_required: boolean;
+  xp_account_id: string | null;
+  reward_xp_override: number | null;
+  presentation_overrides: Record<string, unknown>;
+  delivery_config: Record<string, unknown>;
 };
 
 export type AdminProgrammeRewardRow = {
@@ -206,7 +213,7 @@ export async function getAdminProgramme(
       .order("sort_order", { ascending: true }),
     supabase
       .from("programme_missions")
-      .select("programme_id, mission_id, sort_order")
+      .select("programme_id, mission_id, sort_order, starts_at, due_at, is_required, xp_account_id, reward_xp_override, presentation_overrides, delivery_config")
       .eq("programme_id", programmeId)
       .order("sort_order", { ascending: true }),
     supabase

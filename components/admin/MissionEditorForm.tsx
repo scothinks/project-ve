@@ -34,8 +34,12 @@ type MissionEditorValue = {
 
 type MissionEditorFormProps = {
   action: (previousState: MissionActionState, formData: FormData) => Promise<MissionActionState>;
+  allowRewardSelection?: boolean;
   mode: "create" | "edit";
+  lockExecutionConfig?: boolean;
   mission: MissionEditorValue;
+  presentationConfig?: Record<string, unknown>;
+  showPresentationConfig?: boolean;
   courses: AdminCourseRow[];
   lessons: AdminLessonRow[];
   rewardCandidates: AdminRewardCandidateRow[];
@@ -81,8 +85,12 @@ function asStringArray(value: unknown) {
 
 export function MissionEditorForm({
   action,
+  allowRewardSelection = true,
   mode,
+  lockExecutionConfig = false,
   mission,
+  presentationConfig,
+  showPresentationConfig = false,
   courses,
   lessons,
   rewardCandidates,
@@ -113,6 +121,17 @@ export function MissionEditorForm({
   const requiresManualReview = Boolean(mission.validationConfig.requiresManualReview);
   const proofRequirementMode = asString(mission.validationConfig.requirementMode, "all");
   const instructions = asString(mission.validationConfig.instructions);
+  const presentationTitle = asString(presentationConfig?.title);
+  const presentationShortDescription = asString(presentationConfig?.shortDescription);
+  const ctaLabel = asString(presentationConfig?.ctaLabel);
+  const fullInstructions = asString(presentationConfig?.fullInstructions);
+  const eligibilityExplanation = asString(presentationConfig?.eligibilityExplanation);
+  const rewardExplanation = asString(presentationConfig?.rewardExplanation);
+  const pendingMessage = asString(presentationConfig?.pendingMessage);
+  const successMessage = asString(presentationConfig?.successMessage);
+  const rejectionMessage = asString(presentationConfig?.rejectionMessage);
+  const iconOrImage = asString(presentationConfig?.iconOrImage);
+  const terms = asString(presentationConfig?.terms);
 
   const lessonOptions = useMemo(() => {
     const courseTitles = new Map(courses.map((course) => [course.id, course.title]));
@@ -142,10 +161,62 @@ export function MissionEditorForm({
     );
   }
 
+  function renderHiddenValidationConfig() {
+    if (mission.validationType === "lesson_completed") {
+      return <input name="lessonId" type="hidden" value={selectedLessonId} />;
+    }
+
+    if (mission.validationType === "course_completed") {
+      return <input name="courseId" type="hidden" value={selectedCourseId} />;
+    }
+
+    if (mission.validationType === "lesson_count_completed") {
+      return (
+        <>
+          <input name="count" type="hidden" value={lessonCount} />
+          {withinDays ? <input name="withinDays" type="hidden" value={withinDays} /> : null}
+        </>
+      );
+    }
+
+    if (mission.validationType === "referral_friend_completed_lessons") {
+      return (
+        <>
+          <input name="requiredFriendLessonCount" type="hidden" value={requiredFriendLessonCount} />
+          <input name="minimumAccountAgeHours" type="hidden" value={minimumAccountAgeHours} />
+        </>
+      );
+    }
+
+    if (mission.validationType === "proof_upload") {
+      return (
+        <>
+          <input name="proofRequirementMode" type="hidden" value={proofRequirementMode} />
+          {requiredFields.map((field) => (
+            <input key={field} name="requiredFields" type="hidden" value={field} />
+          ))}
+          {requiresManualReview ? <input name="requiresManualReview" type="hidden" value="on" /> : null}
+        </>
+      );
+    }
+
+    return <input name="instructions" type="hidden" value={instructions} />;
+  }
+
   return (
     <form action={formAction} className="space-y-5">
       {mode === "edit" ? <input name="missionId" type="hidden" value={mission.id} /> : null}
       <input name="status" type="hidden" value={mode === "create" ? "draft" : mission.status} />
+      {!allowRewardSelection || lockExecutionConfig ? <input name="rewardType" type="hidden" value="xp" /> : null}
+      {lockExecutionConfig ? (
+        <>
+          <input name="category" type="hidden" value={mission.category} />
+          <input name="rewardXp" type="hidden" value={mission.rewardXp ?? 1} />
+          <input name="repeatability" type="hidden" value={mission.repeatability} />
+          <input name="validationType" type="hidden" value={mission.validationType} />
+          {renderHiddenValidationConfig()}
+        </>
+      ) : null}
 
       <details
         className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-mission)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_84%,var(--ve-card))] p-4"
@@ -166,28 +237,40 @@ export function MissionEditorForm({
             </label>
             <label>
               <span className={labelClasses()}>Reward type</span>
-              <select
-                className={fieldClasses()}
-                name="rewardType"
-                onChange={(event) => setRewardType(event.target.value as typeof mission.rewardType)}
-                value={rewardType}
-              >
-                <option value="xp">XP</option>
-                <option value="reward">Reward</option>
-              </select>
+              {allowRewardSelection && !lockExecutionConfig ? (
+                <select
+                  className={fieldClasses()}
+                  name="rewardType"
+                  onChange={(event) => setRewardType(event.target.value as typeof mission.rewardType)}
+                  value={rewardType}
+                >
+                  <option value="xp">XP</option>
+                  <option value="reward">Reward</option>
+                </select>
+              ) : (
+                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                  Organisation XP
+                </div>
+              )}
             </label>
           </div>
           {rewardType === "xp" ? (
             <label className="block max-w-sm">
               <span className={labelClasses()}>Reward XP</span>
-              <input
-                className={fieldClasses()}
-                defaultValue={mission.rewardXp ?? 25}
-                min={1}
-                name="rewardXp"
-                required
-                type="number"
-              />
+              {lockExecutionConfig ? (
+                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                  {mission.rewardXp ?? 0}
+                </div>
+              ) : (
+                <input
+                  className={fieldClasses()}
+                  defaultValue={mission.rewardXp ?? 25}
+                  min={1}
+                  name="rewardXp"
+                  required
+                  type="number"
+                />
+              )}
             </label>
           ) : (
             <label className="block">
@@ -215,32 +298,53 @@ export function MissionEditorForm({
               required
             />
           </label>
-          <div className="grid gap-4 md:grid-cols-3">
-            <label>
-              <span className={labelClasses()}>Category</span>
-              <select className={fieldClasses()} name="category" onChange={(event) => setCategory(event.target.value as typeof mission.category)} value={category}>
-                <option value="course">Course</option>
-                <option value="referral">Referral</option>
-                <option value="feedback">Feedback</option>
-                <option value="campaign">Campaign</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
-            <label>
-              <span className={labelClasses()}>Repeatability</span>
-              <select className={fieldClasses()} name="repeatability" onChange={(event) => setRepeatability(event.target.value as typeof mission.repeatability)} value={repeatability}>
-                <option value="once">Once</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="campaign">Campaign</option>
-                <option value="per_referral">Per referral</option>
-              </select>
-            </label>
-            <label>
-              <span className={labelClasses()}>Sort order</span>
-              <input className={fieldClasses()} defaultValue={mission.sortOrder} name="sortOrder" type="number" />
-            </label>
-          </div>
+          {lockExecutionConfig ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <span className={labelClasses()}>Category</span>
+                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black capitalize">
+                  {mission.category}
+                </div>
+              </div>
+              <div>
+                <span className={labelClasses()}>Repeatability</span>
+                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                  {mission.repeatability.replaceAll("_", " ")}
+                </div>
+              </div>
+              <label>
+                <span className={labelClasses()}>Sort order</span>
+                <input className={fieldClasses()} defaultValue={mission.sortOrder} name="sortOrder" type="number" />
+              </label>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              <label>
+                <span className={labelClasses()}>Category</span>
+                <select className={fieldClasses()} name="category" onChange={(event) => setCategory(event.target.value as typeof mission.category)} value={category}>
+                  <option value="course">Course</option>
+                  <option value="referral">Referral</option>
+                  <option value="feedback">Feedback</option>
+                  <option value="campaign">Campaign</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              <label>
+                <span className={labelClasses()}>Repeatability</span>
+                <select className={fieldClasses()} name="repeatability" onChange={(event) => setRepeatability(event.target.value as typeof mission.repeatability)} value={repeatability}>
+                  <option value="once">Once</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="campaign">Campaign</option>
+                  <option value="per_referral">Per referral</option>
+                </select>
+              </label>
+              <label>
+                <span className={labelClasses()}>Sort order</span>
+                <input className={fieldClasses()} defaultValue={mission.sortOrder} name="sortOrder" type="number" />
+              </label>
+            </div>
+          )}
         </div>
       </details>
 
@@ -264,7 +368,29 @@ export function MissionEditorForm({
         <summary className={sectionSummaryClasses()}>
           <h2 className="text-sm font-black">Validation rule</h2>
         </summary>
-        <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
+        {lockExecutionConfig ? (
+          <div className="mt-4 grid gap-4 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
+            <div>
+              <span className={labelClasses()}>Validation type</span>
+              <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                {mission.validationType.replaceAll("_", " ")}
+              </div>
+            </div>
+            <div>
+              <span className={labelClasses()}>Source handler</span>
+              <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                Preserved from platform mission
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <span className={labelClasses()}>Execution configuration</span>
+              <pre className="mt-1 overflow-x-auto rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                {JSON.stringify(mission.validationConfig, null, 2)}
+              </pre>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
           <label className="block">
             <span className={labelClasses()}>Validation type</span>
             <select
@@ -410,7 +536,62 @@ export function MissionEditorForm({
             </div>
           ) : null}
         </div>
+        )}
       </details>
+
+      {showPresentationConfig ? (
+        <details className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4" open>
+          <summary className={sectionSummaryClasses()}>
+            <h2 className="text-sm font-black">Learner presentation</h2>
+          </summary>
+          <div className="mt-4 grid gap-4 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
+            <label>
+              <span className={labelClasses()}>Display title</span>
+              <input className={fieldClasses()} defaultValue={presentationTitle} maxLength={140} name="presentationTitle" />
+            </label>
+            <label>
+              <span className={labelClasses()}>CTA label</span>
+              <input className={fieldClasses()} defaultValue={ctaLabel} maxLength={80} name="ctaLabel" />
+            </label>
+            <label className="md:col-span-2">
+              <span className={labelClasses()}>Short description</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={presentationShortDescription} maxLength={240} name="shortDescription" />
+            </label>
+            <label className="md:col-span-2">
+              <span className={labelClasses()}>Full instructions</span>
+              <textarea className={`${fieldClasses()} min-h-24 resize-none`} defaultValue={fullInstructions} maxLength={1500} name="fullInstructions" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Eligibility explanation</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={eligibilityExplanation} maxLength={500} name="eligibilityExplanation" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Reward explanation</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={rewardExplanation} maxLength={500} name="rewardExplanation" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Pending message</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={pendingMessage} maxLength={400} name="pendingMessage" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Success message</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={successMessage} maxLength={400} name="successMessage" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Rejection message</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={rejectionMessage} maxLength={400} name="rejectionMessage" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Icon or image</span>
+              <input className={fieldClasses()} defaultValue={iconOrImage} maxLength={400} name="iconOrImage" />
+            </label>
+            <label className="md:col-span-2">
+              <span className={labelClasses()}>Terms</span>
+              <textarea className={`${fieldClasses()} min-h-20 resize-none`} defaultValue={terms} maxLength={1500} name="terms" />
+            </label>
+          </div>
+        </details>
+      ) : null}
 
       <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
         <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Publishing</p>

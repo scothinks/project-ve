@@ -5,11 +5,11 @@ import {
   getAdminCourses,
   getAdminLessons,
   getAdminMissionRewardCandidates,
-  requireAdmin,
+  requirePlatformAdmin,
 } from "@/lib/admin";
 
 export default async function AdminNewMissionPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requirePlatformAdmin();
   const [courses, lessons, rewardCandidates] = await Promise.all([
     getAdminCourses(supabase),
     getAdminLessons(supabase),

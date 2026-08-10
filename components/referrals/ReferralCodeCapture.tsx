@@ -1,17 +1,41 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  contextualReferralStorageKey,
+  normalizeReferralInviteKind,
+  normalizeReferralInviteToken,
+  publicReferralStorageKey,
+  referralKindStorageKey,
+  type ReferralInviteKind,
+} from "@/lib/referral-invites";
 
-const referralStorageKey = "project-ve-referral-code";
 const referralVisitorStorageKey = "project-ve-referral-visitor-key";
 
 type ReferralCodeCaptureProps = {
   code: string;
+  kind?: ReferralInviteKind;
 };
 
-export function ReferralCodeCapture({ code }: ReferralCodeCaptureProps) {
+export function ReferralCodeCapture({ code, kind = "public" }: ReferralCodeCaptureProps) {
   useEffect(() => {
-    window.localStorage.setItem(referralStorageKey, code);
+    const inviteKind = normalizeReferralInviteKind(kind);
+    const token = normalizeReferralInviteToken(code, inviteKind);
+
+    if (!token) {
+      return;
+    }
+
+    window.localStorage.setItem(referralKindStorageKey, inviteKind);
+
+    if (inviteKind === "contextual") {
+      window.localStorage.setItem(contextualReferralStorageKey, token);
+      window.localStorage.removeItem(publicReferralStorageKey);
+      return;
+    }
+
+    window.localStorage.setItem(publicReferralStorageKey, token);
+    window.localStorage.removeItem(contextualReferralStorageKey);
 
     const visitorKey = (() => {
       const existing = window.localStorage.getItem(referralVisitorStorageKey);
@@ -34,12 +58,12 @@ export function ReferralCodeCapture({ code }: ReferralCodeCaptureProps) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        code,
+        code: token,
         visitorKey,
         userAgent: window.navigator.userAgent,
       }),
     }).catch(() => undefined);
-  }, [code]);
+  }, [code, kind]);
 
   return null;
 }

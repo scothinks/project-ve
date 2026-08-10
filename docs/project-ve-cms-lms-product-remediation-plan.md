@@ -2586,7 +2586,7 @@ P1.5E  Institutional supervision and operations
 P1.5F  Final Phase 1 UI cleanup
 ```
 
-The first authorised implementation pass was P1.5A. P1.5A received a focused closure pass on 2026-08-08 after acceptance review found gaps in self-service organisation management, organisation CMS authoring/media and learner lesson/quiz context preservation. The final contextual learner browser journey amendment passed on 2026-08-09, so P1.5A is formally closed. Current closure details and validation evidence live in the P1.5 addendum. P1.5B is the next batch; do not begin implementation until explicitly requested.
+The first authorised implementation pass was P1.5A. P1.5A received a focused closure pass on 2026-08-08 after acceptance review found gaps in self-service organisation management, organisation CMS authoring/media and learner lesson/quiz context preservation. The final contextual learner browser journey amendment passed on 2026-08-09, so P1.5A is formally closed. Current closure details and validation evidence live in the P1.5 addendum. P1.5B implementation was explicitly requested and kicked off on 2026-08-09 with the mission registry, organisation mission catalogue, programme delivery context, contextual referral and mission outcome context foundation; follow-up P1.5B passes added the first organisation mission create/adapt/edit admin workflow, contextual mission status authorization, programme mission delivery controls, learner-facing contextual invite routing, trusted programme mission award/proof execution for delivery dates and point overrides, and contextual referral qualification tied to scoped programme mission awards. The full local remediation/E2E gate passed on 2026-08-10, so P1.5B is ready for product review.
 
 Where the P1.5 addendum conflicts with earlier assumptions in this product plan, the P1.5 addendum takes precedence.
 
@@ -2801,8 +2801,6 @@ Stop
 ↓
 Product review
 ```
-
-Future, only after approval:
 
 ```text
 P1.5B Organisation-configurable missions
