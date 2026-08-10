@@ -1941,6 +1941,13 @@ select extensions.ok(
     where function_schema = 'public'
       and function_name = 'resolve_referral_invite'
       and classification = 'PUBLIC_ANON'
+  )
+  and exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_schema = 'public'
+      and function_name = 'enforce_organization_mission_content_scope'
+      and classification = 'TRIGGER_ONLY'
   ),
   'new P1.5B RPCs are classified'
 );

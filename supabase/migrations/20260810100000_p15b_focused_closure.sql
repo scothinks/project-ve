@@ -794,3 +794,29 @@ grant execute on function public.admin_review_mission_proof_submission(
   public.review_status,
   text
 ) to authenticated;
+
+insert into private.rpc_security_classifications (
+  function_schema,
+  function_name,
+  identity_arguments,
+  classification,
+  intended_callers,
+  authorization_rule,
+  execute_roles
+)
+values
+  (
+    'public',
+    'enforce_organization_mission_content_scope',
+    '',
+    'TRIGGER_ONLY',
+    'Organization mission content tenant boundary enforcement trigger.',
+    'Runs only as a table trigger to reject organization mission course or lesson references to another tenant private content.',
+    array[]::text[]
+  )
+on conflict (function_schema, function_name, identity_arguments) do update
+  set classification = excluded.classification,
+      intended_callers = excluded.intended_callers,
+      authorization_rule = excluded.authorization_rule,
+      execute_roles = excluded.execute_roles,
+      reviewed_at = now();
