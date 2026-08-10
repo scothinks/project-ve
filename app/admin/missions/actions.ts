@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin, requireAdminWorkspaceRole } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import type { MissionActionState } from "@/components/admin/MissionEditorForm";
@@ -11,6 +11,14 @@ const defaultActionState: MissionActionState = {
   ok: false,
   message: "",
 };
+
+const ORGANIZATION_MISSION_MANAGER_ROLES = [
+  "platform_admin",
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "content_editor",
+];
 
 function parseOptionalDate(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
@@ -164,6 +172,44 @@ function parseMissionPayload(formData: FormData, missionIdOverride?: string) {
   };
 }
 
+function missionTypeKeyForValidation(
+  validationType: ReturnType<typeof parseMissionPayload>["validationType"],
+) {
+  switch (validationType) {
+    case "course_completed":
+      return "course_completed";
+    case "lesson_completed":
+      return "lesson_completed";
+    case "lesson_count_completed":
+      return "lesson_count_completed";
+    case "referral_friend_completed_lessons":
+      return "referral";
+    case "proof_upload":
+      return "proof_submission";
+    case "manual_review":
+      return "manual_approval";
+  }
+}
+
+function parsePresentationConfig(formData: FormData) {
+  return {
+    ctaLabel: sanitizePlainTextInput(String(formData.get("ctaLabel") ?? ""), 80),
+    eligibilityExplanation: sanitizePlainTextInput(
+      String(formData.get("eligibilityExplanation") ?? ""),
+      500,
+    ),
+    fullInstructions: sanitizePlainTextInput(String(formData.get("fullInstructions") ?? ""), 1500),
+    iconOrImage: sanitizePlainTextInput(String(formData.get("iconOrImage") ?? ""), 400),
+    pendingMessage: sanitizePlainTextInput(String(formData.get("pendingMessage") ?? ""), 400),
+    rejectionMessage: sanitizePlainTextInput(String(formData.get("rejectionMessage") ?? ""), 400),
+    rewardExplanation: sanitizePlainTextInput(String(formData.get("rewardExplanation") ?? ""), 500),
+    shortDescription: sanitizePlainTextInput(String(formData.get("shortDescription") ?? ""), 240),
+    successMessage: sanitizePlainTextInput(String(formData.get("successMessage") ?? ""), 400),
+    terms: sanitizePlainTextInput(String(formData.get("terms") ?? ""), 1500),
+    title: sanitizePlainTextInput(String(formData.get("presentationTitle") ?? ""), 140),
+  };
+}
+
 async function callMissionMutationRpc(
   supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
   rpcName: "admin_create_mission" | "admin_update_mission",
@@ -228,11 +274,147 @@ export async function updateMission(
   return { ok: true, message: "Mission saved." };
 }
 
+export async function updateOrganizationMission(
+  previousState: MissionActionState = defaultActionState,
+  formData: FormData,
+): Promise<MissionActionState> {
+  void previousState;
+  const context = await requireAdminWorkspaceRole(ORGANIZATION_MISSION_MANAGER_ROLES);
+
+  if (context.workspace.type !== "organization") {
+    return { ok: false, message: "Choose an organisation workspace before editing an organisation mission." };
+  }
+
+  const payload = parseMissionPayload(formData);
+  const presentationConfig = parsePresentationConfig(formData);
+
+  const { error } = await context.supabase.rpc("admin_update_organization_mission", {
+    p_category: payload.category,
+    p_description: payload.description,
+    p_ends_at: payload.endsAt,
+    p_mission_id: payload.missionId,
+    p_presentation_config: presentationConfig,
+    p_repeatability: payload.repeatability,
+    p_reward_xp: payload.rewardXp ?? 1,
+    p_sort_order: payload.sortOrder,
+    p_starts_at: payload.startsAt,
+    p_status: payload.status,
+    p_title: payload.title,
+    p_validation_config: payload.validationConfig,
+    p_validation_type: payload.validationType,
+  });
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/admin/missions");
+  revalidatePath(`/admin/missions/${payload.missionId}`);
+  const organizationSlug = context.workspace.organizationIdentity?.slug;
+  if (organizationSlug) {
+    revalidatePath(`/o/${organizationSlug}/missions`);
+  }
+
+  return { ok: true, message: "Organisation mission saved." };
+}
+
+export async function createOrganizationMission(
+  previousState: MissionActionState = defaultActionState,
+  formData: FormData,
+): Promise<MissionActionState> {
+  void previousState;
+  const context = await requireAdminWorkspaceRole(ORGANIZATION_MISSION_MANAGER_ROLES);
+
+  if (context.workspace.type !== "organization") {
+    return { ok: false, message: "Choose an organisation workspace before creating an organisation mission." };
+  }
+
+  const title = sanitizePlainTextInput(String(formData.get("title") ?? ""), 140);
+  const missionId = await getUniqueMissionId(context.supabase, title);
+  const payload = parseMissionPayload(formData, missionId);
+  const presentationConfig = parsePresentationConfig(formData);
+
+  const { error } = await context.supabase.rpc("admin_create_organization_mission", {
+    p_category: payload.category,
+    p_description: payload.description,
+    p_ends_at: payload.endsAt,
+    p_mission_id: payload.missionId,
+    p_mission_type_key: missionTypeKeyForValidation(payload.validationType),
+    p_organization_id: context.workspace.id,
+    p_presentation_config: presentationConfig,
+    p_repeatability: payload.repeatability,
+    p_reward_xp: payload.rewardXp ?? 1,
+    p_sort_order: payload.sortOrder,
+    p_starts_at: payload.startsAt,
+    p_status: "draft",
+    p_title: payload.title,
+    p_validation_config: payload.validationConfig,
+    p_validation_type: payload.validationType,
+  });
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/admin/missions");
+  revalidatePath(`/admin/missions/${missionId}`);
+  const organizationSlug = context.workspace.organizationIdentity?.slug;
+  if (organizationSlug) {
+    revalidatePath(`/o/${organizationSlug}/missions`);
+  }
+
+  redirect(appendAdminNotice(`/admin/missions/${missionId}`, "Organisation mission created."));
+}
+
+export async function adaptPlatformMission(
+  previousState: MissionActionState = defaultActionState,
+  formData: FormData,
+): Promise<MissionActionState> {
+  void previousState;
+  const context = await requireAdminWorkspaceRole(ORGANIZATION_MISSION_MANAGER_ROLES);
+
+  if (context.workspace.type !== "organization") {
+    return { ok: false, message: "Choose an organisation workspace before adapting a platform mission." };
+  }
+
+  const sourceMissionId = sanitizePlainTextInput(String(formData.get("sourceMissionId") ?? ""), 120);
+  const title = sanitizePlainTextInput(String(formData.get("title") ?? ""), 140);
+  const description = sanitizePlainTextInput(String(formData.get("description") ?? ""), 500);
+  const missionId = await getUniqueMissionId(
+    context.supabase,
+    title || `adapted-${sourceMissionId || "mission"}`,
+  );
+  const presentationConfig = parsePresentationConfig(formData);
+
+  const { error } = await context.supabase.rpc("admin_adapt_platform_mission", {
+    p_description: description || null,
+    p_mission_id: missionId,
+    p_organization_id: context.workspace.id,
+    p_presentation_config: presentationConfig,
+    p_source_mission_id: sourceMissionId,
+    p_status: "draft",
+    p_title: title || null,
+  });
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/admin/missions");
+  revalidatePath(`/admin/missions/${missionId}`);
+  const organizationSlug = context.workspace.organizationIdentity?.slug;
+  if (organizationSlug) {
+    revalidatePath(`/o/${organizationSlug}/missions`);
+  }
+
+  redirect(appendAdminNotice(`/admin/missions/${missionId}`, "Platform mission adapted."));
+}
+
 export async function setMissionStatus(formData: FormData) {
   const missionId = sanitizePlainTextInput(String(formData.get("missionId") ?? ""), 120);
   const status = sanitizePlainTextInput(String(formData.get("status") ?? "draft"), 24);
   const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/missions"), 400);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(ORGANIZATION_MISSION_MANAGER_ROLES);
 
   const { error } = await supabase.rpc("admin_set_mission_status", {
     p_mission_id: missionId,

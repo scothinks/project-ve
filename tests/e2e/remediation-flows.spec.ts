@@ -1661,8 +1661,9 @@ test.describe.serial("remediation browser flows", () => {
     await page.locator("input[name='slug']").fill(institutionalProgrammeSlug);
     await page.locator("textarea[name='objective']").fill("Deliver private institutional learning through a managed programme.");
     await page.locator("textarea[name='intendedAudience']").fill("Learners assigned by the institution.");
-    const courseChoice = page.locator("label").filter({ hasText: institutionalCourseTitle }).first();
-    await courseChoice.locator("input[type='checkbox']").check();
+    const courseCheckbox = page.getByRole("checkbox", { name: `Select ${institutionalCourseTitle}` });
+    const courseChoice = courseCheckbox.locator("xpath=ancestor::div[contains(@class, 'md:grid-cols')][1]");
+    await courseCheckbox.check();
     await courseChoice.locator("input[type='number']").fill("1");
     await page.locator("input[name='minimumCompletionThreshold']").fill("100");
     await page.getByRole("button", { name: "Save programme" }).click();

@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
+import {
+  contextualReferralStorageKey,
+  normalizeReferralInviteKind,
+  normalizeReferralInviteToken,
+  publicReferralStorageKey,
+  referralKindStorageKey,
+} from "@/lib/referral-invites";
 
-const referralStorageKey = "project-ve-referral-code";
 const referralAttemptedStorageKey = "project-ve-referral-code-attempted";
 
 export function ReferralAttributionCapture() {
@@ -11,19 +17,25 @@ export function ReferralAttributionCapture() {
 
   useEffect(() => {
     async function applyReferral() {
-      const code =
-        new URLSearchParams(window.location.search).get("ref") ??
-        window.localStorage.getItem(referralStorageKey);
+      const params = new URLSearchParams(window.location.search);
+      const queryKind = params.get("refKind");
+      const storedKind = window.localStorage.getItem(referralKindStorageKey);
+      const kind = normalizeReferralInviteKind(queryKind ?? storedKind);
+      const storageKey = kind === "contextual" ? contextualReferralStorageKey : publicReferralStorageKey;
+      const rawCode = params.get("ref") ?? window.localStorage.getItem(storageKey);
+      const code = rawCode ? normalizeReferralInviteToken(rawCode, kind) : "";
 
       if (!code) {
         return;
       }
 
-      if (window.sessionStorage.getItem(referralAttemptedStorageKey) === code) {
+      const attemptedKey = `${kind}:${code}`;
+
+      if (window.sessionStorage.getItem(referralAttemptedStorageKey) === attemptedKey) {
         return;
       }
 
-      window.sessionStorage.setItem(referralAttemptedStorageKey, code);
+      window.sessionStorage.setItem(referralAttemptedStorageKey, attemptedKey);
 
       let referredUserHint: string | undefined;
 
@@ -39,18 +51,21 @@ export function ReferralAttributionCapture() {
         },
         body: JSON.stringify({
           referralCode: code,
+          referralKind: kind,
           referredUserHint,
         }),
       });
 
       if (response.ok) {
-        window.localStorage.removeItem(referralStorageKey);
+        window.localStorage.removeItem(publicReferralStorageKey);
+        window.localStorage.removeItem(contextualReferralStorageKey);
+        window.localStorage.removeItem(referralKindStorageKey);
         window.sessionStorage.removeItem(referralAttemptedStorageKey);
         return;
       }
 
       if (response.status === 400) {
-        window.localStorage.removeItem(referralStorageKey);
+        window.localStorage.removeItem(storageKey);
       }
     }
 

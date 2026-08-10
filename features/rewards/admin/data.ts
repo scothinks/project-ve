@@ -69,8 +69,9 @@ export type AdminRedemptionFilters = {
 export async function getAdminRewards(
   supabase: SupabaseClient,
   filters: { campaignId?: string; distributionMode?: "direct" | "perk_bundle" } = {},
+  workspaceId?: string,
 ) {
-  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  const selectedWorkspaceId = workspaceId ?? await getSelectedAdminWorkspaceId();
   const baseSelect =
     "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
   let query = supabase

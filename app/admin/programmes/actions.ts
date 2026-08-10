@@ -91,6 +91,49 @@ function parseCompletionRuleConfig(formData: FormData) {
   };
 }
 
+function parseMissionDeliveryConfigs(formData: FormData, missionIds: string[]) {
+  return Object.fromEntries(
+    missionIds.map((missionId) => {
+      const startsAt = parseOptionalDateTime(formData.get(`missionStartsAt:${missionId}`));
+      const dueAt = parseOptionalDateTime(formData.get(`missionDueAt:${missionId}`));
+      const rewardXpOverride = parseNonNegativeInteger(
+        formData.get(`missionRewardXpOverride:${missionId}`),
+      );
+      const displayTitle = sanitizePlainTextInput(
+        String(formData.get(`missionDisplayTitle:${missionId}`) ?? ""),
+        140,
+      );
+      const ctaLabel = sanitizePlainTextInput(
+        String(formData.get(`missionCtaLabel:${missionId}`) ?? ""),
+        80,
+      );
+      const shortDescription = sanitizePlainTextInput(
+        String(formData.get(`missionShortDescription:${missionId}`) ?? ""),
+        240,
+      );
+
+      return [
+        missionId,
+        {
+          deliveryConfig: {
+            previewEnabled: true,
+          },
+          dueAt,
+          isRequired: formData.get(`missionRequired:${missionId}`) === "on",
+          presentationOverrides: {
+            ctaLabel,
+            shortDescription,
+            title: displayTitle,
+          },
+          rewardXpOverride: rewardXpOverride && rewardXpOverride > 0 ? rewardXpOverride : null,
+          startsAt,
+          xpAccountId: null,
+        },
+      ];
+    }),
+  );
+}
+
 export async function saveProgramme(formData: FormData) {
   const programmeId = sanitizePlainTextInput(String(formData.get("programmeId") ?? ""), 80);
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
@@ -101,6 +144,7 @@ export async function saveProgramme(formData: FormData) {
   const status = normalizeStatus(formData.get("status"));
   const courseIds = getSortedSelectedIds(formData, "courseIds");
   const missionIds = getSortedSelectedIds(formData, "missionIds");
+  const missionDeliveryConfigs = parseMissionDeliveryConfigs(formData, missionIds);
   const rewardIds = getSortedSelectedIds(formData, "rewardIds");
   const assessmentVersionIds = getSortedSelectedIds(formData, "assessmentVersionIds");
   const completionRuleConfig = parseCompletionRuleConfig(formData);
@@ -136,6 +180,15 @@ export async function saveProgramme(formData: FormData) {
   const savedProgrammeId = result?.programmeId ?? programmeId;
 
   if (savedProgrammeId) {
+    const { error: missionDeliveryError } = await supabase.rpc("admin_update_programme_mission_delivery", {
+      p_mission_delivery_configs: missionDeliveryConfigs,
+      p_programme_id: savedProgrammeId,
+    });
+
+    if (missionDeliveryError) {
+      throw missionDeliveryError;
+    }
+
     const { error: completionRulesError } = await supabase.rpc("admin_upsert_programme_completion_rules", {
       p_minimum_completion_threshold: completionRuleConfig.minimumCompletionThreshold,
       p_programme_id: savedProgrammeId,

@@ -262,7 +262,9 @@ const adminLinkGroups: AdminLinkGroup[] = [
 ];
 
 function hasAnyRole(workspace: ResolvedAdminWorkspace, roles: string[]) {
-  return workspace.type === "platform" || roles.some((role) => workspace.roles.includes(role));
+  return workspace.type === "platform"
+    || workspace.roles.includes("platform_admin")
+    || roles.some((role) => workspace.roles.includes(role));
 }
 
 function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
@@ -312,7 +314,12 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
   }
   if (link.href.startsWith("/admin/missions")) {
-    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "content_editor",
+    ]);
   }
 
   return false;

@@ -380,6 +380,7 @@ export function MissionPanel({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        programmeId: mission.programmeContext?.programmeId,
         proof: [
           {
             type: field,

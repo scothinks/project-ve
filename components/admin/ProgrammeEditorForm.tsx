@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import type {
   AdminAssessmentVersionOptionRow,
   AdminCourseRow,
@@ -55,6 +56,18 @@ function selectedOrder<T extends { sort_order: number }>(
   return selected.find((item) => getId(item) === id)?.sort_order ?? fallback;
 }
 
+function asString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function missionPresentationValue(
+  mission: AdminMissionRow,
+  selectedMission: AdminProgrammeDetail["missions"][number] | undefined,
+  key: string,
+) {
+  return asString(selectedMission?.presentation_overrides?.[key] ?? mission.presentation_config?.[key]);
+}
+
 function FormSection({
   children,
   subtitle,
@@ -82,19 +95,25 @@ function SelectionRow({
   children,
   fieldName,
   id,
+  label,
   order,
 }: {
   checked: boolean;
   children: ReactNode;
   fieldName: string;
   id: string;
+  label: string;
   order: number;
 }) {
+  const inputId = `${fieldName}-${id}`;
+
   return (
-    <label className="grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm md:grid-cols-[1.5rem_5rem_1fr] md:items-start">
+    <div className="grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm md:grid-cols-[1.5rem_5rem_1fr] md:items-start">
       <input
+        aria-label={`Select ${label}`}
         className="mt-1 size-4"
         defaultChecked={checked}
+        id={inputId}
         name={fieldName}
         type="checkbox"
         value={id}
@@ -108,7 +127,7 @@ function SelectionRow({
         type="number"
       />
       <div>{children}</div>
-    </label>
+    </div>
   );
 }
 
@@ -210,6 +229,7 @@ export function ProgrammeEditorForm({
                   fieldName="courseIds"
                   id={course.id}
                   key={course.id}
+                  label={course.title}
                   order={selectedOrder(selectedCourses, course.id, index + 1, (item) => item.course_id)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -225,23 +245,142 @@ export function ProgrammeEditorForm({
             </div>
           </FormSection>
 
-          <FormSection title="Missions" subtitle="Attach current mission rules to reinforce programme activity.">
+          <FormSection title="Missions" subtitle="Attach current mission rules and configure programme-specific delivery without changing the reusable mission.">
+            <div className="mb-4 flex flex-wrap gap-2">
+              <Link className={adminButtonClasses("secondary")} href="/admin/missions">
+                Use existing mission
+              </Link>
+              <Link className={adminButtonClasses("secondary")} href="/admin/missions/organization/new">
+                Create organisation mission
+              </Link>
+            </div>
             <div className="space-y-3">
-              {missions.map((mission, index) => (
-                <SelectionRow
-                  checked={selectedMissionIds.has(mission.id)}
-                  fieldName="missionIds"
-                  id={mission.id}
-                  key={mission.id}
-                  order={selectedOrder(selectedMissions, mission.id, index + 1, (item) => item.mission_id)}
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-black">{mission.title}</span>
-                    <AdminStatusBadge tone={mission.status === "published" ? "good" : "warning"}>{mission.status}</AdminStatusBadge>
-                  </div>
-                  <p className={helperTextClasses()}>{mission.category} · {mission.validation_type.replaceAll("_", " ")}</p>
-                </SelectionRow>
-              ))}
+              {missions.map((mission, index) => {
+                const selectedMission = selectedMissions.find((item) => item.mission_id === mission.id);
+                const displayTitle = missionPresentationValue(mission, selectedMission, "title");
+                const ctaLabel = missionPresentationValue(mission, selectedMission, "ctaLabel");
+                const shortDescription = missionPresentationValue(mission, selectedMission, "shortDescription");
+
+                return (
+                  <SelectionRow
+                    checked={selectedMissionIds.has(mission.id)}
+                    fieldName="missionIds"
+                    id={mission.id}
+                    key={mission.id}
+                    label={mission.title}
+                    order={selectedOrder(selectedMissions, mission.id, index + 1, (item) => item.mission_id)}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-black">{mission.title}</span>
+                      <AdminStatusBadge tone={mission.status === "published" ? "good" : "warning"}>{mission.status}</AdminStatusBadge>
+                      <AdminStatusBadge tone={mission.catalog_scope === "platform" ? "neutral" : "store"}>
+                        {mission.catalog_scope.replaceAll("_", " ")}
+                      </AdminStatusBadge>
+                    </div>
+                    <p className={helperTextClasses()}>
+                      {mission.category} · {mission.validation_type.replaceAll("_", " ")} · {mission.mission_type_key}
+                    </p>
+                    <div className="mt-4 grid gap-3 border-t border-[var(--ve-line-soft)] pt-4 lg:grid-cols-3">
+                      <label>
+                        <span className={labelClasses()}>Starts</span>
+                        <input
+                          className={fieldClasses()}
+                          defaultValue={toDateTimeLocal(selectedMission?.starts_at)}
+                          name={`missionStartsAt:${mission.id}`}
+                          type="datetime-local"
+                        />
+                      </label>
+                      <label>
+                        <span className={labelClasses()}>Due</span>
+                        <input
+                          className={fieldClasses()}
+                          defaultValue={toDateTimeLocal(selectedMission?.due_at)}
+                          name={`missionDueAt:${mission.id}`}
+                          type="datetime-local"
+                        />
+                      </label>
+                      <label>
+                        <span className={labelClasses()}>Points override</span>
+                        <input
+                          className={fieldClasses()}
+                          defaultValue={selectedMission?.reward_xp_override ?? ""}
+                          min={1}
+                          name={`missionRewardXpOverride:${mission.id}`}
+                          placeholder={String(mission.reward_xp ?? "")}
+                          type="number"
+                        />
+                      </label>
+                      <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-black">
+                        <input
+                          defaultChecked={selectedMission?.is_required ?? false}
+                          name={`missionRequired:${mission.id}`}
+                          type="checkbox"
+                        />
+                        <span>Required for programme completion</span>
+                      </label>
+                      <label>
+                        <span className={labelClasses()}>XP account</span>
+                        <select className={fieldClasses()} disabled defaultValue="">
+                          <option value="">Default organisation account</option>
+                        </select>
+                        <span className={helperTextClasses()}>Account selection is enabled with P1.5C XP accounts.</span>
+                      </label>
+                    </div>
+                    <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      <label>
+                        <span className={labelClasses()}>Programme title</span>
+                        <input
+                          className={fieldClasses()}
+                          defaultValue={displayTitle}
+                          maxLength={140}
+                          name={`missionDisplayTitle:${mission.id}`}
+                          placeholder={mission.title}
+                        />
+                      </label>
+                      <label>
+                        <span className={labelClasses()}>CTA label</span>
+                        <input
+                          className={fieldClasses()}
+                          defaultValue={ctaLabel}
+                          maxLength={80}
+                          name={`missionCtaLabel:${mission.id}`}
+                          placeholder="Start mission"
+                        />
+                      </label>
+                      <label className="lg:col-span-2">
+                        <span className={labelClasses()}>Short learner description</span>
+                        <textarea
+                          className={`${fieldClasses()} min-h-20 resize-none`}
+                          defaultValue={shortDescription}
+                          maxLength={240}
+                          name={`missionShortDescription:${mission.id}`}
+                          placeholder={mission.description}
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Learner preview</p>
+                      <h3 className="mt-2 text-base font-black">{displayTitle || mission.title}</h3>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                        {shortDescription || mission.description}
+                      </p>
+                      <div className="mt-3 inline-flex rounded-[12px] bg-[var(--ve-mission)] px-3 py-2 text-xs font-black text-white">
+                        {ctaLabel || "Start mission"}
+                      </div>
+                    </div>
+                    {mission.catalog_scope === "platform" ? (
+                      <div className="mt-3">
+                        <Link
+                          className="text-xs font-black text-[var(--ve-mission)] hover:underline"
+                          href={`/admin/missions/organization/new?sourceMissionId=${encodeURIComponent(mission.id)}`}
+                        >
+                          Adapt Project Ve mission for this organisation
+                        </Link>
+                      </div>
+                    ) : null}
+                  </SelectionRow>
+                );
+              })}
             </div>
           </FormSection>
 
@@ -253,6 +392,7 @@ export function ProgrammeEditorForm({
                   fieldName="rewardIds"
                   id={reward.id}
                   key={reward.id}
+                  label={reward.title}
                   order={selectedOrder(selectedRewards, reward.id, index + 1, (item) => item.reward_id)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -276,6 +416,7 @@ export function ProgrammeEditorForm({
                   fieldName="assessmentVersionIds"
                   id={assessment.id}
                   key={assessment.id}
+                  label={assessment.title}
                   order={selectedOrder(selectedAssessments, assessment.id, index + 1, (item) => item.assessment_version_id)}
                 >
                   <div className="flex flex-wrap items-center gap-2">

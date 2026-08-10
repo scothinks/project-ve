@@ -23,18 +23,18 @@ export default async function ProgrammeDetailPage({
   searchParams?: Promise<{ notice?: string | string[] }>;
 }) {
   const { id } = await params;
-  const { supabase } = await requireAdminWorkspaceRole([
+  const { supabase, workspace } = await requireAdminWorkspaceRole([
     "organisation_owner",
     "organisation_admin",
     "programme_manager",
   ]);
   const [assessmentVersions, courses, missions, organizations, programme, rewards] = await Promise.all([
     getAdminAssessmentVersionOptions(supabase),
-    getAdminCourses(supabase),
-    getAdminMissions(supabase),
+    getAdminCourses(supabase, workspace.id),
+    getAdminMissions(supabase, workspace.id),
     getAdminOrganizations(supabase),
     getAdminProgramme(supabase, id),
-    getAdminRewards(supabase, { distributionMode: "direct" }),
+    getAdminRewards(supabase, { distributionMode: "direct" }, workspace.id),
   ]);
   const notice = firstSearchValue((await searchParams)?.notice);
 

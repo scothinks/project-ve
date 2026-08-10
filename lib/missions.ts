@@ -92,6 +92,16 @@ export type UserMissionSummary = {
   autoAwards: boolean;
   completionLabel?: string;
   availableAgainAt?: string;
+  programmeContext?: {
+    organizationId: string;
+    programmeId: string;
+    programmeMissionId: string;
+    startsAt?: string | null;
+    dueAt?: string | null;
+    isRequired: boolean;
+    xpAccountId?: string | null;
+    rewardXpOverride?: number | null;
+  };
   referral?: {
     code: string;
     shareUrl: string;
