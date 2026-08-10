@@ -5,8 +5,8 @@ import type { UserProfile } from "@/lib/supabase-server";
 import { getLearningCourseSummariesByIds, getLearningCoursesByIds } from "@/lib/supabase-learning";
 import {
   getSupabaseMissionSummaries,
-  type MissionExecutionContexts,
-  type MissionPresentationOverrides,
+  type MissionDeliveryRequest,
+  type MissionPresentationOverride,
 } from "@/lib/supabase-missions";
 import { getOrganizationRewardStoreSnapshot } from "@/lib/supabase-rewards";
 export { filterTranscriptForOrganizationWorkspace } from "@/features/organizations/application/learner-workspace-domain";
@@ -110,32 +110,13 @@ async function getProgrammeCourseIds(
   return unique((data ?? []).map((row) => row.course_id));
 }
 
-async function getProgrammeMissionIds(
+async function getProgrammeMissionDeliveryRequests(
   supabase: SupabaseClient<Database>,
+  organizationId: string,
+  organizationSlug: string,
   programmeIds: string[],
 ) {
   if (programmeIds.length === 0) return [];
-
-  const { data, error } = await supabase
-    .from("programme_missions")
-    .select("mission_id")
-    .in("programme_id", programmeIds);
-
-  if (error) throw error;
-  return unique((data ?? []).map((row) => row.mission_id));
-}
-
-async function getProgrammeMissionSummaryContext(
-  supabase: SupabaseClient<Database>,
-  organizationId: string,
-  programmeIds: string[],
-) {
-  if (programmeIds.length === 0) {
-    return {
-      executionContexts: {} satisfies MissionExecutionContexts,
-      presentationOverrides: {} satisfies MissionPresentationOverrides,
-    };
-  }
 
   const { data, error } = await supabase
     .from("programme_missions")
@@ -147,13 +128,42 @@ async function getProgrammeMissionSummaryContext(
 
   if (error) throw error;
 
-  const executionContexts: MissionExecutionContexts = {};
-  const presentationOverrides: MissionPresentationOverrides = {};
+  return (data ?? []).map((row): MissionDeliveryRequest => {
+    const config =
+      row.presentation_overrides
+      && typeof row.presentation_overrides === "object"
+      && !Array.isArray(row.presentation_overrides)
+        ? row.presentation_overrides as Record<string, unknown>
+        : {};
+    const presentationOverride = Object.fromEntries(
+      [
+        "ctaLabel",
+        "description",
+        "eligibilityExplanation",
+        "fullInstructions",
+        "icon",
+        "imageUrl",
+        "pendingMessage",
+        "rejectionMessage",
+        "rewardExplanation",
+        "shortDescription",
+        "successMessage",
+        "terms",
+        "title",
+      ].flatMap((key) => {
+        const value = config[key];
+        return typeof value === "string" && value.trim() ? [[key, value.trim()]] : [];
+      }),
+    ) as MissionPresentationOverride;
 
-  for (const row of data ?? []) {
-    if (!executionContexts[row.mission_id]) {
-      executionContexts[row.mission_id] = {
+    return {
+      deliveryId: `${row.programme_id}:${row.mission_id}`,
+      missionId: row.mission_id,
+      presentationOverride,
+      executionContext: {
+        deliveryId: `${row.programme_id}:${row.mission_id}`,
         organizationId,
+        organizationSlug,
         programmeId: row.programme_id,
         programmeMissionId: row.mission_id,
         startsAt: row.starts_at,
@@ -161,31 +171,9 @@ async function getProgrammeMissionSummaryContext(
         isRequired: row.is_required,
         xpAccountId: row.xp_account_id,
         rewardXpOverride: row.reward_xp_override,
-      };
-    }
-
-    if (presentationOverrides[row.mission_id]) continue;
-
-    const config =
-      row.presentation_overrides
-      && typeof row.presentation_overrides === "object"
-      && !Array.isArray(row.presentation_overrides)
-        ? row.presentation_overrides as Record<string, unknown>
-        : {};
-    const title = typeof config.title === "string" && config.title.trim() ? config.title.trim() : undefined;
-    const description =
-      typeof config.shortDescription === "string" && config.shortDescription.trim()
-        ? config.shortDescription.trim()
-        : typeof config.description === "string" && config.description.trim()
-          ? config.description.trim()
-          : undefined;
-
-    if (title || description) {
-      presentationOverrides[row.mission_id] = { title, description };
-    }
-  }
-
-  return { executionContexts, presentationOverrides };
+      },
+    };
+  });
 }
 
 async function getOrganizationCourseIds(
@@ -271,10 +259,10 @@ export async function resolveOrganizationLearnerWorkspace(
   const enrolments = (enrolmentsResult.data ?? []) as EnrolmentRow[];
   const programmeIds = unique(enrolments.map((enrolment) => enrolment.programme_id));
   const directCourseIds = unique(enrolments.map((enrolment) => enrolment.course_id));
-  const [programmeCourseIds, organizationCourseIds, missionIds] = await Promise.all([
+  const [programmeCourseIds, organizationCourseIds, missionDeliveries] = await Promise.all([
     getProgrammeCourseIds(supabase, programmeIds),
     roles.length > 0 ? getOrganizationCourseIds(supabase, organization.id) : Promise.resolve([]),
-    getProgrammeMissionIds(supabase, programmeIds),
+    getProgrammeMissionDeliveryRequests(supabase, organization.id, organization.slug, programmeIds),
   ]);
   const courseIds = unique([...directCourseIds, ...programmeCourseIds, ...organizationCourseIds]);
 
@@ -288,7 +276,7 @@ export async function resolveOrganizationLearnerWorkspace(
     },
     courseIds,
     membershipRoles: roles,
-    missionIds,
+    missionIds: unique(missionDeliveries.map((delivery) => delivery.missionId)),
     organizationId: organization.id,
     organizationSlug: organization.slug,
     programmeIds,
@@ -334,16 +322,15 @@ export async function getOrganizationWorkspaceMissions({
 }): Promise<UserMissionSummary[]> {
   if (!profile) return [];
 
-  const missionSummaryContext = await getProgrammeMissionSummaryContext(
+  const missionDeliveries = await getProgrammeMissionDeliveryRequests(
     supabase,
     workspace.organizationId,
+    workspace.organizationSlug,
     workspace.programmeIds,
   );
 
   return getSupabaseMissionSummaries({
-    missionIds: workspace.missionIds,
-    missionExecutionContexts: missionSummaryContext.executionContexts,
-    missionPresentationOverrides: missionSummaryContext.presentationOverrides,
+    missionDeliveries,
     origin,
     referralCode: profile.referral_code ?? null,
     supabase,

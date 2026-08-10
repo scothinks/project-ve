@@ -6,11 +6,19 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminProofSubmissions, requireAdmin } from "@/lib/admin";
+import { getAdminProofSubmissions, requireAdminWorkspaceRole } from "@/lib/admin";
 import { getMissionRewardLabel } from "@/lib/missions";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { reviewProofSubmission } from "./actions";
+
+const PROOF_REVIEW_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "reviewer",
+  "instructor",
+];
 
 function proofTone(status: string) {
   if (status === "approved") return "good" as const;
@@ -23,8 +31,8 @@ export default async function AdminProofsPage({
 }: {
   searchParams?: Promise<{ page?: string; notice?: string }>;
 }) {
-  const { supabase } = await requireAdmin();
-  const submissions = await getAdminProofSubmissions(supabase);
+  const { supabase, workspace } = await requireAdminWorkspaceRole(PROOF_REVIEW_ROLES);
+  const submissions = await getAdminProofSubmissions(supabase, workspace.id);
   const { page, notice } = (await searchParams) ?? {};
   const paginatedSubmissions = paginateItems(submissions, parsePageParam(page), 12);
 
@@ -69,6 +77,12 @@ export default async function AdminProofsPage({
                     Scope: {submission.awardScope} · Submitted{" "}
                     {formatRewardDate(submission.createdAt)}
                   </p>
+                  {submission.organizationId ? (
+                    <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                      Context: organisation {submission.organizationId}
+                      {submission.programmeId ? ` · programme ${submission.programmeId}` : ""}
+                    </p>
+                  ) : null}
                 </div>
 
                 {submission.status === "submitted" ? (

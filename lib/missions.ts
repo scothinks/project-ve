@@ -70,6 +70,7 @@ export type UserMissionStatus =
 
 export type UserMissionSummary = {
   id: string;
+  baseMissionId?: string;
   title: string;
   description: string;
   category: MissionCategory;
@@ -90,8 +91,22 @@ export type UserMissionSummary = {
   proofFieldStatuses?: Partial<Record<MissionProofField, "pending" | "submitted" | "approved" | "rejected">>;
   bypassesDailyCap: true;
   autoAwards: boolean;
+  actionHref?: string;
   completionLabel?: string;
   availableAgainAt?: string;
+  presentation?: {
+    ctaLabel?: string;
+    eligibilityExplanation?: string;
+    fullInstructions?: string;
+    imageUrl?: string;
+    icon?: string;
+    pendingMessage?: string;
+    rejectionMessage?: string;
+    rewardExplanation?: string;
+    shortDescription?: string;
+    successMessage?: string;
+    terms?: string;
+  };
   programmeContext?: {
     organizationId: string;
     programmeId: string;
