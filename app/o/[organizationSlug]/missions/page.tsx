@@ -50,7 +50,10 @@ export default async function OrganizationMissionsPage({
         />
         <div className="mt-6">
           {missions.length > 0 ? (
-            <MissionPanel initialMissions={missions} />
+            <MissionPanel
+              apiPath={`/api/organizations/${encodeURIComponent(workspace.organizationSlug)}/missions`}
+              initialMissions={missions}
+            />
           ) : (
             <Card className="p-5 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]" variant="quiet">
               No missions are assigned in this organisation workspace yet.

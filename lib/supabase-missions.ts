@@ -37,14 +37,27 @@ type DbMission = {
 };
 
 export type MissionPresentationOverride = {
+  ctaLabel?: string;
   description?: string;
+  eligibilityExplanation?: string;
+  fullInstructions?: string;
+  icon?: string;
+  imageUrl?: string;
+  pendingMessage?: string;
+  rejectionMessage?: string;
+  rewardExplanation?: string;
+  shortDescription?: string;
+  successMessage?: string;
+  terms?: string;
   title?: string;
 };
 
 export type MissionPresentationOverrides = Record<string, MissionPresentationOverride>;
 
 export type MissionExecutionContext = {
+  deliveryId?: string;
   organizationId: string;
+  organizationSlug?: string;
   programmeId: string;
   programmeMissionId: string;
   startsAt: string | null;
@@ -55,6 +68,13 @@ export type MissionExecutionContext = {
 };
 
 export type MissionExecutionContexts = Record<string, MissionExecutionContext>;
+
+export type MissionDeliveryRequest = {
+  deliveryId: string;
+  executionContext?: MissionExecutionContext;
+  missionId: string;
+  presentationOverride?: MissionPresentationOverride;
+};
 
 function normalizeMissionReward(
   value: unknown,
@@ -108,6 +128,26 @@ function normalizeProofFieldList(value: unknown): MissionProofField[] {
 function getPresentationText(config: Record<string, unknown> | null | undefined, key: string) {
   const value = config?.[key];
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function resolvePresentationText(
+  override: MissionPresentationOverride | undefined,
+  config: Record<string, unknown> | null | undefined,
+  ...keys: Array<keyof MissionPresentationOverride | string>
+) {
+  for (const key of keys) {
+    const overrideValue = override?.[key as keyof MissionPresentationOverride];
+    if (typeof overrideValue === "string" && overrideValue.trim().length > 0) {
+      return overrideValue.trim();
+    }
+
+    const configValue = getPresentationText(config, String(key));
+    if (configValue) {
+      return configValue;
+    }
+  }
+
+  return undefined;
 }
 
 type MissionProgress = {
@@ -240,6 +280,68 @@ function normalizeProgress(progress: MissionProgress, forceComplete = false) {
   };
 }
 
+async function getProgrammeCourseIds(
+  supabase: SupabaseClient,
+  executionContext?: MissionExecutionContext,
+) {
+  if (!executionContext) return null;
+
+  const { data, error } = await supabase
+    .from("programme_courses")
+    .select("course_id")
+    .eq("programme_id", executionContext.programmeId);
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.from(new Set((data ?? []).map((row) => String(row.course_id)).filter(Boolean)));
+}
+
+async function getScopedPublishedLessons(
+  supabase: SupabaseClient,
+  executionContext?: MissionExecutionContext,
+  filter?: { courseId?: string; lessonId?: string },
+) {
+  const programmeCourseIds = await getProgrammeCourseIds(supabase, executionContext);
+
+  if (programmeCourseIds && programmeCourseIds.length === 0) {
+    return [];
+  }
+
+  let query = supabase
+    .from("lessons")
+    .select("id, course_id, lesson_pages!lesson_pages_lesson_id_fkey(id)")
+    .eq("status", "published");
+
+  if (programmeCourseIds) {
+    query = query.in("course_id", programmeCourseIds);
+  }
+
+  if (filter?.courseId) {
+    query = query.eq("course_id", filter.courseId);
+  }
+
+  if (filter?.lessonId) {
+    query = query.eq("id", filter.lessonId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((lesson) => ({
+    id: String(lesson.id),
+    courseId: String((lesson as { course_id: string }).course_id),
+    pages: ((lesson as { lesson_pages?: Array<{ id: string }> }).lesson_pages ?? []).map((page, index) => ({
+      id: String(page.id),
+      order: index + 1,
+    })),
+  }));
+}
+
 async function hasMissionAward(
   supabase: SupabaseClient,
   userId: string,
@@ -289,22 +391,18 @@ async function getLessonCompletedProgress(
   supabase: SupabaseClient,
   userId: string,
   lessonId: string,
+  executionContext?: MissionExecutionContext,
 ): Promise<MissionProgress> {
-  const [{ data: pages, error: pagesError }, progress] = await Promise.all([
-    supabase.from("lesson_pages").select("id, lesson_id").eq("lesson_id", lessonId),
+  const [lessons, progress] = await Promise.all([
+    getScopedPublishedLessons(supabase, executionContext, { lessonId }),
     getLessonProgress(supabase, userId),
   ]);
 
-  if (pagesError) {
-    throw pagesError;
+  if (lessons.length === 0) {
+    return { progressCount: 0, targetCount: 1, valid: false };
   }
 
-  const valid = getCompletedLessonIds(progress, [
-    {
-      id: lessonId,
-      pages: (pages ?? []).map((page, index) => ({ id: String(page.id), order: index + 1 })),
-    } as never,
-  ]).has(lessonId);
+  const valid = getCompletedLessonIds(progress, lessons as never).has(lessonId);
 
   return { progressCount: valid ? 1 : 0, targetCount: 1, valid };
 }
@@ -313,34 +411,17 @@ async function getCourseCompletedProgress(
   supabase: SupabaseClient,
   userId: string,
   courseId: string,
+  executionContext?: MissionExecutionContext,
 ): Promise<MissionProgress> {
-  const { data: lessons, error: lessonsError } = await supabase
-    .from("lessons")
-    .select("id, lesson_pages!lesson_pages_lesson_id_fkey(id)")
-    .eq("course_id", courseId)
-    .eq("status", "published");
-
-  if (lessonsError) {
-    throw lessonsError;
-  }
-
-  const lessonIds = (lessons ?? []).map((lesson) => String(lesson.id));
+  const lessons = await getScopedPublishedLessons(supabase, executionContext, { courseId });
+  const lessonIds = lessons.map((lesson) => lesson.id);
 
   if (lessonIds.length === 0) {
     return { progressCount: 0, targetCount: 1, valid: false };
   }
 
   const progress = await getLessonProgress(supabase, userId);
-  const completedIds = getCompletedLessonIds(
-    progress,
-    (lessons ?? []).map((lesson) => ({
-      id: String(lesson.id),
-      pages: ((lesson as { lesson_pages?: Array<{ id: string }> }).lesson_pages ?? []).map((page, index) => ({
-        id: String(page.id),
-        order: index + 1,
-      })),
-    })) as never,
-  );
+  const completedIds = getCompletedLessonIds(progress, lessons as never);
   const completedCount = lessonIds.filter((lessonId) => completedIds.has(lessonId)).length;
 
   return {
@@ -355,29 +436,17 @@ async function getLessonCountProgress(
   userId: string,
   count: number,
   withinDays?: number,
+  executionContext?: MissionExecutionContext,
 ): Promise<MissionProgress> {
   if (!withinDays) {
-    const [{ data: lessons, error: lessonsError }, progress] = await Promise.all([
-      supabase
-        .from("lessons")
-        .select("id, lesson_pages!lesson_pages_lesson_id_fkey(id)")
-        .eq("status", "published"),
+    const [lessons, progress] = await Promise.all([
+      getScopedPublishedLessons(supabase, executionContext),
       getLessonProgress(supabase, userId),
     ]);
 
-    if (lessonsError) {
-      throw lessonsError;
-    }
-
     const completedCount = getCompletedLessonIds(
       progress,
-      (lessons ?? []).map((lesson) => ({
-        id: String(lesson.id),
-        pages: ((lesson as { lesson_pages?: Array<{ id: string }> }).lesson_pages ?? []).map((page, index) => ({
-          id: String(page.id),
-          order: index + 1,
-        })),
-      })) as never,
+      lessons as never,
     ).size;
     const targetCount = Math.max(1, count);
 
@@ -388,11 +457,22 @@ async function getLessonCountProgress(
     };
   }
 
+  const scopedLessons = await getScopedPublishedLessons(supabase, executionContext);
+  const scopedLessonIds = scopedLessons.map((lesson) => lesson.id);
+
+  if (executionContext && scopedLessonIds.length === 0) {
+    return { progressCount: 0, targetCount: Math.max(1, count), valid: false };
+  }
+
   let query = supabase
     .from("lesson_progress")
     .select("lesson_id")
     .eq("user_id", userId)
     .not("completed_at", "is", null);
+
+  if (executionContext) {
+    query = query.in("lesson_id", scopedLessonIds);
+  }
 
   if (withinDays) {
     const since = new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000).toISOString();
@@ -461,14 +541,7 @@ async function getReferralProgress(
     return { invitedCount: referralIds.length, qualifiedIds: [] as string[] };
   }
 
-  const { data: lessons, error: lessonsError } = await supabase
-    .from("lessons")
-    .select("id, lesson_pages!lesson_pages_lesson_id_fkey(id)")
-    .eq("status", "published");
-
-  if (lessonsError) {
-    throw lessonsError;
-  }
+  const lessons = await getScopedPublishedLessons(supabase, executionContext);
 
   const completedByUser = new Map<string, Set<string>>();
 
@@ -478,13 +551,7 @@ async function getReferralProgress(
       referralId,
       getCompletedLessonIds(
         progress,
-        (lessons ?? []).map((lesson) => ({
-          id: String(lesson.id),
-          pages: ((lesson as { lesson_pages?: Array<{ id: string }> }).lesson_pages ?? []).map((page, index) => ({
-            id: String(page.id),
-            order: index + 1,
-          })),
-        })) as never,
+        lessons as never,
       ),
     );
   }
@@ -600,6 +667,7 @@ async function getMissionProgress(
           supabase,
           userId,
           String(mission.validation_config.lessonId),
+          executionContext,
         ),
       };
     case "course_completed":
@@ -608,6 +676,7 @@ async function getMissionProgress(
           supabase,
           userId,
           String(mission.validation_config.courseId),
+          executionContext,
         ),
       };
     case "lesson_count_completed":
@@ -619,6 +688,7 @@ async function getMissionProgress(
           mission.validation_config.withinDays
             ? Number(mission.validation_config.withinDays)
             : undefined,
+          executionContext,
         ),
       };
     case "referral_friend_completed_lessons": {
@@ -831,6 +901,7 @@ async function resolveMissionExecutionContext({
   }
 
   return {
+    deliveryId: `${row.programme_id}:${row.mission_id}`,
     organizationId: programme.organization_id,
     programmeId: row.programme_id,
     programmeMissionId: row.mission_id,
@@ -843,6 +914,7 @@ async function resolveMissionExecutionContext({
 }
 
 export async function getSupabaseMissionSummaries({
+  missionDeliveries,
   missionIds,
   missionExecutionContexts,
   missionPresentationOverrides,
@@ -856,12 +928,20 @@ export async function getSupabaseMissionSummaries({
   supabase: SupabaseClient;
   userId: string;
   referralCode: string | null;
+  missionDeliveries?: MissionDeliveryRequest[];
   missionIds?: string[];
   missionExecutionContexts?: MissionExecutionContexts;
   missionPresentationOverrides?: MissionPresentationOverrides;
   origin: string;
 }): Promise<UserMissionSummary[]> {
-  const uniqueMissionIds = missionIds ? Array.from(new Set(missionIds)).filter(Boolean) : null;
+  const deliveryInputs = missionDeliveries?.length
+    ? missionDeliveries.filter((delivery) => Boolean(delivery.missionId))
+    : null;
+  const uniqueMissionIds = deliveryInputs
+    ? Array.from(new Set(deliveryInputs.map((delivery) => delivery.missionId))).filter(Boolean)
+    : missionIds
+      ? Array.from(new Set(missionIds)).filter(Boolean)
+      : null;
 
   if (uniqueMissionIds && uniqueMissionIds.length === 0) {
     return [];
@@ -888,19 +968,50 @@ export async function getSupabaseMissionSummaries({
     ...(mission as Omit<DbMission, "rewards"> & { rewards?: unknown }),
     rewards: normalizeMissionReward((mission as { rewards?: unknown }).rewards),
   })) as DbMission[];
+  const missionById = new Map(missionRows.map((mission) => [mission.id, mission]));
+  const summaryInputs = deliveryInputs
+    ? deliveryInputs
+        .map((delivery) => {
+          const mission = missionById.get(delivery.missionId);
+          return mission ? { delivery, mission } : null;
+        })
+        .filter((input): input is { delivery: MissionDeliveryRequest; mission: DbMission } => Boolean(input))
+    : missionRows.map((mission) => ({
+        delivery: {
+          deliveryId: mission.id,
+          executionContext: missionExecutionContexts?.[mission.id],
+          missionId: mission.id,
+          presentationOverride: missionPresentationOverrides?.[mission.id],
+        },
+        mission,
+      }));
 
-  return Promise.all(missionRows.map(async (mission): Promise<UserMissionSummary> => {
-    const missionExecutionContext = missionExecutionContexts?.[mission.id];
-    const missionOverride = missionPresentationOverrides?.[mission.id];
+  return Promise.all(summaryInputs.map(async ({ delivery, mission }): Promise<UserMissionSummary> => {
+    const missionExecutionContext = delivery.executionContext;
+    const missionOverride = delivery.presentationOverride;
     const title =
-      missionOverride?.title
-      ?? getPresentationText(mission.presentation_config, "title")
+      resolvePresentationText(missionOverride, mission.presentation_config, "title")
       ?? mission.title;
     const description =
-      missionOverride?.description
-      ?? getPresentationText(mission.presentation_config, "shortDescription")
-      ?? getPresentationText(mission.presentation_config, "description")
+      resolvePresentationText(missionOverride, mission.presentation_config, "shortDescription", "description")
       ?? mission.description;
+    const presentation = {
+      ctaLabel: resolvePresentationText(missionOverride, mission.presentation_config, "ctaLabel"),
+      eligibilityExplanation: resolvePresentationText(
+        missionOverride,
+        mission.presentation_config,
+        "eligibilityExplanation",
+      ),
+      fullInstructions: resolvePresentationText(missionOverride, mission.presentation_config, "fullInstructions"),
+      icon: resolvePresentationText(missionOverride, mission.presentation_config, "icon"),
+      imageUrl: resolvePresentationText(missionOverride, mission.presentation_config, "imageUrl"),
+      pendingMessage: resolvePresentationText(missionOverride, mission.presentation_config, "pendingMessage"),
+      rejectionMessage: resolvePresentationText(missionOverride, mission.presentation_config, "rejectionMessage"),
+      rewardExplanation: resolvePresentationText(missionOverride, mission.presentation_config, "rewardExplanation"),
+      shortDescription: description,
+      successMessage: resolvePresentationText(missionOverride, mission.presentation_config, "successMessage"),
+      terms: resolvePresentationText(missionOverride, mission.presentation_config, "terms"),
+    };
     const [progressResult, awardedCount] = await Promise.all([
       getMissionProgress(supabase, userId, mission, missionExecutionContext),
       getAwardedCount(supabase, userId, mission.id, missionExecutionContext),
@@ -952,7 +1063,8 @@ export async function getSupabaseMissionSummaries({
         : undefined;
 
     return {
-      id: mission.id,
+      id: delivery.deliveryId,
+      baseMissionId: delivery.deliveryId === mission.id ? undefined : mission.id,
       title,
       description,
       category: mission.category,
@@ -973,8 +1085,10 @@ export async function getSupabaseMissionSummaries({
       proofFieldStatuses: progressResult.proofFieldStatuses,
       bypassesDailyCap: true,
       autoAwards: true,
+      actionHref: missionExecutionContext?.organizationSlug ? `/o/${missionExecutionContext.organizationSlug}/learn` : "/courses",
       completionLabel: status === "completed" ? getMissionCompletionLabel(mission) : undefined,
       availableAgainAt: status === "completed" ? getMissionAvailableAgainAt(mission) : undefined,
+      presentation,
       programmeContext: missionExecutionContext
         ? {
             organizationId: missionExecutionContext.organizationId,

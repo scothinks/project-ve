@@ -203,6 +203,8 @@ function getProofFieldStatusLabel(
 }
 
 function getMissionPrimaryAction(mission: UserMissionSummary) {
+  const configuredLabel = mission.presentation?.ctaLabel;
+
   if (mission.status === "completed") {
     return {
       label: "Completed",
@@ -214,7 +216,7 @@ function getMissionPrimaryAction(mission: UserMissionSummary) {
 
   if (mission.status === "submitted" || mission.status === "under_review") {
     return {
-      label: "In review",
+      label: mission.presentation?.pendingMessage ?? "In review",
       disabled: true,
       href: undefined,
       type: "link" as const,
@@ -223,7 +225,7 @@ function getMissionPrimaryAction(mission: UserMissionSummary) {
 
   if (mission.referral) {
     return {
-      label: "Share invite",
+      label: configuredLabel ?? "Share invite",
       disabled: false,
       href: undefined,
       type: "share" as const,
@@ -232,7 +234,7 @@ function getMissionPrimaryAction(mission: UserMissionSummary) {
 
   if (mission.requiresProof) {
     return {
-      label: mission.status === "rejected" ? "Resubmit proof" : "Submit proof",
+      label: configuredLabel ?? (mission.status === "rejected" ? "Resubmit proof" : "Submit proof"),
       disabled: false,
       href: undefined,
       type: "proof" as const,
@@ -245,17 +247,17 @@ function getMissionPrimaryAction(mission: UserMissionSummary) {
     mission.validationType === "lesson_count_completed"
   ) {
     return {
-      label: mission.status === "in_progress" ? "Continue" : "Open lessons",
+      label: configuredLabel ?? (mission.status === "in_progress" ? "Continue" : "Open lessons"),
       disabled: false,
-      href: "/courses",
+      href: mission.actionHref ?? "/courses",
       type: "link" as const,
     };
   }
 
   return {
-    label: "Open mission",
+    label: configuredLabel ?? "Open mission",
     disabled: false,
-    href: "/missions",
+    href: mission.actionHref ?? "/missions",
     type: "link" as const,
   };
 }
@@ -374,7 +376,8 @@ export function MissionPanel({
     }
 
     setSubmittingProofField(field);
-    const response = await fetch(`/api/missions/${mission.id}/proof`, {
+    const proofMissionId = mission.baseMissionId ?? mission.id;
+    const response = await fetch(`/api/missions/${proofMissionId}/proof`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -594,6 +597,26 @@ export function MissionPanel({
                   <p className="mt-3 max-w-none text-[0.98rem] font-medium leading-[1.7] text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
                     {mission.description}
                   </p>
+                  {mission.presentation?.fullInstructions ? (
+                    <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                      {mission.presentation.fullInstructions}
+                    </p>
+                  ) : null}
+                  {mission.presentation?.eligibilityExplanation ? (
+                    <p className="mt-2 text-xs font-bold leading-5 text-[var(--ve-muted)]">
+                      {mission.presentation.eligibilityExplanation}
+                    </p>
+                  ) : null}
+                  {mission.status === "completed" && mission.presentation?.successMessage ? (
+                    <p className="mt-2 text-xs font-black leading-5 text-[#087f5b]">
+                      {mission.presentation.successMessage}
+                    </p>
+                  ) : null}
+                  {mission.status === "rejected" && mission.presentation?.rejectionMessage ? (
+                    <p className="mt-2 text-xs font-black leading-5 text-[#c00000]">
+                      {mission.presentation.rejectionMessage}
+                    </p>
+                  ) : null}
                 </div>
 
                 {hasStructuredProgress ? (
@@ -629,7 +652,7 @@ export function MissionPanel({
                         onClick={() => void shareReferralLink(mission.id, mission.referral!.shareUrl)}
                         style={primaryActionStyle}
                       >
-                        Share invite
+                        {action.label}
                       </MissionActionButton>
                       <MissionActionButton
                         className="w-full min-w-0 px-5 sm:w-auto sm:min-w-[124px]"
@@ -690,9 +713,15 @@ export function MissionPanel({
                       </div>
                     </div>
                     <p className="mt-4 text-[12px] font-semibold leading-5 text-[#7a7a7a]">
-                      XP is awarded when a friend completes {requiredReferralLessons} {referralLessonLabel}.
+                      {mission.presentation?.rewardExplanation
+                        ?? `XP is awarded when a friend completes ${requiredReferralLessons} ${referralLessonLabel}.`}
                     </p>
                   </div>
+                ) : null}
+                {mission.presentation?.terms ? (
+                  <p className="mt-4 text-[11px] font-semibold leading-5 text-[var(--ve-muted)]">
+                    {mission.presentation.terms}
+                  </p>
                 ) : null}
               </Card>
             );
@@ -725,7 +754,8 @@ export function MissionPanel({
                   </p>
                   {activeProofMission.status === "under_review" ? (
                     <p className="mt-2 text-xs font-semibold text-[#a66d00]">
-                      Submitted items stay under review until an admin approves them.
+                      {activeProofMission.presentation?.pendingMessage
+                        ?? "Submitted items stay under review until an admin approves them."}
                     </p>
                   ) : null}
                 </div>

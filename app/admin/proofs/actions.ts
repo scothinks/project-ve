@@ -2,9 +2,17 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+
+const PROOF_REVIEW_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "reviewer",
+  "instructor",
+];
 
 export async function reviewProofSubmission(formData: FormData) {
   const userId = String(formData.get("userId") ?? "");
@@ -15,7 +23,7 @@ export async function reviewProofSubmission(formData: FormData) {
     String(formData.get("rejectionReason") ?? ""),
     500,
   );
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(PROOF_REVIEW_ROLES);
 
   if (!userId || !missionId || !awardScope) {
     throw new Error("Proof submission is incomplete.");

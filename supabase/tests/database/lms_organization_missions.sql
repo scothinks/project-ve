@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(39);
+select extensions.plan(54);
 
 insert into auth.users (
   id,
@@ -63,6 +63,28 @@ values
     '{}'::jsonb,
     now(),
     now()
+  ),
+  (
+    '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid,
+    'authenticated',
+    'authenticated',
+    'pgtap-org-missions-manual@example.test',
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  ),
+  (
+    '7d7d7d7d-7d7d-4d7d-8d7d-7d7d7d7d7714'::uuid,
+    'authenticated',
+    'authenticated',
+    'pgtap-org-missions-ineligible@example.test',
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
   )
 on conflict (id) do update
   set email = excluded.email,
@@ -84,7 +106,9 @@ values
   (:'TEST_ADMIN_USER_ID'::uuid, 'Local pgTAP Org Missions Admin', 0, 0, 'admin'),
   (:'TEST_LEARNER_USER_ID'::uuid, 'Local pgTAP Org Missions Manager', 0, 0, 'learner'),
   ('6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid, 'Local pgTAP Org Missions Referred', 0, 0, 'learner'),
-  ('8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712'::uuid, 'Local pgTAP Org Missions Outsider', 0, 0, 'learner')
+  ('8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712'::uuid, 'Local pgTAP Org Missions Outsider', 0, 0, 'learner'),
+  ('9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid, 'Local pgTAP Org Missions Manual Pending', 0, 0, 'learner'),
+  ('7d7d7d7d-7d7d-4d7d-8d7d-7d7d7d7d7714'::uuid, 'Local pgTAP Org Missions Ineligible', 0, 0, 'learner')
 on conflict (id) do update
   set display_name = excluded.display_name,
       xp = excluded.xp,
@@ -211,6 +235,115 @@ values (
 on conflict (id) do update
   set title = excluded.title;
 
+insert into public.courses (
+  id,
+  slug,
+  title,
+  description,
+  intended_audience,
+  learning_outcomes,
+  category,
+  level,
+  status,
+  sort_order,
+  estimated_minutes,
+  catalog_scope,
+  organization_id
+)
+values
+  (
+    'course-p15b-unattached-public',
+    'course-p15b-unattached-public',
+    'P15B Unattached Public Course',
+    'Public lesson outside the programme.',
+    'Public learners',
+    array['Complete an unattached public lesson'],
+    'Values Education',
+    'beginner',
+    'published',
+    951,
+    4,
+    'platform',
+    null
+  ),
+  (
+    'course-p15b-beta-private',
+    'course-p15b-beta-private',
+    'P15B Beta Private Course',
+    'Private Beta lesson for tenant isolation.',
+    'Beta learners',
+    array['Complete a private beta lesson'],
+    'Values Education',
+    'beginner',
+    'published',
+    952,
+    4,
+    'organization_private',
+    :'p15b_beta_org_id'::uuid
+  )
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status,
+      catalog_scope = excluded.catalog_scope,
+      organization_id = excluded.organization_id;
+
+insert into public.lessons (
+  id,
+  course_id,
+  slug,
+  title,
+  status,
+  sort_order,
+  estimated_minutes
+)
+values
+  (
+    'lesson-p15b-unattached-public',
+    'course-p15b-unattached-public',
+    'lesson-p15b-unattached-public',
+    'P15B Unattached Public Lesson',
+    'published',
+    1,
+    4
+  ),
+  (
+    'lesson-p15b-beta-private',
+    'course-p15b-beta-private',
+    'lesson-p15b-beta-private',
+    'P15B Beta Private Lesson',
+    'published',
+    1,
+    4
+  )
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status;
+
+insert into public.lesson_pages (
+  id,
+  lesson_id,
+  page_number,
+  title,
+  page_type
+)
+values
+  (
+    'page-p15b-unattached-public',
+    'lesson-p15b-unattached-public',
+    1,
+    'P15B Unattached Public Page',
+    'concept'
+  ),
+  (
+    'page-p15b-beta-private',
+    'lesson-p15b-beta-private',
+    1,
+    'P15B Beta Private Page',
+    'concept'
+  )
+on conflict (id) do update
+  set title = excluded.title;
+
 insert into public.missions (
   id,
   title,
@@ -283,6 +416,29 @@ on conflict (id) do update
       organization_id = excluded.organization_id,
       status = excluded.status;
 
+insert into public.programme_courses (
+  programme_id,
+  course_id,
+  sort_order,
+  requirement
+)
+values
+  (
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'course-p15b-missions-platform',
+    1,
+    'required'
+  ),
+  (
+    '88888888-8888-4888-8888-888888888812'::uuid,
+    'course-p15b-missions-platform',
+    1,
+    'required'
+  )
+on conflict (programme_id, course_id) do update
+  set sort_order = excluded.sort_order,
+      requirement = excluded.requirement;
+
 reset role;
 
 select extensions.is(
@@ -310,6 +466,16 @@ select extensions.ok(
       and learner_interaction_type = 'referral'
   ),
   'mission type registry records traceable handler metadata'
+);
+
+select extensions.ok(
+  not exists (
+    select 1
+    from public.organization_plans plan
+    where plan.status = 'active'
+      and (plan.entitlements -> 'allowed_mission_reward_modes') ?| array['manual_reward', 'direct_reward']
+  ),
+  'active organisation plans only advertise wired organisation XP mission reward mode'
 );
 
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
@@ -524,6 +690,151 @@ insert into public.missions (
   mission_type_key
 )
 values (
+  'mission-p15b-programme-lesson-count',
+  'P15B Programme Lesson Count Mission',
+  'Complete one lesson inside the programme.',
+  'course',
+  'xp',
+  12,
+  'once',
+  'lesson_count_completed',
+  '{"count":1}'::jsonb,
+  'published',
+  953,
+  'lesson_count_completed'
+)
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status,
+      validation_config = excluded.validation_config,
+      mission_type_key = excluded.mission_type_key;
+
+insert into public.programme_missions (
+  programme_id,
+  mission_id,
+  sort_order
+)
+values (
+  '88888888-8888-4888-8888-888888888811'::uuid,
+  'mission-p15b-programme-lesson-count',
+  4
+)
+on conflict (programme_id, mission_id) do update
+  set sort_order = excluded.sort_order;
+
+insert into public.missions (
+  id,
+  title,
+  description,
+  category,
+  reward_type,
+  reward_xp,
+  repeatability,
+  validation_type,
+  validation_config,
+  status,
+  sort_order,
+  mission_type_key
+)
+values (
+  'mission-p15b-manual-proof-review',
+  'P15B Manual Proof Review Mission',
+  'Submit proof for organization review.',
+  'feedback',
+  'xp',
+  18,
+  'once',
+  'proof_upload',
+  '{"requiredFields":["text"],"requiresManualReview":true}'::jsonb,
+  'published',
+  954,
+  'proof_submission'
+)
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status,
+      validation_config = excluded.validation_config,
+      mission_type_key = excluded.mission_type_key;
+
+insert into public.programme_missions (
+  programme_id,
+  mission_id,
+  sort_order
+)
+values
+  (
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-platform-course',
+    5
+  ),
+  (
+    '88888888-8888-4888-8888-888888888812'::uuid,
+    'mission-p15b-platform-course',
+    2
+  ),
+  (
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-manual-proof-review',
+    6
+  ),
+  (
+    '88888888-8888-4888-8888-888888888812'::uuid,
+    'mission-p15b-manual-proof-review',
+    3
+  )
+on conflict (programme_id, mission_id) do update
+  set sort_order = excluded.sort_order;
+
+insert into public.mission_proofs (
+  user_id,
+  mission_id,
+  award_scope,
+  proof_type,
+  value,
+  status,
+  organization_id,
+  programme_id,
+  programme_mission_id
+)
+values
+  (
+    '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid,
+    'mission-p15b-manual-proof-review',
+    'programme:88888888-8888-4888-8888-888888888811:lifetime',
+    'text',
+    'Alpha manual proof',
+    'submitted',
+    :'p15b_alpha_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-manual-proof-review'
+  ),
+  (
+    '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid,
+    'mission-p15b-manual-proof-review',
+    'programme:88888888-8888-4888-8888-888888888812:lifetime',
+    'text',
+    'Beta manual proof',
+    'submitted',
+    :'p15b_beta_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888812'::uuid,
+    'mission-p15b-manual-proof-review'
+  );
+
+insert into public.missions (
+  id,
+  title,
+  description,
+  category,
+  reward_type,
+  reward_xp,
+  repeatability,
+  validation_type,
+  validation_config,
+  status,
+  sort_order,
+  mission_type_key
+)
+values (
   'mission-p15b-platform-referral',
   'P15B Platform Contextual Referral Mission',
   'Invite a contextual learner who completes one lesson.',
@@ -665,6 +976,49 @@ reset role;
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
+select public.complete_lesson_page(
+  'lesson-p15b-unattached-public',
+  'page-p15b-unattached-public'
+) as p15b_unattached_public_completion_result
+\gset
+
+select extensions.throws_ok(
+  $$
+    select public.award_valid_mission_xp(
+      'mission-p15b-programme-lesson-count',
+      'programme:88888888-8888-4888-8888-888888888811:lifetime'
+    )
+  $$,
+  'P0001',
+  'Mission is not complete.',
+  'programme lesson-count missions ignore completed public lessons outside the programme'
+);
+
+select public.complete_lesson_page(
+  'lesson-p15b-referral-qualification',
+  'page-p15b-referral-qualification'
+) as p15b_programme_lesson_completion_result
+\gset
+
+select public.award_valid_mission_xp(
+  'mission-p15b-programme-lesson-count',
+  'programme:88888888-8888-4888-8888-888888888811:lifetime'
+) as p15b_programme_lesson_count_award
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.mission_awards
+    where user_id = :'TEST_LEARNER_USER_ID'::uuid
+      and mission_id = 'mission-p15b-programme-lesson-count'
+      and award_scope = 'programme:88888888-8888-4888-8888-888888888811:lifetime'
+      and organization_id = :'p15b_alpha_org_id'::uuid
+      and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+  ),
+  'programme lesson-count missions qualify from completed lessons attached to the programme'
+);
+
 select extensions.throws_ok(
   $$ select public.admin_set_mission_status('mission-p15b-platform-course', 'draft') $$,
   'P0001',
@@ -748,6 +1102,34 @@ select extensions.throws_ok(
   'P0001',
   'Organization is not entitled to this mission type.',
   'Starter organisations cannot create referral missions'
+);
+
+select extensions.throws_ok(
+  format(
+    $$
+      select public.admin_create_organization_mission(
+        %L::uuid,
+        'mission-p15b-alpha-cross-tenant-course',
+        'Cross Tenant Course',
+        'This mission should not reference Beta private content.',
+        'course',
+        20,
+        'once',
+        'course_completed',
+        'course_completed',
+        '{"courseId":"course-p15b-beta-private"}'::jsonb,
+        '{}'::jsonb,
+        null,
+        null,
+        'draft',
+        9
+      )
+    $$,
+    :'p15b_alpha_org_id'
+  ),
+  'P0001',
+  'Organization missions cannot reference private content from another organization.',
+  'organisation mission creation rejects another tenant private course reference'
 );
 
 select public.admin_adapt_platform_mission(
@@ -997,6 +1379,39 @@ values
     '{}'::jsonb,
     '{}'::jsonb,
     now() - interval '1 day'
+  ),
+  (
+    'p15bAlphaExternalAuto01',
+    :'TEST_LEARNER_USER_ID'::uuid,
+    :'p15b_alpha_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-alpha-course',
+    '/o/p15b-missions-alpha/learn',
+    '{"enrolmentPolicy":"automatic"}'::jsonb,
+    '{"title":"Join Alpha automatically"}'::jsonb,
+    null
+  ),
+  (
+    'p15bAlphaManualAccess01',
+    :'TEST_LEARNER_USER_ID'::uuid,
+    :'p15b_alpha_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-alpha-course',
+    '/o/p15b-missions-alpha/learn',
+    '{"enrolmentPolicy":"manual_approval"}'::jsonb,
+    '{"title":"Request Alpha access"}'::jsonb,
+    null
+  ),
+  (
+    'p15bAlphaExistingOnly01',
+    :'TEST_LEARNER_USER_ID'::uuid,
+    :'p15b_alpha_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-alpha-course',
+    '/o/p15b-missions-alpha/learn',
+    '{"enrolmentPolicy":"existing_members_only"}'::jsonb,
+    '{"title":"Members only"}'::jsonb,
+    null
   )
 on conflict (token) do update
   set referrer_user_id = excluded.referrer_user_id,
@@ -1095,6 +1510,91 @@ select extensions.throws_ok(
   'contextual referral acceptance keeps self-referral controls active'
 );
 
+reset role;
+select set_config('request.jwt.claim.sub', '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712', true);
+set local role authenticated;
+
+select public.accept_contextual_referral('p15bAlphaExternalAuto01') as p15b_external_auto_referral_result
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.enrolments
+    where organization_id = :'p15b_alpha_org_id'::uuid
+      and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+      and user_id = '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712'::uuid
+      and status = 'active'
+      and metadata ->> 'source' = 'contextual_referral'
+  )
+  and not exists (
+    select 1
+    from public.organization_memberships
+    where organization_id = :'p15b_alpha_org_id'::uuid
+      and user_id = '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712'::uuid
+  ),
+  'automatic contextual referral creates programme enrolment without broad organization membership'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.missions
+    where id = 'mission-p15b-alpha-course'
+  ),
+  1,
+  'programme-only learners can read attached organization missions'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.missions
+    where id = 'mission-p15b-alpha-adapted'
+  ),
+  0,
+  'programme-only learners cannot read unrelated organization missions'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713', true);
+set local role authenticated;
+
+select public.accept_contextual_referral('p15bAlphaManualAccess01') ->> 'accessStatus' as p15b_manual_access_status
+\gset
+
+select extensions.is(
+  :'p15b_manual_access_status'::text,
+  'pending'::text,
+  'manual-approval contextual referral returns pending access'
+);
+
+select extensions.ok(
+  not exists (
+    select 1
+    from public.enrolments
+    where organization_id = :'p15b_alpha_org_id'::uuid
+      and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+      and user_id = '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid
+  ),
+  'manual-approval contextual referral does not claim programme access before approval'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '7d7d7d7d-7d7d-4d7d-8d7d-7d7d7d7d7714', true);
+set local role authenticated;
+
+select extensions.throws_ok(
+  $$ select public.accept_contextual_referral('p15bAlphaExistingOnly01') $$,
+  'P0001',
+  'Referral requires an existing organization relationship.',
+  'existing-members-only contextual referral rejects learners without an organization relationship'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
 select public.ensure_contextual_referral_token(
   '88888888-8888-4888-8888-888888888811'::uuid,
   'mission-p15b-platform-referral'
@@ -1164,6 +1664,120 @@ select extensions.ok(
       and xt.amount = 45
   ),
   'contextual referral awards use programme mission scope, context and point overrides'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711', true);
+set local role authenticated;
+
+select public.award_valid_mission_xp(
+  'mission-p15b-platform-course',
+  'programme:88888888-8888-4888-8888-888888888811:lifetime'
+) as p15b_alpha_shared_mission_award
+\gset
+
+select public.award_valid_mission_xp(
+  'mission-p15b-platform-course',
+  'programme:88888888-8888-4888-8888-888888888812:lifetime'
+) as p15b_beta_shared_mission_award
+\gset
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.mission_awards
+    where user_id = '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid
+      and mission_id = 'mission-p15b-platform-course'
+      and award_scope in (
+        'programme:88888888-8888-4888-8888-888888888811:lifetime',
+        'programme:88888888-8888-4888-8888-888888888812:lifetime'
+      )
+  ),
+  2,
+  'same base mission attached to two programmes produces independent delivery awards'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712', true);
+set local role authenticated;
+
+select extensions.throws_ok(
+  $$
+    select public.admin_review_mission_proof_submission(
+      '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid,
+      'mission-p15b-manual-proof-review',
+      'programme:88888888-8888-4888-8888-888888888811:lifetime',
+      'approved',
+      null
+    )
+  $$,
+  'P0001',
+  'Only organization proof reviewers can review this mission proof.',
+  'organization proof reviewers cannot review another organization proof'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
+select public.admin_review_mission_proof_submission(
+  '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid,
+  'mission-p15b-manual-proof-review',
+  'programme:88888888-8888-4888-8888-888888888811:lifetime',
+  'approved',
+  null
+) as p15b_alpha_manual_proof_review
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.mission_proofs
+    where user_id = '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid
+      and mission_id = 'mission-p15b-manual-proof-review'
+      and award_scope = 'programme:88888888-8888-4888-8888-888888888811:lifetime'
+      and organization_id = :'p15b_alpha_org_id'::uuid
+      and status = 'approved'
+  ),
+  'organization proof reviewer can approve proof in their organization context'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_ADMIN_USER_ID', true);
+set local role authenticated;
+
+select public.admin_review_mission_proof_submission(
+  '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid,
+  'mission-p15b-manual-proof-review',
+  'programme:88888888-8888-4888-8888-888888888812:lifetime',
+  'approved',
+  null
+) as p15b_beta_manual_proof_review
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.mission_proofs
+    where user_id = '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid
+      and mission_id = 'mission-p15b-manual-proof-review'
+      and award_scope = 'programme:88888888-8888-4888-8888-888888888812:lifetime'
+      and organization_id = :'p15b_beta_org_id'::uuid
+      and status = 'approved'
+  ),
+  'platform admin can approve proof across organization contexts'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.audit_events
+    where event_type = 'mission_proof_approved'
+      and metadata ->> 'missionId' = 'mission-p15b-manual-proof-review'
+      and metadata ->> 'organizationId' = :'p15b_alpha_org_id'
+      and metadata ->> 'programmeId' = '88888888-8888-4888-8888-888888888811'
+  ),
+  'proof review audit events retain organization and programme context'
 );
 
 reset role;

@@ -3785,6 +3785,27 @@ npm run test:remediation:local
 
 Result: `db:reset`, generated type drift check, 23-file/484-test pgTAP suite, repository contracts, quiz XP concurrency, economic integrity and 8/8 Playwright E2E flows passed.
 
+Focused closure amendment implemented on 2026-08-10 after acceptance review:
+
+* programme mission summaries now use stable delivery ids instead of base mission ids, so the same reusable mission can appear independently in multiple programmes;
+* learner progress and referral qualification for programme-delivered missions are scoped to programme-attached content by default;
+* organisation mission presentation now carries CTA, instructions, eligibility, reward, pending/success/rejection and terms copy through programme overrides to learner mission cards;
+* org mission proof submission refreshes through the org missions API and keeps learners in `/o/[slug]` mode;
+* contextual referral acceptance now supports `automatic`, `manual_approval` and `existing_members_only` programme entry outcomes, and automatic entry creates programme/course enrolments without broad organisation membership;
+* programme-only learners can read attached organisation missions but not unrelated organisation missions;
+* organisation proof review now uses org-aware reviewer roles at the UI and RPC boundary, with platform admins retaining cross-org review capability;
+* active plan entitlements advertise only the currently wired `organization_xp` mission reward mode until direct/manual mission reward fulfilment is implemented.
+
+Focused closure validation completed on 2026-08-10:
+
+```bash
+npm run db:reset
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 -f supabase/tests/database/lms_organization_missions.sql
+npm run typecheck
+```
+
+Result: the P1.5B mission pgTAP file passed 54/54 assertions after applying `supabase/migrations/20260810100000_p15b_focused_closure.sql`; TypeScript passed.
+
 Then stop for review.
 
 ## Batch P1.5C

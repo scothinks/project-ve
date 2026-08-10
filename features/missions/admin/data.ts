@@ -66,6 +66,9 @@ export type AdminProofRow = {
   user_id: string;
   mission_id: string;
   award_scope: string;
+  organization_id: string | null;
+  programme_id: string | null;
+  programme_mission_id: string | null;
   proof_type: string;
   value: string;
   status: "submitted" | "approved" | "rejected";
@@ -90,6 +93,9 @@ export type AdminProofSubmission = {
   userId: string;
   missionId: string;
   awardScope: string;
+  organizationId: string | null;
+  programmeId: string | null;
+  programmeMissionId: string | null;
   status: "submitted" | "approved" | "rejected";
   createdAt: string;
   reviewedAt: string | null;
@@ -191,14 +197,21 @@ export async function getAdminMissionRewardCandidates(supabase: SupabaseClient) 
   );
 }
 
-export async function getAdminProofSubmissions(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function getAdminProofSubmissions(supabase: SupabaseClient, workspaceId?: string) {
+  const selectedWorkspaceId = workspaceId ?? await getSelectedAdminWorkspaceId();
+  let query = supabase
     .from("mission_proofs")
     .select(
-      "id, user_id, mission_id, award_scope, proof_type, value, status, rejection_reason, created_at, reviewed_at",
+      "id, user_id, mission_id, award_scope, organization_id, programme_id, programme_mission_id, proof_type, value, status, rejection_reason, created_at, reviewed_at",
     )
     .order("created_at", { ascending: false })
     .limit(200);
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw error;
@@ -210,7 +223,7 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient) {
       supabase,
       proofs.map((proof) => proof.user_id),
     ),
-    getAdminMissions(supabase),
+    getAdminMissions(supabase, selectedWorkspaceId),
   ]);
   const missionMap = new Map(missions.map((mission) => [mission.id, mission]));
   const grouped = new Map<string, AdminProofSubmission>();
@@ -232,6 +245,9 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient) {
       userId: proof.user_id,
       missionId: proof.mission_id,
       awardScope: proof.award_scope,
+      organizationId: proof.organization_id,
+      programmeId: proof.programme_id,
+      programmeMissionId: proof.programme_mission_id,
       status: nextStatus,
       createdAt: existing?.createdAt ?? proof.created_at,
       reviewedAt: proof.reviewed_at ?? existing?.reviewedAt ?? null,
