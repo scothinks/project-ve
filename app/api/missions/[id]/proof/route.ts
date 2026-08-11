@@ -27,6 +27,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const issues: ValidationIssue[] = [];
   const rawProof = getArrayField(bodyResult.data, "proof", issues, { required: false }) ?? [];
+  const organizationId = getOptionalStringField(bodyResult.data, "organizationId", issues);
   const programmeId = getOptionalStringField(bodyResult.data, "programmeId", issues);
   const proof: Array<{ type: MissionProof["type"]; value: string }> = [];
 
@@ -83,6 +84,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         supabase,
         userId: user.id,
         missionId: id,
+        organizationId,
         programmeId,
         proof,
       }),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
+import { normalizeReferralInviteKind, normalizeReferralInviteToken } from "@/lib/referral-invites";
 import { getRiskContext, verifyTurnstileToken } from "@/lib/auth-risk";
 import {
   getOptionalStringField,
@@ -32,9 +33,18 @@ export async function POST(request: NextRequest) {
   const rawNextPath = getOptionalStringField(bodyResult.data, "nextPath", issues, {
     maxLength: 2048,
   });
+  const rawReferralCode = getOptionalStringField(bodyResult.data, "referralCode", issues, {
+    maxLength: 128,
+  });
+  const referralKind = normalizeReferralInviteKind(
+    getOptionalStringField(bodyResult.data, "referralKind", issues),
+  );
   const email = normalizeEmailInput(rawEmail ?? "");
   const fullName = sanitizePlainTextInput(rawFullName ?? "", 120).trim();
   const nextPath = getSafeAuthNextPath(rawNextPath);
+  const referralCode = rawReferralCode
+    ? normalizeReferralInviteToken(rawReferralCode, referralKind)
+    : "";
 
   if (!email) {
     issues.push({ path: "email", message: "Expected a valid email address." });
@@ -84,13 +94,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: attemptError.message }, { status: 400 });
   }
 
+  const confirmedLoginParams = new URLSearchParams({
+    confirmed: "1",
+    next: nextPath,
+  });
+
+  if (referralCode) {
+    confirmedLoginParams.set("ref", referralCode);
+    if (referralKind === "contextual") {
+      confirmedLoginParams.set("refKind", "contextual");
+    }
+  }
+
   const { data, error } = await serverSupabase.auth.signUp({
     email,
     password,
     options: {
       captchaToken: captchaToken ?? undefined,
       emailRedirectTo: `${request.nextUrl.origin}/auth/callback?next=${encodeURIComponent(
-        `/login?confirmed=1&next=${encodeURIComponent(nextPath)}`,
+        `/login?${confirmedLoginParams.toString()}`,
       )}`,
       data: {
         display_name: fullName,

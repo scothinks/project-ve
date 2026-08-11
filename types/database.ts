@@ -3039,6 +3039,7 @@ export type Database = {
           category: Database["public"]["Enums"]["mission_category"]
           configuration_version: number
           created_at: string
+          delivery_scope: string
           description: string
           ends_at: string | null
           id: string
@@ -3067,6 +3068,7 @@ export type Database = {
           category: Database["public"]["Enums"]["mission_category"]
           configuration_version?: number
           created_at?: string
+          delivery_scope?: string
           description: string
           ends_at?: string | null
           id: string
@@ -3095,6 +3097,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["mission_category"]
           configuration_version?: number
           created_at?: string
+          delivery_scope?: string
           description?: string
           ends_at?: string | null
           id?: string
@@ -6637,6 +6640,14 @@ export type Database = {
         Args: { p_course_id: string; p_text_status?: string }
         Returns: undefined
       }
+      admin_review_contextual_programme_access: {
+        Args: {
+          p_decision: string
+          p_enrolment_id: string
+          p_rejection_reason?: string
+        }
+        Returns: Json
+      }
       admin_review_mission_proof_submission: {
         Args: {
           p_award_scope: string
@@ -7888,7 +7899,7 @@ export type Database = {
         | "resolved"
         | "dismissed"
       lms_intervention_type: "upcoming_due" | "overdue" | "inactive"
-      lms_participation_status: "active" | "completed" | "withdrawn"
+      lms_participation_status: "active" | "completed" | "withdrawn" | "pending"
       lms_reward_owner_scope:
         | "platform_owned"
         | "organization_owned"
@@ -8198,7 +8209,7 @@ export const Constants = {
         "dismissed",
       ],
       lms_intervention_type: ["upcoming_due", "overdue", "inactive"],
-      lms_participation_status: ["active", "completed", "withdrawn"],
+      lms_participation_status: ["active", "completed", "withdrawn", "pending"],
       lms_reward_owner_scope: [
         "platform_owned",
         "organization_owned",

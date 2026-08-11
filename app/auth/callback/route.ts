@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { getRiskContext } from "@/lib/auth-risk";
+import { normalizeReferralInviteKind, normalizeReferralInviteToken } from "@/lib/referral-invites";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
 import {
   clearOAuthSignupProofCookie,
@@ -20,6 +21,11 @@ type ProfileAccessRow = {
 
 type UserValueProfileStatusRow = {
   assessment_completed_at: string | null;
+};
+
+type ReferralAcceptResult = {
+  accessStatus?: string;
+  destination?: string | null;
 };
 
 const freshOAuthWindowMs = 5 * 60 * 1000;
@@ -48,6 +54,27 @@ function getUserProvider(user: User) {
   }
 
   return null;
+}
+
+function getReferralFromNextPath(next: string) {
+  const nextUrl = new URL(next, "https://project-ve.local");
+  const ref = nextUrl.searchParams.get("ref");
+  const kind = normalizeReferralInviteKind(nextUrl.searchParams.get("refKind"));
+  const token = ref ? normalizeReferralInviteToken(ref, kind) : "";
+
+  return token ? { kind, token } : null;
+}
+
+function getReferralRedirectPath(result: ReferralAcceptResult, fallback: string) {
+  if (result.accessStatus === "granted") {
+    return getSafeAuthNextPath(result.destination, fallback);
+  }
+
+  if (result.accessStatus === "pending") {
+    return "/org/my?notice=Access%20requested.%20Waiting%20for%20organisation%20approval.";
+  }
+
+  return "/org/my?notice=This%20invite%20could%20not%20grant%20organisation%20access.";
 }
 
 function isLikelyFreshOAuthUser(user: User) {
@@ -170,6 +197,33 @@ export async function GET(request: NextRequest) {
         );
       }
     }
+  }
+
+  const referral = getReferralFromNextPath(next);
+
+  if (referral) {
+    const { data, error } = referral.kind === "contextual"
+      ? await supabase.rpc("accept_contextual_referral", {
+          p_token: referral.token,
+        })
+      : await supabase.rpc("accept_referral", {
+          p_referral_code: referral.token,
+        });
+
+    if (error) {
+      const response = NextResponse.redirect(
+        new URL("/org/my?notice=This%20invite%20could%20not%20be%20applied.", request.url),
+      );
+      clearOAuthSignupProofCookie(response);
+      return response;
+    }
+
+    const destination = referral.kind === "contextual"
+      ? getReferralRedirectPath((data ?? {}) as ReferralAcceptResult, next)
+      : next;
+    const response = NextResponse.redirect(new URL(destination, request.url));
+    clearOAuthSignupProofCookie(response);
+    return response;
   }
 
   const [{ data: profile }, { data: valueProfile }] = await Promise.all([

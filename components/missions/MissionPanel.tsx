@@ -383,6 +383,7 @@ export function MissionPanel({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        organizationId: mission.organizationContext?.organizationId,
         programmeId: mission.programmeContext?.programmeId,
         proof: [
           {
