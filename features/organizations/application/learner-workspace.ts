@@ -176,6 +176,42 @@ async function getProgrammeMissionDeliveryRequests(
   });
 }
 
+async function getOrganizationMissionDeliveryRequests(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+  organizationSlug: string,
+  roles: Database["public"]["Enums"]["organization_role_key"][],
+) {
+  if (roles.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("missions")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("delivery_scope", "organization")
+    .eq("status", "published")
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map((row): MissionDeliveryRequest => ({
+    deliveryId: `${organizationId}:${row.id}`,
+    missionId: row.id,
+    executionContext: {
+      deliveryId: `${organizationId}:${row.id}`,
+      organizationId,
+      organizationSlug,
+      programmeId: null,
+      programmeMissionId: null,
+      startsAt: null,
+      dueAt: null,
+      isRequired: false,
+      xpAccountId: null,
+      rewardXpOverride: null,
+    },
+  }));
+}
+
 async function getOrganizationCourseIds(
   supabase: SupabaseClient<Database>,
   organizationId: string,
@@ -259,11 +295,13 @@ export async function resolveOrganizationLearnerWorkspace(
   const enrolments = (enrolmentsResult.data ?? []) as EnrolmentRow[];
   const programmeIds = unique(enrolments.map((enrolment) => enrolment.programme_id));
   const directCourseIds = unique(enrolments.map((enrolment) => enrolment.course_id));
-  const [programmeCourseIds, organizationCourseIds, missionDeliveries] = await Promise.all([
+  const [programmeCourseIds, organizationCourseIds, programmeMissionDeliveries, organizationMissionDeliveries] = await Promise.all([
     getProgrammeCourseIds(supabase, programmeIds),
     roles.length > 0 ? getOrganizationCourseIds(supabase, organization.id) : Promise.resolve([]),
     getProgrammeMissionDeliveryRequests(supabase, organization.id, organization.slug, programmeIds),
+    getOrganizationMissionDeliveryRequests(supabase, organization.id, organization.slug, roles),
   ]);
+  const missionDeliveries = [...organizationMissionDeliveries, ...programmeMissionDeliveries];
   const courseIds = unique([...directCourseIds, ...programmeCourseIds, ...organizationCourseIds]);
 
   return {
@@ -328,9 +366,15 @@ export async function getOrganizationWorkspaceMissions({
     workspace.organizationSlug,
     workspace.programmeIds,
   );
+  const organizationMissionDeliveries = await getOrganizationMissionDeliveryRequests(
+    supabase,
+    workspace.organizationId,
+    workspace.organizationSlug,
+    workspace.membershipRoles,
+  );
 
   return getSupabaseMissionSummaries({
-    missionDeliveries,
+    missionDeliveries: [...organizationMissionDeliveries, ...missionDeliveries],
     origin,
     referralCode: profile.referral_code ?? null,
     supabase,

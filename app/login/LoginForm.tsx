@@ -34,6 +34,11 @@ type LoginFormProps = {
 
 type PendingAction = "submit" | "google" | "forgot" | "resend" | "redirect";
 
+type ReferralAcceptResult = {
+  accessStatus?: string;
+  destination?: string | null;
+};
+
 declare global {
   interface Window {
     turnstile?: {
@@ -113,23 +118,46 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       ? normalizeReferralInviteToken(referralCode, referralKind)
       : null;
 
-    if (safeNextPath !== defaultAuthNextPath || !safeReferralCode) {
+    if (!safeReferralCode || referralKind !== "contextual") {
+      if (safeNextPath === defaultAuthNextPath && safeReferralCode) {
+        return `/dashboard?ref=${encodeURIComponent(safeReferralCode)}`;
+      }
       return safeNextPath;
     }
 
-    const params = new URLSearchParams({ ref: safeReferralCode });
+    const params = new URLSearchParams({
+      next: safeNextPath,
+      ref: safeReferralCode,
+    });
     if (referralKind === "contextual") {
       params.set("refKind", "contextual");
     }
 
-    return `/dashboard?${params.toString()}`;
+    return `/login?confirmed=1&${params.toString()}`;
   }, [referralCode, referralKind, safeNextPath]);
 
-  const openDestination = useCallback(() => {
+  const openDestination = useCallback((destination?: string | null) => {
+    const safeDestination = getSafeAuthNextPath(destination, safeNextPath);
     setPendingAction("redirect");
     window.setTimeout(() => {
-      window.location.replace(safeNextPath);
+      window.location.replace(safeDestination);
     }, 0);
+  }, [safeNextPath]);
+
+  const resolveReferralDestination = useCallback((result: ReferralAcceptResult | null) => {
+    if (!result?.accessStatus) {
+      return null;
+    }
+
+    if (result.accessStatus === "granted") {
+      return getSafeAuthNextPath(result.destination, safeNextPath);
+    }
+
+    if (result.accessStatus === "pending") {
+      return "/org/my?notice=Access%20requested.%20Waiting%20for%20organisation%20approval.";
+    }
+
+    return "/org/my?notice=This%20invite%20could%20not%20grant%20organisation%20access.";
   }, [safeNextPath]);
 
   useEffect(() => {
@@ -170,10 +198,6 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
     if (new URLSearchParams(window.location.search).get("confirmed") === "1") {
       setAuthMode("login");
       setEmailConfirmed(true);
-      setReferralCode(null);
-      window.localStorage.removeItem(publicReferralStorageKey);
-      window.localStorage.removeItem(contextualReferralStorageKey);
-      window.localStorage.removeItem(referralKindStorageKey);
       window.history.replaceState({}, "", buildLoginPath());
     }
 
@@ -279,7 +303,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
     );
 
     if (!code) {
-      return;
+      return null;
     }
 
     const response = await fetch("/api/referrals/accept", {
@@ -299,9 +323,13 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       throw new Error(data.error ?? "Could not apply referral.");
     }
 
+    const data = (await response.json()) as ReferralAcceptResult;
+
     window.localStorage.removeItem(publicReferralStorageKey);
     window.localStorage.removeItem(contextualReferralStorageKey);
     window.localStorage.removeItem(referralKindStorageKey);
+
+    return kind === "contextual" ? resolveReferralDestination(data) : null;
   }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -325,7 +353,9 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       setMessage(null);
       if (authMode === "signup") {
         try {
-          await applyReferralIfNeeded();
+          const referralDestination = await applyReferralIfNeeded();
+          openDestination(referralDestination);
+          return;
         } catch (error) {
           setPendingAction(null);
           setMessage(error instanceof Error ? error.message : "Could not apply referral.");
@@ -346,6 +376,9 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
 
     const safeEmail = normalizeEmailInput(email);
     const safeFullName = sanitizePlainTextInput(fullName, 120).trim();
+    const safeReferralCode = referralCode
+      ? normalizeReferralInviteToken(referralCode, referralKind)
+      : null;
 
     if (authMode === "signup") {
       if (safeFullName.length < 2) {
@@ -377,6 +410,8 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
           fullName: safeFullName,
           captchaToken,
           nextPath: safeNextPath,
+          referralCode: safeReferralCode,
+          referralKind,
         }),
       });
       const data = (await response.json()) as {
@@ -395,7 +430,9 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
 
       if (data.sessionExists) {
         try {
-          await applyReferralIfNeeded();
+          const referralDestination = await applyReferralIfNeeded();
+          openDestination(referralDestination);
+          return;
         } catch (referralError) {
           setMessage(
             referralError instanceof Error
@@ -405,8 +442,6 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
           setPendingAction(null);
           return;
         }
-        openDestination();
-        return;
       }
 
       setPendingAction(null);
@@ -426,7 +461,13 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       return;
     }
 
-    openDestination();
+    try {
+      const referralDestination = await applyReferralIfNeeded();
+      openDestination(referralDestination);
+    } catch (referralError) {
+      setMessage(referralError instanceof Error ? referralError.message : "Could not apply referral.");
+      setPendingAction(null);
+    }
   }
 
   async function handleGoogleLogin() {

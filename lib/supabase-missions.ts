@@ -58,8 +58,8 @@ export type MissionExecutionContext = {
   deliveryId?: string;
   organizationId: string;
   organizationSlug?: string;
-  programmeId: string;
-  programmeMissionId: string;
+  programmeId: string | null;
+  programmeMissionId: string | null;
   startsAt: string | null;
   dueAt: string | null;
   isRequired: boolean;
@@ -217,12 +217,18 @@ function getMissionAwardScope(mission: DbMission, executionContext?: MissionExec
     return periodScope;
   }
 
+  if (!executionContext.programmeId) {
+    return `organization:${executionContext.organizationId}:${periodScope}`;
+  }
+
   return `programme:${executionContext.programmeId}:${periodScope}`;
 }
 
 function getReferralAwardScope(referredUserId: string, executionContext?: MissionExecutionContext) {
   const referralScope = `referral:${referredUserId}`;
-  return executionContext ? `programme:${executionContext.programmeId}:${referralScope}` : referralScope;
+  if (!executionContext) return referralScope;
+  if (!executionContext.programmeId) return `organization:${executionContext.organizationId}:${referralScope}`;
+  return `programme:${executionContext.programmeId}:${referralScope}`;
 }
 
 function assertMissionExecutionWindow(executionContext?: MissionExecutionContext) {
@@ -284,7 +290,7 @@ async function getProgrammeCourseIds(
   supabase: SupabaseClient,
   executionContext?: MissionExecutionContext,
 ) {
-  if (!executionContext) return null;
+  if (!executionContext?.programmeId) return null;
 
   const { data, error } = await supabase
     .from("programme_courses")
@@ -460,7 +466,7 @@ async function getLessonCountProgress(
   const scopedLessons = await getScopedPublishedLessons(supabase, executionContext);
   const scopedLessonIds = scopedLessons.map((lesson) => lesson.id);
 
-  if (executionContext && scopedLessonIds.length === 0) {
+  if (executionContext?.programmeId && scopedLessonIds.length === 0) {
     return { progressCount: 0, targetCount: Math.max(1, count), valid: false };
   }
 
@@ -470,7 +476,7 @@ async function getLessonCountProgress(
     .eq("user_id", userId)
     .not("completed_at", "is", null);
 
-  if (executionContext) {
+  if (executionContext?.programmeId && executionContext.programmeMissionId) {
     query = query.in("lesson_id", scopedLessonIds);
   }
 
@@ -507,11 +513,16 @@ async function getReferralProgress(
     .select("referred_user_id, created_at")
     .eq("referrer_user_id", userId);
 
-  if (executionContext) {
+  if (executionContext?.programmeId && executionContext.programmeMissionId) {
     referralQuery = referralQuery
       .eq("organization_id", executionContext.organizationId)
       .eq("programme_id", executionContext.programmeId)
       .eq("programme_mission_id", executionContext.programmeMissionId);
+  } else if (executionContext) {
+    referralQuery = referralQuery
+      .eq("organization_id", executionContext.organizationId)
+      .is("programme_id", null)
+      .is("programme_mission_id", null);
   } else {
     referralQuery = referralQuery
       .is("organization_id", null)
@@ -764,11 +775,16 @@ async function getAwardedCount(
     .eq("user_id", userId)
     .eq("mission_id", missionId);
 
-  if (executionContext) {
+  if (executionContext?.programmeId) {
     query = query
       .eq("organization_id", executionContext.organizationId)
       .eq("programme_id", executionContext.programmeId)
       .eq("programme_mission_id", executionContext.programmeMissionId);
+  } else if (executionContext) {
+    query = query
+      .eq("organization_id", executionContext.organizationId)
+      .is("programme_id", null)
+      .is("programme_mission_id", null);
   } else {
     query = query
       .is("organization_id", null)
@@ -804,7 +820,7 @@ async function getContextualReferralToken(
   supabase: SupabaseClient,
   executionContext?: MissionExecutionContext,
 ) {
-  if (!executionContext) {
+  if (!executionContext?.programmeId || !executionContext.programmeMissionId) {
     return null;
   }
 
@@ -841,11 +857,13 @@ function normalizeProgrammeRelation(value: unknown): { organization_id: string; 
 
 async function resolveMissionExecutionContext({
   missionId,
+  organizationId,
   programmeId,
   supabase,
   userId,
 }: {
   missionId: string;
+  organizationId?: string | null;
   programmeId?: string | null;
   supabase: SupabaseClient;
   userId: string;
@@ -853,7 +871,51 @@ async function resolveMissionExecutionContext({
   void userId;
 
   if (!programmeId) {
-    return undefined;
+    if (!organizationId) {
+      return undefined;
+    }
+
+    const { data: mission, error } = await supabase
+      .from("missions")
+      .select("id, organization_id, delivery_scope, status")
+      .eq("id", missionId)
+      .eq("organization_id", organizationId)
+      .eq("delivery_scope", "organization")
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!mission) {
+      throw new Error("Organization mission context is not available.");
+    }
+
+    const { data: canEnter, error: canEnterError } = await supabase.rpc(
+      "current_user_can_enter_organization",
+      { p_organization_id: organizationId },
+    );
+
+    if (canEnterError) {
+      throw canEnterError;
+    }
+
+    if (!canEnter) {
+      throw new Error("Organization mission context is not available.");
+    }
+
+    return {
+      deliveryId: `${organizationId}:${missionId}`,
+      organizationId,
+      programmeId: null,
+      programmeMissionId: null,
+      startsAt: null,
+      dueAt: null,
+      isRequired: false,
+      xpAccountId: null,
+      rewardXpOverride: null,
+    };
   }
 
   const { data, error } = await supabase
@@ -1089,7 +1151,7 @@ export async function getSupabaseMissionSummaries({
       completionLabel: status === "completed" ? getMissionCompletionLabel(mission) : undefined,
       availableAgainAt: status === "completed" ? getMissionAvailableAgainAt(mission) : undefined,
       presentation,
-      programmeContext: missionExecutionContext
+      programmeContext: missionExecutionContext?.programmeId && missionExecutionContext.programmeMissionId
         ? {
             organizationId: missionExecutionContext.organizationId,
             programmeId: missionExecutionContext.programmeId,
@@ -1101,18 +1163,26 @@ export async function getSupabaseMissionSummaries({
             rewardXpOverride: missionExecutionContext.rewardXpOverride,
           }
         : undefined,
+      organizationContext:
+        missionExecutionContext && !missionExecutionContext.programmeId
+          ? {
+              organizationId: missionExecutionContext.organizationId,
+            }
+          : undefined,
       referral: referralWithShareUrl,
     };
   }));
 }
 
 export async function submitSupabaseMissionProof({
+  organizationId,
   programmeId,
   supabase,
   userId,
   missionId,
   proof,
 }: {
+  organizationId?: string | null;
   programmeId?: string | null;
   supabase: SupabaseClient;
   userId: string;
@@ -1151,6 +1221,7 @@ export async function submitSupabaseMissionProof({
 
   const missionExecutionContext = await resolveMissionExecutionContext({
     missionId: normalizedMission.id,
+    organizationId,
     programmeId,
     supabase,
     userId,

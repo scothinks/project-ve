@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(54);
+select extensions.plan(64);
 
 insert into auth.users (
   id,
@@ -76,6 +76,17 @@ values
     now()
   ),
   (
+    '5e5e5e5e-5e5e-4e5e-8e5e-5e5e5e5e5715'::uuid,
+    'authenticated',
+    'authenticated',
+    'pgtap-org-missions-manual-reject@example.test',
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  ),
+  (
     '7d7d7d7d-7d7d-4d7d-8d7d-7d7d7d7d7714'::uuid,
     'authenticated',
     'authenticated',
@@ -108,6 +119,7 @@ values
   ('6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid, 'Local pgTAP Org Missions Referred', 0, 0, 'learner'),
   ('8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712'::uuid, 'Local pgTAP Org Missions Outsider', 0, 0, 'learner'),
   ('9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid, 'Local pgTAP Org Missions Manual Pending', 0, 0, 'learner'),
+  ('5e5e5e5e-5e5e-4e5e-8e5e-5e5e5e5e5715'::uuid, 'Local pgTAP Org Missions Manual Reject', 0, 0, 'learner'),
   ('7d7d7d7d-7d7d-4d7d-8d7d-7d7d7d7d7714'::uuid, 'Local pgTAP Org Missions Ineligible', 0, 0, 'learner')
 on conflict (id) do update
   set display_name = excluded.display_name,
@@ -1221,6 +1233,62 @@ select extensions.ok(
   'adapted mission edits preserve source execution while allowing local presentation changes'
 );
 
+select extensions.is(
+  (
+    select delivery_scope
+    from public.missions
+    where id = 'mission-p15b-alpha-course'
+  ),
+  'catalog_only',
+  'organisation missions default to catalogue-only delivery until explicitly delivered'
+);
+
+reset role;
+set local role service_role;
+
+update public.missions
+set delivery_scope = 'organization'
+where id = 'mission-p15b-alpha-adapted';
+
+reset role;
+select set_config('request.jwt.claim.sub', '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711', true);
+set local role authenticated;
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.missions
+    where id = 'mission-p15b-alpha-adapted'
+  ),
+  'organisation-wide missions are visible to active organisation learners'
+);
+
+select extensions.ok(
+  not exists (
+    select 1
+    from public.missions
+    where id = 'mission-p15b-alpha-course'
+  ),
+  'programme-delivered catalogue-only missions are hidden from unrelated organisation learners'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '8b8b8b8b-8b8b-4b8b-8b8b-8b8b8b8b8712', true);
+set local role authenticated;
+
+select extensions.ok(
+  not exists (
+    select 1
+    from public.missions
+    where id = 'mission-p15b-alpha-adapted'
+  ),
+  'organisation-wide missions are hidden from external programme-only learners unless separately eligible'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
 select extensions.throws_ok(
   format(
     $$
@@ -1403,6 +1471,17 @@ values
     null
   ),
   (
+    'p15bAlphaManualReject01',
+    :'TEST_LEARNER_USER_ID'::uuid,
+    :'p15b_alpha_org_id'::uuid,
+    '88888888-8888-4888-8888-888888888811'::uuid,
+    'mission-p15b-alpha-course',
+    '/o/p15b-missions-alpha/learn',
+    '{"enrolmentPolicy":"manual_approval"}'::jsonb,
+    '{"title":"Request Alpha access rejection"}'::jsonb,
+    null
+  ),
+  (
     'p15bAlphaExistingOnly01',
     :'TEST_LEARNER_USER_ID'::uuid,
     :'p15b_alpha_org_id'::uuid,
@@ -1485,11 +1564,26 @@ select extensions.is(
   'same learner can hold multiple contextual referral links in separate contexts'
 );
 
-select extensions.throws_ok(
-  $$ select public.accept_contextual_referral('p15bAlphaReferralToken01') $$,
-  'P0001',
-  'A referral has already been applied for this context.',
-  'duplicate contextual referral acceptance is rejected for the same context'
+select public.accept_contextual_referral('p15bAlphaReferralToken01') as p15b_alpha_referral_duplicate_result
+\gset
+
+select extensions.is(
+  :'p15b_alpha_referral_duplicate_result'::jsonb ->> 'accessStatus',
+  'granted',
+  'duplicate contextual referral acceptance returns the current granted access state'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.referral_attributions
+    where referred_user_id = '6a6a6a6a-6a6a-4a6a-8a6a-6a6a6a6a6711'::uuid
+      and organization_id = :'p15b_alpha_org_id'::uuid
+      and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+      and programme_mission_id = 'mission-p15b-alpha-course'
+  ),
+  1,
+  'duplicate contextual referral acceptance remains idempotent'
 );
 
 select extensions.throws_ok(
@@ -1570,14 +1664,118 @@ select extensions.is(
 );
 
 select extensions.ok(
-  not exists (
+  exists (
     select 1
     from public.enrolments
     where organization_id = :'p15b_alpha_org_id'::uuid
       and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
       and user_id = '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid
+      and status = 'pending'
+      and metadata ->> 'source' = 'contextual_referral'
   ),
-  'manual-approval contextual referral does not claim programme access before approval'
+  'manual-approval contextual referral creates pending programme access'
+);
+
+select extensions.is(
+  public.current_user_can_enter_organization(:'p15b_alpha_org_id'::uuid),
+  false,
+  'pending manual contextual referral does not grant organisation entry'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
+select id as p15b_manual_access_enrolment_id
+from public.enrolments
+where organization_id = :'p15b_alpha_org_id'::uuid
+  and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+  and user_id = '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid
+\gset
+
+select public.admin_review_contextual_programme_access(
+  :'p15b_manual_access_enrolment_id'::uuid,
+  'approve',
+  null
+) as p15b_manual_access_approval_result
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.enrolments
+    where id = :'p15b_manual_access_enrolment_id'::uuid
+      and status = 'active'
+  )
+  and exists (
+    select 1
+    from public.enrolments
+    where organization_id = :'p15b_alpha_org_id'::uuid
+      and course_id = 'course-p15b-missions-platform'
+      and user_id = '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713'::uuid
+      and status = 'active'
+      and metadata ->> 'source' = 'contextual_referral'
+  ),
+  'organisation programme manager approval activates programme and programme-course access'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '9c9c9c9c-9c9c-4c9c-8c9c-9c9c9c9c9713', true);
+set local role authenticated;
+
+select extensions.is(
+  public.current_user_can_enter_organization(:'p15b_alpha_org_id'::uuid),
+  true,
+  'approved manual contextual referral grants organisation entry'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '5e5e5e5e-5e5e-4e5e-8e5e-5e5e5e5e5715', true);
+set local role authenticated;
+
+select public.accept_contextual_referral('p15bAlphaManualReject01') ->> 'accessStatus' as p15b_manual_reject_status
+\gset
+
+select extensions.is(
+  :'p15b_manual_reject_status'::text,
+  'pending'::text,
+  'second manual-approval contextual referral returns pending before rejection'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
+select id as p15b_manual_reject_enrolment_id
+from public.enrolments
+where organization_id = :'p15b_alpha_org_id'::uuid
+  and programme_id = '88888888-8888-4888-8888-888888888811'::uuid
+  and user_id = '5e5e5e5e-5e5e-4e5e-8e5e-5e5e5e5e5715'::uuid
+\gset
+
+select public.admin_review_contextual_programme_access(
+  :'p15b_manual_reject_enrolment_id'::uuid,
+  'reject',
+  'Capacity reached'
+) as p15b_manual_reject_result
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.enrolments
+    where id = :'p15b_manual_reject_enrolment_id'::uuid
+      and status = 'withdrawn'
+      and withdrawn_at is not null
+      and metadata ->> 'rejectionReason' = 'Capacity reached'
+  )
+  and exists (
+    select 1
+    from public.referral_attributions
+    where referred_user_id = '5e5e5e5e-5e5e-4e5e-8e5e-5e5e5e5e5715'::uuid
+      and status = 'rejected'
+  ),
+  'organisation programme manager rejection makes manual access terminal'
 );
 
 reset role;
@@ -1893,6 +2091,16 @@ select extensions.ok(
     'anon',
     'public.resolve_referral_invite(text)',
     'execute'
+  )
+  and has_function_privilege(
+    'authenticated',
+    'public.admin_review_contextual_programme_access(uuid, text, text)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.admin_review_contextual_programme_access(uuid, text, text)',
+    'execute'
   ),
   'organization mission, programme mission delivery and contextual referral RPC grants stay explicit'
 );
@@ -1948,6 +2156,13 @@ select extensions.ok(
     where function_schema = 'public'
       and function_name = 'enforce_organization_mission_content_scope'
       and classification = 'TRIGGER_ONLY'
+  )
+  and exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_schema = 'public'
+      and function_name = 'admin_review_contextual_programme_access'
+      and classification = 'ADMIN_AUTHENTICATED'
   ),
   'new P1.5B RPCs are classified'
 );

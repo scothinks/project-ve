@@ -48,6 +48,56 @@ $$;
 revoke execute on function public.current_user_can_read_programme(uuid) from public, anon, authenticated, service_role;
 grant execute on function public.current_user_can_read_programme(uuid) to anon, authenticated, service_role;
 
+alter table public.missions
+  add column if not exists delivery_scope text not null default 'catalog_only';
+
+do $$ begin
+  alter table public.missions
+    add constraint missions_delivery_scope_check
+    check (delivery_scope in ('catalog_only', 'organization', 'programme'));
+exception when duplicate_object then null;
+end $$;
+
+update public.missions
+set delivery_scope = 'programme'
+where catalog_scope in ('organization_private', 'adapted_platform')
+  and exists (
+    select 1
+    from public.programme_missions programme_mission
+    where programme_mission.mission_id = missions.id
+  );
+
+do $$ begin
+  alter type public.lms_participation_status add value if not exists 'pending';
+exception when duplicate_object then null;
+end $$;
+
+alter table public.enrolments
+  drop constraint if exists enrolments_status_check;
+
+alter table public.enrolments
+  drop constraint if exists enrolments_check1;
+
+alter table public.enrolments
+  add constraint enrolments_status_check
+  check (
+    (status::text = 'completed' and completed_at is not null and withdrawn_at is null)
+    or (status::text = 'withdrawn' and completed_at is null and withdrawn_at is not null)
+    or (status::text in ('active', 'pending') and completed_at is null and withdrawn_at is null)
+  );
+
+drop policy if exists "Organization missions readable by organization members" on public.missions;
+create policy "Organization missions readable by organization members"
+  on public.missions for select
+  using (
+    catalog_scope in ('organization_private', 'adapted_platform')
+    and delivery_scope = 'organization'
+    and status = 'published'
+    and (starts_at is null or starts_at <= now())
+    and (ends_at is null or ends_at > now())
+    and public.current_user_has_organization_role(organization_id, null)
+  );
+
 drop policy if exists "Programme learners can read attached organization missions" on public.missions;
 create policy "Programme learners can read attached organization missions"
   on public.missions for select
@@ -63,7 +113,21 @@ create policy "Programme learners can read attached organization missions"
         on programme.id = programme_mission.programme_id
       where programme_mission.mission_id = missions.id
         and programme.organization_id = missions.organization_id
-        and public.current_user_can_read_programme(programme.id)
+        and (
+          public.current_user_can_manage_organization_programmes(programme.organization_id)
+          or public.current_user_has_organization_role(
+            programme.organization_id,
+            array['content_editor', 'reviewer', 'instructor', 'report_viewer']::public.organization_role_key[]
+          )
+          or exists (
+            select 1
+            from public.enrolments enrolment
+            where enrolment.programme_id = programme.id
+              and enrolment.organization_id = programme.organization_id
+              and enrolment.user_id = auth.uid()
+              and enrolment.status in ('active', 'completed')
+          )
+        )
     )
   );
 
@@ -139,6 +203,8 @@ declare
   v_programme public.programmes%rowtype;
   v_course record;
   v_programme_enrolment_created boolean := false;
+  v_existing_attribution public.referral_attributions%rowtype;
+  v_existing_enrolment public.enrolments%rowtype;
 begin
   if v_referred_user_id is null then
     raise exception 'Authentication is required.';
@@ -179,20 +245,61 @@ begin
     raise exception 'Referral requires an existing organization relationship.';
   end if;
 
-  if exists (
-    select 1
-    from public.referral_attributions attribution
-    where attribution.referred_user_id = v_referred_user_id
-      and (
-        attribution.contextual_referral_token_id = v_referral.id
-        or (
-          attribution.organization_id is not distinct from v_referral.organization_id
-          and attribution.programme_id is not distinct from v_referral.programme_id
-          and attribution.programme_mission_id is not distinct from v_referral.programme_mission_id
-        )
+  select *
+    into v_existing_attribution
+  from public.referral_attributions attribution
+  where attribution.referred_user_id = v_referred_user_id
+    and (
+      attribution.contextual_referral_token_id = v_referral.id
+      or (
+        attribution.organization_id is not distinct from v_referral.organization_id
+        and attribution.programme_id is not distinct from v_referral.programme_id
+        and attribution.programme_mission_id is not distinct from v_referral.programme_mission_id
       )
-  ) then
-    raise exception 'A referral has already been applied for this context.';
+    )
+  order by attribution.created_at desc
+  limit 1;
+
+  if found then
+    if v_existing_attribution.programme_id is not null then
+      select *
+        into v_existing_enrolment
+      from public.enrolments
+      where organization_id = v_existing_attribution.organization_id
+        and programme_id = v_existing_attribution.programme_id
+        and user_id = v_referred_user_id
+      limit 1;
+
+      if found and v_existing_enrolment.status::text in ('active', 'completed') then
+        v_access_status := 'granted';
+      elsif found and v_existing_enrolment.status::text = 'pending' then
+        v_access_status := 'pending';
+      elsif v_existing_attribution.status = 'rejected' then
+        v_access_status := 'denied';
+      else
+        v_access_status := 'not_granted';
+      end if;
+    elsif v_existing_attribution.organization_id is not null then
+      v_access_status :=
+        case
+          when public.current_user_can_enter_organization(v_existing_attribution.organization_id) then 'granted'
+          when v_existing_attribution.status = 'rejected' then 'denied'
+          else 'not_granted'
+        end;
+    else
+      v_access_status := 'granted';
+    end if;
+
+    return jsonb_build_object(
+      'status', case when v_access_status = 'pending' then 'pending_access' else 'accepted' end,
+      'accessStatus', v_access_status,
+      'programmeEnrolmentCreated', false,
+      'referralAttributionId', v_existing_attribution.id,
+      'organizationId', v_existing_attribution.organization_id,
+      'programmeId', v_existing_attribution.programme_id,
+      'programmeMissionId', v_existing_attribution.programme_mission_id,
+      'destination', case when v_access_status = 'granted' then v_existing_attribution.destination else null end
+    );
   end if;
 
   insert into public.referral_attributions (
@@ -222,7 +329,7 @@ begin
   returning * into v_created;
 
   if v_referral.programme_id is not null
-     and v_enrolment_policy in ('automatic', 'existing_members_only') then
+     and v_enrolment_policy in ('automatic', 'existing_members_only', 'manual_approval') then
     select *
       into v_programme
     from public.programmes
@@ -234,44 +341,11 @@ begin
       raise exception 'Referral programme is not available.';
     end if;
 
-    insert into public.enrolments (
-      organization_id,
-      user_id,
-      programme_id,
-      assignment_source,
-      status,
-      metadata
-    )
-    values (
-      v_programme.organization_id,
-      v_referred_user_id,
-      v_programme.id,
-      'programme',
-      'active',
-      jsonb_build_object(
-        'source', 'contextual_referral',
-        'contextualReferralAttributionId', v_created.id,
-        'contextualReferralTokenId', v_referral.id
-      )
-    )
-    on conflict (organization_id, user_id, programme_id) where programme_id is not null
-    do update
-      set status = 'active',
-          withdrawn_at = null,
-          metadata = enrolments.metadata || excluded.metadata,
-          updated_at = now();
-
-    v_programme_enrolment_created := true;
-
-    for v_course in
-      select course_id
-      from public.programme_courses
-      where programme_id = v_programme.id
-    loop
+    if v_enrolment_policy = 'manual_approval' then
       insert into public.enrolments (
         organization_id,
         user_id,
-        course_id,
+        programme_id,
         assignment_source,
         status,
         metadata
@@ -279,27 +353,90 @@ begin
       values (
         v_programme.organization_id,
         v_referred_user_id,
-        v_course.course_id,
+        v_programme.id,
+        'programme',
+        'pending',
+        jsonb_build_object(
+          'source', 'contextual_referral',
+          'contextualReferralAttributionId', v_created.id,
+          'contextualReferralTokenId', v_referral.id,
+          'requiresApproval', true
+        )
+      )
+      on conflict (organization_id, user_id, programme_id) where programme_id is not null
+      do update
+        set status = case when enrolments.status::text in ('active', 'completed') then enrolments.status else excluded.status end,
+            withdrawn_at = null,
+            metadata = enrolments.metadata || excluded.metadata,
+            updated_at = now();
+
+      v_access_status := 'pending';
+    else
+      insert into public.enrolments (
+        organization_id,
+        user_id,
+        programme_id,
+        assignment_source,
+        status,
+        metadata
+      )
+      values (
+        v_programme.organization_id,
+        v_referred_user_id,
+        v_programme.id,
         'programme',
         'active',
         jsonb_build_object(
           'source', 'contextual_referral',
-          'programmeId', v_programme.id,
           'contextualReferralAttributionId', v_created.id,
           'contextualReferralTokenId', v_referral.id
         )
       )
-      on conflict (organization_id, user_id, course_id) where course_id is not null
+      on conflict (organization_id, user_id, programme_id) where programme_id is not null
       do update
         set status = 'active',
             withdrawn_at = null,
             metadata = enrolments.metadata || excluded.metadata,
             updated_at = now();
-    end loop;
 
-    v_access_status := 'granted';
-  elsif v_enrolment_policy = 'manual_approval' then
-    v_access_status := 'pending';
+      v_programme_enrolment_created := true;
+
+      for v_course in
+        select course_id
+        from public.programme_courses
+        where programme_id = v_programme.id
+      loop
+        insert into public.enrolments (
+          organization_id,
+          user_id,
+          course_id,
+          assignment_source,
+          status,
+          metadata
+        )
+        values (
+          v_programme.organization_id,
+          v_referred_user_id,
+          v_course.course_id,
+          'programme',
+          'active',
+          jsonb_build_object(
+            'source', 'contextual_referral',
+            'programmeId', v_programme.id,
+            'contextualReferralAttributionId', v_created.id,
+            'contextualReferralTokenId', v_referral.id
+          )
+        )
+        on conflict (organization_id, user_id, course_id) where course_id is not null
+        do update
+          set status = 'active',
+              withdrawn_at = null,
+              metadata = enrolments.metadata || excluded.metadata,
+              updated_at = now();
+      end loop;
+
+      v_access_status := 'granted';
+    end if;
   elsif v_referral.organization_id is not null then
     v_access_status := case when public.current_user_can_enter_organization(v_referral.organization_id) then 'granted' else 'not_granted' end;
   else
@@ -322,6 +459,152 @@ $$;
 revoke execute on function public.accept_contextual_referral(text)
   from public, anon, authenticated, service_role;
 grant execute on function public.accept_contextual_referral(text)
+  to authenticated, service_role;
+
+create or replace function public.admin_review_contextual_programme_access(
+  p_enrolment_id uuid,
+  p_decision text,
+  p_rejection_reason text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_decision text := lower(trim(coalesce(p_decision, '')));
+  v_enrolment public.enrolments%rowtype;
+  v_attribution_id uuid;
+  v_token_id uuid;
+  v_course record;
+begin
+  if v_decision not in ('approve', 'reject') then
+    raise exception 'Contextual programme access decision must be approve or reject.';
+  end if;
+
+  select *
+    into v_enrolment
+  from public.enrolments
+  where id = p_enrolment_id
+    and programme_id is not null
+    and metadata ->> 'source' = 'contextual_referral';
+
+  if not found then
+    raise exception 'Contextual programme access request not found.';
+  end if;
+
+  if v_actor_id is null
+     or not public.current_user_can_manage_organization_programmes(v_enrolment.organization_id) then
+    raise exception 'Programme manager access required.';
+  end if;
+
+  v_attribution_id := nullif(v_enrolment.metadata ->> 'contextualReferralAttributionId', '')::uuid;
+  v_token_id := nullif(v_enrolment.metadata ->> 'contextualReferralTokenId', '')::uuid;
+
+  if v_decision = 'reject' then
+    update public.enrolments
+    set status = 'withdrawn',
+        withdrawn_at = now(),
+        metadata = metadata || jsonb_build_object(
+          'reviewedBy', v_actor_id,
+          'reviewedAt', now(),
+          'rejectionReason', nullif(trim(coalesce(p_rejection_reason, '')), '')
+        )
+    where id = v_enrolment.id;
+
+    if v_attribution_id is not null then
+      update public.referral_attributions
+      set status = 'rejected'
+      where id = v_attribution_id;
+    end if;
+
+    insert into public.audit_events (actor_user_id, event_type, entity_type, entity_id, metadata)
+    values (
+      v_actor_id,
+      'contextual_programme_access_rejected',
+      'enrolment',
+      v_enrolment.id::text,
+      jsonb_build_object(
+        'organizationId', v_enrolment.organization_id,
+        'programmeId', v_enrolment.programme_id,
+        'referralAttributionId', v_attribution_id,
+        'rejectionReason', nullif(trim(coalesce(p_rejection_reason, '')), '')
+      )
+    );
+
+    return jsonb_build_object('status', 'rejected', 'enrolmentId', v_enrolment.id);
+  end if;
+
+  update public.enrolments
+  set status = 'active',
+      withdrawn_at = null,
+      metadata = metadata || jsonb_build_object(
+        'reviewedBy', v_actor_id,
+        'reviewedAt', now()
+      )
+  where id = v_enrolment.id;
+
+  if v_attribution_id is not null then
+    update public.referral_attributions
+    set status = 'signed_up'
+    where id = v_attribution_id;
+  end if;
+
+  for v_course in
+    select course_id
+    from public.programme_courses
+    where programme_id = v_enrolment.programme_id
+  loop
+    insert into public.enrolments (
+      organization_id,
+      user_id,
+      course_id,
+      assignment_source,
+      status,
+      metadata
+    )
+    values (
+      v_enrolment.organization_id,
+      v_enrolment.user_id,
+      v_course.course_id,
+      'programme',
+      'active',
+      jsonb_build_object(
+        'source', 'contextual_referral',
+        'programmeId', v_enrolment.programme_id,
+        'contextualReferralAttributionId', v_attribution_id,
+        'contextualReferralTokenId', v_token_id
+      )
+    )
+    on conflict (organization_id, user_id, course_id) where course_id is not null
+    do update
+      set status = 'active',
+          withdrawn_at = null,
+          metadata = enrolments.metadata || excluded.metadata,
+          updated_at = now();
+  end loop;
+
+  insert into public.audit_events (actor_user_id, event_type, entity_type, entity_id, metadata)
+  values (
+    v_actor_id,
+    'contextual_programme_access_approved',
+    'enrolment',
+    v_enrolment.id::text,
+    jsonb_build_object(
+      'organizationId', v_enrolment.organization_id,
+      'programmeId', v_enrolment.programme_id,
+      'referralAttributionId', v_attribution_id
+    )
+  );
+
+  return jsonb_build_object('status', 'approved', 'enrolmentId', v_enrolment.id);
+end;
+$$;
+
+revoke execute on function public.admin_review_contextual_programme_access(uuid, text, text)
+  from public, anon, authenticated, service_role;
+grant execute on function public.admin_review_contextual_programme_access(uuid, text, text)
   to authenticated, service_role;
 
 create or replace function public.award_valid_mission_xp(
@@ -813,6 +1096,15 @@ values
     'Organization mission content tenant boundary enforcement trigger.',
     'Runs only as a table trigger to reject organization mission course or lesson references to another tenant private content.',
     array[]::text[]
+  ),
+  (
+    'public',
+    'admin_review_contextual_programme_access',
+    'p_enrolment_id uuid, p_decision text, p_rejection_reason text',
+    'ADMIN_AUTHENTICATED',
+    'Organization programme managers approving or rejecting manual contextual referral access requests.',
+    'Requires auth.uid(), a contextual-referral programme enrolment in the same organization and contextual programme management rights before changing access.',
+    array['authenticated', 'service_role']
   )
 on conflict (function_schema, function_name, identity_arguments) do update
   set classification = excluded.classification,

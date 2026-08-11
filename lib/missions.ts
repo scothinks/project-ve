@@ -117,6 +117,9 @@ export type UserMissionSummary = {
     xpAccountId?: string | null;
     rewardXpOverride?: number | null;
   };
+  organizationContext?: {
+    organizationId: string;
+  };
   referral?: {
     code: string;
     shareUrl: string;
