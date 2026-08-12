@@ -46,7 +46,7 @@ export default async function OrganizationQuizPage({ params, searchParams }: Org
           </p>
           <h1 className="mt-2 text-2xl font-black leading-8">{lesson.quiz.title}</h1>
           <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
-            Up to {formatXpLabel(getQuizXP(lesson.quiz))} from unearned correct answers, subject to your daily limit.
+            Up to {formatXpLabel(getQuizXP(lesson.quiz), workspace.xpAccount.label)} from unearned correct answers, subject to your daily limit.
           </p>
         </div>
         <div className="learner-readable">
@@ -62,6 +62,7 @@ export default async function OrganizationQuizPage({ params, searchParams }: Org
               orgHref(workspace, `/learn/${course.id}/results/${lesson.id}`),
               deliveryContext,
             )}
+            unitLabel={workspace.xpAccount.label}
           />
         </div>
       </section>

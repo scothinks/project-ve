@@ -44,6 +44,8 @@ const institutionalOrgName = `E2E Institution ${runId}`;
 const institutionalOrgSlug = `e2e-institution-${runId}`;
 const institutionalProgrammeTitle = `E2E Institutional Programme ${runId}`;
 const institutionalProgrammeSlug = `e2e-institutional-programme-${runId}`;
+const institutionalSecondProgrammeTitle = `E2E Institutional Second Programme ${runId}`;
+const institutionalSecondProgrammeSlug = `e2e-institutional-second-programme-${runId}`;
 const institutionalCohortTitle = `E2E Institutional Cohort ${runId}`;
 const institutionalCohortSlug = `e2e-institutional-cohort-${runId}`;
 const institutionalCourseId = `e2e-institution-course-${runId}`;
@@ -63,6 +65,7 @@ const institutionalLessonBody = `Institution learner content rendered safely ${r
 const programmeManagerEmail = `e2e-programme-manager-${runId}@example.test`;
 const reportViewerEmail = `e2e-report-viewer-${runId}@example.test`;
 const institutionalLearnerEmail = `e2e-institution-learner-${runId}@example.test`;
+const programmeOnlyLearnerEmail = `e2e-programme-only-learner-${runId}@example.test`;
 const outsiderEmail = `e2e-outsider-${runId}@example.test`;
 const selfServiceOwnerEmail = `e2e-self-service-owner-${runId}@example.test`;
 const selfServiceOrgName = `E2E Starter Org ${runId}`;
@@ -78,6 +81,7 @@ let admin: User;
 let programmeManager: User | null = null;
 let reportViewer: User | null = null;
 let institutionalLearner: User | null = null;
+let programmeOnlyLearner: User | null = null;
 let outsider: User | null = null;
 let signedUpLearner: User | null = null;
 let selfServiceOwner: User | null = null;
@@ -154,13 +158,14 @@ async function cleanupFixture() {
   programmeManager = programmeManager ?? (await findAuthUserByEmail(programmeManagerEmail));
   reportViewer = reportViewer ?? (await findAuthUserByEmail(reportViewerEmail));
   institutionalLearner = institutionalLearner ?? (await findAuthUserByEmail(institutionalLearnerEmail));
+  programmeOnlyLearner = programmeOnlyLearner ?? (await findAuthUserByEmail(programmeOnlyLearnerEmail));
   outsider = outsider ?? (await findAuthUserByEmail(outsiderEmail));
   selfServiceOwner = selfServiceOwner ?? (await findAuthUserByEmail(selfServiceOwnerEmail));
   const institutionalProgrammeIds = (
     (await supabase
       .from("programmes")
       .select("id")
-      .eq("slug", institutionalProgrammeSlug)).data ?? []
+      .in("slug", [institutionalProgrammeSlug, institutionalSecondProgrammeSlug])).data ?? []
   ).map((programme) => programme.id);
   const institutionalOrgIds = (
     (await supabase
@@ -204,6 +209,7 @@ async function cleanupFixture() {
       programmeManager?.id,
       reportViewer?.id,
       institutionalLearner?.id,
+      programmeOnlyLearner?.id,
       outsider?.id,
       selfServiceOwner?.id,
     ].filter(Boolean));
@@ -226,7 +232,10 @@ async function cleanupFixture() {
       .in("programme_id", institutionalProgrammeIds);
   }
   await supabase.from("cohorts").delete().eq("slug", institutionalCohortSlug);
-  await supabase.from("programmes").delete().eq("slug", institutionalProgrammeSlug);
+  await supabase
+    .from("programmes")
+    .delete()
+    .in("slug", [institutionalProgrammeSlug, institutionalSecondProgrammeSlug]);
   await supabase.from("reward_quantity_allocations").delete().eq("reward_id", institutionalRewardId);
   await supabase.from("rewards").delete().eq("id", institutionalRewardId);
   await supabase.from("lesson_page_completions").delete().eq("lesson_id", lessonId);
@@ -305,6 +314,11 @@ async function cleanupFixture() {
   if (institutionalLearner?.id) {
     await supabase.auth.admin.deleteUser(institutionalLearner.id);
     institutionalLearner = null;
+  }
+
+  if (programmeOnlyLearner?.id) {
+    await supabase.auth.admin.deleteUser(programmeOnlyLearner.id);
+    programmeOnlyLearner = null;
   }
 
   if (outsider?.id) {
@@ -470,6 +484,7 @@ async function seedUsers() {
   programmeManager = await createTestUser(programmeManagerEmail, "E2E Programme Manager");
   reportViewer = await createTestUser(reportViewerEmail, "E2E Report Viewer");
   institutionalLearner = await createTestUser(institutionalLearnerEmail, "E2E Institution Learner");
+  programmeOnlyLearner = await createTestUser(programmeOnlyLearnerEmail, "E2E Programme Only Learner");
   outsider = await createTestUser(outsiderEmail, "E2E Outsider");
   selfServiceOwner = await createTestUser(selfServiceOwnerEmail, "E2E Self Service Owner");
 
@@ -517,6 +532,14 @@ async function seedUsers() {
           redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
         },
         {
+          id: programmeOnlyLearner.id,
+          display_name: "E2E Programme Only Learner",
+          role: "learner",
+          xp: 0,
+          xp_balance_cached: 0,
+          redemption_unlocked_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+        {
           id: outsider.id,
           display_name: "E2E Outsider",
           role: "learner",
@@ -540,7 +563,7 @@ async function seedUsers() {
 
   await assertNoError(
     await supabase.from("user_value_profiles").upsert(
-      [learner, programmeManager, reportViewer, institutionalLearner, outsider, selfServiceOwner]
+      [learner, programmeManager, reportViewer, institutionalLearner, programmeOnlyLearner, outsider, selfServiceOwner]
         .filter((user): user is User => Boolean(user))
         .map((user) => ({
           user_id: user.id,
@@ -1126,7 +1149,7 @@ test.describe.serial("remediation browser flows", () => {
     await signIn(page, learnerEmail);
 
     await page.goto("/xp-store");
-    await expect(page.getByRole("heading", { name: "Redeem XP rewards" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "XP rewards" })).toBeVisible();
     const rewardCard = page.locator("section").filter({ hasText: rewardTitle }).first();
     await expect(rewardCard.getByRole("heading", { name: rewardTitle })).toBeVisible();
     await rewardCard.getByRole("button", { name: "Redeem" }).click();
@@ -1623,7 +1646,7 @@ test.describe.serial("remediation browser flows", () => {
   test("institutional LMS journey covers memberships, assignment, completion, reporting, and tenant denial", async ({ page }) => {
     test.setTimeout(180_000);
 
-    if (!programmeManager || !reportViewer || !institutionalLearner || !outsider) {
+    if (!programmeManager || !reportViewer || !institutionalLearner || !programmeOnlyLearner || !outsider) {
       throw new Error("Institutional E2E users were not seeded.");
     }
 
@@ -1654,6 +1677,18 @@ test.describe.serial("remediation browser flows", () => {
     await saveOrganizationMembershipThroughUi(page, reportViewer, "report_viewer", "Report viewer");
     await saveOrganizationMembershipThroughUi(page, institutionalLearner, "learner", "Learner");
     await seedInstitutionalContent(organization?.id ?? "");
+    await assertNoError(
+      await supabase
+        .from("xp_accounts")
+        .update({
+          display_name_plural: "Police Points",
+          display_format: "amount_name",
+          short_label: "Police Points",
+        })
+        .eq("organization_id", organization?.id ?? "")
+        .eq("is_default", true),
+      "white-label institutional XP account",
+    );
 
     await page.context().clearCookies();
     await signIn(page, programmeManagerEmail);
@@ -1683,6 +1718,106 @@ test.describe.serial("remediation browser flows", () => {
       "load institutional programme",
     ) as { id: string } | null;
     expect(programme?.id).toBeTruthy();
+
+    const institutionalAccount = await assertNoError(
+      await supabase
+        .from("xp_accounts")
+        .select("id")
+        .eq("organization_id", organization?.id ?? "")
+        .eq("is_default", true)
+        .maybeSingle(),
+      "load institutional XP account",
+    ) as { id: string } | null;
+    expect(institutionalAccount?.id).toBeTruthy();
+
+    await assertNoError(
+      await supabase
+        .from("programme_courses")
+        .update({ prior_completion_policy: "require_completion_in_context" })
+        .eq("programme_id", programme?.id ?? "")
+        .eq("course_id", institutionalCourseId),
+      "require contextual completion for first institutional programme",
+    );
+
+    await assertNoError(
+      await supabase.from("lesson_progress").upsert({
+        user_id: institutionalLearner.id,
+        lesson_id: institutionalLessonId,
+        completed_pages: [institutionalPageId],
+        completed_modules: [institutionalPageId],
+        completed_at: new Date().toISOString(),
+        quiz_score: null,
+      }, { onConflict: "user_id,lesson_id" }),
+      "seed prior public lesson progress",
+    );
+    await assertNoError(
+      await supabase.from("lesson_page_completions").upsert({
+        user_id: institutionalLearner.id,
+        lesson_id: institutionalLessonId,
+        page_id: institutionalPageId,
+        completed_at: new Date().toISOString(),
+      }, { onConflict: "user_id,lesson_id,page_id" }),
+      "seed prior public page completion",
+    );
+
+    const secondProgramme = await assertNoError(
+      await supabase
+        .from("programmes")
+        .insert({
+          organization_id: organization?.id ?? "",
+          slug: institutionalSecondProgrammeSlug,
+          title: institutionalSecondProgrammeTitle,
+          objective: "Second delivery for shared-course routing coverage.",
+          intended_audience: "Institutional learners with multiple programme deliveries.",
+          status: "published",
+          created_by: programmeManager.id,
+        })
+        .select("id")
+        .single(),
+      "seed second institutional programme",
+    ) as { id: string };
+    await assertNoError(
+      await supabase.from("programme_courses").insert({
+        programme_id: secondProgramme.id,
+        course_id: institutionalCourseId,
+        requirement: "required",
+        sort_order: 2,
+        prior_completion_policy: "recognize_prior_completion",
+      }),
+      "seed shared course in second institutional programme",
+    );
+    await assertNoError(
+      await supabase.from("enrolments").insert([
+        {
+          organization_id: organization?.id ?? "",
+          user_id: institutionalLearner.id,
+          programme_id: secondProgramme.id,
+          assignment_source: "manual",
+          status: "active",
+          xp_account_id: institutionalAccount?.id ?? "",
+          metadata: {},
+        },
+        {
+          organization_id: organization?.id ?? "",
+          user_id: institutionalLearner.id,
+          course_id: institutionalCourseId,
+          assignment_source: "programme",
+          status: "active",
+          xp_account_id: institutionalAccount?.id ?? "",
+          metadata: { programmeId: secondProgramme.id },
+        },
+        {
+          organization_id: organization?.id ?? "",
+          user_id: programmeOnlyLearner.id,
+          programme_id: secondProgramme.id,
+          assignment_source: "manual",
+          status: "active",
+          xp_account_id: institutionalAccount?.id ?? "",
+          metadata: {},
+        },
+      ]),
+      "seed second programme enrolments",
+    );
 
     await page.goto("/admin/cohorts/new");
     await expect(page.getByRole("heading", { name: "Add cohort" })).toBeVisible();
@@ -1737,8 +1872,16 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.context().clearCookies();
     await signIn(page, institutionalLearnerEmail);
-    await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}`);
+    await page.goto(`/o/${institutionalOrgSlug}/learn`);
+    const sharedCourseLinks = page.locator(`a[href*="/o/${institutionalOrgSlug}/learn/${institutionalCourseId}?programmeId="]`);
+    await expect(sharedCourseLinks).toHaveCount(2);
+    await expect(sharedCourseLinks.filter({ hasText: institutionalProgrammeTitle })).toBeVisible();
+    await expect(sharedCourseLinks.filter({ hasText: institutionalSecondProgrammeTitle })).toBeVisible();
+    await sharedCourseLinks.filter({ hasText: institutionalProgrammeTitle }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}\\?programmeId=${programme?.id}$`));
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
+    await expect(page.getByText("0% complete")).toBeVisible();
+    await expect(page.getByText("5 Police Points").first()).toBeVisible();
     const progressResponse = page.waitForResponse(
       (response) => response.url().includes("/api/lesson-progress"),
     );
@@ -1759,16 +1902,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page).toHaveURL(
       new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
-    await expect(page.getByText("You earned 5 XP!")).toBeVisible();
-    const institutionalAccount = await assertNoError(
-      await supabase
-        .from("xp_accounts")
-        .select("id")
-        .eq("organization_id", organization?.id ?? "")
-        .eq("is_default", true)
-        .maybeSingle(),
-      "load institutional XP account",
-    ) as { id: string } | null;
+    await expect(page.getByText("You earned 5 Police Points!")).toBeVisible();
     const scopedQuizTransaction = await assertNoError(
       await supabase
         .from("xp_transactions")
@@ -1804,7 +1938,7 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByRole("link", { name: "Return to Project Ve" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
-    await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}`);
+    await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}?programmeId=${programme?.id}`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     await page.goto(`/o/${institutionalOrgSlug}/transcript`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
@@ -1813,15 +1947,49 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.goto(`/o/${institutionalOrgSlug}/rewards`);
     await expect(page.getByRole("heading", { name: `${institutionalOrgName} Rewards` })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Police Points rewards" })).toBeVisible();
+    await expect(page.getByText("Available Police Points")).toBeVisible();
     await expect(page.getByRole("heading", { name: `E2E Institution Reward ${runId}` }).first()).toBeVisible();
     const redeemButton = page.getByRole("button", { name: "Redeem" }).first();
     await expect(redeemButton).toBeEnabled();
     await redeemButton.click();
+    await expect(page.getByText("This will redeem 5 Police Points and add the reward to your history.")).toBeVisible();
     await page.getByRole("button", { name: "Confirm" }).click();
     await expect(page.getByRole("combobox", { name: "Delivery method" })).toBeVisible();
     await page.getByRole("combobox", { name: "Delivery method" }).selectOption({ label: "Delivery" });
     await page.getByRole("button", { name: "Submit Details" }).click();
     await expect(page.getByText("Submitted for processing.")).toBeVisible();
+
+    await page.context().clearCookies();
+    await signIn(page, adminEmail);
+    await page.goto("/admin/organizations");
+    const adjustmentForm = page.locator("form").filter({ has: page.locator("select[name='targetUserId']") }).first();
+    await expect(adjustmentForm.locator("select[name='targetUserId']")).toContainText("E2E Programme Only Learner");
+    await adjustmentForm.locator("select[name='targetUserId']").selectOption(programmeOnlyLearner.id);
+    await adjustmentForm.locator("select[name='direction']").selectOption("earn");
+    await adjustmentForm.locator("input[name='amount']").fill("2");
+    await adjustmentForm.locator("input[name='reason']").fill("Programme-only learner adjustment");
+    await adjustmentForm.getByRole("button", { name: "Save adjustment" }).click();
+    await expect(page.getByText("XP account adjustment saved.")).toBeVisible();
+    const programmeOnlyMembershipCount = await supabase
+      .from("organization_memberships")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organization?.id ?? "")
+      .eq("user_id", programmeOnlyLearner.id);
+    if (programmeOnlyMembershipCount.error) {
+      throw new Error(`count programme-only learner memberships: ${programmeOnlyMembershipCount.error.message}`);
+    }
+    expect(programmeOnlyMembershipCount.count).toBe(0);
+    const programmeOnlyBalance = await assertNoError(
+      await supabase
+        .from("user_xp_balances")
+        .select("balance_cached")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("xp_account_id", institutionalAccount?.id ?? "")
+        .maybeSingle(),
+      "load programme-only learner adjusted balance",
+    ) as { balance_cached: number } | null;
+    expect(programmeOnlyBalance?.balance_cached).toBe(2);
 
     await page.context().clearCookies();
     await signIn(page, reportViewerEmail);

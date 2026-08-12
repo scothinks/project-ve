@@ -13,14 +13,20 @@ type CourseLibraryProps = {
   courses: Course[];
   courseHrefPrefix?: string;
   completedLessonIds?: string[];
+  completedLessonIdsByDeliveryKey?: Record<string, string[]>;
   deliveryOptions?: Record<string, OrganizationCourseDeliveryOption[]>;
   unitLabel?: string;
 };
+
+function getDeliveryKey(courseId: string, option: OrganizationCourseDeliveryOption | null) {
+  return `${courseId}:${option?.programmeId ?? "organization"}`;
+}
 
 export function CourseLibrary({
   courseHrefPrefix = "/courses",
   courses,
   completedLessonIds = [],
+  completedLessonIdsByDeliveryKey,
   deliveryOptions,
   unitLabel = "XP",
 }: CourseLibraryProps) {
@@ -132,7 +138,9 @@ export function CourseLibrary({
         {filteredCourses.length > 0 ? (
             paginatedCourses.items.map(({ course, option }) => (
             <CourseCard
-              completedLessonIds={completedLessonIds}
+              completedLessonIds={
+                completedLessonIdsByDeliveryKey?.[getDeliveryKey(course.id, option)] ?? completedLessonIds
+              }
               course={course}
               desktopLayout="horizontal"
               contextLabel={option?.label}

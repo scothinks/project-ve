@@ -17,6 +17,7 @@ type QuizOptionsProps = {
   quizId: string;
   questions: PublicQuizQuestion[];
   resultHref?: string;
+  unitLabel?: string;
 };
 
 type QuestionResult = {
@@ -90,6 +91,7 @@ export function QuizOptions({
   quizId,
   questions,
   resultHref,
+  unitLabel = "XP",
 }: QuizOptionsProps) {
   const router = useRouter();
   const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -244,7 +246,7 @@ export function QuizOptions({
       <Card className="p-6">
         <p className="text-sm font-bold">Preparing your quiz...</p>
         <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">
-          We are checking your lesson progress and XP eligibility.
+          We are checking your lesson progress and {unitLabel} eligibility.
         </p>
       </Card>
     );
@@ -255,11 +257,11 @@ export function QuizOptions({
 
     return (
       <Card className="p-6 text-center">
-        <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] text-lg font-black text-[#008751]">
-          XP
+        <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] px-2 text-center text-xs font-black leading-tight text-[#008751]">
+          {unitLabel}
         </div>
         <p className="text-lg font-black">
-          {isDailyCapBlock ? "Daily XP checkpoint reached" : "Quiz not ready yet"}
+          {isDailyCapBlock ? `Daily ${unitLabel} checkpoint reached` : "Quiz not ready yet"}
         </p>
         <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">{blockedMessage}</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
@@ -282,7 +284,7 @@ export function QuizOptions({
             Question {currentIndex + 1}
           </p>
           <span className="max-w-[8rem] whitespace-nowrap rounded-[18px] bg-[#dff2e9] px-3 py-1 text-center text-xs font-bold leading-none text-[#008751] tabular-nums">
-            {attemptMode === "practice" ? "Practice" : formatXpLabel(current.xp)}
+            {attemptMode === "practice" ? "Practice" : formatXpLabel(current.xp, unitLabel)}
           </span>
         </div>
         <h2 className="mt-4 text-xl font-bold leading-7">{current.prompt}</h2>
@@ -362,15 +364,15 @@ export function QuizOptions({
       {dailyLimitModal ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 px-6">
           <Card className="max-w-[340px] p-6 text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] text-xl font-black text-[#008751]">
-              XP
+            <div className="mx-auto grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] px-2 text-center text-xs font-black leading-tight text-[#008751]">
+              {unitLabel}
             </div>
-            <h2 className="mt-4 text-xl font-black">Daily XP limit reached</h2>
+            <h2 className="mt-4 text-xl font-black">Daily {unitLabel} limit reached</h2>
             <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
               {dailyLimitModal.message}
             </p>
             <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
-              Quiz XP unlocks at {formatResetAt(dailyLimitModal.nextResetAt)}.
+              Quiz {unitLabel} unlocks at {formatResetAt(dailyLimitModal.nextResetAt)}.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <Button href={`/results/${lessonId}`} variant="outline">

@@ -13,6 +13,7 @@ type CourseDetailLessonListProps = {
   completedLessonIds: string[];
   lessonHrefBase?: string;
   lessonHrefSuffix?: string;
+  unitLabel?: string;
 };
 
 const lessonsPerPage = 6;
@@ -22,6 +23,7 @@ export function CourseDetailLessonList({
   completedLessonIds,
   lessonHrefBase,
   lessonHrefSuffix = "",
+  unitLabel = "XP",
 }: CourseDetailLessonListProps) {
   const [page, setPage] = useState(1);
   const paginatedLessons = paginateItems(lessons, page, lessonsPerPage);
@@ -43,9 +45,10 @@ export function CourseDetailLessonList({
                 completed={completed}
                 href={lessonHrefBase ? `${lessonHrefBase}/${lesson.id}${lessonHrefSuffix}` : undefined}
                 lesson={lesson}
+                unitLabel={unitLabel}
               />
               <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">
-                {lesson.pages.length} pages · {completed ? "Lesson complete" : `${formatXpLabel(getLessonXP(lesson))} total`}
+                {lesson.pages.length} pages · {completed ? "Lesson complete" : `${formatXpLabel(getLessonXP(lesson), unitLabel)} total`}
               </p>
             </div>
           );

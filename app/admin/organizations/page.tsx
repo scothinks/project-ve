@@ -8,6 +8,7 @@ import {
 } from "@/components/admin/AdminPrimitives";
 import {
   getAdminOrganizationEntitlementOverrides,
+  getAdminOrganizationAdjustmentLearners,
   getAdminOrganizationInvitations,
   getAdminOrganizationMemberships,
   getAdminOrganizations,
@@ -123,9 +124,12 @@ export default async function AdminOrganizationsPage({
   );
   const isPlatformWorkspace = workspace.type === "platform";
   const selectedOrganization = organizations[0] ?? null;
-  const xpAccountOverview = selectedOrganization
-    ? await getAdminOrganizationXpAccountOverview(supabase, selectedOrganization.id)
-    : null;
+  const [xpAccountOverview, adjustmentLearners] = selectedOrganization
+    ? await Promise.all([
+        getAdminOrganizationXpAccountOverview(supabase, selectedOrganization.id),
+        getAdminOrganizationAdjustmentLearners(supabase, selectedOrganization.id),
+      ])
+    : [null, []];
 
   return (
     <>
@@ -449,11 +453,9 @@ export default async function AdminOrganizationsPage({
                   <h3 className="text-sm font-black">Adjust learner balance</h3>
                   <select className={fieldClasses()} name="targetUserId" required defaultValue="">
                     <option disabled value="">Select active learner</option>
-                    {memberships
-                      .filter((membership) => membership.organization_id === selectedOrganization.id && membership.status === "active")
-                      .map((membership) => (
-                        <option key={membership.user_id} value={membership.user_id}>
-                          {displayUser(membership.profile?.display_name, membership.user_id)}
+                    {adjustmentLearners.map((learner) => (
+                        <option key={learner.userId} value={learner.userId}>
+                          {displayUser(learner.displayName, learner.userId)} - {learner.sourceLabel}
                         </option>
                       ))}
                   </select>

@@ -4064,7 +4064,39 @@ npm run test:e2e
 git diff --check
 ```
 
-Result: local migration replay passed; focused contextual learning pgTAP passed 15/15; focused issuance controls pgTAP passed 16/16; local database type drift, typecheck, lint, production build, full Playwright browser suite 9/9 and whitespace checks passed. P1.5C is ready for acceptance review again. P1.5D remains unstarted.
+Result: local migration replay passed; focused contextual learning pgTAP passed 15/15; focused issuance controls pgTAP passed 16/16; local database type drift, typecheck, lint, production build, full Playwright browser suite 9/9 and whitespace checks passed. P1.5C was kept open for final application-layer closure. P1.5D remains unstarted.
+
+### Final P1.5C application closure pass
+
+The final 2026-08-12 review accepted the ledger and backend contextual-completion work but kept P1.5C open for remaining learner/admin application gaps:
+
+* Org Mode learning catalogue did not pass `workspace.courseDeliveryOptions`, so shared courses in multiple programmes rendered as one ambiguous link;
+* Org Mode course progress still used public/global lesson progress for programmes configured with `require_completion_in_context`;
+* organisation learner quiz/result/reward surfaces still used XP wording instead of the configured account label;
+* admin account adjustments only accepted active organisation members, not programme-only learners;
+* the browser gate did not prove multi-programme delivery, contextual progress presentation, label copy or programme-only adjustment.
+
+The final pass adds forward migration `20260812230000_p15c_final_app_closure.sql` and application wiring that:
+
+* renders separate Org Mode catalogue cards per delivery option and carries the selected `programmeId` into course, lesson, quiz and result URLs;
+* derives completed lesson indicators, course percentage and resume targets from `programme_lesson_page_completions` when the programme-course policy is `require_completion_in_context`;
+* passes the workspace account label through Org Mode course, lesson, quiz result and reward-store components while preserving public-mode XP defaults;
+* allows `admin_adjust_xp_account` for active/completed programme-only learners in the same organisation without creating organisation memberships;
+* extends the institutional Playwright journey to cover two programme deliveries for the same course, contextual progress presentation, white-labelled Police Points copy, and a programme-only learner adjustment.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run typecheck
+npm run lint
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_issuance_controls.sql
+npm run build
+npm run test:e2e
+git diff --check
+```
+
+Result: typecheck passed; lint passed; local migration replay passed including `20260812230000_p15c_final_app_closure.sql`; focused issuance controls pgTAP passed 18/18; production build passed; full Playwright browser suite passed 9/9; whitespace checks passed. P1.5C is ready for acceptance review again. P1.5D remains unstarted.
 
 Then stop for review.
 
