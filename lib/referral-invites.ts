@@ -1,4 +1,4 @@
-import { normalizeReferralCodeInput, sanitizePlainTextInput } from "@/lib/input-safety";
+import { normalizeReferralCodeInput, sanitizePlainTextInput } from "./input-safety.ts";
 
 export const publicReferralStorageKey = "project-ve-referral-code";
 export const contextualReferralStorageKey = "project-ve-contextual-referral-token";

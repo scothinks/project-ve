@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { buildConfirmedLoginPath } from "@/lib/auth-confirmation";
 import { defaultAuthNextPath, getSafeAuthNextPath } from "@/lib/auth-redirect";
 import {
   normalizeEmailInput,
@@ -125,15 +126,11 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       return safeNextPath;
     }
 
-    const params = new URLSearchParams({
-      next: safeNextPath,
-      ref: safeReferralCode,
+    return buildConfirmedLoginPath({
+      nextPath: safeNextPath,
+      referralCode: safeReferralCode,
+      referralKind,
     });
-    if (referralKind === "contextual") {
-      params.set("refKind", "contextual");
-    }
-
-    return `/login?confirmed=1&${params.toString()}`;
   }, [referralCode, referralKind, safeNextPath]);
 
   const openDestination = useCallback((destination?: string | null) => {
@@ -607,7 +604,11 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       email: safeEmail,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          buildLoginPath({ confirmed: "1" }),
+          buildConfirmedLoginPath({
+            nextPath: safeNextPath,
+            referralCode,
+            referralKind,
+          }),
         )}`,
       },
     });
