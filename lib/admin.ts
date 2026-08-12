@@ -11,6 +11,18 @@ export {
 } from "@/features/admin/application/context";
 
 export {
+  getAdminAssessmentVersions,
+  getAdminAssessmentWorkspace,
+  type AdminAssessmentOptionRow,
+  type AdminAssessmentQuestionRow,
+  type AdminAssessmentUsageRow,
+  type AdminAssessmentValueDimensionRow,
+  type AdminAssessmentVersionRow,
+  type AdminAssessmentVersionSummary,
+  type AdminAssessmentWorkspace,
+} from "@/features/assessments/admin/data";
+
+export {
   getAdminCampaign,
   getAdminCampaignAnalytics,
   getAdminCampaigns,

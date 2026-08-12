@@ -8,6 +8,7 @@ import {
   getAdminRewards,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
+import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 
 function firstSearchValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -23,8 +24,15 @@ export default async function NewProgrammePage({
     "organisation_admin",
     "programme_manager",
   ]);
+  const entitlementResult = workspace.type === "organization"
+    ? await resolveOrganizationEntitlements(supabase, workspace.id)
+    : null;
+  const assessmentCapability = entitlementResult?.entitlements.assessmentCapability ?? "custom";
   const [assessmentVersions, courses, missions, organizations, rewards] = await Promise.all([
-    getAdminAssessmentVersionOptions(supabase),
+    getAdminAssessmentVersionOptions(supabase, {
+      assessmentCapability,
+      organizationId: workspace.type === "organization" ? workspace.id : undefined,
+    }),
     getAdminCourses(supabase, workspace.id),
     getAdminMissions(supabase, workspace.id),
     getAdminOrganizations(supabase),
@@ -43,6 +51,7 @@ export default async function NewProgrammePage({
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <ProgrammeEditorForm
+        assessmentCapability={assessmentCapability}
         assessmentVersions={assessmentVersions}
         courses={courses}
         missions={missions}

@@ -35,6 +35,8 @@ type ContentTagRow = {
 
 type UserValueProfileRow = {
   user_id: string;
+  context_scope: "platform" | "organization";
+  organization_id: string | null;
   latest_attempt_id: string | null;
   assessment_version_id: string | null;
   assessment_completed_at: string | null;
@@ -47,6 +49,8 @@ type UserValueProfileRow = {
 
 type UserValueDimensionScoreRow = {
   user_id: string;
+  context_scope: "platform" | "organization";
+  organization_id: string | null;
   dimension_id: string;
   score: number;
   confidence: number;
@@ -62,6 +66,21 @@ type ValueDimensionRow = {
 };
 
 type RecommendationSlot = "next_lesson" | "mission" | "course";
+
+export type RecommendationProfileContext =
+  | {
+      scope: "organization";
+      organizationId: string;
+    }
+  | {
+      scope: "platform";
+    };
+
+type RecommendationHrefBuilder = {
+  courseHref?: (course: Course) => string;
+  lessonHref?: (lesson: Lesson) => string;
+  missionHref?: () => string;
+};
 
 export type PersonalizedRecommendationItem = {
   id: string;
@@ -174,19 +193,44 @@ function scoreUntaggedCandidate(options?: {
   });
 }
 
-async function loadProfileData(supabase: AppSupabaseClient, userId: string) {
+function normalizeRecommendationProfileContext(
+  context?: RecommendationProfileContext,
+): RecommendationProfileContext {
+  return context?.scope === "organization"
+    ? context
+    : { scope: "platform" };
+}
+
+async function loadProfileData(
+  supabase: AppSupabaseClient,
+  userId: string,
+  context?: RecommendationProfileContext,
+) {
+  const normalizedContext = normalizeRecommendationProfileContext(context);
+  const profileQuery = supabase
+    .from("user_value_profiles")
+    .select(
+      "user_id, context_scope, organization_id, latest_attempt_id, assessment_version_id, assessment_completed_at, readiness_level, primary_dimension_id, secondary_dimension_id, profile_summary, updated_at",
+    )
+    .eq("user_id", userId)
+    .eq("context_scope", normalizedContext.scope);
+  const scoreQuery = supabase
+    .from("user_value_dimension_scores")
+    .select("user_id, context_scope, organization_id, dimension_id, score, confidence, updated_at")
+    .eq("user_id", userId)
+    .eq("context_scope", normalizedContext.scope);
+
+  if (normalizedContext.scope === "organization") {
+    profileQuery.eq("organization_id", normalizedContext.organizationId);
+    scoreQuery.eq("organization_id", normalizedContext.organizationId);
+  } else {
+    profileQuery.is("organization_id", null);
+    scoreQuery.is("organization_id", null);
+  }
+
   const [{ data: profile }, { data: scores }, { data: dimensions }] = await Promise.all([
-    supabase
-      .from("user_value_profiles")
-      .select(
-        "user_id, latest_attempt_id, assessment_version_id, assessment_completed_at, readiness_level, primary_dimension_id, secondary_dimension_id, profile_summary, updated_at",
-      )
-      .eq("user_id", userId)
-      .maybeSingle(),
-    supabase
-      .from("user_value_dimension_scores")
-      .select("user_id, dimension_id, score, confidence, updated_at")
-      .eq("user_id", userId),
+    profileQuery.maybeSingle(),
+    scoreQuery,
     supabase
       .from("value_dimensions")
       .select("id, label, description, sort_order, status")
@@ -206,6 +250,8 @@ async function loadProfileData(supabase: AppSupabaseClient, userId: string) {
   const userProfile: UserValueProfile | null = typedProfile
     ? {
         userId: typedProfile.user_id,
+        contextScope: typedProfile.context_scope,
+        organizationId: typedProfile.organization_id,
         latestAttemptId: typedProfile.latest_attempt_id,
         assessmentVersionId: typedProfile.assessment_version_id,
         assessmentCompletedAt: typedProfile.assessment_completed_at,
@@ -219,6 +265,8 @@ async function loadProfileData(supabase: AppSupabaseClient, userId: string) {
 
   const userScores: UserValueDimensionScore[] = ((scores ?? []) as UserValueDimensionScoreRow[]).map((score) => ({
     userId: score.user_id,
+    contextScope: score.context_scope,
+    organizationId: score.organization_id,
     dimensionId: score.dimension_id,
     score: Number(score.score),
     confidence: Number(score.confidence),
@@ -337,12 +385,16 @@ export async function getPersonalizedDashboardRecommendations({
   catalog,
   lessonProgress,
   missions,
+  profileContext,
+  hrefBuilder,
 }: {
   supabase: AppSupabaseClient | null;
   userId: string;
   catalog: Course[];
   lessonProgress: LessonProgressRecord[];
   missions: UserMissionSummary[];
+  profileContext?: RecommendationProfileContext;
+  hrefBuilder?: RecommendationHrefBuilder;
 }) {
   if (!supabase || catalog.length === 0) {
     return {
@@ -352,7 +404,10 @@ export async function getPersonalizedDashboardRecommendations({
     };
   }
 
-  const { userProfile, userScores, valueDimensions } = await loadProfileData(supabase, userId);
+  const { userProfile, userScores, valueDimensions } = await loadProfileData(supabase, userId, profileContext);
+  const courseHref = hrefBuilder?.courseHref ?? ((course: Course) => `/courses/${course.id}`);
+  const lessonHref = hrefBuilder?.lessonHref ?? ((lesson: Lesson) => `/lessons/${lesson.id}`);
+  const missionHref = hrefBuilder?.missionHref ?? (() => "/missions");
   const dimensionLabels = buildDimensionLabelMap(valueDimensions);
   const allLessons = catalog.flatMap((course) => course.lessons);
   const completedLessonIds = getCompletedLessonIds(lessonProgress, allLessons);
@@ -532,7 +587,7 @@ export async function getPersonalizedDashboardRecommendations({
           content_type: "lesson" as const,
           title: selectedLessonCandidate.lesson.title,
           description: selectedLessonCandidate.lesson.summary,
-          href: `/lessons/${selectedLessonCandidate.lesson.id}`,
+          href: lessonHref(selectedLessonCandidate.lesson),
           reason: reasonForRecommendation({
             slot: "next_lesson",
             dimensionLabel: selectedLessonCandidate.bestTag
@@ -556,7 +611,7 @@ export async function getPersonalizedDashboardRecommendations({
             content_type: "lesson" as const,
             title: fallbackLesson.title,
             description: fallbackLesson.summary,
-            href: `/lessons/${fallbackLesson.id}`,
+            href: lessonHref(fallbackLesson),
             reason: "A good next step for your current learning path.",
             dimension_label: null,
             recommended_level: null,
@@ -574,7 +629,7 @@ export async function getPersonalizedDashboardRecommendations({
           content_type: "mission" as const,
           title: missionCandidates[0].mission.title,
           description: missionCandidates[0].mission.description,
-          href: "/missions",
+          href: missionHref(),
           reason: reasonForRecommendation({
             slot: "mission",
             dimensionLabel: missionCandidates[0].bestTag
@@ -598,7 +653,7 @@ export async function getPersonalizedDashboardRecommendations({
             content_type: "mission" as const,
             title: fallbackMission.title,
             description: fallbackMission.description,
-            href: "/missions",
+            href: missionHref(),
             reason: "A practical next step you can take right away.",
             dimension_label: null,
             recommended_level: null,
@@ -616,7 +671,7 @@ export async function getPersonalizedDashboardRecommendations({
           content_type: "course" as const,
           title: selectedCourseCandidate.course.title,
           description: selectedCourseCandidate.course.description,
-          href: `/courses/${selectedCourseCandidate.course.id}`,
+          href: courseHref(selectedCourseCandidate.course),
           reason: reasonForRecommendation({
             slot: "course",
             dimensionLabel: selectedCourseCandidate.bestTag
@@ -640,7 +695,7 @@ export async function getPersonalizedDashboardRecommendations({
             content_type: "course" as const,
             title: fallbackCourse.title,
             description: fallbackCourse.description,
-            href: `/courses/${fallbackCourse.id}`,
+            href: courseHref(fallbackCourse),
             reason: "A good next step for your current learning path.",
             dimension_label: null,
             recommended_level: null,

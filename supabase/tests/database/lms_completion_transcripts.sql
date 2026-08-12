@@ -77,6 +77,10 @@ from public.organizations
 where slug = 'lms-completion-alpha'
 \gset
 
+insert into public.organization_plan_assignments (organization_id, plan_key, billing_status, assigned_by)
+values (:'completion_org_id'::uuid, 'team', 'active', :'TEST_ADMIN_USER_ID'::uuid)
+on conflict do nothing;
+
 insert into public.organization_memberships (
   organization_id,
   user_id,

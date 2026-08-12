@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
 
-select extensions.plan(15);
+select extensions.plan(22);
 
 insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
@@ -28,10 +28,28 @@ on conflict (slug) do update set name = excluded.name;
 select id as p15c_xp_learning_org_id from public.organizations where slug = 'p15c-xp-learning-org' \gset
 select id as p15c_xp_learning_account_id from public.xp_accounts where organization_id = :'p15c_xp_learning_org_id'::uuid and is_default \gset
 
+insert into public.organizations (slug, name, status, created_by)
+values ('p15d-xp-learning-church-org', 'P15D XP Learning Church Org', 'published', :'TEST_ADMIN_USER_ID'::uuid)
+on conflict (slug) do update set name = excluded.name;
+
+select id as p15d_xp_learning_church_org_id from public.organizations where slug = 'p15d-xp-learning-church-org' \gset
+select id as p15d_xp_learning_church_account_id from public.xp_accounts where organization_id = :'p15d_xp_learning_church_org_id'::uuid and is_default \gset
+
+insert into public.organization_plan_assignments (organization_id, plan_key, billing_status, assigned_by)
+values
+  (:'p15c_xp_learning_org_id'::uuid, 'team', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'p15d_xp_learning_church_org_id'::uuid, 'team', 'active', :'TEST_ADMIN_USER_ID'::uuid)
+on conflict do nothing;
+
 insert into public.programmes (organization_id, slug, title, objective, intended_audience, status)
 values (:'p15c_xp_learning_org_id'::uuid, 'p15c-xp-learning-programme', 'P15C XP Learning Programme', '', '', 'published')
 on conflict (organization_id, slug) do update set title = excluded.title
 returning id as p15c_xp_learning_programme_id \gset
+
+insert into public.programmes (organization_id, slug, title, objective, intended_audience, status)
+values (:'p15d_xp_learning_church_org_id'::uuid, 'p15d-xp-learning-church-programme', 'P15D XP Learning Church Programme', '', '', 'published')
+on conflict (organization_id, slug) do update set title = excluded.title
+returning id as p15d_xp_learning_church_programme_id \gset
 
 insert into public.missions (id, title, description, category, reward_xp, reward_type, repeatability, validation_type, status, validation_config)
 values ('mission-p15c-xp-learning', 'P15C XP Learning Mission', 'Account-aware mission fixture.', 'course', 30, 'xp', 'once', 'course_completed', 'published', '{"courseId":"course-core-civic-values"}'::jsonb)
@@ -45,6 +63,10 @@ insert into public.enrolments (organization_id, user_id, programme_id, assignmen
 values (:'p15c_xp_learning_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, :'p15c_xp_learning_programme_id'::uuid, 'manual', 'active', :'p15c_xp_learning_account_id'::uuid)
 on conflict do nothing;
 
+insert into public.enrolments (organization_id, user_id, programme_id, assignment_source, status, xp_account_id)
+values (:'p15d_xp_learning_church_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, :'p15d_xp_learning_church_programme_id'::uuid, 'manual', 'active', :'p15d_xp_learning_church_account_id'::uuid)
+on conflict do nothing;
+
 insert into public.courses (id, slug, title, description, intended_audience, learning_outcomes, category, level, status, sort_order, estimated_minutes)
 values ('course-p15c-xp-learning', 'course-p15c-xp-learning', 'P15C XP Learning Course', 'Account-aware course fixture.', 'Learners', array['Complete the course'], 'Values Education', 'beginner', 'published', 999, 5)
 on conflict (id) do update set title = excluded.title, status = excluded.status;
@@ -52,6 +74,116 @@ on conflict (id) do update set title = excluded.title, status = excluded.status;
 insert into public.programme_courses (programme_id, course_id, sort_order)
 values (:'p15c_xp_learning_programme_id'::uuid, 'course-p15c-xp-learning', 1)
 on conflict (programme_id, course_id) do nothing;
+
+insert into public.assessment_versions (
+  id,
+  slug,
+  title,
+  description,
+  xp_award,
+  status,
+  published_at
+)
+values (
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  'p15d-contextual-assessment',
+  'P15D Contextual Assessment',
+  'Programme-scoped assessment fixture.',
+  0,
+  'draft',
+  null
+)
+on conflict (id) do update
+set title = excluded.title,
+    status = excluded.status,
+    xp_award = excluded.xp_award,
+    published_at = excluded.published_at;
+
+insert into public.assessment_questions (
+  id,
+  assessment_version_id,
+  prompt,
+  helper_text,
+  sort_order
+)
+values (
+  '44444444-4444-4444-8444-0000000015d2'::uuid,
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  'How should contextual assessment completion be stored?',
+  null,
+  1
+)
+on conflict (id) do update
+set prompt = excluded.prompt,
+    sort_order = excluded.sort_order;
+
+insert into public.assessment_question_options (
+  id,
+  question_id,
+  label,
+  description,
+  sort_order
+)
+values (
+  '44444444-4444-4444-8444-0000000015d3'::uuid,
+  '44444444-4444-4444-8444-0000000015d2'::uuid,
+  'Keep organisation context separate',
+  null,
+  1
+)
+on conflict (id) do update
+set label = excluded.label,
+    sort_order = excluded.sort_order;
+
+insert into public.assessment_option_dimension_weights (
+  option_id,
+  dimension_id,
+  weight
+)
+values (
+  '44444444-4444-4444-8444-0000000015d3'::uuid,
+  'integrity',
+  1
+)
+on conflict (option_id, dimension_id) do update
+set weight = excluded.weight;
+
+update public.assessment_versions
+set status = 'published',
+    published_at = coalesce(published_at, now())
+where id = '44444444-4444-4444-8444-0000000015d1'::uuid;
+
+insert into public.programme_assessments (
+  programme_id,
+  assessment_version_id,
+  sort_order,
+  xp_account_id
+)
+values (
+  :'p15c_xp_learning_programme_id'::uuid,
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  1,
+  :'p15c_xp_learning_account_id'::uuid
+)
+on conflict (programme_id, assessment_version_id) do update
+set sort_order = excluded.sort_order,
+    xp_account_id = excluded.xp_account_id;
+
+insert into public.programme_assessments (
+  programme_id,
+  assessment_version_id,
+  sort_order,
+  xp_account_id
+)
+values (
+  :'p15d_xp_learning_church_programme_id'::uuid,
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  1,
+  :'p15d_xp_learning_church_account_id'::uuid
+)
+on conflict (programme_id, assessment_version_id) do update
+set sort_order = excluded.sort_order,
+    xp_account_id = excluded.xp_account_id;
 
 insert into public.lessons (id, course_id, slug, title, description, status, sort_order, estimated_minutes)
 values (
@@ -114,6 +246,117 @@ select extensions.is(
   (select prior_completion_policy from public.programme_courses where programme_id = :'p15c_xp_learning_programme_id'::uuid and course_id = 'course-p15c-xp-learning'),
   'recognize_prior_completion',
   'programme courses default to explicit prior-completion recognition'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+select public.complete_values_assessment(
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  jsonb_build_array(
+    jsonb_build_object(
+      'question_id', '44444444-4444-4444-8444-0000000015d2',
+      'option_id', '44444444-4444-4444-8444-0000000015d3'
+    )
+  ),
+  :'p15c_xp_learning_programme_id'::uuid
+);
+
+reset role;
+set local role service_role;
+
+select extensions.is(
+  (select xp_account_id
+   from public.user_assessment_attempts
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and assessment_version_id = '44444444-4444-4444-8444-0000000015d1'::uuid
+   order by completed_at desc
+   limit 1),
+  :'p15c_xp_learning_account_id'::uuid,
+  'contextual assessment attempt records the organization XP account'
+);
+
+select extensions.is_empty(
+  format(
+    $$ select 1 from public.user_value_profiles where user_id = %L::uuid and context_scope = 'platform' and organization_id is null $$,
+    :'TEST_LEARNER_USER_ID'
+  ),
+  'contextual assessment completion does not satisfy the public value profile gate'
+);
+
+select extensions.is(
+  (select context_scope || ':' || organization_id::text
+   from public.user_value_profiles
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and context_scope = 'organization'
+     and organization_id = :'p15c_xp_learning_org_id'::uuid),
+  'organization:' || :'p15c_xp_learning_org_id',
+  'contextual assessment completion creates the first organization recommendation profile'
+);
+
+select extensions.is(
+  (select count(*)::integer
+   from public.user_value_dimension_scores
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and context_scope = 'organization'
+     and organization_id = :'p15c_xp_learning_org_id'::uuid),
+  (select count(*)::integer from public.value_dimensions where status = 'active'),
+  'contextual assessment scores are scoped to the first organization'
+);
+
+select latest_attempt_id as p15d_police_profile_attempt_id
+from public.user_value_profiles
+where user_id = :'TEST_LEARNER_USER_ID'::uuid
+  and context_scope = 'organization'
+  and organization_id = :'p15c_xp_learning_org_id'::uuid
+\gset
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+select public.complete_values_assessment(
+  '44444444-4444-4444-8444-0000000015d1'::uuid,
+  jsonb_build_array(
+    jsonb_build_object(
+      'question_id', '44444444-4444-4444-8444-0000000015d2',
+      'option_id', '44444444-4444-4444-8444-0000000015d3'
+    )
+  ),
+  :'p15d_xp_learning_church_programme_id'::uuid
+);
+
+reset role;
+set local role service_role;
+
+select extensions.is(
+  (select latest_attempt_id
+   from public.user_value_profiles
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and context_scope = 'organization'
+     and organization_id = :'p15c_xp_learning_org_id'::uuid),
+  :'p15d_police_profile_attempt_id'::uuid,
+  'second organization assessment does not overwrite the first organization profile'
+);
+
+select extensions.is(
+  (select xp_account_id
+   from public.user_assessment_attempts
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and programme_id = :'p15d_xp_learning_church_programme_id'::uuid
+   order by completed_at desc
+   limit 1),
+  :'p15d_xp_learning_church_account_id'::uuid,
+  'second organization assessment attempt records its own organization XP account'
+);
+
+select extensions.is(
+  (select count(*)::integer
+   from public.user_value_profiles
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and context_scope = 'organization'
+     and organization_id in (:'p15c_xp_learning_org_id'::uuid, :'p15d_xp_learning_church_org_id'::uuid)),
+  2,
+  'learner can hold separate organization recommendation profiles'
 );
 
 reset role;

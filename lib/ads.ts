@@ -413,11 +413,15 @@ export async function getLearnerAdSegments(
         .from("user_value_profiles")
         .select("assessment_completed_at, readiness_level, primary_dimension_id, secondary_dimension_id")
         .eq("user_id", userId)
+        .eq("context_scope", "platform")
+        .is("organization_id", null)
         .maybeSingle(),
       supabase
         .from("user_value_dimension_scores")
         .select("dimension_id, score, confidence")
         .eq("user_id", userId)
+        .eq("context_scope", "platform")
+        .is("organization_id", null)
         .order("score", { ascending: false })
         .limit(3),
       supabase

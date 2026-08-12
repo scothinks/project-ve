@@ -26,6 +26,8 @@ export type ContentValueTag = {
 
 export type UserValueProfile = {
   userId: string;
+  contextScope: "platform" | "organization";
+  organizationId: string | null;
   latestAttemptId: string | null;
   assessmentVersionId: string | null;
   assessmentCompletedAt: string | null;
@@ -38,6 +40,8 @@ export type UserValueProfile = {
 
 export type UserValueDimensionScore = {
   userId: string;
+  contextScope: "platform" | "organization";
+  organizationId: string | null;
   dimensionId: string;
   score: number;
   confidence: number;
@@ -87,29 +91,22 @@ export type PublishedValuesAssessment = {
   slug: string;
   title: string;
   description: string | null;
+  introductionCopy: string;
   xpAward: number;
   questions: ValuesAssessmentQuestion[];
 };
 
-export async function getPublishedValuesAssessment(
-  supabase: AppSupabaseClient | null,
-  slug = VALUES_STARTER_CHECK_SLUG,
+async function mapPublishedValuesAssessment(
+  supabase: AppSupabaseClient,
+  version: {
+    id: string;
+    slug: string;
+    title: string;
+    description: string | null;
+    introduction_copy: string | null;
+    xp_award: number;
+  },
 ): Promise<PublishedValuesAssessment | null> {
-  if (!supabase) {
-    return null;
-  }
-
-  const { data: version, error: versionError } = await supabase
-    .from("assessment_versions")
-    .select("id, slug, title, description, xp_award")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
-
-  if (versionError || !version) {
-    return null;
-  }
-
   const { data: questions, error: questionsError } = await supabase
     .from("assessment_questions")
     .select(
@@ -127,6 +124,7 @@ export async function getPublishedValuesAssessment(
     slug: version.slug,
     title: version.title,
     description: version.description,
+    introductionCopy: version.introduction_copy ?? "",
     xpAward: version.xp_award,
     questions: ((questions ?? []) as AssessmentQuestionRow[]).map((question) => ({
       id: question.id,
@@ -146,6 +144,50 @@ export async function getPublishedValuesAssessment(
   };
 }
 
+export async function getPublishedValuesAssessment(
+  supabase: AppSupabaseClient | null,
+  slug = VALUES_STARTER_CHECK_SLUG,
+): Promise<PublishedValuesAssessment | null> {
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: version, error: versionError } = await supabase
+    .from("assessment_versions")
+    .select("id, slug, title, description, introduction_copy, xp_award")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (versionError || !version) {
+    return null;
+  }
+
+  return mapPublishedValuesAssessment(supabase, version);
+}
+
+export async function getPublishedValuesAssessmentById(
+  supabase: AppSupabaseClient | null,
+  assessmentVersionId: string,
+): Promise<PublishedValuesAssessment | null> {
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: version, error: versionError } = await supabase
+    .from("assessment_versions")
+    .select("id, slug, title, description, introduction_copy, xp_award")
+    .eq("id", assessmentVersionId)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (versionError || !version) {
+    return null;
+  }
+
+  return mapPublishedValuesAssessment(supabase, version);
+}
+
 export async function getUserAssessmentCompletionStatus(
   supabase: AppSupabaseClient | null,
   userId: string,
@@ -158,6 +200,8 @@ export async function getUserAssessmentCompletionStatus(
     .from("user_value_profiles")
     .select("assessment_completed_at")
     .eq("user_id", userId)
+    .eq("context_scope", "platform")
+    .is("organization_id", null)
     .maybeSingle();
 
   if (error) {
