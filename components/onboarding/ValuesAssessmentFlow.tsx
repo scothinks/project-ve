@@ -21,6 +21,8 @@ type AssessmentQuestion = {
 
 type AssessmentData = {
   id: string;
+  description?: string | null;
+  introductionCopy?: string | null;
   title: string;
   xpAward: number;
   questions: AssessmentQuestion[];
@@ -30,6 +32,9 @@ type ValuesAssessmentFlowProps = {
   action: (formData: FormData) => void | Promise<void>;
   assessment: AssessmentData;
   errorMessage?: string | null;
+  heading?: string;
+  hiddenFields?: Array<{ name: string; value: string }>;
+  introCopy?: string | null;
   preferredName?: string | null;
 };
 
@@ -47,6 +52,9 @@ export function ValuesAssessmentFlow({
   action,
   assessment,
   errorMessage,
+  heading,
+  hiddenFields = [],
+  introCopy,
   preferredName,
 }: ValuesAssessmentFlowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -59,6 +67,11 @@ export function ValuesAssessmentFlow({
   const progressPercent = Math.round(((currentIndex + 1) / totalQuestions) * 100);
   const isLastQuestion = currentIndex === totalQuestions - 1;
   const currentAnswered = Boolean(selectedOptionId);
+  const displayHeading = heading ?? (preferredName ? `Welcome, ${preferredName}` : "Welcome");
+  const displayIntro = introCopy
+    ?? assessment.introductionCopy
+    ?? assessment.description
+    ?? "Answer a few quick questions so we can choose a better place for you to start. There are no right or wrong answers.";
 
   function handleSelect(optionId: string) {
     setAnswers((current) => ({
@@ -91,11 +104,10 @@ export function ValuesAssessmentFlow({
           </span>
         </div>
         <h1 className="mt-4 text-[2rem] font-black tracking-[-0.04em] text-[var(--foreground)]">
-          {preferredName ? `Welcome, ${preferredName}` : "Welcome"}
+          {displayHeading}
         </h1>
         <p className="mt-3 max-w-2xl text-[0.98rem] font-medium leading-7 text-[var(--ve-muted-strong)]">
-          Answer a few quick questions so we can choose a better place for you to start. There are
-          no right or wrong answers.
+          {displayIntro}
         </p>
         {errorMessage ? (
           <div className="mt-5 rounded-[18px] border border-[color:color-mix(in_srgb,var(--ve-mission)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission)_10%,var(--ve-card))] px-4 py-3 text-sm font-semibold text-[var(--foreground)]">
@@ -106,6 +118,9 @@ export function ValuesAssessmentFlow({
 
       <form action={action} className="mt-5">
         <input name="assessmentVersionId" type="hidden" value={assessment.id} />
+        {hiddenFields.map((field) => (
+          <input key={field.name} name={field.name} type="hidden" value={field.value} />
+        ))}
         {assessment.questions.map((item) => (
           <input
             key={item.id}

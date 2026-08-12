@@ -43,7 +43,7 @@ if (!localPublishableKey || !localServiceRoleKey) {
   );
 }
 
-const result = spawnSync("npx", ["playwright", "test"], {
+const result = spawnSync("npx", ["playwright", "test", ...process.argv.slice(2)], {
   cwd: process.cwd(),
   env: {
     ...process.env,

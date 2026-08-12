@@ -567,11 +567,13 @@ async function seedUsers() {
         .filter((user): user is User => Boolean(user))
         .map((user) => ({
           user_id: user.id,
+          context_scope: "platform",
+          organization_id: null,
           assessment_completed_at: new Date().toISOString(),
           readiness_level: "beginner",
           profile_summary: {},
         })),
-      { onConflict: "user_id" },
+      { onConflict: "user_id,context_scope,organization_id" },
     ),
     "seed learner assessment completion",
   );

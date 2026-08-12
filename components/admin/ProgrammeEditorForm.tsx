@@ -9,6 +9,7 @@ import type {
   AdminProgrammePendingAccessRequest,
   AdminRewardRow,
 } from "@/lib/admin";
+import type { OrganizationAssessmentCapability } from "@/features/organizations/entitlements";
 import { AdminCard, AdminStatusBadge, adminButtonClasses } from "@/components/admin/AdminPrimitives";
 import { reviewContextualProgrammeAccess, saveProgramme } from "@/app/admin/programmes/actions";
 
@@ -38,6 +39,14 @@ function rewardOwnerLabel(reward: AdminRewardRow) {
   }
 
   return "platform";
+}
+
+function assessmentOwnerLabel(assessment: AdminAssessmentVersionOptionRow) {
+  if (assessment.owner_scope === "platform") {
+    return "Project Ve template";
+  }
+
+  return `Organisation v${assessment.version_number}`;
 }
 
 function toDateTimeLocal(value: string | null | undefined) {
@@ -236,6 +245,7 @@ function SelectionRow({
 }
 
 export function ProgrammeEditorForm({
+  assessmentCapability,
   assessmentVersions,
   courses,
   missions,
@@ -243,6 +253,7 @@ export function ProgrammeEditorForm({
   programme,
   rewards,
 }: {
+  assessmentCapability: OrganizationAssessmentCapability;
   assessmentVersions: AdminAssessmentVersionOptionRow[];
   courses: AdminCourseRow[];
   missions: AdminMissionRow[];
@@ -512,25 +523,78 @@ export function ProgrammeEditorForm({
             </div>
           </FormSection>
 
-          <FormSection title="Assessment" subtitle="Attach existing assessment versions as programme-level checkpoints.">
-            <div className="space-y-3">
-              {assessmentVersions.map((assessment, index) => (
-                <SelectionRow
-                  checked={selectedAssessmentIds.has(assessment.id)}
-                  fieldName="assessmentVersionIds"
-                  id={assessment.id}
-                  key={assessment.id}
-                  label={assessment.title}
-                  order={selectedOrder(selectedAssessments, assessment.id, index + 1, (item) => item.assessment_version_id)}
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-black">{assessment.title}</span>
-                    <AdminStatusBadge tone={assessment.status === "published" ? "good" : "warning"}>{assessment.status}</AdminStatusBadge>
+          <FormSection
+            title="Assessment"
+            subtitle={
+              assessmentCapability === "assigned_only"
+                ? "Assessment authoring and programme assessment checkpoints are not available on this organisation plan."
+                : "Attach published assessment versions as programme-level checkpoints."
+            }
+          >
+            {assessmentCapability === "assigned_only" ? (
+              <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+                Starter organisations use direct assignment, course quizzes and programme completion rules.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {assessmentVersions.map((assessment, index) => {
+                  const selectedAssessment = selectedAssessments.find((item) => item.assessment_version_id === assessment.id);
+
+                  return (
+                    <SelectionRow
+                      checked={selectedAssessmentIds.has(assessment.id)}
+                      fieldName="assessmentVersionIds"
+                      id={assessment.id}
+                      key={assessment.id}
+                      label={assessment.title}
+                      order={selectedOrder(selectedAssessments, assessment.id, index + 1, (item) => item.assessment_version_id)}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-black">{assessment.title}</span>
+                        <AdminStatusBadge tone={assessment.status === "published" ? "good" : "warning"}>{assessment.status}</AdminStatusBadge>
+                        <AdminStatusBadge tone={assessment.owner_scope === "platform" ? "neutral" : "store"}>
+                          {assessmentOwnerLabel(assessment)}
+                        </AdminStatusBadge>
+                      </div>
+                      <p className={helperTextClasses()}>{assessment.slug}</p>
+                      <div className="mt-4 grid gap-3 border-t border-[var(--ve-line-soft)] pt-4 lg:grid-cols-2">
+                        <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-black lg:col-span-2">
+                          <input
+                            defaultChecked={selectedAssessment?.is_required ?? true}
+                            name={`assessmentRequired:${assessment.id}`}
+                            type="checkbox"
+                          />
+                          <span>Required for programme completion</span>
+                        </label>
+                        <label>
+                          <span className={labelClasses()}>Introduction copy</span>
+                          <textarea
+                            className={`${fieldClasses()} min-h-20 resize-none`}
+                            defaultValue={selectedAssessment?.introduction_copy || assessment.introduction_copy}
+                            maxLength={1000}
+                            name={`assessmentIntroductionCopy:${assessment.id}`}
+                          />
+                        </label>
+                        <label>
+                          <span className={labelClasses()}>Completion copy</span>
+                          <textarea
+                            className={`${fieldClasses()} min-h-20 resize-none`}
+                            defaultValue={selectedAssessment?.completion_copy || assessment.completion_copy}
+                            maxLength={1000}
+                            name={`assessmentCompletionCopy:${assessment.id}`}
+                          />
+                        </label>
+                      </div>
+                    </SelectionRow>
+                  );
+                })}
+                {assessmentVersions.length === 0 ? (
+                  <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+                    No published assessment templates are available for this workspace.
                   </div>
-                  <p className={helperTextClasses()}>{assessment.slug}</p>
-                </SelectionRow>
-              ))}
-            </div>
+                ) : null}
+              </div>
+            )}
           </FormSection>
         </div>
 

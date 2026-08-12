@@ -221,6 +221,7 @@ const adminLinkGroups: AdminLinkGroup[] = [
     links: [
       { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
       { href: "/admin/programmes", label: "Programmes", icon: ProgrammesIcon },
+      { href: "/admin/assessments", label: "Assessments", icon: RecommendationsIcon },
       { href: "/admin/cohorts", label: "Cohorts", icon: CohortsIcon },
       { href: "/admin/reporting", label: "Reporting", icon: ReportingIcon },
       { href: "/admin/interventions", label: "Interventions", icon: InterventionsIcon },
@@ -284,6 +285,14 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
   }
   if (link.href.startsWith("/admin/programmes")) {
     return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+  }
+  if (link.href.startsWith("/admin/assessments")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "content_editor",
+    ]);
   }
   if (link.href.startsWith("/admin/cohorts")) {
     return hasAnyRole(workspace, [

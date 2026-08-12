@@ -2682,6 +2682,29 @@ Accept Police invitation
 * admins remain unaffected;
 * redirects are covered by browser tests.
 
+**Status:** Implemented on 2026-08-12 for review.
+
+Implemented:
+
+* auth callback assessment gating now applies only to public destinations. `/org/*` and `/o/*` return paths, including confirmed-login paths that wrap an organisation destination, preserve the invited organisation workspace instead of redirecting to the public Values Starter Check;
+* the public dashboard still uses the public Values Starter Check rule for non-admin learners without a public value profile;
+* contextual programme assessment completion keeps the attempt, programme and organisation XP-account attribution, but restores or removes the temporary public value profile/dimension rows created by the legacy public assessment implementation so organisation assessments do not satisfy the public starter gate;
+* the local E2E wrapper now passes through Playwright file arguments so focused browser gates can run without the full suite.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run test:unit -- --test-name-pattern=auth
+npm run typecheck
+npm run lint
+node scripts/supabase-cli.mjs db reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_learning_earning.sql
+npm run build
+npm run test:e2e -- tests/e2e/organization-missions.spec.ts
+```
+
+Result: unit coverage passed 140/140; typecheck and lint passed; local migration replay applied `20260812231000_p15d_contextual_assessment_onboarding.sql`; focused contextual learning pgTAP passed 18/18; production build passed; focused browser coverage passed 1/1 and proves contextual Org Mode entry plus the public dashboard assessment gate.
+
 ---
 
 ## Ticket P15-ASMT-002: Contextual recommendation profiles
@@ -2754,6 +2777,33 @@ Organisation recommendations use the organisation profile where one exists.
 * profile access is tenant-scoped;
 * context is resolved server-side.
 
+**Status:** Implemented on 2026-08-12 for review.
+
+Implemented:
+
+* `user_value_profiles` and `user_value_dimension_scores` now carry explicit `context_scope` and `organization_id` columns, with platform profiles constrained to a null organisation and organisation profiles constrained to their tenant organisation;
+* `user_assessment_attempts` now records organisation context for programme-backed assessments, and `complete_values_assessment` resolves programme organisation/account context server-side before writing profile data;
+* platform onboarding, public ads and public recommendation reads continue to use only the platform profile, so organisation assessments do not satisfy or overwrite the public Values Starter Check state;
+* `lib/personalized-recommendations.ts` accepts a learner recommendation profile context and the Org Mode learn page requests organisation-scoped recommendations while keeping public recommendation URLs unchanged;
+* contextual pgTAP coverage now proves Police and Church programme assessments write separate organisation profiles and leave the public profile untouched.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run typecheck
+npm run lint
+node scripts/supabase-cli.mjs db reset
+npm run db:types:local
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_learning_earning.sql
+npm run test:db
+npm run test:unit
+npm run build
+npm run db:types:local:check
+npm run test:e2e -- tests/e2e/organization-missions.spec.ts tests/e2e/remediation-flows.spec.ts
+```
+
+Result: typecheck passed; lint passed; local migration replay applied `20260812232000_p15d_contextual_recommendation_profiles.sql`; generated database types are current; focused contextual learning pgTAP passed 22/22; full database pgTAP passed 599/599; unit coverage passed 140/140; production build passed; focused browser coverage passed 9/9 and covers the organisation mission acceptance path plus the remediation signup, learner, CMS and institutional LMS flows.
+
 ---
 
 ## Ticket P15-ASMT-003: Plan-based assessment capability
@@ -2821,6 +2871,35 @@ Custom Enterprise dimensions may require platform review or platform-assisted se
 * an organisation cannot alter another organisation’s assessment;
 * Starter cannot access assessment-authoring actions.
 
+**Status:** Implemented on 2026-08-12 for review.
+
+Implemented:
+
+* assessment versions now carry owner scope, organisation owner, source version, version number, intro/completion copy and scoring config metadata;
+* programme assessment attachments now carry required/optional state plus programme-specific introduction and completion copy;
+* programme assessment attachment is enforced server-side by `assessment_capability`: Starter cannot attach assessments, Team can attach published Project Ve templates, and Professional/Enterprise can attach published same-organisation assessment versions;
+* published assessment versions, questions, options and weights are immutable at the table-trigger boundary, so editing a published organisation assessment is handled by creating a new draft version;
+* Professional/Enterprise organisation assessment revision and publish RPCs enforce organisation ownership, plan capability, draft readiness and tenant isolation;
+* the programme editor resolves organisation entitlements server-side, hides assessment attachment for Starter workspaces, filters assessment options to published versions available to the programme organisation, and saves required/intro/completion copy through an authenticated RPC.
+
+Validation completed on 2026-08-12:
+
+```bash
+node scripts/supabase-cli.mjs db reset
+npm run db:types:local
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_assessment_plan_capabilities.sql
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_programme_builder.sql supabase/tests/database/lms_completion_transcripts.sql supabase/tests/database/p15_xp_learning_earning.sql
+npm run typecheck
+npm run lint
+npm run test:db
+npm run test:unit
+npm run build
+npm run db:types:local:check
+npm run test:e2e -- tests/e2e/organization-missions.spec.ts tests/e2e/remediation-flows.spec.ts
+```
+
+Result: local migration replay passed including `20260812233000_p15d_plan_based_assessment_capability.sql`; generated database types are current; focused assessment capability pgTAP passed 14/14; affected programme/completion/contextual assessment pgTAP passed 67/67; full database pgTAP passed 613/613; typecheck passed; lint passed; unit coverage passed 140/140; production build passed; focused browser coverage passed 9/9 across Org Mode mission, self-service Starter, CMS and institutional LMS flows.
+
 ---
 
 ## Ticket P15-ASMT-004: Organisation assessment authoring workspace
@@ -2874,6 +2953,36 @@ Review and Publish
 * scoring weights are validated;
 * published version history is retained;
 * learner rendering works inside Org Mode.
+
+### Implementation status
+
+Closed on 2026-08-12.
+
+Delivered:
+* added the paid-plan assessment authoring workspace at `/admin/assessments` with Overview, Questions, Scoring, Preview, Version history, and Review and Publish sections;
+* added draft-only organisation assessment RPCs for overview editing, question/option/weight upserts, question deletion, and non-persistent scoring preview;
+* kept published assessment versions immutable and preserved revision history through organisation-owned draft revisions;
+* enforced Professional-or-higher editing through existing assessment capability entitlements while leaving Team usage limited to published Project Ve template selection;
+* surfaced programme usage in the assessment workspace and assessment checkpoints in Org Mode learner `/learn`;
+* added `/o/[organizationSlug]/assessments/[assessmentVersionId]` learner rendering that submits through the existing programme-scoped `complete_values_assessment` RPC.
+
+Validation completed on 2026-08-12:
+
+```bash
+node scripts/supabase-cli.mjs db reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_assessment_plan_capabilities.sql
+npm run db:types:local
+npm run typecheck
+npm run lint
+npm run test:db
+npm run test:unit
+npm run db:types:local:check
+npm run build
+npm run test:e2e -- tests/e2e/organization-missions.spec.ts tests/e2e/remediation-flows.spec.ts
+git diff --check
+```
+
+Result: local migration replay passed including `20260812234000_p15d_assessment_authoring_workspace.sql`; generated database types are current; focused assessment capability pgTAP passed 20/20; full database pgTAP passed 619/619; typecheck passed; lint passed; unit coverage passed 140/140; generated database type check passed; production build passed; focused browser coverage passed 9/9 including Org Mode assessment checkpoint rendering and route entry.
 
 ---
 
@@ -4111,7 +4220,7 @@ P15-ASMT-003
 P15-ASMT-004
 ```
 
-Then stop for review.
+P1.5D closed on 2026-08-12 after P15-ASMT-001 through P15-ASMT-004 validation. Stop for review before P1.5E.
 
 ## Batch P1.5E
 

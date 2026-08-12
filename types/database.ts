@@ -1615,36 +1615,72 @@ export type Database = {
       }
       assessment_versions: {
         Row: {
+          completion_copy: string
           created_at: string
           description: string | null
           id: string
+          introduction_copy: string
+          organization_id: string | null
+          owner_scope: string
           published_at: string | null
+          scoring_config: Json
           slug: string
+          source_assessment_version_id: string | null
           status: string
           title: string
+          version_number: number
           xp_award: number
         }
         Insert: {
+          completion_copy?: string
           created_at?: string
           description?: string | null
           id?: string
+          introduction_copy?: string
+          organization_id?: string | null
+          owner_scope?: string
           published_at?: string | null
+          scoring_config?: Json
           slug: string
+          source_assessment_version_id?: string | null
           status?: string
           title: string
+          version_number?: number
           xp_award?: number
         }
         Update: {
+          completion_copy?: string
           created_at?: string
           description?: string | null
           id?: string
+          introduction_copy?: string
+          organization_id?: string | null
+          owner_scope?: string
           published_at?: string | null
+          scoring_config?: Json
           slug?: string
+          source_assessment_version_id?: string | null
           status?: string
           title?: string
+          version_number?: number
           xp_award?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "assessment_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_versions_source_assessment_version_id_fkey"
+            columns: ["source_assessment_version_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_events: {
         Row: {
@@ -3962,21 +3998,33 @@ export type Database = {
       programme_assessments: {
         Row: {
           assessment_version_id: string
+          completion_copy: string
           created_at: string
+          delivery_config: Json
+          introduction_copy: string
+          is_required: boolean
           programme_id: string
           sort_order: number
           xp_account_id: string | null
         }
         Insert: {
           assessment_version_id: string
+          completion_copy?: string
           created_at?: string
+          delivery_config?: Json
+          introduction_copy?: string
+          is_required?: boolean
           programme_id: string
           sort_order: number
           xp_account_id?: string | null
         }
         Update: {
           assessment_version_id?: string
+          completion_copy?: string
           created_at?: string
+          delivery_config?: Json
+          introduction_copy?: string
+          is_required?: boolean
           programme_id?: string
           sort_order?: number
           xp_account_id?: string | null
@@ -5918,6 +5966,7 @@ export type Database = {
           assessment_version_id: string
           completed_at: string | null
           id: string
+          organization_id: string | null
           programme_id: string | null
           started_at: string
           status: string
@@ -5929,6 +5978,7 @@ export type Database = {
           assessment_version_id: string
           completed_at?: string | null
           id?: string
+          organization_id?: string | null
           programme_id?: string | null
           started_at?: string
           status?: string
@@ -5940,6 +5990,7 @@ export type Database = {
           assessment_version_id?: string
           completed_at?: string | null
           id?: string
+          organization_id?: string | null
           programme_id?: string | null
           started_at?: string
           status?: string
@@ -5953,6 +6004,13 @@ export type Database = {
             columns: ["assessment_version_id"]
             isOneToOne: false
             referencedRelation: "assessment_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assessment_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -6189,21 +6247,30 @@ export type Database = {
       user_value_dimension_scores: {
         Row: {
           confidence: number
+          context_scope: string
           dimension_id: string
+          id: string
+          organization_id: string | null
           score: number
           updated_at: string
           user_id: string
         }
         Insert: {
           confidence?: number
+          context_scope?: string
           dimension_id: string
+          id?: string
+          organization_id?: string | null
           score: number
           updated_at?: string
           user_id: string
         }
         Update: {
           confidence?: number
+          context_scope?: string
           dimension_id?: string
+          id?: string
+          organization_id?: string | null
           score?: number
           updated_at?: string
           user_id?: string
@@ -6214,6 +6281,13 @@ export type Database = {
             columns: ["dimension_id"]
             isOneToOne: false
             referencedRelation: "value_dimensions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_value_dimension_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -6229,7 +6303,10 @@ export type Database = {
         Row: {
           assessment_completed_at: string | null
           assessment_version_id: string | null
+          context_scope: string
+          id: string
           latest_attempt_id: string | null
+          organization_id: string | null
           primary_dimension_id: string | null
           profile_summary: Json
           readiness_level: string
@@ -6240,7 +6317,10 @@ export type Database = {
         Insert: {
           assessment_completed_at?: string | null
           assessment_version_id?: string | null
+          context_scope?: string
+          id?: string
           latest_attempt_id?: string | null
+          organization_id?: string | null
           primary_dimension_id?: string | null
           profile_summary?: Json
           readiness_level?: string
@@ -6251,7 +6331,10 @@ export type Database = {
         Update: {
           assessment_completed_at?: string | null
           assessment_version_id?: string | null
+          context_scope?: string
+          id?: string
           latest_attempt_id?: string | null
+          organization_id?: string | null
           primary_dimension_id?: string | null
           profile_summary?: Json
           readiness_level?: string
@@ -6275,6 +6358,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_value_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_value_profiles_primary_dimension_id_fkey"
             columns: ["primary_dimension_id"]
             isOneToOne: false
@@ -6291,7 +6381,7 @@ export type Database = {
           {
             foreignKeyName: "user_value_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6782,6 +6872,18 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_create_organization_assessment_revision: {
+        Args: {
+          p_completion_copy: string
+          p_description: string
+          p_introduction_copy: string
+          p_organization_id: string
+          p_slug: string
+          p_source_assessment_version_id: string
+          p_title: string
+        }
+        Returns: Json
+      }
       admin_create_organization_invitation: {
         Args: {
           p_email: string
@@ -6922,6 +7024,10 @@ export type Database = {
         Args: { p_block_id: string; p_page_id: string }
         Returns: Json
       }
+      admin_delete_organization_assessment_question: {
+        Args: { p_question_id: string }
+        Returns: Json
+      }
       admin_delete_perk_bundle_prize: {
         Args: { p_prize_id: string }
         Returns: Json
@@ -6983,6 +7089,14 @@ export type Database = {
           assigned_available: number
           prize_id: string
         }[]
+      }
+      admin_preview_organization_assessment_scoring: {
+        Args: { p_answers: Json; p_assessment_version_id: string }
+        Returns: Json
+      }
+      admin_publish_organization_assessment_version: {
+        Args: { p_assessment_version_id: string }
+        Returns: Json
       }
       admin_reallocate_reward_inventory: {
         Args: {
@@ -7211,6 +7325,18 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_update_organization_assessment_overview: {
+        Args: {
+          p_assessment_version_id: string
+          p_completion_copy: string
+          p_description: string
+          p_introduction_copy: string
+          p_scoring_config: Json
+          p_slug: string
+          p_title: string
+        }
+        Returns: Json
+      }
       admin_update_organization_mission: {
         Args: {
           p_category: Database["public"]["Enums"]["mission_category"]
@@ -7242,6 +7368,10 @@ export type Database = {
           p_support_phone: string
           p_verification_status: Database["public"]["Enums"]["organization_verification_status"]
         }
+        Returns: Json
+      }
+      admin_update_programme_assessment_delivery: {
+        Args: { p_assessment_delivery_configs: Json; p_programme_id: string }
         Returns: Json
       }
       admin_update_programme_mission_delivery: {
@@ -7569,6 +7699,17 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_upsert_organization_assessment_question: {
+        Args: {
+          p_assessment_version_id: string
+          p_helper_text: string
+          p_options: Json
+          p_prompt: string
+          p_question_id: string
+          p_sort_order: number
+        }
+        Returns: Json
+      }
       admin_upsert_organization_membership: {
         Args: {
           p_organization_id: string
@@ -7781,6 +7922,10 @@ export type Database = {
         }
         Returns: Json
       }
+      current_programme_can_use_assessment: {
+        Args: { p_assessment_version_id: string; p_programme_id: string }
+        Returns: boolean
+      }
       current_programme_can_use_reward: {
         Args: { p_programme_id: string; p_reward_id: string }
         Returns: boolean
@@ -7823,6 +7968,10 @@ export type Database = {
       }
       current_user_can_manage_programme: {
         Args: { p_programme_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_assessment_version: {
+        Args: { p_assessment_version_id: string }
         Returns: boolean
       }
       current_user_can_read_cohort: {

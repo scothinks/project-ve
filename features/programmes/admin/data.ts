@@ -62,6 +62,10 @@ export type AdminProgrammeAssessmentRow = {
   programme_id: string;
   assessment_version_id: string;
   sort_order: number;
+  is_required: boolean;
+  introduction_copy: string;
+  completion_copy: string;
+  delivery_config: Record<string, unknown>;
 };
 
 export type AdminAssessmentVersionOptionRow = {
@@ -69,6 +73,12 @@ export type AdminAssessmentVersionOptionRow = {
   slug: string;
   title: string;
   status: string;
+  owner_scope: "platform" | "organization";
+  organization_id: string | null;
+  source_assessment_version_id: string | null;
+  version_number: number;
+  introduction_copy: string;
+  completion_copy: string;
 };
 
 export type AdminProgrammeDetail = AdminProgrammeRow & {
@@ -238,7 +248,7 @@ export async function getAdminProgramme(
       .order("sort_order", { ascending: true }),
     supabase
       .from("programme_assessments")
-      .select("programme_id, assessment_version_id, sort_order")
+      .select("programme_id, assessment_version_id, sort_order, is_required, introduction_copy, completion_copy, delivery_config")
       .eq("programme_id", programmeId)
       .order("sort_order", { ascending: true }),
   ]);
@@ -303,15 +313,42 @@ export async function getAdminProgrammePendingAccessRequests(
 
 export async function getAdminAssessmentVersionOptions(
   supabase: SupabaseClient<Database>,
+  filters: {
+    assessmentCapability?: "assigned_only" | "template_use" | "template_adaptation" | "custom";
+    organizationId?: string;
+  } = {},
 ): Promise<AdminAssessmentVersionOptionRow[]> {
+  if (filters.assessmentCapability === "assigned_only") {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("assessment_versions")
-    .select("id, slug, title, status")
+    .select("id, slug, title, status, owner_scope, organization_id, source_assessment_version_id, version_number, introduction_copy, completion_copy")
     .order("title", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? []) as AdminAssessmentVersionOptionRow[];
+  const rows = (data ?? []) as AdminAssessmentVersionOptionRow[];
+
+  if (!filters.organizationId) {
+    return rows.filter((assessment) => assessment.status === "published");
+  }
+
+  return rows.filter((assessment) => {
+    if (assessment.status !== "published") {
+      return false;
+    }
+
+    if (assessment.owner_scope === "platform") {
+      return assessment.organization_id === null;
+    }
+
+    return (
+      (filters.assessmentCapability === "template_adaptation" || filters.assessmentCapability === "custom")
+      && assessment.organization_id === filters.organizationId
+    );
+  });
 }

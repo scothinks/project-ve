@@ -134,6 +134,28 @@ function parseMissionDeliveryConfigs(formData: FormData, missionIds: string[]) {
   );
 }
 
+function parseAssessmentDeliveryConfigs(formData: FormData, assessmentVersionIds: string[]) {
+  return Object.fromEntries(
+    assessmentVersionIds.map((assessmentVersionId) => [
+      assessmentVersionId,
+      {
+        completionCopy: sanitizePlainTextInput(
+          String(formData.get(`assessmentCompletionCopy:${assessmentVersionId}`) ?? ""),
+          1000,
+        ),
+        deliveryConfig: {
+          previewEnabled: true,
+        },
+        introductionCopy: sanitizePlainTextInput(
+          String(formData.get(`assessmentIntroductionCopy:${assessmentVersionId}`) ?? ""),
+          1000,
+        ),
+        isRequired: formData.get(`assessmentRequired:${assessmentVersionId}`) === "on",
+      },
+    ]),
+  );
+}
+
 export async function saveProgramme(formData: FormData) {
   const programmeId = sanitizePlainTextInput(String(formData.get("programmeId") ?? ""), 80);
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
@@ -147,6 +169,7 @@ export async function saveProgramme(formData: FormData) {
   const missionDeliveryConfigs = parseMissionDeliveryConfigs(formData, missionIds);
   const rewardIds = getSortedSelectedIds(formData, "rewardIds");
   const assessmentVersionIds = getSortedSelectedIds(formData, "assessmentVersionIds");
+  const assessmentDeliveryConfigs = parseAssessmentDeliveryConfigs(formData, assessmentVersionIds);
   const completionRuleConfig = parseCompletionRuleConfig(formData);
   const { supabase } = await requireAdminWorkspaceRole(PROGRAMME_MANAGER_ROLES);
 
@@ -187,6 +210,15 @@ export async function saveProgramme(formData: FormData) {
 
     if (missionDeliveryError) {
       throw missionDeliveryError;
+    }
+
+    const { error: assessmentDeliveryError } = await supabase.rpc("admin_update_programme_assessment_delivery", {
+      p_assessment_delivery_configs: assessmentDeliveryConfigs,
+      p_programme_id: savedProgrammeId,
+    });
+
+    if (assessmentDeliveryError) {
+      throw assessmentDeliveryError;
     }
 
     const { error: completionRulesError } = await supabase.rpc("admin_upsert_programme_completion_rules", {

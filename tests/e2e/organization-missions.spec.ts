@@ -9,6 +9,7 @@ const orgName = `E2E Org Missions ${runId}`;
 const courseId = `e2e-org-mission-course-${runId}`;
 const lessonId = `e2e-org-mission-lesson-${runId}`;
 const pageId = `e2e-org-mission-page-${runId}`;
+const assessmentVersionId = "3b2ebf9a-c1d4-4b61-9d5f-f4d4452d0001";
 const programmeId = randomUUID();
 const orgWideMissionId = `e2e-org-wide-mission-${runId}`;
 const programmeMissionId = `e2e-programme-mission-${runId}`;
@@ -97,6 +98,7 @@ async function cleanupFixture() {
   await supabase.from("mission_awards").delete().in("mission_id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
   await supabase.from("mission_proofs").delete().in("mission_id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
   await supabase.from("programme_missions").delete().eq("programme_id", programmeId);
+  await supabase.from("programme_assessments").delete().eq("programme_id", programmeId);
   await supabase.from("missions").delete().in("id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
   await supabase.from("enrolments").delete().eq("organization_id", organizationId || "00000000-0000-0000-0000-000000000000");
   await supabase.from("programme_courses").delete().eq("programme_id", programmeId);
@@ -265,6 +267,18 @@ async function seedFixture() {
       sort_order: 1,
     }),
     "attach course to programme",
+  );
+
+  await assertNoError(
+    await supabase.from("programme_assessments").insert({
+      programme_id: programmeId,
+      assessment_version_id: assessmentVersionId,
+      sort_order: 1,
+      is_required: true,
+      introduction_copy: `Programme assessment checkpoint ${runId}`,
+      completion_copy: `Programme assessment complete ${runId}`,
+    }),
+    "attach assessment to programme",
   );
 
   await assertNoError(
@@ -476,6 +490,17 @@ test.describe.serial("organization mission browser acceptance", () => {
       `/login?next=${encodeURIComponent(`/o/${orgSlug}/learn`)}&ref=${automaticToken}&refKind=contextual`,
     );
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/learn$`));
+    await expect(page.getByText("Assessment checkpoints", { exact: true })).toBeVisible();
+    const assessmentCheckpoint = page.locator("div").filter({ hasText: `Programme assessment checkpoint ${runId}` }).first();
+    await expect(assessmentCheckpoint).toBeVisible();
+    await assessmentCheckpoint.getByRole("link", { name: "Start" }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/assessments/${assessmentVersionId}\\?programmeId=${programmeId}$`));
+    await expect(page.getByRole("heading", { name: "Values Starter Check" })).toBeVisible();
+    await expect(page.getByText(`Programme assessment checkpoint ${runId}`)).toBeVisible();
+    await page.getByRole("link", { name: new RegExp(`Return to`) }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/learn$`));
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
     await page.goto(`/o/${orgSlug}/missions`);
     await expect(page.getByText(`Programme override mission copy ${runId}`)).toBeVisible();
     await expect(page.getByRole("link", { name: "Start programme mission" })).toHaveAttribute(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
-import { getSafeAuthNextPath } from "@/lib/auth-redirect";
+import { getSafeAuthNextPath, shouldRouteAuthNextToPublicAssessment } from "@/lib/auth-redirect";
 import { getRiskContext } from "@/lib/auth-risk";
 import { normalizeReferralInviteKind, normalizeReferralInviteToken } from "@/lib/referral-invites";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
@@ -236,6 +236,8 @@ export async function GET(request: NextRequest) {
       .from("user_value_profiles")
       .select("assessment_completed_at")
       .eq("user_id", user.id)
+      .eq("context_scope", "platform")
+      .is("organization_id", null)
       .maybeSingle(),
   ]);
   const typedProfile = profile as ProfileAccessRow | null;
@@ -244,7 +246,7 @@ export async function GET(request: NextRequest) {
   const shouldRouteToAssessment =
     typedProfile?.role !== "admin"
     && !typedValueProfile?.assessment_completed_at
-    && next !== "/onboarding/assessment";
+    && shouldRouteAuthNextToPublicAssessment(next);
 
   const destination = shouldRouteToAssessment ? "/onboarding/assessment" : next;
   const response = NextResponse.redirect(new URL(destination, request.url));
