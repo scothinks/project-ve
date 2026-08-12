@@ -13,6 +13,7 @@ import {
   getAdminOrganizations,
   getAdminOrganizationPlanAssignments,
   getAdminOrganizationPlans,
+  getAdminOrganizationXpAccountOverview,
   getAdminCohorts,
   getAdminProgrammes,
   getAdminUsers,
@@ -28,6 +29,8 @@ import {
   saveOrganizationMembership,
   saveOrganizationPlanAssignment,
   saveOrganizationProfile,
+  saveOrganizationXpAccountControls,
+  saveOrganizationXpAccountPresentation,
 } from "./actions";
 
 const ORGANIZATION_ROLES = [
@@ -119,6 +122,9 @@ export default async function AdminOrganizationsPage({
   );
   const isPlatformWorkspace = workspace.type === "platform";
   const selectedOrganization = organizations[0] ?? null;
+  const xpAccountOverview = selectedOrganization
+    ? await getAdminOrganizationXpAccountOverview(supabase, selectedOrganization.id)
+    : null;
 
   return (
     <>
@@ -273,6 +279,214 @@ export default async function AdminOrganizationsPage({
         </div>
 
         <aside className="space-y-5">
+          {xpAccountOverview ? (
+            <AdminCard>
+              <h2 className="text-base font-black">XP account operations</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+                {xpAccountOverview.account.name} · {xpAccountOverview.account.status}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="border border-[var(--ve-line)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Circulation</p>
+                  <p className="mt-1 text-lg font-black">{xpAccountOverview.circulation}</p>
+                </div>
+                <div className="border border-[var(--ve-line)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Issued</p>
+                  <p className="mt-1 text-lg font-black">{xpAccountOverview.issuance}</p>
+                </div>
+                <div className="border border-[var(--ve-line)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Redeemed</p>
+                  <p className="mt-1 text-lg font-black">{xpAccountOverview.redemptions}</p>
+                </div>
+                <div className="border border-[var(--ve-line)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Adjustments</p>
+                  <p className="mt-1 text-lg font-black">{xpAccountOverview.adjustments}</p>
+                </div>
+              </div>
+              <form action={saveOrganizationXpAccountPresentation} className="mt-5 space-y-4">
+                <input name="organizationId" type="hidden" value={selectedOrganization.id} />
+                <input name="xpAccountId" type="hidden" value={xpAccountOverview.account.id} />
+                <label className="block">
+                  <span className={labelClasses()}>Singular name</span>
+                  <input className={fieldClasses()} defaultValue={xpAccountOverview.account.name} name="displayName" required />
+                </label>
+                <label className="block">
+                  <span className={labelClasses()}>Plural name</span>
+                  <input className={fieldClasses()} defaultValue={xpAccountOverview.account.pluralName} name="displayNamePlural" required />
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className={labelClasses()}>Short label</span>
+                    <input className={fieldClasses()} defaultValue={xpAccountOverview.account.shortLabel} name="shortLabel" required />
+                  </label>
+                  <label className="block">
+                    <span className={labelClasses()}>Icon</span>
+                    <input className={fieldClasses()} defaultValue={xpAccountOverview.account.icon} name="icon" />
+                  </label>
+                </div>
+                <label className="block">
+                  <span className={labelClasses()}>Balance display</span>
+                  <select className={fieldClasses()} defaultValue={xpAccountOverview.account.displayFormat} name="displayFormat">
+                    <option value="amount_name">Amount + name</option>
+                    <option value="amount_short_label">Amount + short label</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className={labelClasses()}>Account status</span>
+                  <select className={fieldClasses()} defaultValue={xpAccountOverview.account.status} name="status">
+                    <option value="active">Active</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
+                <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                  Save XP account
+                </button>
+              </form>
+              <div className="mt-6 border-t border-[var(--ve-line)] pt-5">
+                <h3 className="text-sm font-black">Issuance and exposure controls</h3>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  Caps apply to organisation-account earning transactions. Exposure is an estimate based on outstanding balances and the configured accounting value.
+                </p>
+                <form action={saveOrganizationXpAccountControls} className="mt-4 space-y-4">
+                  <input name="organizationId" type="hidden" value={selectedOrganization.id} />
+                  <input name="xpAccountId" type="hidden" value={xpAccountOverview.account.id} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={labelClasses()}>Value per point</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.accountingValuePerUnit}
+                        min={0}
+                        name="accountingValuePerUnit"
+                        required
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Rolling period days</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.issuancePeriodDays}
+                        max={366}
+                        min={1}
+                        name="issuancePeriodDays"
+                        required
+                        type="number"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Period issuance cap</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.issuanceCapPerPeriod}
+                        min={0}
+                        name="issuanceCapPerPeriod"
+                        required
+                        type="number"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Per-user issuance cap</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.issuanceCapPerUser}
+                        min={0}
+                        name="issuanceCapPerUser"
+                        required
+                        type="number"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Funded reward budget</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.fundedRewardBudget ?? ""}
+                        min={0}
+                        name="fundedRewardBudget"
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Exposure warning</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.exposureWarningThreshold ?? ""}
+                        min={0}
+                        name="exposureWarningThreshold"
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                    <label className="block sm:col-span-2">
+                      <span className={labelClasses()}>Exposure hard threshold</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.exposureHardThreshold ?? ""}
+                        min={0}
+                        name="exposureHardThreshold"
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                  </div>
+                  <div className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                    <p>Issued in current rolling period: {xpAccountOverview.controls.periodIssued}</p>
+                    <p className="mt-1">Remaining period capacity: {xpAccountOverview.controls.periodRemaining}</p>
+                    <p className="mt-1">Estimated unredeemed liability: {xpAccountOverview.exposure.estimatedUnredeemedLiability}</p>
+                    {xpAccountOverview.exposure.warning ? <p className="mt-1 font-black text-[var(--ve-store)]">Exposure warning threshold reached.</p> : null}
+                    {xpAccountOverview.exposure.hardBlocked ? <p className="mt-1 font-black text-[var(--foreground)]">New issuance is blocked by the exposure threshold.</p> : null}
+                  </div>
+                  <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                    Save issuance controls
+                  </button>
+                </form>
+              </div>
+              <div className="mt-6 grid gap-4 border-t border-[var(--ve-line)] pt-5 sm:grid-cols-2">
+                <div>
+                  <h3 className="text-sm font-black">Issuance by programme</h3>
+                  <div className="mt-3 space-y-2">
+                    {xpAccountOverview.programmeIssuance.slice(0, 6).map((programme) => (
+                      <div className="flex items-center justify-between gap-3 text-xs" key={programme.programmeId}>
+                        <span className="truncate font-bold">{programme.programmeName}</span>
+                        <span className="font-black">{programme.issued}</span>
+                      </div>
+                    ))}
+                    {xpAccountOverview.programmeIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ve-muted)]">No programme issuance yet.</p> : null}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-black">Issuance by learner</h3>
+                  <div className="mt-3 space-y-2">
+                    {xpAccountOverview.userIssuance.slice(0, 6).map((learner) => (
+                      <div className="flex items-center justify-between gap-3 text-xs" key={learner.userId}>
+                        <span className="truncate font-bold">{learner.displayName}</span>
+                        <span className="font-black">{learner.issued}</span>
+                      </div>
+                    ))}
+                    {xpAccountOverview.userIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ve-muted)]">No learner issuance yet.</p> : null}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 border-t border-[var(--ve-line)] pt-4">
+                <h3 className="text-sm font-black">Recent transactions</h3>
+                <div className="mt-3 space-y-2">
+                  {xpAccountOverview.transactions.slice(0, 8).map((transaction) => (
+                    <div className="flex items-center justify-between gap-3 text-xs" key={transaction.id}>
+                      <span className="truncate font-bold">{transaction.sourceType}</span>
+                      <span className={transaction.direction === "earn" ? "font-black text-[var(--ve-green)]" : "font-black"}>
+                        {transaction.direction === "earn" ? "+" : "-"}{transaction.amount}
+                      </span>
+                    </div>
+                  ))}
+                  {xpAccountOverview.transactions.length === 0 ? (
+                    <p className="text-xs font-semibold text-[var(--ve-muted)]">No transactions yet.</p>
+                  ) : null}
+                </div>
+              </div>
+            </AdminCard>
+          ) : null}
           <AdminCard>
             <h2 className="text-base font-black">Identity and lifecycle</h2>
             <form action={saveOrganizationProfile} className="mt-4 space-y-4">

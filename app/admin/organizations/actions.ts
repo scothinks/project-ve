@@ -307,3 +307,99 @@ export async function saveOrganizationProfile(formData: FormData) {
   revalidatePath("/admin/organizations");
   redirect(appendAdminNotice("/admin/organizations", "Organisation profile updated."));
 }
+
+export async function saveOrganizationXpAccountPresentation(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const xpAccountId = sanitizePlainTextInput(String(formData.get("xpAccountId") ?? ""), 80);
+  const displayName = sanitizePlainTextInput(String(formData.get("displayName") ?? ""), 80);
+  const displayNamePlural = sanitizePlainTextInput(String(formData.get("displayNamePlural") ?? ""), 80);
+  const shortLabel = sanitizePlainTextInput(String(formData.get("shortLabel") ?? ""), 20);
+  const icon = sanitizePlainTextInput(String(formData.get("icon") ?? "coins"), 80);
+  const displayFormat = String(formData.get("displayFormat") ?? "amount_name") === "amount_short_label"
+    ? "amount_short_label"
+    : "amount_name";
+  const status = String(formData.get("status") ?? "active") === "archived" ? "archived" : "active";
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
+
+  const { error } = await supabase.rpc("admin_update_xp_account_presentation", {
+    p_display_format: displayFormat,
+    p_display_name: displayName,
+    p_display_name_plural: displayNamePlural,
+    p_icon: icon,
+    p_short_label: shortLabel,
+    p_status: status,
+    p_xp_account_id: xpAccountId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  revalidatePath("/org/my");
+  redirect(appendAdminNotice("/admin/organizations", "XP account presentation updated."));
+}
+
+export async function saveOrganizationXpAccountControls(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const xpAccountId = sanitizePlainTextInput(String(formData.get("xpAccountId") ?? ""), 80);
+  const accountingValuePerUnit = Number(formData.get("accountingValuePerUnit") ?? "");
+  const issuancePeriodDays = Number(formData.get("issuancePeriodDays") ?? "");
+  const issuanceCapPerPeriod = Number(formData.get("issuanceCapPerPeriod") ?? "");
+  const issuanceCapPerUser = Number(formData.get("issuanceCapPerUser") ?? "");
+  const fundedRewardBudget = parseOptionalNonNegativeNumber(formData.get("fundedRewardBudget"));
+  const exposureWarningThreshold = parseOptionalNonNegativeNumber(formData.get("exposureWarningThreshold"));
+  const exposureHardThreshold = parseOptionalNonNegativeNumber(formData.get("exposureHardThreshold"));
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
+
+  if (!Number.isFinite(accountingValuePerUnit) || accountingValuePerUnit < 0) {
+    throw new Error("Accounting value per unit must be zero or greater.");
+  }
+  if (!Number.isInteger(issuancePeriodDays) || issuancePeriodDays < 1 || issuancePeriodDays > 366) {
+    throw new Error("Issuance period must be between 1 and 366 days.");
+  }
+  if (!Number.isInteger(issuanceCapPerPeriod) || issuanceCapPerPeriod < 0) {
+    throw new Error("Period issuance cap must be zero or greater.");
+  }
+  if (!Number.isInteger(issuanceCapPerUser) || issuanceCapPerUser < 0) {
+    throw new Error("Per-user issuance cap must be zero or greater.");
+  }
+  if (exposureWarningThreshold !== null
+    && exposureHardThreshold !== null
+    && exposureHardThreshold < exposureWarningThreshold) {
+    throw new Error("Exposure hard threshold cannot be below the warning threshold.");
+  }
+
+  const { error } = await supabase.rpc("admin_update_xp_account_controls", {
+    p_accounting_value_per_unit: accountingValuePerUnit,
+    p_exposure_hard_threshold: exposureHardThreshold,
+    p_exposure_warning_threshold: exposureWarningThreshold,
+    p_funded_reward_budget: fundedRewardBudget,
+    p_issuance_cap_per_period: issuanceCapPerPeriod,
+    p_issuance_cap_per_user: issuanceCapPerUser,
+    p_issuance_period_days: issuancePeriodDays,
+    p_xp_account_id: xpAccountId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  revalidatePath("/org/my");
+  redirect(appendAdminNotice("/admin/organizations", "XP issuance controls updated."));
+}
+
+function parseOptionalNonNegativeNumber(value: FormDataEntryValue | null) {
+  const rawValue = String(value ?? "").trim();
+  if (!rawValue) {
+    return null;
+  }
+
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error("Optional XP control values must be zero or greater.");
+  }
+
+  return parsed;
+}

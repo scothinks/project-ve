@@ -2300,6 +2300,7 @@ export type Database = {
           updated_at: string
           user_id: string
           withdrawn_at: string | null
+          xp_account_id: string | null
         }
         Insert: {
           assigned_at?: string
@@ -2319,6 +2320,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           withdrawn_at?: string | null
+          xp_account_id?: string | null
         }
         Update: {
           assigned_at?: string
@@ -2338,6 +2340,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           withdrawn_at?: string | null
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -2380,6 +2383,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolments_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -2904,6 +2914,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mission_awards_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mission_awards_xp_transaction_id_fkey"
             columns: ["xp_transaction_id"]
             isOneToOne: true
@@ -2987,6 +3004,13 @@ export type Database = {
             columns: ["programme_id"]
             isOneToOne: false
             referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_proofs_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -3941,18 +3965,21 @@ export type Database = {
           created_at: string
           programme_id: string
           sort_order: number
+          xp_account_id: string | null
         }
         Insert: {
           assessment_version_id: string
           created_at?: string
           programme_id: string
           sort_order: number
+          xp_account_id?: string | null
         }
         Update: {
           assessment_version_id?: string
           created_at?: string
           programme_id?: string
           sort_order?: number
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -3967,6 +3994,13 @@ export type Database = {
             columns: ["programme_id"]
             isOneToOne: false
             referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_assessments_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -4180,10 +4214,79 @@ export type Database = {
           },
         ]
       }
+      programme_course_completions: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          evaluated_at: string
+          id: string
+          metadata: Json
+          organization_id: string
+          programme_id: string
+          progress_percent: number
+          status: Database["public"]["Enums"]["lms_completion_status"]
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          programme_id: string
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          evaluated_at?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          programme_id?: string
+          progress_percent?: number
+          status?: Database["public"]["Enums"]["lms_completion_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_course_completions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_course_completions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_course_completions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_course_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       programme_courses: {
         Row: {
           course_id: string
           created_at: string
+          prior_completion_policy: string
           programme_id: string
           requirement: Database["public"]["Enums"]["programme_course_requirement"]
           sort_order: number
@@ -4191,6 +4294,7 @@ export type Database = {
         Insert: {
           course_id: string
           created_at?: string
+          prior_completion_policy?: string
           programme_id: string
           requirement?: Database["public"]["Enums"]["programme_course_requirement"]
           sort_order: number
@@ -4198,6 +4302,7 @@ export type Database = {
         Update: {
           course_id?: string
           created_at?: string
+          prior_completion_policy?: string
           programme_id?: string
           requirement?: Database["public"]["Enums"]["programme_course_requirement"]
           sort_order?: number
@@ -4274,6 +4379,13 @@ export type Database = {
             referencedRelation: "programmes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "programme_missions_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       programme_rewards: {
@@ -4317,6 +4429,7 @@ export type Database = {
           completion_rules: Json
           created_at: string
           created_by: string | null
+          default_xp_account_id: string | null
           id: string
           intended_audience: string
           objective: string
@@ -4333,6 +4446,7 @@ export type Database = {
           completion_rules?: Json
           created_at?: string
           created_by?: string | null
+          default_xp_account_id?: string | null
           id?: string
           intended_audience?: string
           objective?: string
@@ -4349,6 +4463,7 @@ export type Database = {
           completion_rules?: Json
           created_at?: string
           created_by?: string | null
+          default_xp_account_id?: string | null
           id?: string
           intended_audience?: string
           objective?: string
@@ -4367,6 +4482,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programmes_default_xp_account_id_fkey"
+            columns: ["default_xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
           {
@@ -4493,12 +4615,14 @@ export type Database = {
           id: string
           lesson_id: string
           mode: Database["public"]["Enums"]["quiz_attempt_mode"]
+          programme_id: string | null
           quiz_id: string
           quiz_version: number
           seed: string
           started_at: string
           status: Database["public"]["Enums"]["quiz_attempt_status"]
           user_id: string
+          xp_account_id: string | null
         }
         Insert: {
           created_at?: string
@@ -4507,12 +4631,14 @@ export type Database = {
           id?: string
           lesson_id: string
           mode?: Database["public"]["Enums"]["quiz_attempt_mode"]
+          programme_id?: string | null
           quiz_id: string
           quiz_version: number
           seed: string
           started_at?: string
           status?: Database["public"]["Enums"]["quiz_attempt_status"]
           user_id: string
+          xp_account_id?: string | null
         }
         Update: {
           created_at?: string
@@ -4521,12 +4647,14 @@ export type Database = {
           id?: string
           lesson_id?: string
           mode?: Database["public"]["Enums"]["quiz_attempt_mode"]
+          programme_id?: string | null
           quiz_id?: string
           quiz_version?: number
           seed?: string
           started_at?: string
           status?: Database["public"]["Enums"]["quiz_attempt_status"]
           user_id?: string
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -4537,10 +4665,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quiz_attempts_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quiz_attempts_quiz_id_fkey"
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -5341,8 +5483,10 @@ export type Database = {
           reward_thumbnail_snapshot: Json
           reward_title_snapshot: string | null
           status: Database["public"]["Enums"]["redemption_status"]
+          updated_at: string
           user_id: string
           user_message: string | null
+          xp_account_id: string | null
           xp_cost_at_redemption: number | null
           xp_transaction_id: string | null
         }
@@ -5376,8 +5520,10 @@ export type Database = {
           reward_thumbnail_snapshot?: Json
           reward_title_snapshot?: string | null
           status?: Database["public"]["Enums"]["redemption_status"]
+          updated_at?: string
           user_id: string
           user_message?: string | null
+          xp_account_id?: string | null
           xp_cost_at_redemption?: number | null
           xp_transaction_id?: string | null
         }
@@ -5411,8 +5557,10 @@ export type Database = {
           reward_thumbnail_snapshot?: Json
           reward_title_snapshot?: string | null
           status?: Database["public"]["Enums"]["redemption_status"]
+          updated_at?: string
           user_id?: string
           user_message?: string | null
+          xp_account_id?: string | null
           xp_cost_at_redemption?: number | null
           xp_transaction_id?: string | null
         }
@@ -5460,6 +5608,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reward_redemptions_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reward_redemptions_xp_transaction_id_fkey"
             columns: ["xp_transaction_id"]
             isOneToOne: true
@@ -5500,6 +5655,7 @@ export type Database = {
           total_uploaded: number
           updated_at: string
           visibility_mode: string
+          xp_account_id: string | null
         }
         Insert: {
           campaign_id?: string | null
@@ -5532,6 +5688,7 @@ export type Database = {
           total_uploaded?: number
           updated_at?: string
           visibility_mode?: string
+          xp_account_id?: string | null
         }
         Update: {
           campaign_id?: string | null
@@ -5564,6 +5721,7 @@ export type Database = {
           total_uploaded?: number
           updated_at?: string
           visibility_mode?: string
+          xp_account_id?: string | null
         }
         Relationships: [
           {
@@ -5585,6 +5743,13 @@ export type Database = {
             columns: ["sponsored_programme_id"]
             isOneToOne: false
             referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -5700,27 +5865,33 @@ export type Database = {
           assessment_version_id: string
           completed_at: string | null
           id: string
+          programme_id: string | null
           started_at: string
           status: string
           user_id: string
+          xp_account_id: string | null
           xp_transaction_id: string | null
         }
         Insert: {
           assessment_version_id: string
           completed_at?: string | null
           id?: string
+          programme_id?: string | null
           started_at?: string
           status?: string
           user_id: string
+          xp_account_id?: string | null
           xp_transaction_id?: string | null
         }
         Update: {
           assessment_version_id?: string
           completed_at?: string | null
           id?: string
+          programme_id?: string | null
           started_at?: string
           status?: string
           user_id?: string
+          xp_account_id?: string | null
           xp_transaction_id?: string | null
         }
         Relationships: [
@@ -5732,10 +5903,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_assessment_attempts_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_assessment_attempts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assessment_attempts_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
             referencedColumns: ["id"]
           },
           {
@@ -6059,6 +6244,42 @@ export type Database = {
           },
         ]
       }
+      user_xp_balances: {
+        Row: {
+          balance_cached: number
+          updated_at: string
+          user_id: string
+          xp_account_id: string
+        }
+        Insert: {
+          balance_cached?: number
+          updated_at?: string
+          user_id: string
+          xp_account_id: string
+        }
+        Update: {
+          balance_cached?: number
+          updated_at?: string
+          user_id?: string
+          xp_account_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_xp_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_xp_balances_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_xp_boosts: {
         Row: {
           created_at: string
@@ -6136,6 +6357,92 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_accounts: {
+        Row: {
+          accounting_currency: string
+          accounting_value_per_unit: number
+          created_at: string
+          display_format: string
+          display_name: string
+          display_name_plural: string
+          exposure_hard_threshold: number | null
+          exposure_warning_threshold: number | null
+          funded_reward_budget: number | null
+          icon: string
+          icon_url: string | null
+          id: string
+          is_default: boolean
+          issuance_cap_per_period: number
+          issuance_cap_per_user: number
+          issuance_period_days: number
+          name: string
+          organization_id: string | null
+          plural_name: string
+          scope: Database["public"]["Enums"]["xp_account_scope"]
+          short_label: string
+          status: Database["public"]["Enums"]["xp_account_status"]
+          updated_at: string
+        }
+        Insert: {
+          accounting_currency?: string
+          accounting_value_per_unit?: number
+          created_at?: string
+          display_format?: string
+          display_name?: string
+          display_name_plural?: string
+          exposure_hard_threshold?: number | null
+          exposure_warning_threshold?: number | null
+          funded_reward_budget?: number | null
+          icon?: string
+          icon_url?: string | null
+          id?: string
+          is_default?: boolean
+          issuance_cap_per_period?: number
+          issuance_cap_per_user?: number
+          issuance_period_days?: number
+          name: string
+          organization_id?: string | null
+          plural_name: string
+          scope: Database["public"]["Enums"]["xp_account_scope"]
+          short_label?: string
+          status?: Database["public"]["Enums"]["xp_account_status"]
+          updated_at?: string
+        }
+        Update: {
+          accounting_currency?: string
+          accounting_value_per_unit?: number
+          created_at?: string
+          display_format?: string
+          display_name?: string
+          display_name_plural?: string
+          exposure_hard_threshold?: number | null
+          exposure_warning_threshold?: number | null
+          funded_reward_budget?: number | null
+          icon?: string
+          icon_url?: string | null
+          id?: string
+          is_default?: boolean
+          issuance_cap_per_period?: number
+          issuance_cap_per_user?: number
+          issuance_period_days?: number
+          name?: string
+          organization_id?: string | null
+          plural_name?: string
+          scope?: Database["public"]["Enums"]["xp_account_scope"]
+          short_label?: string
+          status?: Database["public"]["Enums"]["xp_account_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xp_settings: {
         Row: {
           admin_manual_grant_daily_limit: number
@@ -6168,9 +6475,11 @@ export type Database = {
           direction: Database["public"]["Enums"]["xp_direction"]
           id: string
           metadata: Json
+          programme_id: string | null
           source_id: string
           source_type: Database["public"]["Enums"]["xp_source_type"]
           user_id: string
+          xp_account_id: string
         }
         Insert: {
           amount: number
@@ -6179,9 +6488,11 @@ export type Database = {
           direction: Database["public"]["Enums"]["xp_direction"]
           id?: string
           metadata?: Json
+          programme_id?: string | null
           source_id: string
           source_type: Database["public"]["Enums"]["xp_source_type"]
           user_id: string
+          xp_account_id?: string
         }
         Update: {
           amount?: number
@@ -6190,11 +6501,28 @@ export type Database = {
           direction?: Database["public"]["Enums"]["xp_direction"]
           id?: string
           metadata?: Json
+          programme_id?: string | null
           source_id?: string
           source_type?: Database["public"]["Enums"]["xp_source_type"]
           user_id?: string
+          xp_account_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "xp_transactions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_transactions_xp_account_id_fkey"
+            columns: ["xp_account_id"]
+            isOneToOne: false
+            referencedRelation: "xp_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -6558,6 +6886,10 @@ export type Database = {
           p_organization_id?: string
           p_programme_id?: string
         }
+        Returns: Json
+      }
+      admin_get_xp_account_overview: {
+        Args: { p_organization_id: string }
         Returns: Json
       }
       admin_grant_user_xp: {
@@ -6929,6 +7261,133 @@ export type Database = {
             }
             Returns: Json
           }
+      admin_update_xp_account_controls: {
+        Args: {
+          p_accounting_value_per_unit: number
+          p_exposure_hard_threshold?: number
+          p_exposure_warning_threshold?: number
+          p_funded_reward_budget?: number
+          p_issuance_cap_per_period: number
+          p_issuance_cap_per_user: number
+          p_issuance_period_days: number
+          p_xp_account_id: string
+        }
+        Returns: {
+          accounting_currency: string
+          accounting_value_per_unit: number
+          created_at: string
+          display_format: string
+          display_name: string
+          display_name_plural: string
+          exposure_hard_threshold: number | null
+          exposure_warning_threshold: number | null
+          funded_reward_budget: number | null
+          icon: string
+          icon_url: string | null
+          id: string
+          is_default: boolean
+          issuance_cap_per_period: number
+          issuance_cap_per_user: number
+          issuance_period_days: number
+          name: string
+          organization_id: string | null
+          plural_name: string
+          scope: Database["public"]["Enums"]["xp_account_scope"]
+          short_label: string
+          status: Database["public"]["Enums"]["xp_account_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "xp_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_xp_account_presentation:
+        | {
+            Args: {
+              p_display_format: string
+              p_display_name: string
+              p_display_name_plural: string
+              p_icon: string
+              p_short_label: string
+              p_xp_account_id: string
+            }
+            Returns: {
+              accounting_currency: string
+              accounting_value_per_unit: number
+              created_at: string
+              display_format: string
+              display_name: string
+              display_name_plural: string
+              exposure_hard_threshold: number | null
+              exposure_warning_threshold: number | null
+              funded_reward_budget: number | null
+              icon: string
+              icon_url: string | null
+              id: string
+              is_default: boolean
+              issuance_cap_per_period: number
+              issuance_cap_per_user: number
+              issuance_period_days: number
+              name: string
+              organization_id: string | null
+              plural_name: string
+              scope: Database["public"]["Enums"]["xp_account_scope"]
+              short_label: string
+              status: Database["public"]["Enums"]["xp_account_status"]
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "xp_accounts"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_display_format: string
+              p_display_name: string
+              p_display_name_plural: string
+              p_icon: string
+              p_short_label: string
+              p_status: Database["public"]["Enums"]["xp_account_status"]
+              p_xp_account_id: string
+            }
+            Returns: {
+              accounting_currency: string
+              accounting_value_per_unit: number
+              created_at: string
+              display_format: string
+              display_name: string
+              display_name_plural: string
+              exposure_hard_threshold: number | null
+              exposure_warning_threshold: number | null
+              funded_reward_budget: number | null
+              icon: string
+              icon_url: string | null
+              id: string
+              is_default: boolean
+              issuance_cap_per_period: number
+              issuance_cap_per_user: number
+              issuance_period_days: number
+              name: string
+              organization_id: string | null
+              plural_name: string
+              scope: Database["public"]["Enums"]["xp_account_scope"]
+              short_label: string
+              status: Database["public"]["Enums"]["xp_account_status"]
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "xp_accounts"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       admin_upload_reward_inventory: {
         Args: {
           p_available_from?: string
@@ -7215,7 +7674,20 @@ export type Database = {
         Args: { p_lesson_id: string; p_page_id: string }
         Returns: Json
       }
-      complete_values_assessment: {
+      complete_values_assessment:
+        | {
+            Args: { p_answers: Json; p_assessment_version_id: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_answers: Json
+              p_assessment_version_id: string
+              p_programme_id: string
+            }
+            Returns: Json
+          }
+      complete_values_assessment_legacy: {
         Args: { p_answers: Json; p_assessment_version_id: string }
         Returns: Json
       }
@@ -7409,6 +7881,15 @@ export type Database = {
       }
       get_my_lms_transcript: { Args: never; Returns: Json }
       grant_mission_award: {
+        Args: {
+          p_award_scope: string
+          p_metadata?: Json
+          p_mission_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      grant_mission_award_legacy: {
         Args: {
           p_award_scope: string
           p_metadata?: Json
@@ -7625,6 +8106,7 @@ export type Database = {
       }
       redeem_perk_bundle: { Args: { p_reward_id: string }; Returns: Json }
       redeem_reward: { Args: { p_reward_id: string }; Returns: Json }
+      redeem_reward_legacy: { Args: { p_reward_id: string }; Returns: Json }
       refresh_ad_billing_snapshot: {
         Args: {
           p_campaign_id: string
@@ -7642,6 +8124,10 @@ export type Database = {
         Returns: Json
       }
       refund_reward_redemption: {
+        Args: { p_reason?: string; p_redemption_id: string }
+        Returns: Json
+      }
+      refund_reward_redemption_legacy: {
         Args: { p_reason?: string; p_redemption_id: string }
         Returns: Json
       }
@@ -7719,7 +8205,17 @@ export type Database = {
       sanitize_text_value: { Args: { input: string }; Returns: string }
       sanitize_url_value: { Args: { input: string }; Returns: string }
       slugify_label: { Args: { p_value: string }; Returns: string }
-      start_quiz_attempt: {
+      start_quiz_attempt:
+        | { Args: { p_lesson_id?: string; p_quiz_id: string }; Returns: Json }
+        | {
+            Args: {
+              p_lesson_id: string
+              p_programme_id: string
+              p_quiz_id: string
+            }
+            Returns: Json
+          }
+      start_quiz_attempt_legacy: {
         Args: { p_lesson_id?: string; p_quiz_id: string }
         Returns: Json
       }
@@ -8012,6 +8508,8 @@ export type Database = {
         | "awarded"
         | "rejected"
       review_status: "submitted" | "approved" | "rejected"
+      xp_account_scope: "platform" | "organization"
+      xp_account_status: "active" | "archived"
       xp_direction: "earn" | "spend"
       xp_source_type:
         | "quiz_question"
@@ -8019,6 +8517,7 @@ export type Database = {
         | "reward_redemption"
         | "adjustment"
         | "assessment"
+        | "reward_redemption_bonus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -8340,6 +8839,8 @@ export const Constants = {
         "rejected",
       ],
       review_status: ["submitted", "approved", "rejected"],
+      xp_account_scope: ["platform", "organization"],
+      xp_account_status: ["active", "archived"],
       xp_direction: ["earn", "spend"],
       xp_source_type: [
         "quiz_question",
@@ -8347,6 +8848,7 @@ export const Constants = {
         "reward_redemption",
         "adjustment",
         "assessment",
+        "reward_redemption_bonus",
       ],
     },
   },

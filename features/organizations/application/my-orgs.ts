@@ -55,6 +55,14 @@ type CohortMembershipRow = {
   }> | null;
 };
 
+type OrganizationXpAccountRow = {
+  id: string;
+  organization_id: string;
+  display_format: "amount_name" | "amount_short_label";
+  display_name_plural: string;
+  short_label: string;
+};
+
 export type MyOrganizationInvitation = {
   createdAt: string;
   email: string | null;
@@ -274,6 +282,34 @@ export async function getMyOrganizationState(
     addUnique(summary.cohorts, { id: cohort.id, title: cohort.title });
     if (summary.roles.length === 0 && summary.programmes.length === 0) {
       summary.accessLabel = "Cohort access";
+    }
+  }
+
+  const organizationIds = Array.from(organizations.keys());
+  if (organizationIds.length > 0) {
+    const { data: accounts, error: accountsError } = await supabase
+      .from("xp_accounts")
+      .select("id, organization_id, display_format, display_name_plural, short_label")
+      .in("organization_id", organizationIds)
+      .eq("scope", "organization")
+      .eq("status", "active")
+      .eq("is_default", true);
+    if (accountsError) throw accountsError;
+
+    const accountRows = (accounts ?? []) as unknown as OrganizationXpAccountRow[];
+    const accountIds = accountRows.map((account) => account.id);
+    const { data: balances, error: balancesError } = accountIds.length > 0
+      ? await supabase.from("user_xp_balances").select("xp_account_id, balance_cached").eq("user_id", userId).in("xp_account_id", accountIds)
+      : { data: [], error: null };
+    if (balancesError) throw balancesError;
+    const balanceByAccount = new Map((balances ?? []).map((balance) => [balance.xp_account_id, balance.balance_cached]));
+
+    for (const account of accountRows) {
+      const summary = organizations.get(account.organization_id);
+      if (!summary) continue;
+      const amount = balanceByAccount.get(account.id) ?? 0;
+      const label = account.display_format === "amount_short_label" ? account.short_label : account.display_name_plural;
+      summary.pointsLabel = `${new Intl.NumberFormat("en-NG").format(amount)} ${label}`;
     }
   }
 

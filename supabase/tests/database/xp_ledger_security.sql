@@ -106,7 +106,7 @@ select extensions.lives_ok(
 select extensions.is(
   (select xp_balance_cached from public.profiles where id = :'TEST_LEARNER_USER_ID'::uuid),
   25,
-  'ledger-backed legacy increment updates cached XP balance once'
+  'ledger-backed legacy increment preserves the ledger-projected cached XP balance'
 );
 
 select extensions.is(
@@ -150,7 +150,7 @@ values (
   'test-private-post:once',
   '{"kind":"test"}'::jsonb
 )
-on conflict (user_id, award_scope)
+on conflict (user_id, xp_account_id, award_scope)
   where direction = 'earn' and award_scope is not null
   do nothing;
 
@@ -189,7 +189,7 @@ values (
   'test-private-post:once',
   '{"kind":"test"}'::jsonb
 )
-on conflict (user_id, award_scope)
+on conflict (user_id, xp_account_id, award_scope)
   where direction = 'earn' and award_scope is not null
   do nothing;
 

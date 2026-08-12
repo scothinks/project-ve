@@ -103,6 +103,38 @@ on conflict (id) do update
       redemption_unlocked_at = excluded.redemption_unlocked_at,
       updated_at = now();
 
+insert into public.xp_transactions (
+  user_id,
+  amount,
+  direction,
+  source_type,
+  source_id,
+  award_scope,
+  metadata
+)
+values
+  (
+    '44444444-4444-4444-8444-444444444401'::uuid,
+    500,
+    'earn',
+    'adjustment',
+    'lms-p1-release-opening-balance',
+    'lms-p1-release-opening-balance:learner',
+    '{"kind":"test_opening_balance"}'::jsonb
+  ),
+  (
+    '66666666-6666-4666-8666-666666666601'::uuid,
+    500,
+    'earn',
+    'adjustment',
+    'lms-p1-release-opening-balance',
+    'lms-p1-release-opening-balance:direct-learner',
+    '{"kind":"test_opening_balance"}'::jsonb
+  )
+on conflict (user_id, xp_account_id, award_scope)
+  where direction = 'earn' and award_scope is not null
+  do nothing;
+
 insert into public.organizations (slug, name, status, created_by)
 values
   ('lms-p1-release-alpha', 'LMS P1 Release Alpha', 'published', :'TEST_ADMIN_USER_ID'::uuid),
@@ -144,6 +176,17 @@ on conflict (organization_id) where ended_at is null do update
   set plan_key = excluded.plan_key,
       billing_status = excluded.billing_status,
       assigned_by = excluded.assigned_by;
+
+insert into public.user_xp_balances (user_id, xp_account_id, balance_cached)
+select
+  '44444444-4444-4444-8444-444444444401'::uuid,
+  account.id,
+  500
+from public.xp_accounts account
+where account.organization_id = :'p1_alpha_org_id'::uuid
+  and account.is_default
+on conflict (user_id, xp_account_id) do update
+  set balance_cached = excluded.balance_cached;
 
 insert into public.organization_memberships (
   organization_id,

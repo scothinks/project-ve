@@ -3859,8 +3859,158 @@ P15-XP-003
 P15-XP-004
 P15-XP-005
 P15-RWD-001
-P15-XP-006 core controls
+P15-XP-006
 ```
+
+P15-XP-001 completed on 2026-08-12:
+
+* forward migration `20260812130000_p15c_xp_account_model.sql` introduces `xp_accounts`, scoped account/status enums, the seeded Project Ve XP platform account, default organisation XP accounts, RLS-backed account reads and account FKs for XP transactions/programme mission context;
+* historical `xp_transactions` are backfilled to Project Ve XP and future legacy inserts default to that account, preserving `profiles.xp_balance_cached` as the Project Ve compatibility cache;
+* duplicate earn identity now includes `xp_account_id`, and current platform XP-producing database paths were updated to use the account-aware conflict target without enabling browser-selected organisation XP awards;
+* focused pgTAP coverage in `p15_xp_accounts.sql` verifies seed/backfill behavior, Starter organisation account creation, ownership constraints, account-scoped duplicate awards, RLS reads and trigger helper execute denial.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_accounts.sql
+npm run db:types:local
+npm run test:db
+npm run typecheck
+npm run lint
+git diff --check
+npm run build
+npm run test:unit
+npm run db:types:local:check
+```
+
+Result: migration replay passed; focused XP account pgTAP passed 16/16; full database suite passed 24 files/525 assertions; typecheck, lint, unit tests, build, generated type drift and whitespace checks passed.
+
+P15-XP-002 completed on 2026-08-12:
+
+* forward migration `20260812140000_p15c_xp_account_balances.sql` adds ledger-reconciled `user_xp_balances`, initializes a Project Ve XP balance for every profile, and backfills every existing account balance from `xp_transactions`;
+* a transaction trigger applies account-scoped credits and debits atomically, rejects overdraws, and keeps `profiles.xp`/`xp_balance_cached` as the Project Ve XP compatibility projection only;
+* the account-aware `private.post_xp_transaction` overload is private, preserves the old platform-only signature for established callers, and does not accept a browser-selected account;
+* focused pgTAP coverage in `p15_xp_balances.sql` verifies platform/organisation isolation, ledger reconciliation, spend protection, RLS and private primitive denial; legacy LMS fixtures now seed opening balances through the ledger.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_balances.sql
+node scripts/supabase-cli.mjs test db supabase/tests/database/xp_ledger_security.sql
+npm run db:types:local
+npm run test:db
+```
+
+Result: migration replay passed; focused balance pgTAP passed 14/14; XP ledger security pgTAP passed 16/16; the full database suite passed 25 files/539 assertions.
+
+P15-XP-003 completed on 2026-08-12:
+
+* forward migration `20260812150000_p15c_account_aware_learning_earning.sql` gives programme delivery, enrolment, programme missions and programme assessments a trusted organisation XP-account reference; programme defaults are assigned from the active organisation account and cross-organisation account configuration is rejected;
+* quiz attempts and values-assessment attempts persist their programme and account context. New three-argument public RPC overloads verify active enrolment and programme ownership before resolving the account; established two-argument RPC signatures remain available for public Project Ve XP learning;
+* programme mission awards resolve the account from stored delivery context rather than metadata supplied by a client, and their ledger and mission-award records are moved atomically to the organisation account;
+* `programme_courses.prior_completion_policy` explicitly supports `recognize_prior_completion` and `require_completion_in_context`, with the former as the conservative existing-behaviour default; generated database types now include the new delivery fields and RPCs;
+* contextual programme course completion is recorded in `programme_course_completions`; `recognize_prior_completion` preserves the explicit public-completion path while `require_completion_in_context` requires course-specific contextual activity and cannot be satisfied by a public-only completion;
+* focused pgTAP coverage in `p15_xp_learning_earning.sql` verifies account defaults, enrolment snapshots, programme delivery ownership, both prior-completion policies, programme award isolation and rejection of unenrolled/cross-account attempts.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p0_release_gate.sql supabase/tests/database/quiz_security.sql supabase/tests/database/p15_xp_learning_earning.sql
+npm run db:types:local
+npm run db:types:local:check
+git diff --check
+```
+
+Result: clean migration replay passed; targeted pgTAP passed across the release gate, quiz security and P15-XP-003 tests; generated type drift verification passed. P15-XP-003 is closed.
+
+P15-XP-004 completed on 2026-08-12:
+
+* forward migration `20260812160000_p15c_account_aware_rewards.sql` assigns each reward and redemption an XP account, backfills existing platform and organisation rewards, and rejects incompatible organisation/account configuration;
+* redemption derives its account exclusively from the stored reward configuration, charges the matching account while preserving the established atomic inventory workflow, and stores that account on the redemption;
+* refunds resolve and credit the account recorded on the original redemption; the legacy internal implementations are no longer directly executable;
+* native reward bonuses use the valid ledger source type and the redemption workflow has the timestamp field required by its legacy internal update path;
+* focused pgTAP coverage in `p15_xp_rewards.sql` verifies organisation-account charging, outsider denial, redemption account snapshots and refund ledger restoration.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_rewards.sql
+npm run db:types:local
+npm run db:types:local:check
+git diff --check
+```
+
+Result: clean migration replay passed; P15-XP-004 pgTAP passed 7/7; generated type drift verification passed. P15-XP-004 is closed.
+
+P15-XP-005 completed on 2026-08-12:
+
+* forward migration `20260812170000_p15c_xp_account_presentation.sql` adds account-specific display labels, plural labels, icons and formats without changing account ownership or historical ledger values;
+* the manager-authorized presentation RPC permits only mutable display fields for organization accounts; platform accounts and ownership remain immutable through this path;
+* My Orgs and the organisation learner workspace now resolve the signed-in learner's default organization account balance and configured label, without exposing transfer or exchange controls;
+* organisation administration now exposes the account presentation form, circulation/issuance/redemption/adjustment summary and recent transaction history through a manager-scoped overview RPC;
+* focused pgTAP coverage in `p15_xp_presentation.sql` verifies defaults, manager configuration and ownership immutability.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_presentation.sql supabase/tests/database/p0_release_gate.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+git diff --check
+```
+
+Result: clean migration replay passed; focused pgTAP and release gate passed; generated type drift and TypeScript checks passed. P15-XP-005 is closed.
+
+P15-RWD-001 completed on 2026-08-12:
+
+* Starter reward enforcement is database-backed and concurrency-safe: one active reward, manual fulfilment only, disabled voucher/QR inventory and disabled external/native/perk fulfilment paths;
+* Starter open and monthly fulfilled claim caps resolve from plan entitlements, ignore cancelled/refunded/expired claims, and are protected by an organisation transaction lock;
+* focused pgTAP coverage in `p15_rwd_starter_rewards.sql` verifies active reward limits, fulfilment restrictions, inventory blocking, open/monthly claim caps, cancelled-claim handling and native reward bonus accounting.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_rwd_starter_rewards.sql supabase/tests/database/p15_xp_learning_earning.sql
+npm run test:db
+npm run db:types:local:check
+npm run typecheck
+git diff --check
+```
+
+Result: migration replay passed; focused P15-RWD-001 and XP learning coverage passed; the full database suite passed 29 files/568 assertions; generated type drift, TypeScript and whitespace checks passed. P15-RWD-001 is closed.
+
+P15-XP-006 completed on 2026-08-12:
+
+* forward migration `20260812200000_p15c_xp_issuance_exposure_controls.sql` adds account-scoped rolling issuance periods, total and per-user issuance caps, optional accounting value, funded-reward budget and warning/hard exposure thresholds;
+* organisation-account earning is protected by an advisory-locked database trigger. Duplicate award identities remain idempotent, while new issuance is rejected when the account or learner cap is exceeded or projected estimated liability crosses the hard threshold;
+* organisation ledger rows retain trusted programme attribution from programme context, quiz/assessment attempts and sponsored reward context; public Project Ve XP rows remain outside organisation issuance controls;
+* manager-only controls update is audited through `admin_update_xp_account_controls`; the existing manager overview now exposes period capacity, estimated unredeemed liability, warning/block state, issuance by programme, issuance by learner and existing reward/transaction operations;
+* expiration remains intentionally out of scope for Starter, as required by P15-XP-006;
+* focused pgTAP coverage in `p15_xp_issuance_controls.sql` verifies manager configuration, programme attribution, total/per-user caps, duplicate handling, exposure thresholds, reporting and learner/anonymous denial.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_issuance_controls.sql
+npm run test:db
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run test:unit
+npm run build
+git diff --check
+```
+
+Result: clean migration replay passed; focused P15-XP-006 pgTAP passed 14/14; the full database suite passed 30 files/584 assertions; 138 unit tests, typecheck, lint, production build, generated type drift and whitespace checks passed. P15-XP-006 is closed.
 
 Then stop for review.
 

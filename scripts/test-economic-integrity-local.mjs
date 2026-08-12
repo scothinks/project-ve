@@ -90,6 +90,14 @@ async function cleanup() {
       ${literal(redemptionUserBId)}::uuid,
       ${literal(missionXpUserId)}::uuid,
       ${literal(missionRewardUserId)}::uuid
+    )
+      and direction = 'spend';
+    delete from public.xp_transactions
+    where user_id in (
+      ${literal(redemptionUserAId)}::uuid,
+      ${literal(redemptionUserBId)}::uuid,
+      ${literal(missionXpUserId)}::uuid,
+      ${literal(missionRewardUserId)}::uuid
     );
     delete from public.reward_quantity_allocations
     where reward_id in (${literal(directRewardId)}, ${literal(missionRewardId)});
