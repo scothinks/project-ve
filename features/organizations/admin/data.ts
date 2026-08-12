@@ -139,6 +139,12 @@ export type AdminOrganizationMembershipRow = {
   } | null;
 };
 
+export type AdminOrganizationAdjustmentLearnerOption = {
+  displayName: string | null;
+  sourceLabel: string;
+  userId: string;
+};
+
 export type AdminOrganizationInvitationRow = {
   created_at: string;
   email: string | null;
@@ -196,6 +202,29 @@ type PlanAssignmentSelectRow = AdminOrganizationPlanAssignmentRow & {
 
 type InvitationSelectRow = AdminOrganizationInvitationRow & {
   organizations?: Pick<AdminOrganizationRow, "id" | "name" | "slug"> | Array<Pick<AdminOrganizationRow, "id" | "name" | "slug">> | null;
+  profile?: {
+    display_name: string | null;
+    id: string;
+  } | Array<{
+    display_name: string | null;
+    id: string;
+  }> | null;
+};
+
+type AdjustmentLearnerMembershipRow = {
+  user_id: string;
+  profile?: {
+    display_name: string | null;
+    id: string;
+  } | Array<{
+    display_name: string | null;
+    id: string;
+  }> | null;
+};
+
+type AdjustmentLearnerEnrolmentRow = {
+  status: Database["public"]["Enums"]["lms_participation_status"];
+  user_id: string;
   profile?: {
     display_name: string | null;
     id: string;
@@ -443,6 +472,62 @@ export async function getAdminOrganizationMemberships(
       roleDefinition,
     };
   });
+}
+
+export async function getAdminOrganizationAdjustmentLearners(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+): Promise<AdminOrganizationAdjustmentLearnerOption[]> {
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  if (selectedWorkspaceId !== "platform" && selectedWorkspaceId !== organizationId) {
+    return [];
+  }
+
+  const [membershipsResult, enrolmentsResult] = await Promise.all([
+    supabase
+      .from("organization_memberships")
+      .select("user_id, profile:profiles!organization_memberships_user_id_fkey(id, display_name)")
+      .eq("organization_id", organizationId)
+      .eq("status", "active")
+      .order("updated_at", { ascending: false })
+      .limit(250),
+    supabase
+      .from("enrolments")
+      .select("user_id, status, profile:profiles!enrolments_user_id_fkey(id, display_name)")
+      .eq("organization_id", organizationId)
+      .not("programme_id", "is", null)
+      .in("status", ["active", "completed"])
+      .order("updated_at", { ascending: false })
+      .limit(250),
+  ]);
+
+  if (membershipsResult.error) throw membershipsResult.error;
+  if (enrolmentsResult.error) throw enrolmentsResult.error;
+
+  const learners = new Map<string, AdminOrganizationAdjustmentLearnerOption>();
+
+  for (const row of (membershipsResult.data ?? []) as unknown as AdjustmentLearnerMembershipRow[]) {
+    const profile = Array.isArray(row.profile) ? row.profile[0] ?? null : row.profile ?? null;
+    learners.set(row.user_id, {
+      userId: row.user_id,
+      displayName: profile?.display_name ?? null,
+      sourceLabel: "Organisation member",
+    });
+  }
+
+  for (const row of (enrolmentsResult.data ?? []) as unknown as AdjustmentLearnerEnrolmentRow[]) {
+    const profile = Array.isArray(row.profile) ? row.profile[0] ?? null : row.profile ?? null;
+    const existing = learners.get(row.user_id);
+    learners.set(row.user_id, {
+      userId: row.user_id,
+      displayName: existing?.displayName ?? profile?.display_name ?? null,
+      sourceLabel: existing ? "Organisation member" : "Programme learner",
+    });
+  }
+
+  return Array.from(learners.values()).sort((left, right) =>
+    (left.displayName ?? left.userId).localeCompare(right.displayName ?? right.userId),
+  );
 }
 
 export async function getAdminOrganizationInvitations(

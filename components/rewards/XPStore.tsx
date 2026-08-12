@@ -80,7 +80,7 @@ export function XPStore({
     if (!response.ok) {
       setSnapshot(null);
       setAuthRequired(response.status === 401);
-      setMessage(data.error ?? "Could not load XP Store.");
+      setMessage(data.error ?? "Could not load the reward store.");
       setLoading(false);
       return null;
     }
@@ -148,7 +148,7 @@ export function XPStore({
 
     if (!response.ok) {
       setConfirmReward(null);
-      setMessage(data.error ?? "Could not redeem XP for this reward.");
+      setMessage(data.error ?? `Could not redeem ${workspaceLabel} for this reward.`);
       await loadStore();
       return;
     }
@@ -181,7 +181,7 @@ export function XPStore({
     return (
       <section className="learner-page learner-page--spacious">
         <Card className="p-6" variant="store">
-          <p className="text-sm font-bold">{message ?? "Could not load XP Store."}</p>
+          <p className="text-sm font-bold">{message ?? "Could not load the reward store."}</p>
           {authRequired ? (
             <Button className="mt-4 w-full" href="/login">
               Sign In
@@ -200,13 +200,13 @@ export function XPStore({
     <section className="learner-page learner-page--standard">
       <ExperienceHeader
         badge={
-          <div className="grid size-16 place-items-center rounded-[22px] bg-[#f6c453] text-xl font-black text-[#251b08] shadow-[0_12px_24px_rgba(246,196,83,0.26)]">
-            XP
+          <div className="grid size-16 place-items-center rounded-[22px] bg-[#f6c453] px-2 text-center text-xs font-black leading-tight text-[#251b08] shadow-[0_12px_24px_rgba(246,196,83,0.26)]">
+            {workspaceLabel}
           </div>
         }
         eyebrow="Reward Time"
-        subtitle="Pick a perk, redeem your XP, and find every purchase in history."
-        title="Redeem XP rewards"
+        subtitle={`Pick a perk, redeem your ${workspaceLabel}, and find every purchase in history.`}
+        title={`${workspaceLabel} rewards`}
         tone="store"
       />
 
@@ -214,10 +214,10 @@ export function XPStore({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#a66d00]">
-              Available XP
+              Available {workspaceLabel}
             </p>
             <p className="mt-1 max-w-[12rem] whitespace-nowrap text-[clamp(1.5rem,7vw,2rem)] font-black leading-none tabular-nums">
-              {formatXpLabel(snapshot.xpBalance)}
+              {formatXpLabel(snapshot.xpBalance, workspaceLabel)}
             </p>
           </div>
           <StatusBadge tone="store">Ready</StatusBadge>
@@ -285,6 +285,7 @@ export function XPStore({
                       </div>
                       <XPBadge
                         xp={reward.costXp}
+                        unitLabel={workspaceLabel}
                         className="h-8 shrink-0 bg-[#fff8df] px-3 text-xs text-[#a66d00]"
                       />
                     </div>
@@ -373,7 +374,7 @@ export function XPStore({
               <Card className="p-6 text-center" variant="store">
                 <p className="text-sm font-black">No purchases yet</p>
                 <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  Redeem XP for a reward, then return here to manage it.
+                  Redeem {workspaceLabel} for a reward, then return here to manage it.
                 </p>
               </Card>
             ) : (
@@ -396,7 +397,7 @@ export function XPStore({
                             {redemption.rewardTitle}
                           </h2>
                           <p className="mt-2 text-[0.92rem] font-medium leading-6 tracking-[-0.01em] text-[var(--ve-muted)]">
-                            {formatXpLabel(redemption.xpCost)} redeemed
+                            {formatXpLabel(redemption.xpCost, workspaceLabel)} redeemed
                           </p>
                         </div>
                         <span className="rounded-[14px] bg-[#fff8df] px-3 py-2 text-[11px] font-black text-[#a66d00]">
@@ -485,8 +486,8 @@ export function XPStore({
             <h2 className="mt-2 text-xl font-black">{confirmReward.title}</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
               {confirmReward.distributionMode === "perk_bundle"
-                ? `This will spend ${formatXpLabel(confirmReward.costXp)} ${workspaceLabel} to reveal a surprise reward.`
-                : `This will redeem ${formatXpLabel(confirmReward.costXp)} ${workspaceLabel} and add the reward to your history.`}
+                ? `This will spend ${formatXpLabel(confirmReward.costXp, workspaceLabel)} to reveal a surprise reward.`
+                : `This will redeem ${formatXpLabel(confirmReward.costXp, workspaceLabel)} and add the reward to your history.`}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <Button

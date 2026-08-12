@@ -70,6 +70,7 @@ export {
 
 export {
   getAdminOrganizationEntitlementOverrides,
+  getAdminOrganizationAdjustmentLearners,
   getAdminOrganizationInvitations,
   getAdminOrganizationMemberships,
   getAdminOrganizations,
@@ -78,6 +79,7 @@ export {
   getAdminOrganizationPlans,
   getAdminOrganizationXpAccountOverview,
   type AdminOrganizationEntitlementOverrideRow,
+  type AdminOrganizationAdjustmentLearnerOption,
   type AdminOrganizationInvitationRow,
   type AdminOrganizationMembershipRow,
   type AdminOrganizationRow,

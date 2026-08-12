@@ -30,6 +30,7 @@ type QuizResultDetailsProps = {
   retryHref: string;
   questions: QuestionSummary[];
   storeHref?: string;
+  unitLabel?: string;
 };
 
 export function QuizResultDetails({
@@ -38,6 +39,7 @@ export function QuizResultDetails({
   retryHref,
   questions,
   storeHref = "/xp-store",
+  unitLabel = "XP",
 }: QuizResultDetailsProps) {
   const [result, setResult] = useState<StoredQuizResult | null | undefined>(undefined);
 
@@ -67,7 +69,7 @@ export function QuizResultDetails({
         <Card className="p-6 text-center">
           <p className="text-lg font-black">No quiz result yet</p>
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-            Complete the lesson and finish the quiz to see your XP result.
+            Complete the lesson and finish the quiz to see your {unitLabel} result.
           </p>
           <Button className="mt-5 w-full" href={retryHref}>
             Start Quiz
@@ -125,10 +127,10 @@ export function QuizResultDetails({
           </div>
         </div>
         <h1 className="mt-4 text-2xl font-black text-[var(--foreground)]">
-          You earned {formatXpLabel(visibleResult.earnedXp)}!
+          You earned {formatXpLabel(visibleResult.earnedXp, unitLabel)}!
         </h1>
         <p className="mx-auto mt-2 max-w-[240px] text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
-          Use XP for rewards or keep learning to earn more.
+          Use {unitLabel} for rewards or keep learning to earn more.
         </p>
       </Card>
 
@@ -143,8 +145,8 @@ export function QuizResultDetails({
                 </p>
                 <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">
                   {question.status === "daily_cap_deferred"
-                    ? `Available after reset: ${formatXpLabel(question.xp)}`
-                    : `Missed ${formatXpLabel(question.xp)}`}
+                    ? `Available after reset: ${formatXpLabel(question.xp, unitLabel)}`
+                    : `Missed ${formatXpLabel(question.xp, unitLabel)}`}
                 </p>
               </Card>
             ))
@@ -164,7 +166,7 @@ export function QuizResultDetails({
           Retry
         </Button>
         <Button className="h-10 px-2 text-xs" href={storeHref} variant="soft">
-          XP Store
+          Rewards
         </Button>
         <Button className="h-10 px-2 text-xs" href={lessonsHref}>
           Lessons

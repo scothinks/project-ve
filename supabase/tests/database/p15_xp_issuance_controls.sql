@@ -2,7 +2,7 @@ begin;
 \ir ./_test_constants.psql
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
-select extensions.plan(16);
+select extensions.plan(18);
 
 insert into auth.users (
   id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -74,6 +74,16 @@ select id as p15_xp_controls_programme_id
 from public.programmes
 where organization_id = :'p15_xp_controls_alpha_id'::uuid and slug = 'controls-programme'
 \gset
+
+insert into public.enrolments (organization_id, user_id, programme_id, assignment_source, status, xp_account_id)
+values (
+  :'p15_xp_controls_alpha_id'::uuid,
+  '99999999-9999-4999-8999-999999999901'::uuid,
+  :'p15_xp_controls_programme_id'::uuid,
+  'manual',
+  'active',
+  :'p15_xp_controls_alpha_account_id'::uuid
+);
 
 reset role;
 select set_config('request.jwt.claim.sub', :'TEST_ADMIN_USER_ID', true);
@@ -305,6 +315,26 @@ select extensions.ok(
       and (item ->> 'issued')::integer = 40
   ),
   'overview reports issuance by learner'
+);
+
+select extensions.lives_ok(
+  format(
+    $$ select public.admin_adjust_xp_account(%L::uuid, %L::uuid, 5, 'earn'::public.xp_direction, 'programme learner adjustment') $$,
+    :'p15_xp_controls_alpha_account_id',
+    '99999999-9999-4999-8999-999999999901'
+  ),
+  'organisation manager can adjust a programme-only learner without membership'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.organization_memberships
+    where organization_id = :'p15_xp_controls_alpha_id'::uuid
+      and user_id = '99999999-9999-4999-8999-999999999901'::uuid
+  ),
+  0,
+  'programme-only adjustment does not create an organization membership'
 );
 
 select extensions.throws_like(

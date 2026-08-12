@@ -10,6 +10,7 @@ import { createProgressRepository } from "@/features/app/repositories/progress";
 import {
   appendOrganizationDeliverySearchParam,
   getOrganizationCourseDeliveryContext,
+  getOrganizationDeliveryLessonProgress,
   getOrganizationWorkspaceCourse,
 } from "@/features/organizations/application/learner-workspace";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
@@ -39,7 +40,14 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
     notFound();
   }
 
-  const lessonProgress = await createProgressRepository(supabase).getLessonProgress(user.id);
+  const globalLessonProgress = await createProgressRepository(supabase).getLessonProgress(user.id);
+  const lessonProgress = await getOrganizationDeliveryLessonProgress({
+    course,
+    deliveryContext,
+    fallbackProgress: globalLessonProgress,
+    supabase,
+    userId: user.id,
+  });
   const completedLessonIds = getCompletedLessonIds(lessonProgress, course.lessons);
   const completedLessonIdList = Array.from(completedLessonIds);
   const { progressPercent } = getCourseProgress(course, completedLessonIds);
@@ -90,7 +98,7 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
                   {course.description}
                 </p>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <XPBadge xp={getCourseXP(course)} />
+                  <XPBadge unitLabel={workspace.xpAccount.label} xp={getCourseXP(course)} />
                   <span className="rounded-full bg-[var(--ve-panel)] px-3 py-1 text-xs font-black text-[var(--ve-muted)]">
                     {progressPercent}% complete
                   </span>
@@ -119,6 +127,7 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
                 lessonHrefBase={orgHref(workspace, `/learn/${course.id}/lessons`)}
                 lessonHrefSuffix={deliveryContext.programmeId ? `?programmeId=${encodeURIComponent(deliveryContext.programmeId)}` : ""}
                 lessons={course.lessons}
+                unitLabel={workspace.xpAccount.label}
               />
             </div>
           </div>

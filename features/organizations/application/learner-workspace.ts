@@ -12,6 +12,7 @@ import { getOrganizationRewardStoreSnapshot } from "@/lib/supabase-rewards";
 export { filterTranscriptForOrganizationWorkspace } from "@/features/organizations/application/learner-workspace-domain";
 import type { Course } from "@/lib/lessons";
 import type { UserMissionSummary } from "@/lib/missions";
+import type { LessonProgressRecord } from "@/lib/progress";
 import type { RewardStoreSnapshot } from "@/lib/rewards";
 import type { Database } from "@/types/database";
 
@@ -22,6 +23,12 @@ type MembershipRow = {
 type EnrolmentRow = {
   course_id: string | null;
   programme_id: string | null;
+};
+
+type ProgrammeLessonPageCompletionRow = {
+  completed_at: string;
+  lesson_id: string;
+  page_id: string;
 };
 
 export type OrganizationCourseDeliveryOption = {
@@ -444,6 +451,126 @@ export function appendOrganizationDeliverySearchParam(
   const params = new URLSearchParams(query);
   params.set("programmeId", deliveryContext.programmeId);
   return `${path}?${params.toString()}`;
+}
+
+export function getOrganizationDeliveryKey(
+  courseId: string,
+  deliveryContext: Pick<OrganizationLearningDeliveryContext, "programmeId"> | null,
+) {
+  return `${courseId}:${deliveryContext?.programmeId ?? "organization"}`;
+}
+
+async function deliveryRequiresContextualCompletion(
+  supabase: SupabaseClient<Database>,
+  courseId: string,
+  deliveryContext: OrganizationLearningDeliveryContext,
+) {
+  if (!deliveryContext.programmeId) {
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from("programme_courses")
+    .select("prior_completion_policy")
+    .eq("programme_id", deliveryContext.programmeId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.prior_completion_policy === "require_completion_in_context";
+}
+
+async function getContextualProgrammeLessonProgress({
+  course,
+  deliveryContext,
+  supabase,
+  userId,
+}: {
+  course: Course;
+  deliveryContext: OrganizationLearningDeliveryContext;
+  supabase: SupabaseClient<Database>;
+  userId: string;
+}): Promise<LessonProgressRecord[]> {
+  if (!deliveryContext.programmeId) {
+    return [];
+  }
+
+  const lessonIds = course.lessons.map((lesson) => lesson.id);
+  if (lessonIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("programme_lesson_page_completions")
+    .select("lesson_id, page_id, completed_at")
+    .eq("user_id", userId)
+    .eq("programme_id", deliveryContext.programmeId)
+    .in("lesson_id", lessonIds);
+
+  if (error) throw error;
+
+  const completionsByLessonId = new Map<string, ProgrammeLessonPageCompletionRow[]>();
+  for (const row of (data ?? []) as ProgrammeLessonPageCompletionRow[]) {
+    const rows = completionsByLessonId.get(row.lesson_id) ?? [];
+    rows.push(row);
+    completionsByLessonId.set(row.lesson_id, rows);
+  }
+
+  return course.lessons.flatMap((lesson) => {
+    const rows = completionsByLessonId.get(lesson.id) ?? [];
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const completedPages = Array.from(new Set(rows.map((row) => row.page_id)));
+    const completedPageSet = new Set(completedPages);
+    const requiredPageIds = lesson.pages.map((page) => page.id);
+    const latestCompletion = rows
+      .map((row) => row.completed_at)
+      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null;
+    const lessonCompleted =
+      requiredPageIds.length > 0 && requiredPageIds.every((pageId) => completedPageSet.has(pageId));
+
+    return [{
+      lesson_id: lesson.id,
+      completed_pages: completedPages,
+      completed_modules: completedPages,
+      quiz_score: null,
+      completed_at: lessonCompleted ? latestCompletion : null,
+      updated_at: latestCompletion,
+    }];
+  });
+}
+
+export async function getOrganizationDeliveryLessonProgress({
+  course,
+  deliveryContext,
+  fallbackProgress,
+  supabase,
+  userId,
+}: {
+  course: Course;
+  deliveryContext: OrganizationLearningDeliveryContext;
+  fallbackProgress: LessonProgressRecord[];
+  supabase: SupabaseClient<Database>;
+  userId: string;
+}): Promise<LessonProgressRecord[]> {
+  const requiresContextualCompletion = await deliveryRequiresContextualCompletion(
+    supabase,
+    course.id,
+    deliveryContext,
+  );
+
+  if (!requiresContextualCompletion) {
+    return fallbackProgress;
+  }
+
+  return getContextualProgrammeLessonProgress({
+    course,
+    deliveryContext,
+    supabase,
+    userId,
+  });
 }
 
 export async function getOrganizationWorkspaceMissions({

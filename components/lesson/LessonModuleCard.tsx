@@ -13,6 +13,7 @@ type LessonModuleCardProps = {
   completed?: boolean;
   desktopLayout?: "stacked" | "horizontal";
   href?: string;
+  unitLabel?: string;
 };
 
 export function LessonModuleCard({
@@ -20,6 +21,7 @@ export function LessonModuleCard({
   completed = false,
   desktopLayout = "stacked",
   href = `/lessons/${lesson.id}`,
+  unitLabel = "XP",
 }: LessonModuleCardProps) {
   return (
     <Link href={href} className="block h-full">
@@ -85,7 +87,7 @@ export function LessonModuleCard({
             <span className="text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)]">
               {completed ? "Completed" : `${lesson.estimatedMinutes} min`}
             </span>
-            <XPBadge className="shrink-0" xp={getLessonXP(lesson)} />
+            <XPBadge className="shrink-0" unitLabel={unitLabel} xp={getLessonXP(lesson)} />
           </div>
         </div>
       </Card>

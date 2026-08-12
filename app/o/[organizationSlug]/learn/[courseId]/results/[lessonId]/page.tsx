@@ -53,6 +53,7 @@ export default async function OrganizationResultsPage({ params, searchParams }: 
         questions={questions}
         retryHref={retryHref}
         storeHref={orgHref(workspace, "/rewards")}
+        unitLabel={workspace.xpAccount.label}
       />
 
       <BottomNav active="Store" />
