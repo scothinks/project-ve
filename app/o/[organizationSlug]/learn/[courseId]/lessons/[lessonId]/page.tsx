@@ -1,11 +1,15 @@
 import { notFound } from "next/navigation";
 import { LessonDeliveryPage } from "@/features/learning/application/lesson-delivery-page";
-import { getOrganizationWorkspaceCourse } from "@/features/organizations/application/learner-workspace";
+import {
+  appendOrganizationDeliverySearchParam,
+  getOrganizationCourseDeliveryContext,
+  getOrganizationWorkspaceCourse,
+} from "@/features/organizations/application/learner-workspace";
 import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
 
 type OrganizationLessonPageProps = {
   params: Promise<{ courseId: string; lessonId: string; organizationSlug: string }>;
-  searchParams: Promise<{ page?: string; ref?: string }>;
+  searchParams: Promise<{ page?: string; programmeId?: string; ref?: string }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -15,28 +19,31 @@ export default async function OrganizationLessonPage({
   searchParams,
 }: OrganizationLessonPageProps) {
   const { courseId, lessonId, organizationSlug } = await params;
-  const { page, ref } = await searchParams;
+  const { page, programmeId, ref } = await searchParams;
   const { supabase, workspace } = await requireOrgLearnerRoute(Promise.resolve({ organizationSlug }));
   const course = await getOrganizationWorkspaceCourse(supabase, workspace, courseId);
+  const deliveryContext = getOrganizationCourseDeliveryContext(workspace, courseId, programmeId);
 
-  if (!course || !course.lessons.some((lesson) => lesson.id === lessonId)) {
+  if (!course || !deliveryContext || !course.lessons.some((lesson) => lesson.id === lessonId)) {
     notFound();
   }
 
-  const courseHref = orgHref(workspace, `/learn/${courseId}`);
+  const courseHref = appendOrganizationDeliverySearchParam(orgHref(workspace, `/learn/${courseId}`), deliveryContext);
   const lessonBaseHref = orgHref(workspace, `/learn/${courseId}/lessons/${lessonId}`);
+  const scopedLessonBaseHref = appendOrganizationDeliverySearchParam(lessonBaseHref, deliveryContext);
 
   return (
     <LessonDeliveryPage
       courseHref={courseHref}
       dashboardHref={courseHref}
-      lessonHref={(pageNumber) => `${lessonBaseHref}?page=${pageNumber}`}
+      lessonHref={(pageNumber) => appendOrganizationDeliverySearchParam(`${lessonBaseHref}?page=${pageNumber}`, deliveryContext)}
       lessonId={lessonId}
+      organizationId={deliveryContext.organizationId}
       pageParam={page}
-      programmeId={workspace.programmeIds[0] ?? null}
-      quizHref={orgHref(workspace, `/learn/${courseId}/quiz/${lessonId}`)}
+      programmeId={deliveryContext.programmeId}
+      quizHref={appendOrganizationDeliverySearchParam(orgHref(workspace, `/learn/${courseId}/quiz/${lessonId}`), deliveryContext)}
       refCode={ref}
-      routePath={lessonBaseHref}
+      routePath={scopedLessonBaseHref}
     />
   );
 }

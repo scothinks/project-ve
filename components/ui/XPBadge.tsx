@@ -4,10 +4,11 @@ import { formatXpLabel } from "@/lib/xp-format";
 type XPBadgeProps = {
   xp: number;
   className?: string;
+  unitLabel?: string;
 };
 
-export function XPBadge({ xp, className }: XPBadgeProps) {
-  const label = formatXpLabel(xp);
+export function XPBadge({ xp, className, unitLabel = "XP" }: XPBadgeProps) {
+  const label = formatXpLabel(xp, unitLabel);
 
   return (
     <span

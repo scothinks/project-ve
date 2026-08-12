@@ -99,12 +99,14 @@ export async function startSupabaseQuizAttempt({
   userId: _userId,
   lessonId,
   quizId,
+  organizationId,
   programmeId,
 }: {
   supabase: SupabaseClient;
   userId: string;
   lessonId: string;
   quizId: string;
+  organizationId?: string | null;
   programmeId?: string | null;
 }): Promise<StartQuizResult> {
   void _userId;
@@ -112,6 +114,7 @@ export async function startSupabaseQuizAttempt({
   const { data, error } = await supabase.rpc("start_quiz_attempt", {
     p_quiz_id: quizId,
     p_lesson_id: lessonId,
+    p_organization_id: organizationId ?? null,
     p_programme_id: programmeId ?? null,
   });
 

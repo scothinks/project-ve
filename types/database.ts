@@ -7743,6 +7743,15 @@ export type Database = {
             }
             Returns: Json
           }
+        | {
+            Args: {
+              p_lesson_id: string
+              p_organization_id?: string
+              p_page_id: string
+              p_programme_id: string
+            }
+            Returns: Json
+          }
       complete_values_assessment:
         | {
             Args: { p_answers: Json; p_assessment_version_id: string }
@@ -8279,6 +8288,15 @@ export type Database = {
         | {
             Args: {
               p_lesson_id: string
+              p_programme_id: string
+              p_quiz_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_lesson_id: string
+              p_organization_id?: string
               p_programme_id: string
               p_quiz_id: string
             }

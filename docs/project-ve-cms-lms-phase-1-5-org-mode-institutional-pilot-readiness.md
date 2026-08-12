@@ -4032,7 +4032,39 @@ npm run ci
 git diff --check
 ```
 
-Result: clean migration replay and generated type drift passed; the full database suite passed 30 files/585 assertions; repository contracts, quiz XP concurrency, economic integrity, 138 unit tests, typecheck, lint, production build and 9/9 Playwright E2E flows passed. P1.5C is formally closed after focused remediation and stopped for review. P1.5D remains unstarted.
+Result: clean migration replay and generated type drift passed; the full database suite passed 30 files/585 assertions; repository contracts, quiz XP concurrency, economic integrity, 138 unit tests, typecheck, lint, production build and 9/9 Playwright E2E flows passed. P1.5C was stopped for review. P1.5D remains unstarted.
+
+### Follow-up P1.5C closure pass
+
+The follow-up 2026-08-12 review kept P1.5C open for three focused blockers:
+
+* exact learner delivery context was still ambiguous on Org Mode course, lesson and quiz routes because `workspace.programmeIds[0]` could attribute learning to the wrong programme;
+* `require_completion_in_context` still allowed public lesson completion plus a contextual quiz to satisfy programme course completion;
+* reward refunds were skipped by the insert-time issuance trigger, but later issuance and overview calculations still counted refund restoration rows as minted issuance.
+
+The follow-up pass adds forward migration `20260812220000_p15c_delivery_context_completion_issuance_closure.sql` and app wiring that:
+
+* resolves Org Mode course delivery as an explicit organisation or programme context and carries the selected `programmeId` through course, lesson, quiz, result and resume links;
+* passes `organizationId` plus optional `programmeId` to lesson progress and quiz start APIs while keeping XP account resolution private to database resolvers;
+* blocks programme quiz start when `require_completion_in_context` is active and only public/global lesson progress exists;
+* evaluates required lessons from `programme_lesson_page_completions` for contextual programme completion;
+* excludes genuine reward-refund restoration rows from period, learner, programme and overview issuance calculations while leaving circulation and estimated liability based on outstanding balances.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run typecheck
+npm run lint
+node scripts/supabase-cli.mjs db reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_learning_earning.sql
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_issuance_controls.sql
+npm run db:types:local:check
+npm run build
+npm run test:e2e
+git diff --check
+```
+
+Result: local migration replay passed; focused contextual learning pgTAP passed 15/15; focused issuance controls pgTAP passed 16/16; local database type drift, typecheck, lint, production build, full Playwright browser suite 9/9 and whitespace checks passed. P1.5C is ready for acceptance review again. P1.5D remains unstarted.
 
 Then stop for review.
 

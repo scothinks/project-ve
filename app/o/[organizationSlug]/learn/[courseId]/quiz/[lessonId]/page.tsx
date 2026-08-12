@@ -1,30 +1,40 @@
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { QuizOptions } from "@/components/quiz/QuizOptions";
-import { getOrganizationWorkspaceCourse } from "@/features/organizations/application/learner-workspace";
+import {
+  appendOrganizationDeliverySearchParam,
+  getOrganizationCourseDeliveryContext,
+  getOrganizationWorkspaceCourse,
+} from "@/features/organizations/application/learner-workspace";
 import { getPublicQuiz, getQuizXP } from "@/lib/lessons";
 import { formatXpLabel } from "@/lib/xp-format";
 import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
 
 type OrganizationQuizPageProps = {
   params: Promise<{ courseId: string; lessonId: string; organizationSlug: string }>;
+  searchParams: Promise<{ programmeId?: string }>;
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function OrganizationQuizPage({ params }: OrganizationQuizPageProps) {
+export default async function OrganizationQuizPage({ params, searchParams }: OrganizationQuizPageProps) {
   const { courseId, lessonId, organizationSlug } = await params;
+  const { programmeId } = await searchParams;
   const { supabase, workspace } = await requireOrgLearnerRoute(Promise.resolve({ organizationSlug }));
   const course = await getOrganizationWorkspaceCourse(supabase, workspace, courseId);
+  const deliveryContext = getOrganizationCourseDeliveryContext(workspace, courseId, programmeId);
   const lesson = course?.lessons.find((item) => item.id === lessonId) ?? null;
 
-  if (!course || !lesson || lesson.quiz.questions.length === 0) {
+  if (!course || !deliveryContext || !lesson || lesson.quiz.questions.length === 0) {
     notFound();
   }
 
   const quiz = getPublicQuiz(lesson.quiz, `${lesson.quiz.id}:demo-attempt`);
-  const lessonHref = orgHref(workspace, `/learn/${course.id}/lessons/${lesson.id}`);
-  const courseHref = orgHref(workspace, `/learn/${course.id}`);
+  const lessonHref = appendOrganizationDeliverySearchParam(
+    orgHref(workspace, `/learn/${course.id}/lessons/${lesson.id}`),
+    deliveryContext,
+  );
+  const courseHref = appendOrganizationDeliverySearchParam(orgHref(workspace, `/learn/${course.id}`), deliveryContext);
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
@@ -44,10 +54,14 @@ export default async function OrganizationQuizPage({ params }: OrganizationQuizP
             keepLearningHref={courseHref}
             lessonHref={lessonHref}
             lessonId={lesson.id}
+            organizationId={deliveryContext.organizationId}
             quizId={quiz.id}
-            programmeId={workspace.programmeIds[0] ?? null}
+            programmeId={deliveryContext.programmeId}
             questions={quiz.questions}
-            resultHref={orgHref(workspace, `/learn/${course.id}/results/${lesson.id}`)}
+            resultHref={appendOrganizationDeliverySearchParam(
+              orgHref(workspace, `/learn/${course.id}/results/${lesson.id}`),
+              deliveryContext,
+            )}
           />
         </div>
       </section>

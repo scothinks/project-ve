@@ -21,6 +21,7 @@ type LessonDeliveryPageProps = {
   refCode?: string;
   routePath?: string;
   pageParam?: string;
+  organizationId?: string | null;
   programmeId?: string | null;
 };
 
@@ -33,6 +34,7 @@ export async function LessonDeliveryPage({
   quizHref,
   refCode,
   routePath,
+  organizationId,
   programmeId,
 }: LessonDeliveryPageProps) {
   const supabase = await createSupabaseServerClient();
@@ -102,7 +104,12 @@ export async function LessonDeliveryPage({
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
       {refCode ? <ReferralCodeCapture code={refCode} /> : null}
-      <LessonPageProgressMarker lessonId={lesson.id} pageId={page.id} programmeId={programmeId} />
+      <LessonPageProgressMarker
+        lessonId={lesson.id}
+        organizationId={organizationId}
+        pageId={page.id}
+        programmeId={programmeId}
+      />
       <AppHeader
         menu={
           <LessonMenu

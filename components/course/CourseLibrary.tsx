@@ -7,14 +7,23 @@ import { PaginationControls } from "@/components/ui/PaginationControls";
 import { paginateItems } from "@/lib/pagination";
 import type { Course } from "@/lib/lessons";
 import { cn } from "@/lib/utils";
+import type { OrganizationCourseDeliveryOption } from "@/features/organizations/application/learner-workspace";
 
 type CourseLibraryProps = {
   courses: Course[];
   courseHrefPrefix?: string;
   completedLessonIds?: string[];
+  deliveryOptions?: Record<string, OrganizationCourseDeliveryOption[]>;
+  unitLabel?: string;
 };
 
-export function CourseLibrary({ courseHrefPrefix = "/courses", courses, completedLessonIds = [] }: CourseLibraryProps) {
+export function CourseLibrary({
+  courseHrefPrefix = "/courses",
+  courses,
+  completedLessonIds = [],
+  deliveryOptions,
+  unitLabel = "XP",
+}: CourseLibraryProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
@@ -45,7 +54,14 @@ export function CourseLibrary({ courseHrefPrefix = "/courses", courses, complete
     [category, courses, normalizedQuery],
   );
   const hasActiveSearch = normalizedQuery.length > 0 || category !== "all";
-  const paginatedCourses = useMemo(() => paginateItems(filteredCourses, page, 6), [filteredCourses, page]);
+  const courseItems = useMemo(
+    () => filteredCourses.flatMap((course) => {
+      const options = deliveryOptions?.[course.id] ?? [null];
+      return options.map((option) => ({ course, option }));
+    }),
+    [deliveryOptions, filteredCourses],
+  );
+  const paginatedCourses = useMemo(() => paginateItems(courseItems, page, 6), [courseItems, page]);
 
   useEffect(() => {
     setPage(1);
@@ -114,13 +130,15 @@ export function CourseLibrary({ courseHrefPrefix = "/courses", courses, complete
 
       <div className="grid gap-3 lg:max-w-[48rem]">
         {filteredCourses.length > 0 ? (
-          paginatedCourses.items.map((course) => (
+            paginatedCourses.items.map(({ course, option }) => (
             <CourseCard
               completedLessonIds={completedLessonIds}
               course={course}
               desktopLayout="horizontal"
-              href={`${courseHrefPrefix.replace(/\/$/, "")}/${encodeURIComponent(course.id)}`}
-              key={course.id}
+              contextLabel={option?.label}
+              href={`${courseHrefPrefix.replace(/\/$/, "")}/${encodeURIComponent(course.id)}${option?.programmeId ? `?programmeId=${encodeURIComponent(option.programmeId)}` : ""}`}
+              key={`${course.id}:${option?.programmeId ?? "organization"}`}
+              unitLabel={unitLabel}
             />
           ))
         ) : (
