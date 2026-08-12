@@ -4010,7 +4010,29 @@ npm run build
 git diff --check
 ```
 
-Result: clean migration replay passed; focused P15-XP-006 pgTAP passed 14/14; the full database suite passed 30 files/584 assertions; 138 unit tests, typecheck, lint, production build, generated type drift and whitespace checks passed. P15-XP-006 is closed.
+Result: clean migration replay passed; focused P15-XP-006 pgTAP passed 14/14; the full database suite passed 30 files/585 assertions; 138 unit tests, typecheck, lint, production build, generated type drift and whitespace checks passed. P15-XP-006 ticket-level implementation is closed; the focused closure review below records the remaining cross-boundary remediation.
+
+## Focused P1.5C closure review and remediation
+
+The 2026-08-12 acceptance review found that the first P1.5C implementation pass was structurally sound but still partial at several application and legacy-RPC boundaries. The authorized closure scope was limited to `P15C-CLOSE-01` through `P15C-CLOSE-05`; P1.5D was not started.
+
+The focused closure pass completed the remaining gaps:
+
+* `P15C-CLOSE-01`: learner quiz, lesson-page progress and organisation reward routes now carry trusted programme or organisation context; organisation-wide mission scopes resolve the organisation account from stored context rather than browser input; contextual page completion is persisted separately from public completion.
+* `P15C-CLOSE-02`: quiz, assessment, mission and reward transactions receive their resolved account and programme context before insertion, so issuance controls and attribution observe the final account at trigger time.
+* `P15C-CLOSE-03`: Org Mode rewards use workspace-scoped snapshot and redemption routes, with configured account labels shown in the learner store.
+* `P15C-CLOSE-04`: organisation administrators can make audited account-aware adjustments, and genuine reward refunds are exempted from new-issuance caps while restoring the original account.
+* `P15C-CLOSE-05`: Starter manual claims support validated single-select fields, and the browser release gate covers public versus organisation earning, contextual completion, organisation redemption, refund and admin-account workflows.
+
+Validation completed on 2026-08-12:
+
+```bash
+npm run test:remediation:local
+npm run ci
+git diff --check
+```
+
+Result: clean migration replay and generated type drift passed; the full database suite passed 30 files/585 assertions; repository contracts, quiz XP concurrency, economic integrity, 138 unit tests, typecheck, lint, production build and 9/9 Playwright E2E flows passed. P1.5C is formally closed after focused remediation and stopped for review. P1.5D remains unstarted.
 
 Then stop for review.
 

@@ -369,6 +369,44 @@ async function hasMissionAward(
   return Boolean(data);
 }
 
+async function getContextualCompletedLessonIds(
+  supabase: SupabaseClient,
+  userId: string,
+  programmeId: string,
+  lessons: Array<{ id: string; pages: Array<{ id: string }> }>,
+  since?: string,
+) {
+  const lessonIds = lessons.map((lesson) => lesson.id);
+  if (lessonIds.length === 0) return new Set<string>();
+
+  let query = supabase
+    .from("programme_lesson_page_completions")
+    .select("lesson_id, page_id, completed_at")
+    .eq("user_id", userId)
+    .eq("programme_id", programmeId)
+    .in("lesson_id", lessonIds);
+  if (since) query = query.gte("completed_at", since);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const completedPages = new Map<string, Set<string>>();
+  for (const row of data ?? []) {
+    const pages = completedPages.get(row.lesson_id) ?? new Set<string>();
+    pages.add(row.page_id);
+    completedPages.set(row.lesson_id, pages);
+  }
+
+  return new Set(
+    lessons
+      .filter((lesson) => {
+        const pages = completedPages.get(lesson.id);
+        return Boolean(pages && lesson.pages.length > 0 && lesson.pages.every((page) => pages.has(page.id)));
+      })
+      .map((lesson) => lesson.id),
+  );
+}
+
 async function awardMissionXp(
   supabase: SupabaseClient,
   userId: string,
@@ -399,16 +437,15 @@ async function getLessonCompletedProgress(
   lessonId: string,
   executionContext?: MissionExecutionContext,
 ): Promise<MissionProgress> {
-  const [lessons, progress] = await Promise.all([
-    getScopedPublishedLessons(supabase, executionContext, { lessonId }),
-    getLessonProgress(supabase, userId),
-  ]);
+  const lessons = await getScopedPublishedLessons(supabase, executionContext, { lessonId });
 
   if (lessons.length === 0) {
     return { progressCount: 0, targetCount: 1, valid: false };
   }
 
-  const valid = getCompletedLessonIds(progress, lessons as never).has(lessonId);
+  const valid = executionContext?.programmeId
+    ? (await getContextualCompletedLessonIds(supabase, userId, executionContext.programmeId, lessons)).has(lessonId)
+    : getCompletedLessonIds(await getLessonProgress(supabase, userId), lessons as never).has(lessonId);
 
   return { progressCount: valid ? 1 : 0, targetCount: 1, valid };
 }
@@ -426,8 +463,9 @@ async function getCourseCompletedProgress(
     return { progressCount: 0, targetCount: 1, valid: false };
   }
 
-  const progress = await getLessonProgress(supabase, userId);
-  const completedIds = getCompletedLessonIds(progress, lessons as never);
+  const completedIds = executionContext?.programmeId
+    ? await getContextualCompletedLessonIds(supabase, userId, executionContext.programmeId, lessons)
+    : getCompletedLessonIds(await getLessonProgress(supabase, userId), lessons as never);
   const completedCount = lessonIds.filter((lessonId) => completedIds.has(lessonId)).length;
 
   return {
@@ -445,15 +483,10 @@ async function getLessonCountProgress(
   executionContext?: MissionExecutionContext,
 ): Promise<MissionProgress> {
   if (!withinDays) {
-    const [lessons, progress] = await Promise.all([
-      getScopedPublishedLessons(supabase, executionContext),
-      getLessonProgress(supabase, userId),
-    ]);
-
-    const completedCount = getCompletedLessonIds(
-      progress,
-      lessons as never,
-    ).size;
+    const lessons = await getScopedPublishedLessons(supabase, executionContext);
+    const completedCount = executionContext?.programmeId
+      ? (await getContextualCompletedLessonIds(supabase, userId, executionContext.programmeId, lessons)).size
+      : getCompletedLessonIds(await getLessonProgress(supabase, userId), lessons as never).size;
     const targetCount = Math.max(1, count);
 
     return {
@@ -470,15 +503,30 @@ async function getLessonCountProgress(
     return { progressCount: 0, targetCount: Math.max(1, count), valid: false };
   }
 
+  if (executionContext?.programmeId) {
+    const since = withinDays
+      ? new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000).toISOString()
+      : undefined;
+    const completedIds = await getContextualCompletedLessonIds(
+      supabase,
+      userId,
+      executionContext.programmeId,
+      scopedLessons,
+      since,
+    );
+    const targetCount = Math.max(1, count);
+    return {
+      progressCount: completedIds.size,
+      targetCount,
+      valid: completedIds.size >= targetCount,
+    };
+  }
+
   let query = supabase
     .from("lesson_progress")
     .select("lesson_id")
     .eq("user_id", userId)
     .not("completed_at", "is", null);
-
-  if (executionContext?.programmeId && executionContext.programmeMissionId) {
-    query = query.in("lesson_id", scopedLessonIds);
-  }
 
   if (withinDays) {
     const since = new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000).toISOString();

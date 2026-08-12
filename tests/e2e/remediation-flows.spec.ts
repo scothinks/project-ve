@@ -677,7 +677,11 @@ async function seedInstitutionalContent(organizationId: string) {
       terms: "E2E only.",
       claim_steps: [],
       fulfillment_type: "manual",
-      fulfillment_config: {},
+      fulfillment_config: {
+        fields: [
+          { id: "deliveryMethod", label: "Delivery method", type: "select", options: ["Pickup", "Delivery"], required: true },
+        ],
+      },
       per_user_limit: 1,
       sort_order: -9_990,
       is_enabled: true,
@@ -1736,13 +1740,14 @@ test.describe.serial("remediation browser flows", () => {
     await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}`);
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
     const progressResponse = page.waitForResponse(
-      (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
+      (response) => response.url().includes("/api/lesson-progress"),
     );
     await page.getByRole("link", { name: new RegExp(institutionalLessonTitle) }).first().click();
     await expect(page).toHaveURL(
       new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/lessons/${institutionalLessonId}$`),
     );
-    await progressResponse;
+    const progressResult = await progressResponse;
+    expect(progressResult.status(), await progressResult.text()).toBe(200);
     await expect(page.getByText(institutionalLessonBody)).toBeVisible();
     await page.getByRole("link", { name: "Take Quiz" }).click();
     await expect(page).toHaveURL(
@@ -1755,6 +1760,39 @@ test.describe.serial("remediation browser flows", () => {
       new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}$`),
     );
     await expect(page.getByText("You earned 5 XP!")).toBeVisible();
+    const institutionalAccount = await assertNoError(
+      await supabase
+        .from("xp_accounts")
+        .select("id")
+        .eq("organization_id", organization?.id ?? "")
+        .eq("is_default", true)
+        .maybeSingle(),
+      "load institutional XP account",
+    ) as { id: string } | null;
+    const scopedQuizTransaction = await assertNoError(
+      await supabase
+        .from("xp_transactions")
+        .select("id, programme_id, xp_account_id")
+        .eq("user_id", institutionalLearner.id)
+        .eq("source_type", "quiz_question")
+        .eq("xp_account_id", institutionalAccount?.id ?? "")
+        .maybeSingle(),
+      "load scoped quiz transaction",
+    ) as { id: string; programme_id: string | null; xp_account_id: string } | null;
+    expect(scopedQuizTransaction?.programme_id).toBe(programme?.id);
+    expect(scopedQuizTransaction?.xp_account_id).toBe(institutionalAccount?.id);
+    const contextualPage = await assertNoError<{ programme_id: string } | null>(
+      await supabase
+        .from("programme_lesson_page_completions")
+        .select("programme_id")
+        .eq("user_id", institutionalLearner.id)
+        .eq("programme_id", programme?.id ?? "")
+        .eq("lesson_id", institutionalLessonId)
+        .eq("page_id", institutionalPageId)
+        .maybeSingle(),
+      "load contextual lesson completion",
+    );
+    expect(contextualPage?.programme_id).toBe(programme?.id);
     await page.getByRole("link", { name: "Lessons" }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}$`));
     await page.goto(`/o/${institutionalOrgSlug}`);
@@ -1776,6 +1814,14 @@ test.describe.serial("remediation browser flows", () => {
     await page.goto(`/o/${institutionalOrgSlug}/rewards`);
     await expect(page.getByRole("heading", { name: `${institutionalOrgName} Rewards` })).toBeVisible();
     await expect(page.getByRole("heading", { name: `E2E Institution Reward ${runId}` }).first()).toBeVisible();
+    const redeemButton = page.getByRole("button", { name: "Redeem" }).first();
+    await expect(redeemButton).toBeEnabled();
+    await redeemButton.click();
+    await page.getByRole("button", { name: "Confirm" }).click();
+    await expect(page.getByRole("combobox", { name: "Delivery method" })).toBeVisible();
+    await page.getByRole("combobox", { name: "Delivery method" }).selectOption({ label: "Delivery" });
+    await page.getByRole("button", { name: "Submit Details" }).click();
+    await expect(page.getByText("Submitted for processing.")).toBeVisible();
 
     await page.context().clearCookies();
     await signIn(page, reportViewerEmail);

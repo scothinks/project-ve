@@ -45,6 +45,7 @@ export default async function OrganizationQuizPage({ params }: OrganizationQuizP
             lessonHref={lessonHref}
             lessonId={lesson.id}
             quizId={quiz.id}
+            programmeId={workspace.programmeIds[0] ?? null}
             questions={quiz.questions}
             resultHref={orgHref(workspace, `/learn/${course.id}/results/${lesson.id}`)}
           />

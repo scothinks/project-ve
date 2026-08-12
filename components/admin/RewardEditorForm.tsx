@@ -9,8 +9,9 @@ import type { AdminCampaignRow, AdminOrganizationRow, AdminProgrammeRow } from "
 type RewardField = {
   id: string;
   label: string;
-  type: "text" | "tel" | "email" | "textarea";
+  type: "text" | "tel" | "email" | "textarea" | "select";
   required: boolean;
+  options: string[];
 };
 
 type RewardEditorValue = {
@@ -56,7 +57,7 @@ type RewardEditorFormProps = {
   programmes?: AdminProgrammeRow[];
 };
 
-const fieldTypes = ["text", "tel", "email", "textarea"] as const;
+const fieldTypes = ["text", "tel", "email", "textarea", "select"] as const;
 
 function fieldClasses() {
   return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
@@ -106,6 +107,9 @@ function getInitialFields(config: Record<string, unknown>): RewardField[] {
         label: asString(record.label),
         type,
         required: Boolean(record.required),
+        options: Array.isArray(record.options)
+          ? record.options.filter((option): option is string => typeof option === "string")
+          : [],
       };
     })
     .filter((field): field is RewardField => Boolean(field));
@@ -113,9 +117,9 @@ function getInitialFields(config: Record<string, unknown>): RewardField[] {
   return parsed.length > 0
     ? parsed
     : [
-        { id: "fullName", label: "Full name", type: "text", required: true },
-        { id: "phone", label: "Phone", type: "tel", required: true },
-        { id: "email", label: "Email", type: "email", required: true },
+        { id: "fullName", label: "Full name", type: "text", required: true, options: [] },
+        { id: "phone", label: "Phone", type: "tel", required: true, options: [] },
+        { id: "email", label: "Email", type: "email", required: true, options: [] },
       ];
 }
 
@@ -193,6 +197,7 @@ export function RewardEditorForm({
             label: field.label.trim(),
             type: field.type,
             required: field.required,
+            options: field.type === "select" ? field.options : undefined,
           }))
           .filter((field) => field.id && field.label),
       };
@@ -669,6 +674,18 @@ export function RewardEditorForm({
                     </option>
                   ))}
                 </select>
+                {field.type === "select" ? (
+                  <input
+                    className="md:col-span-2"
+                    placeholder="Options, comma separated"
+                    value={field.options.join(", ")}
+                    onChange={(event) =>
+                      updateField(index, {
+                        options: event.target.value.split(",").map((option) => option.trim()).filter(Boolean),
+                      })
+                    }
+                  />
+                ) : null}
                 <label className="mt-1 flex items-center gap-2 text-xs font-black">
                   <input
                     checked={field.required}
@@ -691,7 +708,7 @@ export function RewardEditorForm({
               onClick={() =>
                 setFields((current) => [
                   ...current,
-                  { id: "", label: "", type: "text", required: false },
+                  { id: "", label: "", type: "text", required: false, options: [] },
                 ])
               }
               type="button"

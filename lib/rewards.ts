@@ -41,7 +41,8 @@ export type RewardThumbnail = {
 export type RewardFormField = {
   id: string;
   label: string;
-  type: "text" | "tel" | "email" | "textarea";
+  type: "text" | "tel" | "email" | "textarea" | "select";
+  options?: string[];
   required?: boolean;
 };
 

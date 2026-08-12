@@ -37,8 +37,9 @@ export default async function OrganizationRewardsPage({
         </Link>
       </section>
       <XPStore
-        disableRedemption
+        apiPath={`/api/organizations/${workspace.organizationSlug}/rewards`}
         initialSnapshot={rewardSnapshot}
+        redeemPathPrefix={`/api/organizations/${workspace.organizationSlug}/rewards`}
         workspaceLabel={workspace.xpAccount.label}
       />
       <BottomNav active="Store" />

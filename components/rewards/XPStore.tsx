@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
@@ -33,11 +33,15 @@ import {
 
 export function XPStore({
   disableRedemption = false,
+  apiPath = "/api/rewards",
+  redeemPathPrefix = "/api/rewards",
   initialAuthRequired = false,
   initialSnapshot = null,
   workspaceLabel = "XP",
 }: {
   disableRedemption?: boolean;
+  apiPath?: string;
+  redeemPathPrefix?: string;
   initialAuthRequired?: boolean;
   initialSnapshot?: RewardStoreSnapshot | null;
   workspaceLabel?: string;
@@ -69,8 +73,8 @@ export function XPStore({
     [redemptionItems, historyPage],
   );
 
-  async function loadStore() {
-    const response = await fetch("/api/rewards", { cache: "no-store" });
+  const loadStore = useCallback(async function loadStore() {
+    const response = await fetch(apiPath, { cache: "no-store" });
     const data = await response.json();
 
     if (!response.ok) {
@@ -86,7 +90,7 @@ export function XPStore({
     setSnapshot(nextSnapshot);
     setLoading(false);
     return nextSnapshot;
-  }
+  }, [apiPath]);
 
   useEffect(() => {
     function reload() {
@@ -95,7 +99,7 @@ export function XPStore({
 
     window.addEventListener("xp-store:reload", reload);
     return () => window.removeEventListener("xp-store:reload", reload);
-  }, []);
+  }, [loadStore]);
 
   useEffect(() => {
     if (!activeRedemption || !snapshot) {
@@ -135,7 +139,7 @@ export function XPStore({
     setRedeeming(true);
     setMessage(null);
 
-    const response = await fetch(`/api/rewards/${confirmReward.id}/redeem`, {
+    const response = await fetch(`${redeemPathPrefix}/${confirmReward.id}/redeem`, {
       method: "POST",
     });
     const data = await response.json();

@@ -96,15 +96,18 @@ export async function markLessonPageCompletedInSupabase({
   supabase,
   lesson,
   pageId,
+  programmeId,
 }: {
   supabase: SupabaseClient;
   userId: string;
   lesson: Lesson;
   pageId: string;
+  programmeId?: string | null;
 }) {
   const { data, error } = await supabase.rpc("complete_lesson_page", {
     p_lesson_id: lesson.id,
     p_page_id: pageId,
+    p_programme_id: programmeId ?? null,
   });
 
   if (error) {
