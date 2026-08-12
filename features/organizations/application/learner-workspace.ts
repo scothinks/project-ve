@@ -24,6 +24,16 @@ type EnrolmentRow = {
   programme_id: string | null;
 };
 
+export type OrganizationCourseDeliveryOption = {
+  courseId: string;
+  label: string;
+  organizationId: string;
+  programmeId: string | null;
+  scope: "organization" | "programme";
+};
+
+export type OrganizationLearningDeliveryContext = OrganizationCourseDeliveryOption;
+
 export type LearnerWorkspaceAccessSource =
   | "course_enrolment"
   | "membership"
@@ -59,6 +69,7 @@ export type OrganizationLearnerWorkspaceContext = {
     shortName: string | null;
   };
   courseIds: string[];
+  courseDeliveryOptions: Record<string, OrganizationCourseDeliveryOption[]>;
   membershipRoles: Database["public"]["Enums"]["organization_role_key"][];
   missionIds: string[];
   organizationId: string;
@@ -96,7 +107,7 @@ function getAccessSource({
   return "course_enrolment";
 }
 
-async function getProgrammeCourseIds(
+async function getProgrammeCourseLinks(
   supabase: SupabaseClient<Database>,
   programmeIds: string[],
 ) {
@@ -104,11 +115,14 @@ async function getProgrammeCourseIds(
 
   const { data, error } = await supabase
     .from("programme_courses")
-    .select("course_id")
+    .select("course_id, programme_id")
     .in("programme_id", programmeIds);
 
   if (error) throw error;
-  return unique((data ?? []).map((row) => row.course_id));
+  return (data ?? []).map((row) => ({
+    courseId: row.course_id,
+    programmeId: row.programme_id,
+  }));
 }
 
 async function getProgrammeMissionDeliveryRequests(
@@ -315,14 +329,52 @@ export async function resolveOrganizationLearnerWorkspace(
   const enrolments = (enrolmentsResult.data ?? []) as EnrolmentRow[];
   const programmeIds = unique(enrolments.map((enrolment) => enrolment.programme_id));
   const directCourseIds = unique(enrolments.map((enrolment) => enrolment.course_id));
-  const [programmeCourseIds, organizationCourseIds, programmeMissionDeliveries, organizationMissionDeliveries] = await Promise.all([
-    getProgrammeCourseIds(supabase, programmeIds),
+  const [programmeCourseLinks, programmeTitlesResult, organizationCourseIds, programmeMissionDeliveries, organizationMissionDeliveries] = await Promise.all([
+    getProgrammeCourseLinks(supabase, programmeIds),
+    programmeIds.length > 0
+      ? supabase.from("programmes").select("id, title").in("id", programmeIds)
+      : Promise.resolve({ data: [], error: null }),
     roles.length > 0 ? getOrganizationCourseIds(supabase, organization.id) : Promise.resolve([]),
     getProgrammeMissionDeliveryRequests(supabase, organization.id, organization.slug, programmeIds),
     getOrganizationMissionDeliveryRequests(supabase, organization.id, organization.slug, roles),
   ]);
+  if (programmeTitlesResult.error) throw programmeTitlesResult.error;
   const missionDeliveries = [...organizationMissionDeliveries, ...programmeMissionDeliveries];
+  const programmeTitles = new Map(
+    (programmeTitlesResult.data ?? []).map((programme) => [programme.id, programme.title]),
+  );
+  const programmeCourseIds = programmeCourseLinks.map((link) => link.courseId);
+  const directOrganizationCourseIds = enrolments
+    .filter((enrolment) => enrolment.programme_id === null)
+    .map((enrolment) => enrolment.course_id);
   const courseIds = unique([...directCourseIds, ...programmeCourseIds, ...organizationCourseIds]);
+  const organizationCourseSet = new Set([...organizationCourseIds, ...directOrganizationCourseIds]);
+  const courseDeliveryOptions = Object.fromEntries(
+    courseIds.map((courseId) => {
+      const programmeOptions = programmeCourseLinks
+        .filter((link) => link.courseId === courseId)
+        .map((link) => ({
+          courseId,
+          label: programmeTitles.get(link.programmeId) ?? "Programme learning",
+          organizationId: organization.id,
+          programmeId: link.programmeId,
+          scope: "programme" as const,
+        }));
+      const options = programmeOptions.length > 0
+        ? programmeOptions
+        : organizationCourseSet.has(courseId)
+          ? [{
+              courseId,
+              label: "Organisation learning",
+              organizationId: organization.id,
+              programmeId: null,
+              scope: "organization" as const,
+            }]
+          : [];
+
+      return [courseId, options];
+    }),
+  ) as Record<string, OrganizationCourseDeliveryOption[]>;
 
   return {
     accessSource: getAccessSource({ programmeIds, roles }),
@@ -333,6 +385,7 @@ export async function resolveOrganizationLearnerWorkspace(
       shortName: organization.short_name,
     },
     courseIds,
+    courseDeliveryOptions,
     membershipRoles: roles,
     missionIds: unique(missionDeliveries.map((delivery) => delivery.missionId)),
     organizationId: organization.id,
@@ -368,6 +421,29 @@ export async function getOrganizationWorkspaceCourse(
 
   const courses = await getLearningCoursesByIds(supabase, [courseId]);
   return courses[0] ?? null;
+}
+
+export function getOrganizationCourseDeliveryContext(
+  workspace: OrganizationLearnerWorkspaceContext,
+  courseId: string,
+  requestedProgrammeId?: string | null,
+): OrganizationLearningDeliveryContext | null {
+  const options = workspace.courseDeliveryOptions[courseId] ?? [];
+  if (requestedProgrammeId) {
+    return options.find((option) => option.programmeId === requestedProgrammeId) ?? null;
+  }
+  return options.length === 1 ? options[0] : null;
+}
+
+export function appendOrganizationDeliverySearchParam(
+  href: string,
+  deliveryContext: OrganizationLearningDeliveryContext,
+) {
+  if (!deliveryContext.programmeId) return href;
+  const [path, query = ""] = href.split("?", 2);
+  const params = new URLSearchParams(query);
+  params.set("programmeId", deliveryContext.programmeId);
+  return `${path}?${params.toString()}`;
 }
 
 export async function getOrganizationWorkspaceMissions({

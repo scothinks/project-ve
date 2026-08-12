@@ -12,6 +12,7 @@ type QuizOptionsProps = {
   keepLearningHref?: string;
   lessonId: string;
   lessonHref?: string;
+  organizationId?: string | null;
   programmeId?: string | null;
   quizId: string;
   questions: PublicQuizQuestion[];
@@ -84,6 +85,7 @@ export function QuizOptions({
   keepLearningHref = "/courses",
   lessonHref,
   lessonId,
+  organizationId,
   programmeId,
   quizId,
   questions,
@@ -135,7 +137,11 @@ export function QuizOptions({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lessonId, programmeId: programmeId ?? null }),
+        body: JSON.stringify({
+          lessonId,
+          organizationId: organizationId ?? null,
+          programmeId: programmeId ?? null,
+        }),
       });
       const result = (await response.json()) as StartQuizResponse;
 
@@ -161,7 +167,7 @@ export function QuizOptions({
     return () => {
       cancelled = true;
     };
-  }, [lessonId, programmeId, quizId]);
+  }, [lessonId, organizationId, programmeId, quizId]);
 
   function selectOption(optionId: string) {
     if (!current || submittedQuestionIds.includes(current.id)) {

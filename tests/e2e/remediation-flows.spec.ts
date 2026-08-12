@@ -1744,20 +1744,20 @@ test.describe.serial("remediation browser flows", () => {
     );
     await page.getByRole("link", { name: new RegExp(institutionalLessonTitle) }).first().click();
     await expect(page).toHaveURL(
-      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/lessons/${institutionalLessonId}$`),
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/lessons/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
     const progressResult = await progressResponse;
     expect(progressResult.status(), await progressResult.text()).toBe(200);
     await expect(page.getByText(institutionalLessonBody)).toBeVisible();
     await page.getByRole("link", { name: "Take Quiz" }).click();
     await expect(page).toHaveURL(
-      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/quiz/${institutionalLessonId}$`),
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/quiz/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
     await expect(page.getByRole("heading", { name: "Institutional E2E quiz" })).toBeVisible();
     await page.getByRole("button", { name: "Stay inside the organisation workspace" }).click();
     await page.getByRole("button", { name: "View result" }).click();
     await expect(page).toHaveURL(
-      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}$`),
+      new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
     await expect(page.getByText("You earned 5 XP!")).toBeVisible();
     const institutionalAccount = await assertNoError(
@@ -1794,7 +1794,7 @@ test.describe.serial("remediation browser flows", () => {
     );
     expect(contextualPage?.programme_id).toBe(programme?.id);
     await page.getByRole("link", { name: "Lessons" }).click();
-    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}$`));
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}(\\?programmeId=[^&]+)?$`));
     await page.goto(`/o/${institutionalOrgSlug}`);
     await page.getByRole("link", { name: "Notifications" }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/notifications$`));

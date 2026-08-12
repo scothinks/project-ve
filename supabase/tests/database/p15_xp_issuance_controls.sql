@@ -2,7 +2,7 @@ begin;
 \ir ./_test_constants.psql
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
-select extensions.plan(14);
+select extensions.plan(16);
 
 insert into auth.users (
   id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -197,6 +197,46 @@ select extensions.throws_like(
   $$, :'TEST_LEARNER_USER_ID', :'p15_xp_controls_beta_account_id'),
   '%learner issuance cap reached%',
   'organisation issuance cannot bypass the per-user cap'
+);
+
+insert into public.xp_transactions (
+  user_id, xp_account_id, amount, direction, source_type, source_id, award_scope, metadata
+)
+values (
+  :'TEST_LEARNER_USER_ID'::uuid,
+  :'p15_xp_controls_beta_account_id'::uuid,
+  10,
+  'earn',
+  'reward_redemption',
+  'p15-xp-controls-beta-refund',
+  'reward_refund:p15-xp-controls-beta-refund',
+  '{}'::jsonb
+);
+
+insert into public.xp_transactions (
+  user_id, xp_account_id, amount, direction, source_type, source_id, award_scope, metadata
+)
+values (
+  :'TEST_LEARNER_USER_ID'::uuid,
+  :'p15_xp_controls_beta_account_id'::uuid,
+  10,
+  'earn',
+  'adjustment',
+  'p15-xp-controls-beta-3',
+  'p15-xp-controls-beta-3',
+  '{}'::jsonb
+);
+
+select extensions.is(
+  (public.admin_get_xp_account_overview(:'p15_xp_controls_beta_id'::uuid) ->> 'issuance')::integer,
+  30,
+  'reward refunds do not inflate issuance reporting or consume future issuance capacity'
+);
+
+select extensions.is(
+  (public.admin_get_xp_account_overview(:'p15_xp_controls_beta_id'::uuid) ->> 'circulation')::integer,
+  40,
+  'reward refunds still restore outstanding circulation'
 );
 
 insert into public.xp_transactions (

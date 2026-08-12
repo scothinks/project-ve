@@ -7,7 +7,11 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
 import { createProgressRepository } from "@/features/app/repositories/progress";
-import { getOrganizationWorkspaceCourse } from "@/features/organizations/application/learner-workspace";
+import {
+  appendOrganizationDeliverySearchParam,
+  getOrganizationCourseDeliveryContext,
+  getOrganizationWorkspaceCourse,
+} from "@/features/organizations/application/learner-workspace";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getCourseXP } from "@/lib/lessons";
 import {
@@ -19,16 +23,19 @@ import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/work
 
 type OrgCourseDetailPageProps = {
   params: Promise<{ courseId: string; organizationSlug: string }>;
+  searchParams: Promise<{ programmeId?: string }>;
 };
 
-export default async function OrganizationCourseDetailPage({ params }: OrgCourseDetailPageProps) {
+export default async function OrganizationCourseDetailPage({ params, searchParams }: OrgCourseDetailPageProps) {
   const resolvedParams = await params;
+  const { programmeId } = await searchParams;
   const { supabase, user, workspace } = await requireOrgLearnerRoute(Promise.resolve({
     organizationSlug: resolvedParams.organizationSlug,
   }));
   const course = await getOrganizationWorkspaceCourse(supabase, workspace, resolvedParams.courseId);
+  const deliveryContext = getOrganizationCourseDeliveryContext(workspace, resolvedParams.courseId, programmeId);
 
-  if (!course) {
+  if (!course || !deliveryContext) {
     notFound();
   }
 
@@ -39,9 +46,13 @@ export default async function OrganizationCourseDetailPage({ params }: OrgCourse
   const resumeTarget = getCourseResumeTarget(course, lessonProgress, completedLessonIds, {
     lessonHref: (lessonId, pageNumber) => {
       const href = orgHref(workspace, `/learn/${course.id}/lessons/${lessonId}`);
-      return pageNumber ? `${href}?page=${pageNumber}` : href;
+      const pagedHref = pageNumber ? `${href}?page=${pageNumber}` : href;
+      return appendOrganizationDeliverySearchParam(pagedHref, deliveryContext);
     },
-    quizHref: (lessonId) => orgHref(workspace, `/learn/${course.id}/quiz/${lessonId}`),
+    quizHref: (lessonId) => appendOrganizationDeliverySearchParam(
+      orgHref(workspace, `/learn/${course.id}/quiz/${lessonId}`),
+      deliveryContext,
+    ),
   });
   const heroImage = course.coverImage ?? course.thumbnail;
   const organizationName = workspace.branding.shortName || workspace.branding.name;
@@ -106,6 +117,7 @@ export default async function OrganizationCourseDetailPage({ params }: OrgCourse
               <CourseDetailLessonList
                 completedLessonIds={completedLessonIdList}
                 lessonHrefBase={orgHref(workspace, `/learn/${course.id}/lessons`)}
+                lessonHrefSuffix={deliveryContext.programmeId ? `?programmeId=${encodeURIComponent(deliveryContext.programmeId)}` : ""}
                 lessons={course.lessons}
               />
             </div>

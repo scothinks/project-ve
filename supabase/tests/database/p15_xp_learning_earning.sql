@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
 
-select extensions.plan(12);
+select extensions.plan(15);
 
 insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
@@ -52,6 +52,45 @@ on conflict (id) do update set title = excluded.title, status = excluded.status;
 insert into public.programme_courses (programme_id, course_id, sort_order)
 values (:'p15c_xp_learning_programme_id'::uuid, 'course-p15c-xp-learning', 1)
 on conflict (programme_id, course_id) do nothing;
+
+insert into public.lessons (id, course_id, slug, title, description, status, sort_order, estimated_minutes)
+values (
+  'lesson-p15c-xp-learning',
+  'course-p15c-xp-learning',
+  'lesson-p15c-xp-learning',
+  'P15C XP Learning Lesson',
+  'Contextual completion fixture.',
+  'published',
+  1,
+  5
+)
+on conflict (id) do update
+set title = excluded.title,
+    status = excluded.status;
+
+insert into public.lesson_pages (id, lesson_id, page_number, title, subtitle, page_type)
+values (
+  'page-p15c-xp-learning',
+  'lesson-p15c-xp-learning',
+  1,
+  'P15C XP Learning Page',
+  null,
+  'concept'
+)
+on conflict (id) do update
+set title = excluded.title;
+
+insert into public.quizzes (id, lesson_id, title, version, status)
+values (
+  'quiz-p15c-xp-learning',
+  'lesson-p15c-xp-learning',
+  'P15C XP Learning Quiz',
+  1,
+  'published'
+)
+on conflict (id) do update
+set title = excluded.title,
+    status = excluded.status;
 
 select extensions.is(
   (select default_xp_account_id from public.programmes where id = :'p15c_xp_learning_programme_id'::uuid),
@@ -167,6 +206,124 @@ select extensions.is(
      and course_id = 'course-p15c-xp-learning'),
   'in_progress',
   'require_completion_in_context does not accept a public-only course completion'
+);
+
+reset role;
+set local role service_role;
+
+insert into public.lesson_page_completions (user_id, lesson_id, page_id, completed_at)
+values (
+  :'TEST_LEARNER_USER_ID'::uuid,
+  'lesson-p15c-xp-learning',
+  'page-p15c-xp-learning',
+  now()
+)
+on conflict (user_id, lesson_id, page_id) do update
+set completed_at = excluded.completed_at;
+
+insert into public.lesson_progress (user_id, lesson_id, completed_pages, quiz_score, completed_at)
+values (
+  :'TEST_LEARNER_USER_ID'::uuid,
+  'lesson-p15c-xp-learning',
+  array['page-p15c-xp-learning']::text[],
+  0,
+  now()
+)
+on conflict (user_id, lesson_id) do update
+set completed_pages = excluded.completed_pages,
+    completed_at = excluded.completed_at;
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
+select extensions.is(
+  public.start_quiz_attempt(
+    'quiz-p15c-xp-learning',
+    'lesson-p15c-xp-learning',
+    :'p15c_xp_learning_programme_id'::uuid,
+    :'p15c_xp_learning_org_id'::uuid
+  ) ->> 'status',
+  'blocked',
+  'contextual quiz start is blocked when only public lesson progress exists'
+);
+
+reset role;
+set local role service_role;
+
+insert into public.quiz_attempts (
+  id,
+  user_id,
+  lesson_id,
+  quiz_id,
+  quiz_version,
+  mode,
+  status,
+  seed,
+  ended_at,
+  ended_reason,
+  programme_id,
+  xp_account_id
+)
+values (
+  '44444444-4444-4444-8444-0000000015c1'::uuid,
+  :'TEST_LEARNER_USER_ID'::uuid,
+  'lesson-p15c-xp-learning',
+  'quiz-p15c-xp-learning',
+  1,
+  'earning',
+  'graded',
+  'p15c-contextual-quiz',
+  now(),
+  'submitted',
+  :'p15c_xp_learning_programme_id'::uuid,
+  :'p15c_xp_learning_account_id'::uuid
+)
+on conflict (id) do update
+set status = excluded.status,
+    programme_id = excluded.programme_id,
+    xp_account_id = excluded.xp_account_id;
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+select public.evaluate_programme_completion(:'p15c_xp_learning_programme_id'::uuid);
+
+select extensions.is(
+  (select status from public.programme_course_completions
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and programme_id = :'p15c_xp_learning_programme_id'::uuid
+     and course_id = 'course-p15c-xp-learning'),
+  'in_progress',
+  'require_completion_in_context does not accept public lesson progress plus a contextual quiz'
+);
+
+reset role;
+set local role service_role;
+
+insert into public.programme_lesson_page_completions (user_id, programme_id, lesson_id, page_id, completed_at)
+values (
+  :'TEST_LEARNER_USER_ID'::uuid,
+  :'p15c_xp_learning_programme_id'::uuid,
+  'lesson-p15c-xp-learning',
+  'page-p15c-xp-learning',
+  now()
+)
+on conflict (user_id, programme_id, lesson_id, page_id) do update
+set completed_at = excluded.completed_at;
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+select public.evaluate_programme_completion(:'p15c_xp_learning_programme_id'::uuid);
+
+select extensions.is(
+  (select status from public.programme_course_completions
+   where user_id = :'TEST_LEARNER_USER_ID'::uuid
+     and programme_id = :'p15c_xp_learning_programme_id'::uuid
+     and course_id = 'course-p15c-xp-learning'),
+  'completed',
+  'contextual lesson page completion satisfies require_completion_in_context'
 );
 
 reset role;

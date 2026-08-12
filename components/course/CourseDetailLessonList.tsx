@@ -12,6 +12,7 @@ type CourseDetailLessonListProps = {
   lessons: Lesson[];
   completedLessonIds: string[];
   lessonHrefBase?: string;
+  lessonHrefSuffix?: string;
 };
 
 const lessonsPerPage = 6;
@@ -20,6 +21,7 @@ export function CourseDetailLessonList({
   lessons,
   completedLessonIds,
   lessonHrefBase,
+  lessonHrefSuffix = "",
 }: CourseDetailLessonListProps) {
   const [page, setPage] = useState(1);
   const paginatedLessons = paginateItems(lessons, page, lessonsPerPage);
@@ -39,7 +41,7 @@ export function CourseDetailLessonList({
             <div className="flex h-full flex-col" key={lesson.id}>
               <LessonModuleCard
                 completed={completed}
-                href={lessonHrefBase ? `${lessonHrefBase}/${lesson.id}` : undefined}
+                href={lessonHrefBase ? `${lessonHrefBase}/${lesson.id}${lessonHrefSuffix}` : undefined}
                 lesson={lesson}
               />
               <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">

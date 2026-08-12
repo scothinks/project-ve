@@ -13,6 +13,8 @@ type CourseCardProps = {
   href?: string;
   completedLessonIds?: Set<string> | string[];
   desktopLayout?: "stacked" | "horizontal";
+  contextLabel?: string;
+  unitLabel?: string;
 };
 
 export function CourseCard({
@@ -20,6 +22,8 @@ export function CourseCard({
   href = `/courses/${course.id}`,
   completedLessonIds,
   desktopLayout = "stacked",
+  contextLabel,
+  unitLabel = "XP",
 }: CourseCardProps) {
   const { completedLessons, lessonCount, progressPercent } = getCourseProgress(
     course,
@@ -80,6 +84,7 @@ export function CourseCard({
             </div>
             <XPBadge
               xp={getCourseXP(course)}
+              unitLabel={unitLabel}
               className="shrink-0 bg-[var(--ve-card)] text-[#008751]"
             />
           </div>
@@ -100,6 +105,7 @@ export function CourseCard({
                 </div>
                 <XPBadge
                   xp={getCourseXP(course)}
+                  unitLabel={unitLabel}
                   className="shrink-0 bg-[#dff2e9] text-[#008751]"
                 />
               </div>
@@ -113,6 +119,11 @@ export function CourseCard({
           >
             {course.description}
           </p>
+          {contextLabel ? (
+            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-green)]">
+              {contextLabel}
+            </p>
+          ) : null}
           <div className="mt-5 h-2 rounded-full bg-[#e8e8e8]">
             <div
               className="h-full rounded-full bg-[#008751]"

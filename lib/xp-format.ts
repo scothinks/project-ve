@@ -6,6 +6,7 @@ export function formatXpAmount(amount: number) {
   }).format(safeAmount);
 }
 
-export function formatXpLabel(amount: number) {
-  return `${formatXpAmount(amount)} XP`;
+export function formatXpLabel(amount: number, unitLabel = "XP") {
+  const label = unitLabel.trim() || "XP";
+  return `${formatXpAmount(amount)} ${label}`;
 }

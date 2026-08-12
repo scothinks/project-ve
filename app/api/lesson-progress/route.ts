@@ -21,6 +21,7 @@ export async function POST(request: Request) {
 
   const issues: ValidationIssue[] = [];
   const lessonId = getStringField(bodyResult.data, "lessonId", issues);
+  const organizationId = getStringField(bodyResult.data, "organizationId", issues, { required: false });
   const pageId = getStringField(bodyResult.data, "pageId", issues);
   const programmeId = getStringField(bodyResult.data, "programmeId", issues, { required: false });
 
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
       supabase,
       userId: user.id,
       lesson,
+      organizationId,
       pageId: page.id,
       programmeId,
     });
