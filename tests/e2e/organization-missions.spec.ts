@@ -274,7 +274,7 @@ async function seedFixture() {
         organization_id: organizationId,
         mission_type_key: "course_completed",
         reward_mode: "organization_xp",
-        delivery_scope: "organization",
+        delivery_scope: "catalog_only",
         presentation_config: {
           title: `Org-wide mission copy ${runId}`,
           ctaLabel: "Continue organisation learning",
@@ -394,6 +394,21 @@ test.describe.serial("organization mission browser acceptance", () => {
   test("renders organisation-wide, programme, and manual referral mission journeys", async ({ page }) => {
     await signIn(page, orgLearnerEmail, `/o/${orgSlug}/missions`);
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/missions$`));
+    await expect(page.getByText(`Org-wide mission copy ${runId}`)).toHaveCount(0);
+    await expect(page.getByText(`Programme override mission copy ${runId}`)).toHaveCount(0);
+    await expect(page.getByText(`E2E Catalogue-only Mission ${runId}`)).toHaveCount(0);
+
+    await clearBrowserState(page);
+    await signIn(page, managerEmail, `/admin/missions/${orgWideMissionId}`);
+    await expect(page.getByRole("heading", { level: 1, name: `E2E Organisation-wide Mission ${runId}` })).toBeVisible();
+    await expect(page.locator("input[name='deliveryScope'][value='catalog_only']")).toBeChecked();
+    await page.locator("input[name='deliveryScope'][value='organization']").check();
+    await page.getByRole("button", { name: "Save mission" }).click();
+    await expect(page.getByText("Organisation mission saved.")).toBeVisible();
+
+    await clearBrowserState(page);
+    await signIn(page, orgLearnerEmail, `/o/${orgSlug}/missions`);
+    await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/missions$`));
     await expect(page.getByText(`Org-wide mission copy ${runId}`)).toBeVisible();
     await expect(page.getByText(`Programme override mission copy ${runId}`)).toHaveCount(0);
     await expect(page.getByText(`E2E Catalogue-only Mission ${runId}`)).toHaveCount(0);
@@ -436,30 +451,20 @@ test.describe.serial("organization mission browser acceptance", () => {
     }
     expect(pendingEnrolment.status).toBe("pending");
 
-    const managerClient = createClient(
-      requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-        ?? requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      },
-    );
-    const signInResult = await managerClient.auth.signInWithPassword({
-      email: managerEmail,
-      password: authCredential,
-    });
-    expect(signInResult.error).toBeNull();
-    const approvalResult = await managerClient.rpc("admin_review_contextual_programme_access", {
-      p_enrolment_id: pendingEnrolment.id,
-      p_decision: "approve",
-      p_rejection_reason: null,
-    });
-    expect(approvalResult.error).toBeNull();
+    await clearBrowserState(page);
+    await signIn(page, managerEmail, `/admin/programmes/${programmeId}`);
+    await expect(page.getByRole("heading", { level: 1, name: `E2E Org Mission Programme ${runId}` })).toBeVisible();
+    await expect(page.getByText("Pending access requests")).toBeVisible();
+    await expect(page.getByText(`Org Mission Manual ${runId}`)).toBeVisible();
+    await page.getByRole("button", { name: "Approve" }).click();
+    await expect(page.getByText("Access request approved.")).toBeVisible();
 
-    await page.goto(`/o/${orgSlug}/learn`);
+    await clearBrowserState(page);
+    await signIn(
+      page,
+      manualLearnerEmail,
+      `/login?next=${encodeURIComponent(`/o/${orgSlug}/learn`)}&ref=${manualToken}&refKind=contextual`,
+    );
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/learn$`));
     await page.goto(`/o/${orgSlug}/missions`);
     await expect(page.getByText(`Programme override mission copy ${runId}`)).toBeVisible();

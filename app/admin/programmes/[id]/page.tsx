@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 import { AdminNoticeBanner, AdminPageHeader } from "@/components/admin/AdminPrimitives";
-import { ProgrammeEditorForm } from "@/components/admin/ProgrammeEditorForm";
+import {
+  ProgrammeEditorForm,
+  ProgrammePendingAccessRequestsCard,
+} from "@/components/admin/ProgrammeEditorForm";
 import {
   getAdminAssessmentVersionOptions,
   getAdminCourses,
   getAdminMissions,
   getAdminOrganizations,
   getAdminProgramme,
+  getAdminProgrammePendingAccessRequests,
   getAdminRewards,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
@@ -28,12 +32,13 @@ export default async function ProgrammeDetailPage({
     "organisation_admin",
     "programme_manager",
   ]);
-  const [assessmentVersions, courses, missions, organizations, programme, rewards] = await Promise.all([
+  const [assessmentVersions, courses, missions, organizations, programme, pendingAccessRequests, rewards] = await Promise.all([
     getAdminAssessmentVersionOptions(supabase),
     getAdminCourses(supabase, workspace.id),
     getAdminMissions(supabase, workspace.id),
     getAdminOrganizations(supabase),
     getAdminProgramme(supabase, id),
+    getAdminProgrammePendingAccessRequests(supabase, id),
     getAdminRewards(supabase, { distributionMode: "direct" }, workspace.id),
   ]);
   const notice = firstSearchValue((await searchParams)?.notice);
@@ -52,6 +57,12 @@ export default async function ProgrammeDetailPage({
         subtitle="Manage the programme container, course sequence, reinforcement missions, rewards, assessment checkpoints and completion rules."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
+      <div className="mb-5">
+        <ProgrammePendingAccessRequestsCard
+          programme={programme}
+          requests={pendingAccessRequests}
+        />
+      </div>
       <ProgrammeEditorForm
         assessmentVersions={assessmentVersions}
         courses={courses}

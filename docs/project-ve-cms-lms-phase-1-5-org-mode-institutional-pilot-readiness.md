@@ -3806,6 +3806,27 @@ npm run typecheck
 
 Result: the P1.5B mission pgTAP file passed 54/54 assertions after applying `supabase/migrations/20260810100000_p15b_focused_closure.sql`; TypeScript passed.
 
+Final P1.5B UI closure pass completed on 2026-08-12 after the focused closure review:
+
+* programme managers now review pending manual contextual-referral access requests from the existing programme workspace, with approve/reject actions delegated to `admin_review_contextual_programme_access`;
+* pending contextual referral profile visibility is limited by RLS to programme managers for matching pending contextual enrolments;
+* organisation mission create/edit workflows now expose catalogue-only versus all-organisation-learner delivery, and the organisation mission RPCs enforce only those two CMS delivery modes;
+* the browser acceptance gate now flips organisation-wide delivery through the mission CMS and approves manual contextual referral access through the programme UI instead of direct Supabase calls.
+
+Final P1.5B closure validation completed on 2026-08-12:
+
+```bash
+npm run typecheck
+npm run lint
+npm run db:reset
+npm run test:db
+npm run db:types:local:check
+npm run test:e2e
+npm run test:remediation:local
+```
+
+Result: `npm run test:remediation:local` passed, including clean migration replay, generated type drift check, 23-file/509-test pgTAP suite, repository contracts, quiz XP concurrency, economic integrity and 9/9 Playwright E2E flows. P1.5B is ready for acceptance review and P1.5C kickoff.
+
 Then stop for review.
 
 ## Batch P1.5C

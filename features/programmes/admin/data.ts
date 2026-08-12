@@ -78,6 +78,21 @@ export type AdminProgrammeDetail = AdminProgrammeRow & {
   rewards: AdminProgrammeRewardRow[];
 };
 
+export type AdminProgrammePendingAccessRequest = {
+  id: string;
+  organization_id: string;
+  programme_id: string;
+  user_id: string;
+  status: string;
+  assigned_at: string;
+  metadata: Record<string, unknown>;
+  learner?: {
+    id: string;
+    display_name: string | null;
+    referral_code: string | null;
+  } | null;
+};
+
 type ProgrammeSelectRow = AdminProgrammeRow & {
   organization?: AdminProgrammeOrganizationRow | AdminProgrammeOrganizationRow[] | null;
 };
@@ -240,6 +255,50 @@ export async function getAdminProgramme(
     missions: (missionsResult.data ?? []) as AdminProgrammeMissionRow[],
     rewards: (rewardsResult.data ?? []) as AdminProgrammeRewardRow[],
   };
+}
+
+export async function getAdminProgrammePendingAccessRequests(
+  supabase: SupabaseClient<Database>,
+  programmeId: string,
+): Promise<AdminProgrammePendingAccessRequest[]> {
+  const { data, error } = await supabase
+    .from("enrolments")
+    .select("id, organization_id, programme_id, user_id, status, assigned_at, metadata")
+    .eq("programme_id", programmeId)
+    .eq("status", "pending")
+    .eq("metadata->>source", "contextual_referral")
+    .order("assigned_at", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const requests = (data ?? []) as AdminProgrammePendingAccessRequest[];
+  const learnerIds = Array.from(new Set(requests.map((request) => request.user_id)));
+
+  if (learnerIds.length === 0) {
+    return requests;
+  }
+
+  const profilesResult = await supabase
+    .from("profiles")
+    .select("id, display_name, referral_code")
+    .in("id", learnerIds);
+
+  if (profilesResult.error) {
+    throw profilesResult.error;
+  }
+
+  const profiles = new Map(
+    ((profilesResult.data ?? []) as NonNullable<AdminProgrammePendingAccessRequest["learner"]>[])
+      .map((profile) => [profile.id, profile]),
+  );
+
+  return requests.map((request) => ({
+    ...request,
+    metadata: request.metadata ?? {},
+    learner: profiles.get(request.user_id) ?? null,
+  }));
 }
 
 export async function getAdminAssessmentVersionOptions(

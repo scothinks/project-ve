@@ -100,12 +100,14 @@ export {
 export {
   getAdminAssessmentVersionOptions,
   getAdminProgramme,
+  getAdminProgrammePendingAccessRequests,
   getAdminProgrammes,
   type AdminAssessmentVersionOptionRow,
   type AdminProgrammeAssessmentRow,
   type AdminProgrammeCourseRow,
   type AdminProgrammeDetail,
   type AdminProgrammeMissionRow,
+  type AdminProgrammePendingAccessRequest,
   type AdminProgrammeRewardRow,
   type AdminProgrammeRow,
 } from "@/features/programmes/admin/data";

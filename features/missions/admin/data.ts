@@ -28,6 +28,7 @@ export type AdminMissionRow = {
   description: string;
   category: string;
   catalog_scope: string;
+  delivery_scope: "catalog_only" | "organization" | "programme";
   organization_id: string | null;
   source_mission_id: string | null;
   source_catalog_version: number;
@@ -135,7 +136,7 @@ export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: s
   let query = supabase
     .from("missions")
     .select(
-      "id, title, description, category, catalog_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
+      "id, title, description, category, catalog_scope, delivery_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
     .order("sort_order", { ascending: true });
 
@@ -156,7 +157,7 @@ export async function getAdminMission(supabase: SupabaseClient, missionId: strin
   const { data, error } = await supabase
     .from("missions")
     .select(
-      "id, title, description, category, catalog_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
+      "id, title, description, category, catalog_scope, delivery_scope, organization_id, source_mission_id, source_catalog_version, local_changes, upstream_update_available, mission_type_key, presentation_config, configuration_version, reward_mode, reward_type, reward_xp, reward_id, repeatability, validation_type, validation_config, status, starts_at, ends_at, sort_order, reward:rewards!missions_reward_id_fkey(id, title, fulfillment_type)",
     )
     .eq("id", missionId)
     .maybeSingle();

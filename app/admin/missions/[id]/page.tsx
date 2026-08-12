@@ -203,9 +203,11 @@ export default async function AdminMissionDetailPage({
               endsAt: toDateTimeInput(mission.ends_at),
               sortOrder: mission.sort_order,
               status: mission.status,
+              deliveryScope: mission.delivery_scope,
             }}
             mode="edit"
             presentationConfig={mission.presentation_config ?? {}}
+            showDeliveryScope
             showPresentationConfig
           />
         </div>

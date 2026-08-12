@@ -6,10 +6,11 @@ import type {
   AdminMissionRow,
   AdminOrganizationRow,
   AdminProgrammeDetail,
+  AdminProgrammePendingAccessRequest,
   AdminRewardRow,
 } from "@/lib/admin";
 import { AdminCard, AdminStatusBadge, adminButtonClasses } from "@/components/admin/AdminPrimitives";
-import { saveProgramme } from "@/app/admin/programmes/actions";
+import { reviewContextualProgrammeAccess, saveProgramme } from "@/app/admin/programmes/actions";
 
 function fieldClasses() {
   return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
@@ -45,6 +46,16 @@ function toDateTimeLocal(value: string | null | undefined) {
   if (Number.isNaN(date.getTime())) return "";
 
   return date.toISOString().slice(0, 16);
+}
+
+function toDisplayDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 function selectedOrder<T extends { sort_order: number }>(
@@ -86,6 +97,99 @@ function FormSection({
         ) : null}
       </div>
       {children}
+    </AdminCard>
+  );
+}
+
+export function ProgrammePendingAccessRequestsCard({
+  programme,
+  requests,
+}: {
+  programme: AdminProgrammeDetail;
+  requests: AdminProgrammePendingAccessRequest[];
+}) {
+  return (
+    <AdminCard>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-black">Pending access requests</h2>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            Review contextual referral requests for this programme.
+          </p>
+        </div>
+        <AdminStatusBadge tone={requests.length > 0 ? "warning" : "good"}>
+          {requests.length} pending
+        </AdminStatusBadge>
+      </div>
+      {requests.length === 0 ? (
+        <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+          No contextual referral access requests are waiting for review.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {requests.map((request) => {
+            const referralSource = asString(request.metadata.contextualReferralTokenId)
+              || asString(request.metadata.contextualReferralAttributionId)
+              || "Contextual referral";
+            const learnerName = request.learner?.display_name || request.learner?.referral_code || request.user_id;
+
+            return (
+              <div
+                className="grid gap-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4 text-sm lg:grid-cols-[1fr_18rem]"
+                key={request.id}
+              >
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-black">{learnerName}</p>
+                    <AdminStatusBadge tone="warning">{request.status}</AdminStatusBadge>
+                  </div>
+                  <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-3">
+                    <div>
+                      <dt className={labelClasses()}>Programme</dt>
+                      <dd className="mt-1 font-bold">{programme.title}</dd>
+                    </div>
+                    <div>
+                      <dt className={labelClasses()}>Referral source</dt>
+                      <dd className="mt-1 break-all font-bold">{referralSource}</dd>
+                    </div>
+                    <div>
+                      <dt className={labelClasses()}>Requested at</dt>
+                      <dd className="mt-1 font-bold">{toDisplayDateTime(request.assigned_at)}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className="space-y-3">
+                  <form action={reviewContextualProgrammeAccess}>
+                    <input name="enrolmentId" type="hidden" value={request.id} />
+                    <input name="programmeId" type="hidden" value={programme.id} />
+                    <input name="decision" type="hidden" value="approve" />
+                    <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                      Approve
+                    </button>
+                  </form>
+                  <form action={reviewContextualProgrammeAccess} className="space-y-2">
+                    <input name="enrolmentId" type="hidden" value={request.id} />
+                    <input name="programmeId" type="hidden" value={programme.id} />
+                    <input name="decision" type="hidden" value="reject" />
+                    <label>
+                      <span className={labelClasses()}>Rejection reason</span>
+                      <input
+                        className={fieldClasses()}
+                        maxLength={500}
+                        name="rejectionReason"
+                        placeholder="Optional"
+                      />
+                    </label>
+                    <button className={adminButtonClasses("secondary", "w-full")} type="submit">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </AdminCard>
   );
 }

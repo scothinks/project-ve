@@ -240,3 +240,37 @@ export async function setProgrammeStatus(formData: FormData) {
     ),
   );
 }
+
+export async function reviewContextualProgrammeAccess(formData: FormData) {
+  const enrolmentId = sanitizePlainTextInput(String(formData.get("enrolmentId") ?? ""), 80);
+  const programmeId = sanitizePlainTextInput(String(formData.get("programmeId") ?? ""), 80);
+  const decision = sanitizePlainTextInput(String(formData.get("decision") ?? ""), 16);
+  const rejectionReason = sanitizePlainTextInput(
+    String(formData.get("rejectionReason") ?? ""),
+    500,
+  );
+  const { supabase } = await requireAdminWorkspaceRole(PROGRAMME_MANAGER_ROLES);
+
+  const { error } = await supabase.rpc("admin_review_contextual_programme_access", {
+    p_decision: decision,
+    p_enrolment_id: enrolmentId,
+    p_rejection_reason: rejectionReason || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/programmes");
+  if (programmeId) {
+    revalidatePath(`/admin/programmes/${programmeId}`);
+  }
+  revalidatePath("/org/my");
+
+  redirect(
+    appendAdminNotice(
+      programmeId ? `/admin/programmes/${programmeId}` : "/admin/programmes",
+      decision === "reject" ? "Access request rejected." : "Access request approved.",
+    ),
+  );
+}

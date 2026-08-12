@@ -131,11 +131,11 @@ Latest local remediation gate:
 ```text
 npm run test:remediation:local
 Result: PASS
-pgTAP: Files=22, Tests=445
+pgTAP: Files=23, Tests=509
 Repository contracts: PASS
 Quiz XP concurrency regression: PASS
 Economic integrity regression: PASS
-Playwright: 7 passed
+Playwright: 9 passed
 ```
 
 GitHub Actions now blocks pull requests and pushes on:

@@ -367,6 +367,29 @@ export function OrganizationMissionWorkflowForm({
                   <input className={fieldClasses()} defaultValue={0} name="sortOrder" type="number" />
                 </label>
               </div>
+              <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+                <p className={labelClasses()}>Delivery</p>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-bold">
+                    <input defaultChecked name="deliveryScope" type="radio" value="catalog_only" />
+                    <span>
+                      <span className="block font-black">Catalogue only</span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                        Keep this mission available for programmes without showing it directly to learners.
+                      </span>
+                    </span>
+                  </label>
+                  <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-bold">
+                    <input name="deliveryScope" type="radio" value="organization" />
+                    <span>
+                      <span className="block font-black">All organisation learners</span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                        Deliver this mission to active members of the organisation.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
               <ValidationFields courses={courses} lessons={lessons} validationType={validationType} />
               <PresentationFields prefix="Organisation mission" />
               <ActionNotice state={createState} />
