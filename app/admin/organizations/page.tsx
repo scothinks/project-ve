@@ -31,6 +31,7 @@ import {
   saveOrganizationProfile,
   saveOrganizationXpAccountControls,
   saveOrganizationXpAccountPresentation,
+  saveOrganizationXpAccountAdjustment,
 } from "./actions";
 
 const ORGANIZATION_ROLES = [
@@ -441,6 +442,30 @@ export default async function AdminOrganizationsPage({
                   <button className={adminButtonClasses("primary", "w-full")} type="submit">
                     Save issuance controls
                   </button>
+                </form>
+                <form action={saveOrganizationXpAccountAdjustment} className="mt-5 space-y-3 border-t border-[var(--ve-line)] pt-5">
+                  <input name="organizationId" type="hidden" value={selectedOrganization.id} />
+                  <input name="xpAccountId" type="hidden" value={xpAccountOverview.account.id} />
+                  <h3 className="text-sm font-black">Adjust learner balance</h3>
+                  <select className={fieldClasses()} name="targetUserId" required defaultValue="">
+                    <option disabled value="">Select active learner</option>
+                    {memberships
+                      .filter((membership) => membership.organization_id === selectedOrganization.id && membership.status === "active")
+                      .map((membership) => (
+                        <option key={membership.user_id} value={membership.user_id}>
+                          {displayUser(membership.profile?.display_name, membership.user_id)}
+                        </option>
+                      ))}
+                  </select>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <select className={fieldClasses()} name="direction" defaultValue="earn">
+                      <option value="earn">Add points</option>
+                      <option value="spend">Remove points</option>
+                    </select>
+                    <input className={fieldClasses()} min={1} name="amount" placeholder="Amount" required type="number" />
+                  </div>
+                  <input className={fieldClasses()} maxLength={200} name="reason" placeholder="Reason (optional)" />
+                  <button className={adminButtonClasses("secondary", "w-full")} type="submit">Save adjustment</button>
                 </form>
               </div>
               <div className="mt-6 grid gap-4 border-t border-[var(--ve-line)] pt-5 sm:grid-cols-2">

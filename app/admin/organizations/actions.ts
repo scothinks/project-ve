@@ -390,6 +390,32 @@ export async function saveOrganizationXpAccountControls(formData: FormData) {
   redirect(appendAdminNotice("/admin/organizations", "XP issuance controls updated."));
 }
 
+export async function saveOrganizationXpAccountAdjustment(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const xpAccountId = sanitizePlainTextInput(String(formData.get("xpAccountId") ?? ""), 80);
+  const targetUserId = sanitizePlainTextInput(String(formData.get("targetUserId") ?? ""), 80);
+  const direction = String(formData.get("direction") ?? "earn") === "spend" ? "spend" : "earn";
+  const amount = Number.parseInt(String(formData.get("amount") ?? ""), 10);
+  const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 200);
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
+
+  if (!xpAccountId || !targetUserId || !Number.isInteger(amount) || amount <= 0) {
+    throw new Error("A learner and a positive adjustment amount are required.");
+  }
+
+  const { error } = await supabase.rpc("admin_adjust_xp_account", {
+    p_xp_account_id: xpAccountId,
+    p_target_user_id: targetUserId,
+    p_amount: amount,
+    p_direction: direction,
+    p_reason: reason || null,
+  });
+
+  if (error) throw error;
+  revalidatePath("/admin/organizations");
+  redirect(appendAdminNotice("/admin/organizations", "XP account adjustment saved."));
+}
+
 function parseOptionalNonNegativeNumber(value: FormDataEntryValue | null) {
   const rawValue = String(value ?? "").trim();
   if (!rawValue) {

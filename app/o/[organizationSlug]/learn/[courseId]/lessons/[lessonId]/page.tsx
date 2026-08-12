@@ -33,6 +33,7 @@ export default async function OrganizationLessonPage({
       lessonHref={(pageNumber) => `${lessonBaseHref}?page=${pageNumber}`}
       lessonId={lessonId}
       pageParam={page}
+      programmeId={workspace.programmeIds[0] ?? null}
       quizHref={orgHref(workspace, `/learn/${courseId}/quiz/${lessonId}`)}
       refCode={ref}
       routePath={lessonBaseHref}

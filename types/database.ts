@@ -4324,6 +4324,59 @@ export type Database = {
           },
         ]
       }
+      programme_lesson_page_completions: {
+        Row: {
+          completed_at: string
+          lesson_id: string
+          page_id: string
+          programme_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          lesson_id: string
+          page_id: string
+          programme_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          lesson_id?: string
+          page_id?: string
+          programme_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programme_lesson_page_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_lesson_page_completions_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_lesson_page_completions_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programme_lesson_page_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       programme_missions: {
         Row: {
           created_at: string
@@ -6608,6 +6661,16 @@ export type Database = {
         Args: { p_delta: number; p_reason: string; p_reward_id: string }
         Returns: Json
       }
+      admin_adjust_xp_account: {
+        Args: {
+          p_amount: number
+          p_direction: Database["public"]["Enums"]["xp_direction"]
+          p_reason?: string
+          p_target_user_id: string
+          p_xp_account_id: string
+        }
+        Returns: Json
+      }
       admin_assert_valid_mission_config: {
         Args: {
           p_validation_config: Json
@@ -7670,10 +7733,16 @@ export type Database = {
             }
             Returns: undefined
           }
-      complete_lesson_page: {
-        Args: { p_lesson_id: string; p_page_id: string }
-        Returns: Json
-      }
+      complete_lesson_page:
+        | { Args: { p_lesson_id: string; p_page_id: string }; Returns: Json }
+        | {
+            Args: {
+              p_lesson_id: string
+              p_page_id: string
+              p_programme_id: string
+            }
+            Returns: Json
+          }
       complete_values_assessment:
         | {
             Args: { p_answers: Json; p_assessment_version_id: string }

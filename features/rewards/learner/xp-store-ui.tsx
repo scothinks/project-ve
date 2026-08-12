@@ -267,7 +267,21 @@ function ManualClaimForm({
         return (
           <label className="block" key={field.id}>
             <span className="text-[11px] font-bold text-[var(--ve-muted)]">{field.label}</span>
-            {field.type === "textarea" ? (
+            {field.type === "select" ? (
+              <select
+                className={cn(commonClasses, "mt-1")}
+                onChange={(event) =>
+                  setValues((current) => ({ ...current, [field.id]: event.target.value }))
+                }
+                required={field.required}
+                value={values[field.id] ?? ""}
+              >
+                <option value="">Choose an option</option>
+                {(field.options ?? []).map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            ) : field.type === "textarea" ? (
               <textarea
                 className={cn(commonClasses, "mt-1 min-h-24 resize-none")}
                 onChange={(event) =>

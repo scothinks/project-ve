@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   const issues: ValidationIssue[] = [];
   const lessonId = getStringField(bodyResult.data, "lessonId", issues);
   const pageId = getStringField(bodyResult.data, "pageId", issues);
+  const programmeId = getStringField(bodyResult.data, "programmeId", issues, { required: false });
 
   if (issues.length > 0 || !lessonId || !pageId) {
     return validationErrorResponse(issues);
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
       userId: user.id,
       lesson,
       pageId: page.id,
+      programmeId,
     });
 
     return NextResponse.json({

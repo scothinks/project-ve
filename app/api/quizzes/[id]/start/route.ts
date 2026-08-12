@@ -24,6 +24,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const issues: ValidationIssue[] = [];
   const lessonId = getStringField(bodyResult.data, "lessonId", issues);
+  const programmeId = getStringField(bodyResult.data, "programmeId", issues, { required: false });
 
   if (issues.length > 0 || !lessonId) {
     return validationErrorResponse(issues);
@@ -65,6 +66,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       userId: user.id,
       lessonId,
       quizId: id,
+      programmeId,
     });
     const status = result.status === "blocked" ? 403 : 200;
 
