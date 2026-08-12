@@ -3827,6 +3827,25 @@ npm run test:remediation:local
 
 Result: `npm run test:remediation:local` passed, including clean migration replay, generated type drift check, 23-file/509-test pgTAP suite, repository contracts, quiz XP concurrency, economic integrity and 9/9 Playwright E2E flows. P1.5B is ready for acceptance review and P1.5C kickoff.
 
+Final narrow P1.5B closure pass completed on 2026-08-12 after the final closure review:
+
+* confirmation and resend-confirmation callbacks now share `buildConfirmedLoginPath`, preserving safe `next` and contextual `ref`/`refKind` parameters consistently;
+* the organisation mission browser acceptance fixture now covers a proof-submission programme mission from learner submission, pending review copy, organisation proof queue approval and the learner's approved mission success state while remaining in Org Mode;
+* the proof mission fixture uses the supported `organization_mission_type_entitlements` model before seeding a `proof_submission` mission.
+
+Final narrow P1.5B closure validation completed on 2026-08-12:
+
+```bash
+npm run typecheck
+npm run lint
+npm run test:unit
+npm run build
+npm run test:db
+npm run test:e2e
+```
+
+Result: typecheck, lint, unit tests, build, the 23-file/509-test pgTAP database suite and 9/9 Playwright E2E flows passed. P1.5B is formally closed; P1.5C is authorized.
+
 Then stop for review.
 
 ## Batch P1.5C

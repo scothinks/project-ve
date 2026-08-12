@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildConfirmedLoginPath } from "@/lib/auth-confirmation";
 import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { normalizeEmailInput, sanitizePlainTextInput } from "@/lib/input-safety";
 import { normalizeReferralInviteKind, normalizeReferralInviteToken } from "@/lib/referral-invites";
@@ -94,17 +95,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: attemptError.message }, { status: 400 });
   }
 
-  const confirmedLoginParams = new URLSearchParams({
-    confirmed: "1",
-    next: nextPath,
+  const confirmedLoginPath = buildConfirmedLoginPath({
+    nextPath,
+    referralCode,
+    referralKind,
   });
-
-  if (referralCode) {
-    confirmedLoginParams.set("ref", referralCode);
-    if (referralKind === "contextual") {
-      confirmedLoginParams.set("refKind", "contextual");
-    }
-  }
 
   const { data, error } = await serverSupabase.auth.signUp({
     email,
@@ -112,7 +107,7 @@ export async function POST(request: NextRequest) {
     options: {
       captchaToken: captchaToken ?? undefined,
       emailRedirectTo: `${request.nextUrl.origin}/auth/callback?next=${encodeURIComponent(
-        `/login?${confirmedLoginParams.toString()}`,
+        confirmedLoginPath,
       )}`,
       data: {
         display_name: fullName,

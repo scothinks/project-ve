@@ -12,6 +12,7 @@ const pageId = `e2e-org-mission-page-${runId}`;
 const programmeId = randomUUID();
 const orgWideMissionId = `e2e-org-wide-mission-${runId}`;
 const programmeMissionId = `e2e-programme-mission-${runId}`;
+const proofMissionId = `e2e-proof-mission-${runId}`;
 const catalogueMissionId = `e2e-catalogue-mission-${runId}`;
 const automaticToken = `e2eauto${runId}token`;
 const manualToken = `e2emanual${runId}token`;
@@ -93,10 +94,10 @@ async function clearBrowserState(page: Page) {
 async function cleanupFixture() {
   await supabase.from("contextual_referral_tokens").delete().in("token", [automaticToken, manualToken]);
   await supabase.from("referral_attributions").delete().in("referral_code", [automaticToken, manualToken]);
-  await supabase.from("mission_awards").delete().in("mission_id", [orgWideMissionId, programmeMissionId, catalogueMissionId]);
-  await supabase.from("mission_proofs").delete().in("mission_id", [orgWideMissionId, programmeMissionId, catalogueMissionId]);
+  await supabase.from("mission_awards").delete().in("mission_id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
+  await supabase.from("mission_proofs").delete().in("mission_id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
   await supabase.from("programme_missions").delete().eq("programme_id", programmeId);
-  await supabase.from("missions").delete().in("id", [orgWideMissionId, programmeMissionId, catalogueMissionId]);
+  await supabase.from("missions").delete().in("id", [orgWideMissionId, programmeMissionId, proofMissionId, catalogueMissionId]);
   await supabase.from("enrolments").delete().eq("organization_id", organizationId || "00000000-0000-0000-0000-000000000000");
   await supabase.from("programme_courses").delete().eq("programme_id", programmeId);
   await supabase.from("programmes").delete().eq("id", programmeId);
@@ -145,6 +146,16 @@ async function seedFixture() {
       assigned_by: manager.id,
     }),
     "assign organization plan",
+  );
+
+  await assertNoError(
+    await supabase.from("organization_mission_type_entitlements").insert({
+      organization_id: organizationId,
+      mission_type_key: "proof_submission",
+      status: "published",
+      created_by: manager.id,
+    }),
+    "entitle proof mission type",
   );
 
   await assertNoError(
@@ -322,23 +333,67 @@ async function seedFixture() {
         delivery_scope: "catalog_only",
         presentation_config: {},
       },
+      {
+        id: proofMissionId,
+        title: `Submit Officer Reflection ${runId}`,
+        description: "Submit a reflection for organisation review.",
+        category: "feedback",
+        reward_type: "xp",
+        reward_xp: 12,
+        repeatability: "once",
+        validation_type: "proof_upload",
+        validation_config: {
+          requiredFields: ["text"],
+          requirementMode: "all",
+          requiresManualReview: true,
+        },
+        status: "published",
+        sort_order: -7_997,
+        catalog_scope: "organization_private",
+        organization_id: organizationId,
+        mission_type_key: "proof_submission",
+        reward_mode: "organization_xp",
+        delivery_scope: "catalog_only",
+        presentation_config: {
+          title: `Submit Officer Reflection ${runId}`,
+          ctaLabel: "Submit evidence",
+          pendingMessage: "Evidence submitted for review",
+          successMessage: "Evidence approved",
+          rejectionMessage: "Evidence needs attention",
+        },
+      },
     ]),
     "seed missions",
   );
 
   await assertNoError(
-    await supabase.from("programme_missions").insert({
-      programme_id: programmeId,
-      mission_id: programmeMissionId,
-      sort_order: 1,
-      is_required: true,
-      presentation_overrides: {
-        title: `Programme override mission copy ${runId}`,
-        ctaLabel: "Start programme mission",
-        successMessage: "Programme proof accepted",
+    await supabase.from("programme_missions").insert([
+      {
+        programme_id: programmeId,
+        mission_id: programmeMissionId,
+        sort_order: 1,
+        is_required: true,
+        presentation_overrides: {
+          title: `Programme override mission copy ${runId}`,
+          ctaLabel: "Start programme mission",
+          successMessage: "Programme course accepted",
+        },
       },
-    }),
-    "attach mission to programme",
+      {
+        programme_id: programmeId,
+        mission_id: proofMissionId,
+        sort_order: 2,
+        is_required: false,
+        presentation_overrides: {
+          title: `Submit Officer Reflection ${runId}`,
+          ctaLabel: "Submit evidence",
+          pendingMessage: "Evidence submitted for review",
+          successMessage: "Evidence approved",
+          rejectionMessage: "Evidence needs attention",
+        },
+      },
+    ]),
+    "attach missions to programme",
   );
 
   await assertNoError(
@@ -392,6 +447,7 @@ test.describe.serial("organization mission browser acceptance", () => {
   });
 
   test("renders organisation-wide, programme, and manual referral mission journeys", async ({ page }) => {
+    test.setTimeout(90_000);
     await signIn(page, orgLearnerEmail, `/o/${orgSlug}/missions`);
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/missions$`));
     await expect(page.getByText(`Org-wide mission copy ${runId}`)).toHaveCount(0);
@@ -426,6 +482,32 @@ test.describe.serial("organization mission browser acceptance", () => {
       "href",
       `/o/${orgSlug}/learn`,
     );
+    await expect(page.getByText(`Submit Officer Reflection ${runId}`)).toBeVisible();
+    await page.getByRole("button", { name: "Submit evidence" }).click();
+    await page.getByPlaceholder("Describe what you did").fill(`Officer reflection proof ${runId}`);
+    await page.getByRole("button", { name: "Submit Written note" }).click();
+    await expect(page.getByText("Written note submitted.")).toBeVisible();
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.getByText("Evidence submitted for review")).toBeVisible();
+
+    await clearBrowserState(page);
+    await signIn(page, managerEmail, "/admin/proofs");
+    await expect(page.getByRole("heading", { level: 1, name: "Proof review" })).toBeVisible();
+    await expect(page.getByText(`Submit Officer Reflection ${runId}`)).toBeVisible();
+    await expect(page.getByText(`Officer reflection proof ${runId}`)).toBeVisible();
+    await page.getByRole("button", { name: "Approve" }).click();
+    await expect(page.getByText("Proof approved.")).toBeVisible();
+
+    await clearBrowserState(page);
+    await signIn(
+      page,
+      autoLearnerEmail,
+      `/login?next=${encodeURIComponent(`/o/${orgSlug}/learn`)}&ref=${automaticToken}&refKind=contextual`,
+    );
+    await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/learn$`));
+    await page.goto(`/o/${orgSlug}/missions`);
+    await expect(page.getByText(`Submit Officer Reflection ${runId}`)).toBeVisible();
+    await expect(page.getByText("Evidence approved")).toBeVisible();
 
     await clearBrowserState(page);
     await signIn(
