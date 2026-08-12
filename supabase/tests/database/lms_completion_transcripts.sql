@@ -689,7 +689,7 @@ values (
   'lms-completion-mission-award',
   '{}'::jsonb
 )
-on conflict (user_id, award_scope) where direction = 'earn' and award_scope is not null do update
+on conflict (user_id, xp_account_id, award_scope) where direction = 'earn' and award_scope is not null do update
   set amount = excluded.amount
 returning id as completion_xp_transaction_id
 \gset

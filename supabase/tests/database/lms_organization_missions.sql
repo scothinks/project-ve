@@ -451,6 +451,22 @@ on conflict (programme_id, course_id) do update
   set sort_order = excluded.sort_order,
       requirement = excluded.requirement;
 
+insert into public.enrolments (
+  organization_id,
+  user_id,
+  programme_id,
+  assignment_source,
+  status
+)
+values (
+  :'p15b_alpha_org_id'::uuid,
+  :'TEST_LEARNER_USER_ID'::uuid,
+  '88888888-8888-4888-8888-888888888811'::uuid,
+  'manual',
+  'active'
+)
+on conflict do nothing;
+
 reset role;
 
 select extensions.is(

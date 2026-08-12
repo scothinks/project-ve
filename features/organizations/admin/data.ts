@@ -62,6 +62,64 @@ export type AdminOrganizationEntitlementOverrideRow = {
   starts_at: string;
 };
 
+export type AdminOrganizationXpAccountOverview = {
+  account: {
+    displayFormat: string;
+    icon: string;
+    id: string;
+    name: string;
+    pluralName: string;
+    shortLabel: string;
+    status: Database["public"]["Enums"]["xp_account_status"];
+  };
+  circulation: number;
+  issuance: number;
+  redemptions: number;
+  adjustments: number;
+  controls: {
+    accountingValuePerUnit: number;
+    exposureHardThreshold: number | null;
+    exposureWarningThreshold: number | null;
+    fundedRewardBudget: number | null;
+    issuanceCapPerPeriod: number;
+    issuanceCapPerUser: number;
+    issuancePeriodDays: number;
+    periodIssued: number;
+    periodRemaining: number;
+  };
+  exposure: {
+    estimatedUnredeemedLiability: number;
+    hardBlocked: boolean;
+    warning: boolean;
+  };
+  programmeIssuance: Array<{
+    issued: number;
+    programmeId: string;
+    programmeName: string;
+  }>;
+  rewards: Array<{
+    costXp: number;
+    id: string;
+    isEnabled: boolean;
+    status: string;
+    title: string;
+  }>;
+  userIssuance: Array<{
+    displayName: string;
+    issued: number;
+    userId: string;
+  }>;
+  transactions: Array<{
+    amount: number;
+    createdAt: string;
+    direction: string;
+    id: string;
+    sourceId: string | null;
+    sourceType: string;
+    userId: string;
+  }>;
+};
+
 export type AdminOrganizationMembershipRow = {
   id: string;
   organization_id: string;
@@ -313,6 +371,21 @@ export async function getAdminOrganizationEntitlementOverrides(
   }
 
   return (data ?? []) as AdminOrganizationEntitlementOverrideRow[];
+}
+
+export async function getAdminOrganizationXpAccountOverview(
+  supabase: SupabaseClient<Database>,
+  organizationId: string,
+): Promise<AdminOrganizationXpAccountOverview> {
+  const { data, error } = await supabase.rpc("admin_get_xp_account_overview", {
+    p_organization_id: organizationId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data as unknown as AdminOrganizationXpAccountOverview;
 }
 
 export async function getAdminOrganizationMemberships(

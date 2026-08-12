@@ -67,7 +67,8 @@ export type OrganizationLearnerWorkspaceContext = {
   type: "organization";
   xpAccount: {
     balance: number;
-    label: "Organisation points";
+    id: string;
+    label: string;
     type: "organization";
   };
 };
@@ -271,7 +272,7 @@ export async function resolveOrganizationLearnerWorkspace(
   if (canEnterError) throw canEnterError;
   if (!canEnter) return null;
 
-  const [membershipsResult, enrolmentsResult] = await Promise.all([
+  const [membershipsResult, enrolmentsResult, xpAccountResult] = await Promise.all([
     supabase
       .from("organization_memberships")
       .select("role")
@@ -284,10 +285,29 @@ export async function resolveOrganizationLearnerWorkspace(
       .eq("organization_id", organization.id)
       .eq("user_id", userId)
       .in("status", ["active", "completed"]),
+    supabase
+      .from("xp_accounts")
+      .select("id, display_name_plural, short_label, display_format")
+      .eq("organization_id", organization.id)
+      .eq("scope", "organization")
+      .eq("is_default", true)
+      .eq("status", "active")
+      .maybeSingle(),
   ]);
 
   if (membershipsResult.error) throw membershipsResult.error;
   if (enrolmentsResult.error) throw enrolmentsResult.error;
+  if (xpAccountResult.error) throw xpAccountResult.error;
+  if (!xpAccountResult.data) return null;
+
+  const { data: xpBalance, error: xpBalanceError } = await supabase
+    .from("user_xp_balances")
+    .select("balance_cached")
+    .eq("user_id", userId)
+    .eq("xp_account_id", xpAccountResult.data.id)
+    .maybeSingle();
+
+  if (xpBalanceError) throw xpBalanceError;
 
   const roles = unique(
     ((membershipsResult.data ?? []) as MembershipRow[]).map((membership) => membership.role),
@@ -320,8 +340,11 @@ export async function resolveOrganizationLearnerWorkspace(
     programmeIds,
     type: "organization",
     xpAccount: {
-      balance: profile?.xp_balance_cached ?? 0,
-      label: "Organisation points",
+      balance: xpBalance?.balance_cached ?? 0,
+      id: xpAccountResult.data.id,
+      label: xpAccountResult.data.display_format === "amount_short_label"
+        ? xpAccountResult.data.short_label
+        : xpAccountResult.data.display_name_plural,
       type: "organization",
     },
   };

@@ -76,6 +76,7 @@ export {
   getAdminOrganizationContexts,
   getAdminOrganizationPlanAssignments,
   getAdminOrganizationPlans,
+  getAdminOrganizationXpAccountOverview,
   type AdminOrganizationEntitlementOverrideRow,
   type AdminOrganizationInvitationRow,
   type AdminOrganizationMembershipRow,
@@ -83,6 +84,7 @@ export {
   type AdminOrganizationContext,
   type AdminOrganizationPlanAssignmentRow,
   type AdminOrganizationPlanRow,
+  type AdminOrganizationXpAccountOverview,
 } from "@/features/organizations/admin/data";
 
 export {
