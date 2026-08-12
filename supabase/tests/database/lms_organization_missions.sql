@@ -2039,22 +2039,22 @@ set local role anon;
 select extensions.ok(
   has_function_privilege(
     'authenticated',
-    'public.admin_create_organization_mission(uuid, text, text, text, public.mission_category, integer, public.mission_repeatability, text, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer)',
+    'public.admin_create_organization_mission(uuid, text, text, text, public.mission_category, integer, public.mission_repeatability, text, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer, text)',
     'execute'
   )
   and not has_function_privilege(
     'anon',
-    'public.admin_create_organization_mission(uuid, text, text, text, public.mission_category, integer, public.mission_repeatability, text, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer)',
+    'public.admin_create_organization_mission(uuid, text, text, text, public.mission_category, integer, public.mission_repeatability, text, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer, text)',
     'execute'
   )
   and has_function_privilege(
     'authenticated',
-    'public.admin_update_organization_mission(text, text, text, public.mission_category, integer, public.mission_repeatability, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer)',
+    'public.admin_update_organization_mission(text, text, text, public.mission_category, integer, public.mission_repeatability, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer, text)',
     'execute'
   )
   and not has_function_privilege(
     'anon',
-    'public.admin_update_organization_mission(text, text, text, public.mission_category, integer, public.mission_repeatability, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer)',
+    'public.admin_update_organization_mission(text, text, text, public.mission_category, integer, public.mission_repeatability, public.mission_validation_type, jsonb, jsonb, timestamp with time zone, timestamp with time zone, public.content_status, integer, text)',
     'execute'
   )
   and has_function_privilege(

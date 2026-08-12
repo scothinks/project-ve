@@ -30,6 +30,7 @@ type MissionEditorValue = {
   endsAt: string;
   sortOrder: number;
   status: string;
+  deliveryScope?: "catalog_only" | "organization" | "programme";
 };
 
 type MissionEditorFormProps = {
@@ -40,6 +41,7 @@ type MissionEditorFormProps = {
   mission: MissionEditorValue;
   presentationConfig?: Record<string, unknown>;
   showPresentationConfig?: boolean;
+  showDeliveryScope?: boolean;
   courses: AdminCourseRow[];
   lessons: AdminLessonRow[];
   rewardCandidates: AdminRewardCandidateRow[];
@@ -91,6 +93,7 @@ export function MissionEditorForm({
   mission,
   presentationConfig,
   showPresentationConfig = false,
+  showDeliveryScope = false,
   courses,
   lessons,
   rewardCandidates,
@@ -352,15 +355,52 @@ export function MissionEditorForm({
         <summary className={sectionSummaryClasses()}>
           <h2 className="text-sm font-black">Availability</h2>
         </summary>
-        <div className="mt-4 grid gap-4 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Starts</span>
-            <input className={fieldClasses()} defaultValue={mission.startsAt} name="startsAt" type="datetime-local" />
-          </label>
-          <label>
-            <span className={labelClasses()}>Ends</span>
-            <input className={fieldClasses()} defaultValue={mission.endsAt} name="endsAt" type="datetime-local" />
-          </label>
+        <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <label>
+              <span className={labelClasses()}>Starts</span>
+              <input className={fieldClasses()} defaultValue={mission.startsAt} name="startsAt" type="datetime-local" />
+            </label>
+            <label>
+              <span className={labelClasses()}>Ends</span>
+              <input className={fieldClasses()} defaultValue={mission.endsAt} name="endsAt" type="datetime-local" />
+            </label>
+          </div>
+          {showDeliveryScope ? (
+            <div>
+              <p className={labelClasses()}>Delivery</p>
+              <div className="mt-2 grid gap-3 md:grid-cols-2">
+                <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-bold">
+                  <input
+                    defaultChecked={(mission.deliveryScope ?? "catalog_only") !== "organization"}
+                    name="deliveryScope"
+                    type="radio"
+                    value="catalog_only"
+                  />
+                  <span>
+                    <span className="block font-black">Catalogue only</span>
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                      Available for programme attachment without direct learner delivery.
+                    </span>
+                  </span>
+                </label>
+                <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-bold">
+                  <input
+                    defaultChecked={mission.deliveryScope === "organization"}
+                    name="deliveryScope"
+                    type="radio"
+                    value="organization"
+                  />
+                  <span>
+                    <span className="block font-black">All organisation learners</span>
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                      Show this mission to active learners in the organisation.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          ) : null}
         </div>
       </details>
 

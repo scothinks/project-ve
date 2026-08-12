@@ -37,6 +37,12 @@ function parsePositiveInteger(value: FormDataEntryValue | null, fallback = 1) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function parseOrganizationMissionDeliveryScope(value: FormDataEntryValue | null) {
+  const scope = sanitizePlainTextInput(String(value ?? "catalog_only"), 32);
+
+  return scope === "organization" ? "organization" : "catalog_only";
+}
+
 function slugifyMissionTitle(title: string) {
   const slug = title
     .toLowerCase()
@@ -287,9 +293,11 @@ export async function updateOrganizationMission(
 
   const payload = parseMissionPayload(formData);
   const presentationConfig = parsePresentationConfig(formData);
+  const deliveryScope = parseOrganizationMissionDeliveryScope(formData.get("deliveryScope"));
 
   const { error } = await context.supabase.rpc("admin_update_organization_mission", {
     p_category: payload.category,
+    p_delivery_scope: deliveryScope,
     p_description: payload.description,
     p_ends_at: payload.endsAt,
     p_mission_id: payload.missionId,
@@ -333,9 +341,11 @@ export async function createOrganizationMission(
   const missionId = await getUniqueMissionId(context.supabase, title);
   const payload = parseMissionPayload(formData, missionId);
   const presentationConfig = parsePresentationConfig(formData);
+  const deliveryScope = parseOrganizationMissionDeliveryScope(formData.get("deliveryScope"));
 
   const { error } = await context.supabase.rpc("admin_create_organization_mission", {
     p_category: payload.category,
+    p_delivery_scope: deliveryScope,
     p_description: payload.description,
     p_ends_at: payload.endsAt,
     p_mission_id: payload.missionId,

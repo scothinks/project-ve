@@ -6406,6 +6406,7 @@ export type Database = {
       admin_create_organization_mission: {
         Args: {
           p_category: Database["public"]["Enums"]["mission_category"]
+          p_delivery_scope?: string
           p_description: string
           p_ends_at?: string
           p_mission_id: string
@@ -6818,6 +6819,7 @@ export type Database = {
       admin_update_organization_mission: {
         Args: {
           p_category: Database["public"]["Enums"]["mission_category"]
+          p_delivery_scope?: string
           p_description: string
           p_ends_at?: string
           p_mission_id: string
