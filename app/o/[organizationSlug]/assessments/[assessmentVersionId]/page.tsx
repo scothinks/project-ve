@@ -83,6 +83,7 @@ export default async function OrganizationAssessmentPage({
           ]}
           introCopy={programmeAssessment.introduction_copy || assessment.introductionCopy || assessment.description}
           preferredName={profile.display_name ?? null}
+          unitLabel={workspace.xpAccount.label}
         />
       </section>
       <BottomNav active="Lesson" />

@@ -4220,7 +4220,20 @@ P15-ASMT-003
 P15-ASMT-004
 ```
 
-P1.5D closed on 2026-08-12 after P15-ASMT-001 through P15-ASMT-004 validation. Stop for review before P1.5E.
+P1.5D closed on 2026-08-12 after P15-ASMT-001 through P15-ASMT-004 validation, then received a focused closure pass on 2026-08-13 for the acceptance-review gaps.
+
+Focused closure:
+
+* `P15D-CLOSE-01`: assessment RLS now allows active/completed programme-only learners to read published organisation assessment versions only when the assessment is attached to one of their enrolled programmes; unpublished organisation assessment versions remain restricted to organisation programme managers and platform admins.
+* `P15D-CLOSE-02`: organisation-context assessment completion no longer mutates the public Project Ve profile XP compatibility balance, and Org Mode assessment reward copy uses the workspace XP account label.
+* `P15D-CLOSE-03`: successful Org Mode assessment completion redirects with programme and assessment context, and `/o/[organizationSlug]/learn` renders the programme-specific `completion_copy` only after a matching completed attempt exists.
+* `P15D-CLOSE-04`: organisation recommendation links no longer pick `workspace.courseDeliveryOptions[courseId][0]` for ambiguous shared-course deliveries; multi-delivery recommendations return to the organisation learn page for explicit learner choice, while single-delivery recommendations preserve their programme context.
+* `P15D-CLOSE-05`: the Enterprise assessment entitlement no longer advertises unrestricted `custom`; it is explicitly aligned to `template_adaptation` until managed Enterprise custom dimensions and scoring are implemented in a future Enterprise scope.
+* `P15D-CLOSE-06`: browser and pgTAP coverage now extends through programme-only assessment access, organisation XP/profile isolation, programme completion messaging, recommendation context preservation, and the public Values Starter Check regression.
+
+Result: local migration replay passed including `20260813090000_p15d_focused_closure.sql`; focused assessment capability pgTAP passed 26/26; full database pgTAP passed 31 files / 625 assertions; generated database type drift passed; typecheck passed; lint passed; unit tests passed 140/140; production build passed; focused browser coverage passed 9/9 across organisation missions and the remediation flows, including the programme-only organisation assessment and public-mode regression.
+
+Stop for review before P1.5E.
 
 ## Batch P1.5E
 

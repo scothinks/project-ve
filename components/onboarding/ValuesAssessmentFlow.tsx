@@ -36,6 +36,7 @@ type ValuesAssessmentFlowProps = {
   hiddenFields?: Array<{ name: string; value: string }>;
   introCopy?: string | null;
   preferredName?: string | null;
+  unitLabel?: string;
 };
 
 function FinishButton({ disabled }: { disabled: boolean }) {
@@ -56,6 +57,7 @@ export function ValuesAssessmentFlow({
   hiddenFields = [],
   introCopy,
   preferredName,
+  unitLabel = "XP",
 }: ValuesAssessmentFlowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -100,7 +102,7 @@ export function ValuesAssessmentFlow({
             About 2 minutes
           </span>
           <span className="rounded-full border border-[color:color-mix(in_srgb,var(--ve-green)_18%,var(--ve-line-soft))] px-3 py-1 text-xs font-semibold text-[var(--ve-green)]">
-            {assessment.xpAward} XP reward
+            {assessment.xpAward} {unitLabel} reward
           </span>
         </div>
         <h1 className="mt-4 text-[2rem] font-black tracking-[-0.04em] text-[var(--foreground)]">

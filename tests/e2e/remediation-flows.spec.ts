@@ -55,6 +55,11 @@ const institutionalQuizId = `e2e-institution-quiz-${runId}`;
 const institutionalQuestionId = `e2e-institution-question-${runId}`;
 const institutionalCorrectOptionId = `e2e-institution-option-correct-${runId}`;
 const institutionalWrongOptionId = `e2e-institution-option-wrong-${runId}`;
+const institutionalAssessmentVersionId = randomUUID();
+const institutionalAssessmentQuestionId = randomUUID();
+const institutionalAssessmentOptionOneId = randomUUID();
+const institutionalAssessmentOptionTwoId = randomUUID();
+const institutionalAssessmentTagId = randomUUID();
 const institutionalNotificationTitle = `E2E Institution Notice ${runId}`;
 const institutionalGlobalNotificationTitle = `E2E Global Notice ${runId}`;
 const institutionalRewardId = `e2e-institution-reward-${runId}`;
@@ -225,6 +230,11 @@ async function cleanupFixture() {
     await supabase.from("enrolments").delete().in("programme_id", institutionalProgrammeIds);
   }
   await supabase.from("course_assignments").delete().eq("course_id", institutionalCourseId);
+  await supabase.from("content_value_tags").delete().eq("id", institutionalAssessmentTagId);
+  await supabase.from("programme_assessments").delete().eq("assessment_version_id", institutionalAssessmentVersionId);
+  await supabase.from("user_value_profiles").delete().eq("assessment_version_id", institutionalAssessmentVersionId);
+  await supabase.from("user_assessment_attempts").delete().eq("assessment_version_id", institutionalAssessmentVersionId);
+  await supabase.from("assessment_versions").delete().eq("id", institutionalAssessmentVersionId);
   if (institutionalProgrammeIds.length > 0) {
     await supabase
       .from("programme_assignments")
@@ -563,7 +573,7 @@ async function seedUsers() {
 
   await assertNoError(
     await supabase.from("user_value_profiles").upsert(
-      [learner, programmeManager, reportViewer, institutionalLearner, programmeOnlyLearner, outsider, selfServiceOwner]
+      [learner, programmeManager, reportViewer, institutionalLearner, outsider, selfServiceOwner]
         .filter((user): user is User => Boolean(user))
         .map((user) => ({
           user_id: user.id,
@@ -768,12 +778,28 @@ async function seedInstitutionalContent(organizationId: string) {
   );
 }
 
-async function signIn(page: Page, email: string) {
+async function signIn(page: Page, email: string, expectedUrl: RegExp = /\/dashboard$/) {
   await page.goto("/login");
   await page.getByPlaceholder("Enter Email Address").fill(email);
   await page.getByPlaceholder("Enter Password").fill(authCredential);
   await page.getByRole("button", { name: "Login" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(expectedUrl);
+}
+
+async function completeCurrentValuesAssessment(page: Page) {
+  for (let step = 0; step < 10; step += 1) {
+    await page.locator("button[aria-pressed]").first().click();
+    const finishButton = page.getByRole("button", { name: "Finish", exact: true });
+
+    if (await finishButton.isVisible().catch(() => false)) {
+      await finishButton.click();
+      return;
+    }
+
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+  }
+
+  throw new Error("Assessment did not reach the finish step.");
 }
 
 async function saveOrganizationMembershipThroughUi(
@@ -1675,6 +1701,19 @@ test.describe.serial("remediation browser flows", () => {
     ) as { id: string } | null;
     expect(organization?.id).toBeTruthy();
 
+    await assertNoError(
+      await supabase
+        .from("organization_plan_assignments")
+        .update({
+          plan_key: "professional",
+          billing_status: "trial",
+          assigned_by: admin.id,
+        })
+        .eq("organization_id", organization?.id ?? "")
+        .is("ended_at", null),
+      "assign Professional plan to institutional organization",
+    );
+
     await saveOrganizationMembershipThroughUi(page, programmeManager, "programme_manager", "Programme manager");
     await saveOrganizationMembershipThroughUi(page, reportViewer, "report_viewer", "Report viewer");
     await saveOrganizationMembershipThroughUi(page, institutionalLearner, "learner", "Learner");
@@ -1788,6 +1827,113 @@ test.describe.serial("remediation browser flows", () => {
       }),
       "seed shared course in second institutional programme",
     );
+    const valueDimension = await assertNoError(
+      await supabase
+        .from("value_dimensions")
+        .select("id")
+        .eq("status", "active")
+        .order("sort_order", { ascending: true })
+        .limit(1)
+        .single(),
+      "load assessment value dimension",
+    ) as { id: string };
+
+    await assertNoError(
+      await supabase.from("assessment_versions").insert({
+        id: institutionalAssessmentVersionId,
+        slug: `e2e-institution-assessment-${runId}`,
+        title: `E2E Institution Assessment ${runId}`,
+        description: "Organisation-owned assessment for programme-only learner coverage.",
+        status: "draft",
+        xp_award: 20,
+        owner_scope: "organization",
+        organization_id: organization?.id ?? "",
+        version_number: 1,
+        introduction_copy: `Police assessment introduction ${runId}`,
+        completion_copy: `Police assessment complete ${runId}`,
+        scoring_config: {},
+      }),
+      "seed organisation-owned assessment version",
+    );
+    await assertNoError(
+      await supabase.from("assessment_questions").insert({
+        id: institutionalAssessmentQuestionId,
+        assessment_version_id: institutionalAssessmentVersionId,
+        prompt: `How should a learner handle a police ethics scenario ${runId}?`,
+        helper_text: "Choose the closest response.",
+        question_type: "single_select",
+        sort_order: 1,
+      }),
+      "seed organisation-owned assessment question",
+    );
+    await assertNoError(
+      await supabase.from("assessment_question_options").insert([
+        {
+          id: institutionalAssessmentOptionOneId,
+          question_id: institutionalAssessmentQuestionId,
+          label: "Pause, ask for guidance, and document the decision.",
+          description: "The learner keeps the decision inside the organisation process.",
+          sort_order: 1,
+        },
+        {
+          id: institutionalAssessmentOptionTwoId,
+          question_id: institutionalAssessmentQuestionId,
+          label: "Act alone without checking the policy.",
+          description: "The learner skips the support process.",
+          sort_order: 2,
+        },
+      ]),
+      "seed organisation-owned assessment options",
+    );
+    await assertNoError(
+      await supabase.from("assessment_option_dimension_weights").insert([
+        {
+          option_id: institutionalAssessmentOptionOneId,
+          dimension_id: valueDimension.id,
+          weight: 1,
+        },
+        {
+          option_id: institutionalAssessmentOptionTwoId,
+          dimension_id: valueDimension.id,
+          weight: 0.1,
+        },
+      ]),
+      "seed organisation-owned assessment weights",
+    );
+    await assertNoError(
+      await supabase
+        .from("assessment_versions")
+        .update({
+          status: "published",
+          published_at: new Date().toISOString(),
+        })
+        .eq("id", institutionalAssessmentVersionId),
+      "publish organisation-owned assessment fixture",
+    );
+    await assertNoError(
+      await supabase.from("programme_assessments").insert({
+        programme_id: secondProgramme.id,
+        assessment_version_id: institutionalAssessmentVersionId,
+        sort_order: 1,
+        is_required: true,
+        introduction_copy: `Police programme assessment intro ${runId}`,
+        completion_copy: `Police programme assessment completion ${runId}`,
+        xp_account_id: institutionalAccount?.id ?? "",
+      }),
+      "attach organisation-owned assessment to programme-only delivery",
+    );
+    await assertNoError(
+      await supabase.from("content_value_tags").insert({
+        id: institutionalAssessmentTagId,
+        content_type: "course",
+        content_id: institutionalCourseId,
+        dimension_id: valueDimension.id,
+        weight: 1,
+        recommended_level: "beginner",
+        outcome_type: "assessment",
+      }),
+      "seed organisation recommendation value tag",
+    );
     await assertNoError(
       await supabase.from("enrolments").insert([
         {
@@ -1807,6 +1953,15 @@ test.describe.serial("remediation browser flows", () => {
           status: "active",
           xp_account_id: institutionalAccount?.id ?? "",
           metadata: { programmeId: secondProgramme.id },
+        },
+        {
+          organization_id: organization?.id ?? "",
+          user_id: programmeOnlyLearner.id,
+          programme_id: programme?.id ?? "",
+          assignment_source: "manual",
+          status: "active",
+          xp_account_id: institutionalAccount?.id ?? "",
+          metadata: {},
         },
         {
           organization_id: organization?.id ?? "",
@@ -1963,6 +2118,98 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("Submitted for processing.")).toBeVisible();
 
     await page.context().clearCookies();
+    await signIn(page, programmeOnlyLearnerEmail, /\/onboarding\/assessment$/);
+    await page.goto(`/o/${institutionalOrgSlug}/learn`);
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn$`));
+    await expect(page.getByText(`Police programme assessment intro ${runId}`)).toBeVisible();
+    const programmeOnlyAssessmentCard = page.locator("div").filter({ hasText: `Police programme assessment intro ${runId}` }).first();
+    await programmeOnlyAssessmentCard.getByRole("link", { name: "Start" }).click();
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/assessments/${institutionalAssessmentVersionId}\\?programmeId=${secondProgramme.id}$`));
+    await expect(page.getByRole("heading", { name: `E2E Institution Assessment ${runId}` })).toBeVisible();
+    await expect(page.getByText("20 Police Points reward")).toBeVisible();
+    await expect(page.getByText("20 XP reward")).toHaveCount(0);
+    await completeCurrentValuesAssessment(page);
+    await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn\\?assessment=completed&programmeId=${secondProgramme.id}&assessmentVersionId=${institutionalAssessmentVersionId}$`));
+    await expect(page.getByText(`Police programme assessment completion ${runId}`)).toBeVisible();
+
+    const programmeOnlyOrgProfile = await assertNoError(
+      await supabase
+        .from("user_value_profiles")
+        .select("latest_attempt_id, assessment_version_id")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("context_scope", "organization")
+        .eq("organization_id", organization?.id ?? "")
+        .maybeSingle(),
+      "load programme-only organisation assessment profile",
+    ) as { latest_attempt_id: string | null; assessment_version_id: string | null } | null;
+    expect(programmeOnlyOrgProfile?.assessment_version_id).toBe(institutionalAssessmentVersionId);
+    const programmeOnlyPublicProfileBefore = await assertNoError(
+      await supabase
+        .from("user_value_profiles")
+        .select("latest_attempt_id")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("context_scope", "platform")
+        .is("organization_id", null)
+        .maybeSingle(),
+      "load absent programme-only public profile before starter check",
+    ) as { latest_attempt_id: string | null } | null;
+    expect(programmeOnlyPublicProfileBefore).toBeNull();
+    const programmeOnlyPoliceBalance = await assertNoError(
+      await supabase
+        .from("user_xp_balances")
+        .select("balance_cached")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("xp_account_id", institutionalAccount?.id ?? "")
+        .maybeSingle(),
+      "load programme-only assessment Police Points balance",
+    ) as { balance_cached: number } | null;
+    expect(programmeOnlyPoliceBalance?.balance_cached).toBe(20);
+    const programmeOnlyPublicXp = await assertNoError(
+      await supabase
+        .from("profiles")
+        .select("xp_balance_cached")
+        .eq("id", programmeOnlyLearner.id)
+        .maybeSingle(),
+      "load programme-only public XP after org assessment",
+    ) as { xp_balance_cached: number } | null;
+    expect(programmeOnlyPublicXp?.xp_balance_cached).toBe(0);
+
+    const recommendedSection = page.locator("section").filter({ hasText: "Recommended" }).first();
+    await expect(recommendedSection).toBeVisible();
+    const recommendedCourseCard = recommendedSection.locator("div").filter({ hasText: institutionalCourseTitle }).first();
+    await expect(recommendedCourseCard.getByRole("link", { name: "Open" }).first()).toHaveAttribute(
+      "href",
+      `/o/${institutionalOrgSlug}/learn`,
+    );
+
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
+    await completeCurrentValuesAssessment(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
+    const programmeOnlyPublicProfileAfter = await assertNoError(
+      await supabase
+        .from("user_value_profiles")
+        .select("latest_attempt_id")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("context_scope", "platform")
+        .is("organization_id", null)
+        .maybeSingle(),
+      "load programme-only public profile after starter check",
+    ) as { latest_attempt_id: string | null } | null;
+    expect(programmeOnlyPublicProfileAfter?.latest_attempt_id).toBeTruthy();
+    const programmeOnlyOrgProfileAfterPublic = await assertNoError(
+      await supabase
+        .from("user_value_profiles")
+        .select("latest_attempt_id")
+        .eq("user_id", programmeOnlyLearner.id)
+        .eq("context_scope", "organization")
+        .eq("organization_id", organization?.id ?? "")
+        .maybeSingle(),
+      "load programme-only organisation profile after public starter check",
+    ) as { latest_attempt_id: string | null } | null;
+    expect(programmeOnlyOrgProfileAfterPublic?.latest_attempt_id).toBe(programmeOnlyOrgProfile?.latest_attempt_id);
+
+    await page.context().clearCookies();
     await signIn(page, adminEmail);
     await page.goto("/admin/organizations");
     const adjustmentForm = page.locator("form").filter({ has: page.locator("select[name='targetUserId']") }).first();
@@ -1991,7 +2238,7 @@ test.describe.serial("remediation browser flows", () => {
         .maybeSingle(),
       "load programme-only learner adjusted balance",
     ) as { balance_cached: number } | null;
-    expect(programmeOnlyBalance?.balance_cached).toBe(2);
+    expect(programmeOnlyBalance?.balance_cached).toBe(22);
 
     await page.context().clearCookies();
     await signIn(page, reportViewerEmail);

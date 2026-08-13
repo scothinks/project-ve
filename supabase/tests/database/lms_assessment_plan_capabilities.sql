@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
 
-select extensions.plan(20);
+select extensions.plan(26);
 
 insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
@@ -55,6 +55,75 @@ values
 on conflict (organization_id, user_id, role) do update
   set status = excluded.status,
       invited_by = excluded.invited_by;
+
+insert into public.courses (
+  id,
+  slug,
+  title,
+  description,
+  intended_audience,
+  learning_outcomes,
+  category,
+  level,
+  status,
+  sort_order,
+  estimated_minutes,
+  catalog_scope
+)
+values (
+  'course-p15d-assessment-delivery',
+  'course-p15d-assessment-delivery',
+  'P15D Assessment Delivery Course',
+  'Programme course fixture for assessment delivery checks.',
+  'Programme learners',
+  array['Complete the assessment delivery fixture'],
+  'Values Education',
+  'beginner',
+  'published',
+  994,
+  5,
+  'platform'
+)
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status,
+      catalog_scope = excluded.catalog_scope;
+
+insert into public.courses (
+  id,
+  slug,
+  title,
+  description,
+  intended_audience,
+  learning_outcomes,
+  category,
+  level,
+  status,
+  sort_order,
+  estimated_minutes,
+  catalog_scope,
+  organization_id
+)
+values (
+  'course-p15d-assessment-delivery-private',
+  'course-p15d-assessment-delivery-private',
+  'P15D Private Assessment Delivery Course',
+  'Organisation-private programme course fixture for assessment delivery checks.',
+  'Programme learners',
+  array['Complete the private assessment delivery fixture'],
+  'Values Education',
+  'beginner',
+  'published',
+  995,
+  5,
+  'organization_private',
+  :'professional_org_id'::uuid
+)
+on conflict (id) do update
+  set title = excluded.title,
+      status = excluded.status,
+      catalog_scope = excluded.catalog_scope,
+      organization_id = excluded.organization_id;
 
 reset role;
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
@@ -366,6 +435,16 @@ select extensions.throws_ok(
   'Draft organisation assessment versions cannot be attached to programmes'
 );
 
+set local role service_role;
+
+update public.assessment_versions
+set xp_award = 20
+where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid;
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
 select public.admin_publish_organization_assessment_version(
   (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
 ) as professional_publish_result
@@ -379,6 +458,181 @@ select extensions.is(
   ),
   'published',
   'Professional can publish a ready organisation assessment version'
+);
+
+select public.admin_upsert_programme(
+  null,
+  :'professional_org_id'::uuid,
+  'Professional Assessment Delivery Programme',
+  'professional-assessment-delivery-programme',
+  'Professional programme attaches an organisation-owned assessment.',
+  'Programme-only learners',
+  'published',
+  null,
+  null,
+  '{}'::jsonb,
+  array['course-p15d-assessment-delivery-private']::text[],
+  '{}'::text[],
+  '{}'::text[],
+  array[(:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid]::uuid[]
+) as professional_programme_result
+\gset
+
+set local role service_role;
+
+select id as professional_org_xp_account_id
+from public.xp_accounts
+where organization_id = :'professional_org_id'::uuid
+  and scope = 'organization'
+  and is_default
+limit 1
+\gset
+
+insert into public.enrolments (
+  organization_id,
+  user_id,
+  programme_id,
+  assignment_source,
+  status,
+  xp_account_id
+)
+values (
+  :'professional_org_id'::uuid,
+  '99999999-9999-4999-8999-999999999904'::uuid,
+  (:'professional_programme_result'::jsonb ->> 'programmeId')::uuid,
+  'manual',
+  'active',
+  :'professional_org_xp_account_id'::uuid
+);
+
+insert into public.xp_transactions (
+  user_id,
+  xp_account_id,
+  amount,
+  direction,
+  source_type,
+  source_id,
+  award_scope
+)
+values (
+  '99999999-9999-4999-8999-999999999904'::uuid,
+  '00000000-0000-4000-8000-00000000e001'::uuid,
+  100,
+  'earn',
+  'adjustment',
+  'p15d-public-baseline',
+  'p15d-public-baseline'
+)
+on conflict do nothing;
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999999-9999-4999-8999-999999999904', true);
+set local role authenticated;
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.assessment_versions
+    where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+      and owner_scope = 'organization'
+      and status = 'published'
+  )
+  and exists (
+    select 1
+    from public.assessment_questions
+    where assessment_version_id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+  ),
+  'programme-only learners can read attached published organisation assessment content'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.programme_courses
+    where programme_id = (:'professional_programme_result'::jsonb ->> 'programmeId')::uuid
+      and course_id = 'course-p15d-assessment-delivery-private'
+  ),
+  'programme-only learners can read course links for enrolled programmes'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.courses
+    where id = 'course-p15d-assessment-delivery-private'
+      and catalog_scope = 'organization_private'
+      and organization_id = :'professional_org_id'::uuid
+  ),
+  'programme-only learners can read published organisation courses attached to enrolled programmes'
+);
+
+select public.complete_values_assessment(
+  (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid,
+  (
+    select jsonb_agg(
+      jsonb_build_object(
+        'question_id',
+        question.id,
+        'option_id',
+        (
+          select option.id
+          from public.assessment_question_options option
+          where option.question_id = question.id
+          order by option.sort_order
+          limit 1
+        )
+      )
+      order by question.sort_order
+    )
+    from public.assessment_questions question
+    where question.assessment_version_id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+  ),
+  (:'professional_programme_result'::jsonb ->> 'programmeId')::uuid
+) as professional_programme_attempt_result
+\gset
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.user_value_profiles
+    where user_id = '99999999-9999-4999-8999-999999999904'::uuid
+      and context_scope = 'organization'
+      and organization_id = :'professional_org_id'::uuid
+      and assessment_version_id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+  )
+  and not exists (
+    select 1
+    from public.user_value_profiles
+    where user_id = '99999999-9999-4999-8999-999999999904'::uuid
+      and context_scope = 'platform'
+      and organization_id is null
+  ),
+  'programme assessment completion writes organisation profile without creating public profile'
+);
+
+select extensions.ok(
+  (
+    select balance_cached = 20
+    from public.user_xp_balances
+    where user_id = '99999999-9999-4999-8999-999999999904'::uuid
+      and xp_account_id = :'professional_org_xp_account_id'::uuid
+  )
+  and (
+    select xp_balance_cached = 100
+    from public.profiles
+    where id = '99999999-9999-4999-8999-999999999904'::uuid
+  ),
+  'non-zero organisation assessment awards organisation points without mutating public XP compatibility balance'
+);
+
+select extensions.is(
+  (
+    select entitlements ->> 'assessment_capability'
+    from public.organization_plans
+    where key = 'enterprise'
+  ),
+  'template_adaptation',
+  'Enterprise assessment capability remains on implemented template adaptation until custom scoring is explicitly delivered'
 );
 
 set local role service_role;
