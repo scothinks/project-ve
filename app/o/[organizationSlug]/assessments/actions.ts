@@ -81,5 +81,7 @@ export async function submitOrganizationValuesAssessment(formData: FormData) {
 
   revalidatePath(`/o/${encodeURIComponent(organizationSlug)}/learn`);
   revalidatePath(`/o/${encodeURIComponent(organizationSlug)}/profile`);
-  redirect(`/o/${encodeURIComponent(organizationSlug)}/learn?assessment=completed`);
+  redirect(
+    `/o/${encodeURIComponent(organizationSlug)}/learn?assessment=completed&programmeId=${encodeURIComponent(programmeId)}&assessmentVersionId=${encodeURIComponent(assessmentVersionId)}`,
+  );
 }

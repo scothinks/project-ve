@@ -50,6 +50,14 @@ export type OrganizationLearnerAssessmentCheckpoint = {
   xpAward: number;
 };
 
+export type OrganizationLearnerAssessmentCompletionNotice = {
+  assessmentVersionId: string;
+  completionCopy: string;
+  programmeId: string;
+  programmeTitle: string;
+  title: string;
+} | null;
+
 export async function getOrganizationLearnerAssessmentCheckpoints({
   hrefBuilder,
   supabase,
@@ -140,4 +148,79 @@ export async function getOrganizationLearnerAssessmentCheckpoints({
       xpAward: assessment.xp_award,
     }];
   });
+}
+
+export async function getOrganizationLearnerAssessmentCompletionNotice({
+  assessmentVersionId,
+  programmeId,
+  supabase,
+  userId,
+  workspace,
+}: {
+  assessmentVersionId?: string | null;
+  programmeId?: string | null;
+  supabase: SupabaseClient<Database>;
+  userId: string;
+  workspace: OrganizationLearnerWorkspaceContext;
+}): Promise<OrganizationLearnerAssessmentCompletionNotice> {
+  if (!assessmentVersionId || !programmeId || !workspace.programmeIds.includes(programmeId)) {
+    return null;
+  }
+
+  const [programmeAssessmentResult, attemptResult] = await Promise.all([
+    supabase
+      .from("programme_assessments")
+      .select("programme_id, assessment_version_id, completion_copy")
+      .eq("programme_id", programmeId)
+      .eq("assessment_version_id", assessmentVersionId)
+      .maybeSingle(),
+    supabase
+      .from("user_assessment_attempts")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("organization_id", workspace.organizationId)
+      .eq("programme_id", programmeId)
+      .eq("assessment_version_id", assessmentVersionId)
+      .eq("status", "completed")
+      .not("completed_at", "is", null)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (programmeAssessmentResult.error) throw programmeAssessmentResult.error;
+  if (attemptResult.error) throw attemptResult.error;
+  if (!programmeAssessmentResult.data || !attemptResult.data) {
+    return null;
+  }
+
+  const [assessmentResult, programmeResult] = await Promise.all([
+    supabase
+      .from("assessment_versions")
+      .select("id, title")
+      .eq("id", assessmentVersionId)
+      .eq("status", "published")
+      .maybeSingle(),
+    supabase
+      .from("programmes")
+      .select("id, title")
+      .eq("id", programmeId)
+      .maybeSingle(),
+  ]);
+
+  if (assessmentResult.error) throw assessmentResult.error;
+  if (programmeResult.error) throw programmeResult.error;
+  if (!assessmentResult.data || !programmeResult.data) {
+    return null;
+  }
+
+  const completionCopy = programmeAssessmentResult.data.completion_copy?.trim()
+    || "Assessment completed. Your organisation recommendations have been updated.";
+
+  return {
+    assessmentVersionId,
+    completionCopy,
+    programmeId,
+    programmeTitle: programmeResult.data.title,
+    title: assessmentResult.data.title,
+  };
 }

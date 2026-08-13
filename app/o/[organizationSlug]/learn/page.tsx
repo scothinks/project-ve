@@ -4,7 +4,10 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getOrganizationLearnerAssessmentCheckpoints } from "@/features/assessments/learner/data";
+import {
+  getOrganizationLearnerAssessmentCheckpoints,
+  getOrganizationLearnerAssessmentCompletionNotice,
+} from "@/features/assessments/learner/data";
 import {
   appendOrganizationDeliverySearchParam,
   getOrganizationDeliveryKey,
@@ -18,14 +21,30 @@ import { orgHref, requireOrgLearnerRoute, type OrgRouteParams } from "@/app/o/[o
 
 export default async function OrganizationLearnPage({
   params,
+  searchParams,
 }: {
   params: OrgRouteParams;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { supabase, user, workspace } = await requireOrgLearnerRoute(params);
-  const [assessmentCheckpoints, courses, lessonProgress] = await Promise.all([
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const completedProgrammeId = Array.isArray(resolvedSearchParams.programmeId)
+    ? resolvedSearchParams.programmeId[0]
+    : resolvedSearchParams.programmeId;
+  const completedAssessmentVersionId = Array.isArray(resolvedSearchParams.assessmentVersionId)
+    ? resolvedSearchParams.assessmentVersionId[0]
+    : resolvedSearchParams.assessmentVersionId;
+  const [assessmentCheckpoints, assessmentCompletionNotice, courses, lessonProgress] = await Promise.all([
     getOrganizationLearnerAssessmentCheckpoints({
       hrefBuilder: ({ assessmentVersionId, programmeId }) =>
         `${orgHref(workspace, `/assessments/${assessmentVersionId}`)}?programmeId=${encodeURIComponent(programmeId)}`,
+      supabase,
+      userId: user.id,
+      workspace,
+    }),
+    getOrganizationLearnerAssessmentCompletionNotice({
+      assessmentVersionId: completedAssessmentVersionId,
+      programmeId: completedProgrammeId,
       supabase,
       userId: user.id,
       workspace,
@@ -59,13 +78,32 @@ export default async function OrganizationLearnPage({
       }),
     ),
   );
-  function getDefaultDelivery(courseId: string) {
-    return workspace.courseDeliveryOptions[courseId]?.[0] ?? null;
+  function getSingleDelivery(courseId: string) {
+    const options = workspace.courseDeliveryOptions[courseId] ?? [];
+    return options.length === 1 ? options[0] : null;
   }
 
   function getOrganizationCourseHref(courseId: string) {
     const href = orgHref(workspace, `/learn/${courseId}`);
-    const deliveryContext = getDefaultDelivery(courseId);
+    const options = workspace.courseDeliveryOptions[courseId] ?? [];
+
+    if (options.length > 1) {
+      return orgHref(workspace, "/learn");
+    }
+
+    const deliveryContext = getSingleDelivery(courseId);
+    return deliveryContext ? appendOrganizationDeliverySearchParam(href, deliveryContext) : href;
+  }
+
+  function getOrganizationLessonHref(lesson: { courseId: string; id: string }) {
+    const options = workspace.courseDeliveryOptions[lesson.courseId] ?? [];
+
+    if (options.length > 1) {
+      return orgHref(workspace, "/learn");
+    }
+
+    const href = orgHref(workspace, `/learn/${lesson.courseId}/lessons/${lesson.id}`);
+    const deliveryContext = getSingleDelivery(lesson.courseId);
     return deliveryContext ? appendOrganizationDeliverySearchParam(href, deliveryContext) : href;
   }
 
@@ -81,11 +119,7 @@ export default async function OrganizationLearnPage({
     },
     hrefBuilder: {
       courseHref: (course) => getOrganizationCourseHref(course.id),
-      lessonHref: (lesson) => {
-        const href = orgHref(workspace, `/learn/${lesson.courseId}/lessons/${lesson.id}`);
-        const deliveryContext = getDefaultDelivery(lesson.courseId);
-        return deliveryContext ? appendOrganizationDeliverySearchParam(href, deliveryContext) : href;
-      },
+      lessonHref: (lesson) => getOrganizationLessonHref(lesson),
       missionHref: () => orgHref(workspace, "/missions"),
     },
   });
@@ -107,6 +141,22 @@ export default async function OrganizationLearnPage({
           eyebrow="Org learning"
           subtitle="Assigned programmes and organisation-accessible courses for this workspace."
         />
+        {assessmentCompletionNotice ? (
+          <Card className="mt-5 border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] p-5" variant="quiet">
+            <p className="text-xs font-black uppercase text-[var(--ve-green)]">
+              Assessment complete
+            </p>
+            <h2 className="mt-2 text-xl font-black text-[var(--foreground)]">
+              {assessmentCompletionNotice.title}
+            </h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+              {assessmentCompletionNotice.completionCopy}
+            </p>
+            <p className="mt-3 text-xs font-black text-[var(--ve-muted)]">
+              {assessmentCompletionNotice.programmeTitle}
+            </p>
+          </Card>
+        ) : null}
         {assessmentCheckpoints.length > 0 ? (
           <section className="mt-5">
             <SectionHeader
