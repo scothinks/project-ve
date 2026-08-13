@@ -7950,6 +7950,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      current_user_can_manage_organization_assessments: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
       current_user_can_manage_organization_audience: {
         Args: { p_organization_id: string }
         Returns: boolean

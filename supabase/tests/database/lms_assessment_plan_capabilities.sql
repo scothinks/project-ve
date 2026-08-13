@@ -5,12 +5,16 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
 
-select extensions.plan(26);
+select extensions.plan(32);
 
 insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
   (:'TEST_LEARNER_USER_ID'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-manager@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
-  ('99999999-9999-4999-8999-999999999904'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-learner@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
+  ('99999999-9999-4999-8999-999999999904'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-learner@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+  ('99999998-9999-4999-8999-999999999905'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-content-editor@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+  ('99999997-9999-4999-8999-999999999906'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-member-learner@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+  ('99999996-9999-4999-8999-999999999907'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-reviewer@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+  ('99999995-9999-4999-8999-999999999908'::uuid, 'authenticated', 'authenticated', 'pgtap-assessment-report-viewer@example.test', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now())
 on conflict (id) do update set email = excluded.email, updated_at = now();
 
 set local role service_role;
@@ -18,7 +22,11 @@ set local role service_role;
 insert into public.profiles (id, display_name, role)
 values
   (:'TEST_LEARNER_USER_ID'::uuid, 'P15 Assessment Manager', 'learner'),
-  ('99999999-9999-4999-8999-999999999904'::uuid, 'P15 Assessment Learner', 'learner')
+  ('99999999-9999-4999-8999-999999999904'::uuid, 'P15 Assessment Learner', 'learner'),
+  ('99999998-9999-4999-8999-999999999905'::uuid, 'P15 Assessment Content Editor', 'learner'),
+  ('99999997-9999-4999-8999-999999999906'::uuid, 'P15 Assessment Member Learner', 'learner'),
+  ('99999996-9999-4999-8999-999999999907'::uuid, 'P15 Assessment Reviewer', 'learner'),
+  ('99999995-9999-4999-8999-999999999908'::uuid, 'P15 Assessment Report Viewer', 'learner')
 on conflict (id) do update
   set display_name = excluded.display_name,
       role = excluded.role;
@@ -51,7 +59,11 @@ values
   (:'starter_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, 'programme_manager', 'active', :'TEST_ADMIN_USER_ID'::uuid),
   (:'team_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, 'programme_manager', 'active', :'TEST_ADMIN_USER_ID'::uuid),
   (:'professional_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, 'programme_manager', 'active', :'TEST_ADMIN_USER_ID'::uuid),
-  (:'other_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, 'programme_manager', 'active', :'TEST_ADMIN_USER_ID'::uuid)
+  (:'other_org_id'::uuid, :'TEST_LEARNER_USER_ID'::uuid, 'programme_manager', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'professional_org_id'::uuid, '99999998-9999-4999-8999-999999999905'::uuid, 'content_editor', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'professional_org_id'::uuid, '99999997-9999-4999-8999-999999999906'::uuid, 'learner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'professional_org_id'::uuid, '99999996-9999-4999-8999-999999999907'::uuid, 'reviewer', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'professional_org_id'::uuid, '99999995-9999-4999-8999-999999999908'::uuid, 'report_viewer', 'active', :'TEST_ADMIN_USER_ID'::uuid)
 on conflict (organization_id, user_id, role) do update
   set status = excluded.status,
       invited_by = excluded.invited_by;
@@ -273,6 +285,32 @@ offset 1
 limit 1
 \gset
 
+reset role;
+select set_config('request.jwt.claim.sub', '99999998-9999-4999-8999-999999999905', true);
+set local role authenticated;
+
+select extensions.ok(
+  public.current_user_can_manage_organization_assessments(:'professional_org_id'::uuid)
+  and not public.current_user_can_manage_organization_programmes(:'professional_org_id'::uuid),
+  'content_editor can manage organisation assessments without gaining generic programme-management rights'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.assessment_versions
+    where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+      and owner_scope = 'organization'
+      and status = 'draft'
+  )
+  and exists (
+    select 1
+    from public.assessment_questions
+    where assessment_version_id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
+  ),
+  'content_editor can reopen draft organisation assessment content'
+);
+
 select public.admin_update_organization_assessment_overview(
   (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid,
   'Professional Adapted Assessment Updated',
@@ -292,8 +330,59 @@ select extensions.ok(
     from public.assessment_versions
     where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
   ),
-  'Professional can update draft assessment overview and scoring config'
+  'content_editor can update draft assessment overview and scoring config'
 );
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999997-9999-4999-8999-999999999906', true);
+set local role authenticated;
+
+select extensions.ok(
+  not public.current_user_can_manage_organization_assessments(:'professional_org_id'::uuid),
+  'learner organisation membership cannot manage organisation assessments'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999996-9999-4999-8999-999999999907', true);
+set local role authenticated;
+
+select extensions.ok(
+  not public.current_user_can_manage_organization_assessments(:'professional_org_id'::uuid),
+  'reviewer organisation membership cannot manage organisation assessments'
+);
+
+select extensions.throws_ok(
+  format(
+    $$
+      select public.admin_update_organization_assessment_overview(
+        %L::uuid,
+        'Reviewer mutation',
+        'reviewer-mutation',
+        '',
+        '',
+        '',
+        '{}'::jsonb
+      )
+    $$,
+    :'professional_revision_result'::jsonb ->> 'assessmentVersionId'
+  ),
+  'P0001',
+  'Assessment manager access required.',
+  'reviewer cannot execute assessment authoring RPCs'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999995-9999-4999-8999-999999999908', true);
+set local role authenticated;
+
+select extensions.ok(
+  not public.current_user_can_manage_organization_assessments(:'professional_org_id'::uuid),
+  'report_viewer organisation membership cannot manage organisation assessments'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999998-9999-4999-8999-999999999905', true);
+set local role authenticated;
 
 select extensions.throws_ok(
   format(
@@ -407,6 +496,10 @@ select extensions.ok(
   'draft assessment question deletion removes the question before publication'
 );
 
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
+
 select extensions.throws_ok(
   format(
     $$
@@ -442,7 +535,7 @@ set xp_award = 20
 where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid;
 
 reset role;
-select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+select set_config('request.jwt.claim.sub', '99999998-9999-4999-8999-999999999905', true);
 set local role authenticated;
 
 select public.admin_publish_organization_assessment_version(
@@ -457,8 +550,12 @@ select extensions.is(
     where id = (:'professional_revision_result'::jsonb ->> 'assessmentVersionId')::uuid
   ),
   'published',
-  'Professional can publish a ready organisation assessment version'
+  'content_editor can publish a ready organisation assessment version'
 );
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
 
 select public.admin_upsert_programme(
   null,
@@ -824,10 +921,17 @@ select extensions.ok(
     select 1
     from private.rpc_security_classifications
     where function_schema = 'public'
+      and function_name = 'current_user_can_manage_organization_assessments'
+      and authorization_rule like '%content_editor%'
+  )
+  and exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_schema = 'public'
       and function_name = 'enforce_published_assessment_immutability'
       and classification = 'TRIGGER_ONLY'
   ),
-  'assessment authoring RPC and immutability trigger are classified'
+  'assessment authoring helper, RPC and immutability trigger are classified'
 );
 
 select * from extensions.finish();
