@@ -4220,7 +4220,7 @@ P15-ASMT-003
 P15-ASMT-004
 ```
 
-P1.5D closed on 2026-08-12 after P15-ASMT-001 through P15-ASMT-004 validation, then received a focused closure pass on 2026-08-13 for the acceptance-review gaps.
+P1.5D closed on 2026-08-12 after P15-ASMT-001 through P15-ASMT-004 validation, then received focused closure passes on 2026-08-13 for the acceptance-review gaps and final assessment-authoring role alignment.
 
 Focused closure:
 
@@ -4230,8 +4230,9 @@ Focused closure:
 * `P15D-CLOSE-04`: organisation recommendation links no longer pick `workspace.courseDeliveryOptions[courseId][0]` for ambiguous shared-course deliveries; multi-delivery recommendations return to the organisation learn page for explicit learner choice, while single-delivery recommendations preserve their programme context.
 * `P15D-CLOSE-05`: the Enterprise assessment entitlement no longer advertises unrestricted `custom`; it is explicitly aligned to `template_adaptation` until managed Enterprise custom dimensions and scoring are implemented in a future Enterprise scope.
 * `P15D-CLOSE-06`: browser and pgTAP coverage now extends through programme-only assessment access, organisation XP/profile isolation, programme completion messaging, recommendation context preservation, and the public Values Starter Check regression.
+* `P15D-CLOSE-07`: assessment authoring now uses a dedicated organisation assessment-management helper that allows `organisation_owner`, `organisation_admin`, `programme_manager` and `content_editor` for assessment draft read/edit/publish, while leaving generic programme-management permissions restricted to owner/admin/programme_manager.
 
-Result: local migration replay passed including `20260813090000_p15d_focused_closure.sql`; focused assessment capability pgTAP passed 26/26; full database pgTAP passed 31 files / 625 assertions; generated database type drift passed; typecheck passed; lint passed; unit tests passed 140/140; production build passed; focused browser coverage passed 9/9 across organisation missions and the remediation flows, including the programme-only organisation assessment and public-mode regression.
+Result: local migration replay passed including `20260813100000_p15d_assessment_authoring_role_alignment.sql`; focused assessment capability pgTAP passed 32/32, including content-editor authoring, learner/reviewer/report-viewer denial and no programme-management expansion; all 31 database pgTAP files passed in explicit batches with 631 assertions after the Supabase CLI directory form failed at connection setup; generated database types and local type drift passed; typecheck passed; lint passed; whitespace checks passed.
 
 Stop for review before P1.5E.
 
