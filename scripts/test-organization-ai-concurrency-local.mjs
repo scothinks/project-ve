@@ -20,8 +20,8 @@ if (
 }
 
 const suffix = randomUUID().replaceAll("-", "").slice(0, 12);
-const adminUserId = randomUUID();
-const actorUserId = randomUUID();
+const adminUserId = "4b583f53-ae5d-4014-912e-ea7eaee43a5b";
+const actorUserId = "5a28de43-2bb3-46f0-8566-9fcc07dbf042";
 const organizationId = randomUUID();
 const sleepFunctionName = `ve_ai_reservation_sleep_${suffix}`;
 const sleepTriggerName = `ve_ai_reservation_sleep_${suffix}`;
@@ -84,58 +84,6 @@ async function setupFixture() {
   await cleanup();
 
   await psql(`
-    insert into auth.users (
-      instance_id,
-      id,
-      aud,
-      role,
-      email,
-      encrypted_password,
-      email_confirmed_at,
-      raw_app_meta_data,
-      raw_user_meta_data,
-      created_at,
-      updated_at
-    )
-    values
-      (
-        '00000000-0000-0000-0000-000000000000',
-        ${literal(adminUserId)}::uuid,
-        'authenticated',
-        'authenticated',
-        ${literal(`ve-ai-concurrency-admin-${suffix}@example.com`)},
-        '',
-        now(),
-        '{"provider": "email", "providers": ["email"]}'::jsonb,
-        '{}'::jsonb,
-        now(),
-        now()
-      ),
-      (
-        '00000000-0000-0000-0000-000000000000',
-        ${literal(actorUserId)}::uuid,
-        'authenticated',
-        'authenticated',
-        ${literal(`ve-ai-concurrency-actor-${suffix}@example.com`)},
-        '',
-        now(),
-        '{"provider": "email", "providers": ["email"]}'::jsonb,
-        '{}'::jsonb,
-        now(),
-        now()
-      );
-
-    insert into public.profiles (id, display_name, role, xp, xp_balance_cached)
-    values
-      (${literal(adminUserId)}::uuid, 'VE-AI concurrency admin', 'admin', 0, 0),
-      (${literal(actorUserId)}::uuid, 'VE-AI concurrency actor', 'learner', 0, 0)
-    on conflict (id) do update
-      set display_name = excluded.display_name,
-          role = excluded.role,
-          xp = excluded.xp,
-          xp_balance_cached = excluded.xp_balance_cached,
-          updated_at = now();
-
     insert into public.organizations (id, slug, name, status, created_by)
     values (
       ${literal(organizationId)}::uuid,
