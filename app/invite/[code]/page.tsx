@@ -1,7 +1,6 @@
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { createLearningRepository } from "@/features/app/repositories/learning";
 import { getSafeAuthNextPath } from "@/lib/auth-redirect";
 import { isJsonObject } from "@/lib/request-validation";
 import { normalizeReferralInviteKind, normalizeReferralInviteToken } from "@/lib/referral-invites";
@@ -97,10 +96,6 @@ async function resolveInvite(code: string): Promise<InviteResolution> {
 
 export default async function InvitePage({ params }: InvitePageProps) {
   const { code } = await params;
-  const supabase = await createSupabaseServerClient();
-  const learningRepository = createLearningRepository(supabase);
-  const catalog = await learningRepository.getCatalog();
-  const starterLesson = catalog[0]?.lessons[0];
   const invite = await resolveInvite(code);
   const isContextual = invite.kind === "contextual" && invite.status === "available";
   const title =
@@ -113,26 +108,22 @@ export default async function InvitePage({ params }: InvitePageProps) {
     || asString(invite.presentationConfig.subtitle)
     || (isContextual
       ? "Create your account to enter the assigned programme workspace and keep your progress in the right organisation context."
-      : "Start with a short lesson, take the quiz, then create an account to save your XP and keep your progress.");
+      : "Create your account to save your XP, keep your progress and continue to starter lessons.");
   const cardTitle =
     asString(invite.presentationConfig.cardTitle)
-    || (isContextual ? invite.organizationName ?? "Organisation programme" : starterLesson?.title ?? "Start learning");
+    || (isContextual ? invite.organizationName ?? "Organisation programme" : "Project VE starter lessons");
   const cardBody =
     asString(invite.presentationConfig.fullInstructions)
     || (isContextual
       ? "Your invite will be applied after signup, then you will continue to the programme destination."
-      : "Read the lesson, take the quiz, then create an account to save your XP.");
-  const ctaLabel = asString(invite.presentationConfig.ctaLabel) || (isContextual ? "Create account" : "Start Lesson");
+      : "Your referral code will be saved for this browser, then you can continue to starter lessons after authentication.");
+  const ctaLabel = asString(invite.presentationConfig.ctaLabel) || "Create account";
   const loginHref = buildLoginHref({
     destination: invite.destination,
     kind: invite.kind,
     token: invite.token,
   });
-  const primaryHref = isContextual
-    ? loginHref
-    : starterLesson
-      ? `/lessons/${starterLesson.id}?ref=${encodeURIComponent(invite.token || code)}`
-      : "/courses";
+  const primaryHref = invite.status === "available" ? loginHref : "/login";
 
   return (
     <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ve-card)] px-8 py-12">

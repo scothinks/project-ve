@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isProtectedLearnerRoutePath } from "@/lib/route-auth-policy";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase";
 
 function ensureDeviceCookie(request: NextRequest, response: NextResponse) {
@@ -40,8 +41,25 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   ensureDeviceCookie(request, response);
+
+  if (!user && isProtectedLearnerRoutePath(request.nextUrl.pathname)) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    for (const key of ["ref", "refKind"]) {
+      const value = request.nextUrl.searchParams.get(key);
+
+      if (value) {
+        loginUrl.searchParams.set(key, value);
+      }
+    }
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    ensureDeviceCookie(request, redirectResponse);
+    return redirectResponse;
+  }
 
   return response;
 }
