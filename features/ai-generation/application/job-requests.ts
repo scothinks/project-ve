@@ -18,6 +18,10 @@ import {
   enqueueCourseTextJob,
   enqueueMediaAssetsJob,
 } from "@/features/ai-generation/application/job-orchestration";
+import {
+  estimateCourseTextUnits,
+  estimateMediaUnits,
+} from "@/features/ai-generation/application/organization-ai-metering";
 import type { AiCourseGenerationInput } from "@/lib/ai-learning-generator";
 import type { Database } from "@/types/database";
 
@@ -45,6 +49,7 @@ export async function requestAiCourseDraftJob(
   supabase: AiGenerationAdminClient,
   actorUserId: string,
   input: AiCourseGenerationInput,
+  organizationId?: string | null,
 ): Promise<JobRequestResult> {
   ensureCoreGenerationInput(input);
 
@@ -52,7 +57,13 @@ export async function requestAiCourseDraftJob(
     actorUserId,
     mode: "create_course",
     ...input,
-  });
+  }, null, organizationId
+    ? {
+        estimatedUnits: estimateCourseTextUnits("ai_course_draft", input),
+        operationType: "ai_course_draft",
+        organizationId,
+      }
+    : undefined);
 
   return { jobId };
 }
@@ -84,6 +95,13 @@ export async function requestAiLessonExtensionJob(
       ...input,
     },
     courseId,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateCourseTextUnits("ai_lesson_extension", input),
+          operationType: "ai_lesson_extension",
+          organizationId: course.organization_id,
+        }
+      : undefined,
   );
 
   return { courseId, jobId };
@@ -119,6 +137,13 @@ export async function requestAiCourseTextRevisionJob(
       feedback,
     },
     courseId,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateCourseTextUnits("ai_course_text_revision"),
+          operationType: "ai_course_text_revision",
+          organizationId: course.organization_id,
+        }
+      : undefined,
   );
 
   return { courseId, jobId };
@@ -157,6 +182,13 @@ export async function requestAiCourseMediaGenerationJob(
       mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
     },
     courseId,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateMediaUnits("ai_course_media_assets", 8),
+          operationType: "ai_course_media_assets",
+          organizationId: course.organization_id,
+        }
+      : undefined,
   );
 
   return { courseId, jobId };
@@ -198,6 +230,14 @@ export async function requestAiLessonMediaGenerationJob(
       mediaFeedback: applyMediaFeedback ? mediaFeedback : null,
     },
     course.id,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateMediaUnits("ai_lesson_media_assets", 3),
+          lessonId,
+          operationType: "ai_lesson_media_assets",
+          organizationId: course.organization_id,
+        }
+      : undefined,
   );
 
   return { courseId: course.id, lessonId, jobId };

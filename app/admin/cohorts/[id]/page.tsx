@@ -6,6 +6,7 @@ import {
   getAdminCourses,
   getAdminOrganizationLearners,
   getAdminOrganizations,
+  getAdminOrganizationUnits,
   getAdminProgrammes,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
@@ -28,11 +29,12 @@ export default async function CohortWorkspacePage({
     "programme_manager",
     "instructor",
   ]);
-  const [cohort, courses, organizations, programmes] = await Promise.all([
+  const [cohort, courses, organizations, programmes, units] = await Promise.all([
     getAdminCohort(supabase, id),
     getAdminCourses(supabase),
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
+    getAdminOrganizationUnits(supabase),
   ]);
   const notice = firstSearchValue((await searchParams)?.notice);
 
@@ -57,6 +59,7 @@ export default async function CohortWorkspacePage({
         courses={courses}
         organizations={organizations}
         programmes={programmes}
+        units={units}
         users={users}
       />
     </>

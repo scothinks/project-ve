@@ -91,6 +91,7 @@ export async function saveCohort(formData: FormData) {
   const description = sanitizePlainTextInput(String(formData.get("description") ?? ""), 2000);
   const status = normalizeStatus(formData.get("status"));
   const memberUserIds = getCombinedUserIds(formData, "memberUserIds", "bulkMemberUserIds");
+  const unitIds = getSelectedIds(formData, "unitIds");
   const { supabase } = await requireAdminWorkspaceRole(COHORT_MANAGER_ROLES);
 
   const { data, error } = await supabase.rpc("admin_upsert_cohort", {
@@ -112,13 +113,22 @@ export async function saveCohort(formData: FormData) {
   const savedCohortId = result?.cohortId ?? cohortId;
 
   if (savedCohortId) {
-    const { error: memberError } = await supabase.rpc("admin_replace_cohort_members", {
-      p_cohort_id: savedCohortId,
-      p_user_ids: memberUserIds,
-    });
+    const [membersResult, unitsResult] = await Promise.all([
+      supabase.rpc("admin_replace_cohort_members", {
+        p_cohort_id: savedCohortId,
+        p_user_ids: memberUserIds,
+      }),
+      supabase.rpc("admin_replace_cohort_units", {
+        p_cohort_id: savedCohortId,
+        p_unit_ids: unitIds,
+      }),
+    ]);
 
-    if (memberError) {
-      throw memberError;
+    if (membersResult.error) {
+      throw membersResult.error;
+    }
+    if (unitsResult.error) {
+      throw unitsResult.error;
     }
   }
 

@@ -43,6 +43,13 @@ const BILLING_STATUSES: OrganizationBillingStatus[] = [
   "sponsored",
 ];
 
+const TEMPORARY_ENTITLEMENT_GRANT_TYPES = [
+  "plan_trial",
+  "temporary_plan",
+  "granular_override",
+  "additive_allocation",
+] as const;
+
 const LIFECYCLE_STATUSES: OrganizationLifecycleStatus[] = [
   "trial",
   "active",
@@ -66,6 +73,13 @@ const INTEGER_OVERRIDE_KEYS: OrganizationEntitlementKey[] = [
   "max_active_rewards",
   "max_open_reward_claims",
   "max_fulfilled_reward_claims_per_month",
+  "ai_monthly_allocation",
+  "ai_temporary_allocation",
+  "ai_top_up_allocation",
+  "ai_warning_threshold",
+  "ai_hard_limit",
+  "ai_user_rate_limit_per_day",
+  "ai_organization_concurrency_limit",
 ];
 
 const ORGANIZATION_MANAGER_ROLES = ["organisation_owner", "organisation_admin"];
@@ -89,6 +103,13 @@ function normalizeBillingStatus(value: FormDataEntryValue | null): OrganizationB
   return BILLING_STATUSES.includes(status as OrganizationBillingStatus)
     ? status as OrganizationBillingStatus
     : "free";
+}
+
+function normalizeTemporaryEntitlementGrantType(value: FormDataEntryValue | null) {
+  const grantType = String(value ?? "granular_override");
+  return TEMPORARY_ENTITLEMENT_GRANT_TYPES.includes(grantType as typeof TEMPORARY_ENTITLEMENT_GRANT_TYPES[number])
+    ? grantType as typeof TEMPORARY_ENTITLEMENT_GRANT_TYPES[number]
+    : "granular_override";
 }
 
 function normalizeLifecycleStatus(value: FormDataEntryValue | null): OrganizationLifecycleStatus {
@@ -169,6 +190,38 @@ function parseEntitlementOverrides(formData: FormData) {
   return overrides;
 }
 
+function parseOptionalDateTime(value: FormDataEntryValue | null) {
+  const rawValue = sanitizePlainTextInput(String(value ?? ""), 80);
+  if (!rawValue) return null;
+
+  const parsedValue = new Date(rawValue);
+  if (Number.isNaN(parsedValue.getTime())) {
+    throw new Error("Grant dates must be valid date-time values.");
+  }
+
+  return parsedValue.toISOString();
+}
+
+function parseTemporaryEntitlementDelta(formData: FormData) {
+  const rawJson = String(formData.get("entitlementDeltaJson") ?? "").trim();
+  const numericOverrides = parseEntitlementOverrides(formData);
+  let parsedJson: Record<string, unknown> = {};
+
+  if (rawJson) {
+    const value = JSON.parse(rawJson) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("Entitlement delta JSON must be an object.");
+    }
+
+    parsedJson = value as Record<string, unknown>;
+  }
+
+  return {
+    ...parsedJson,
+    ...numericOverrides,
+  };
+}
+
 async function requireOrganizationManagerFor(organizationId: string): Promise<AdminContext> {
   const context = await requireAdminWorkspaceRole(ORGANIZATION_MANAGER_ROLES);
 
@@ -223,6 +276,60 @@ export async function saveOrganizationMembership(formData: FormData) {
   redirect(appendAdminNotice("/admin/organizations", "Membership saved."));
 }
 
+export async function saveOrganizationUnit(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const unitId = sanitizePlainTextInput(String(formData.get("unitId") ?? ""), 80);
+  const parentUnitId = sanitizePlainTextInput(String(formData.get("parentUnitId") ?? ""), 80);
+  const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 160);
+  const unitType = sanitizePlainTextInput(String(formData.get("unitType") ?? ""), 80);
+  const status = normalizeContentStatus(formData.get("status"));
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
+
+  const { error } = await supabase.rpc("admin_upsert_organization_unit", {
+    p_name: name,
+    p_organization_id: organizationId,
+    p_parent_unit_id: parentUnitId || null,
+    p_status: status,
+    p_unit_id: unitId || null,
+    p_unit_type: unitType,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  revalidatePath("/admin/cohorts");
+  revalidatePath("/admin/reporting");
+  redirect(appendAdminNotice("/admin/organizations", unitId ? "Organisation unit saved." : "Organisation unit created."));
+}
+
+export async function saveOrganizationUnitMembers(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const unitId = sanitizePlainTextInput(String(formData.get("unitId") ?? ""), 80);
+  const { supabase } = await requireOrganizationManagerFor(organizationId);
+  const members = formData
+    .getAll("unitMembers")
+    .map((value) => {
+      const [userId, role] = sanitizePlainTextInput(String(value ?? ""), 240).split(":");
+      return userId && role ? { role, userId } : null;
+    })
+    .filter(Boolean);
+
+  const { error } = await supabase.rpc("admin_replace_organization_unit_members", {
+    p_members: members,
+    p_unit_id: unitId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  revalidatePath("/admin/reporting");
+  redirect(appendAdminNotice("/admin/organizations", "Organisation unit members saved."));
+}
+
 export async function saveOrganizationInvitation(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const invitedUserId = sanitizePlainTextInput(String(formData.get("invitedUserId") ?? ""), 80);
@@ -274,6 +381,54 @@ export async function saveOrganizationPlanAssignment(formData: FormData) {
 
   revalidatePath("/admin/organizations");
   redirect(appendAdminNotice("/admin/organizations", "Organisation plan assigned."));
+}
+
+export async function saveOrganizationTemporaryEntitlementGrant(formData: FormData) {
+  const grantId = sanitizePlainTextInput(String(formData.get("grantId") ?? ""), 80);
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const grantType = normalizeTemporaryEntitlementGrantType(formData.get("grantType"));
+  const sourcePlanKey = sanitizePlainTextInput(String(formData.get("sourcePlanKey") ?? ""), 80);
+  const startsAt = parseOptionalDateTime(formData.get("startsAt"));
+  const expiresAt = parseOptionalDateTime(formData.get("expiresAt"));
+  const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 240);
+  const entitlementDelta = parseTemporaryEntitlementDelta(formData);
+  const { supabase } = await requirePlatformAdmin();
+
+  const { error } = await supabase.rpc("admin_upsert_organization_temporary_entitlement_grant", {
+    p_entitlement_delta: entitlementDelta,
+    p_expires_at: expiresAt,
+    p_grant_id: grantId || null,
+    p_grant_type: grantType,
+    p_organization_id: organizationId,
+    p_reason: reason || null,
+    p_source_plan_key: sourcePlanKey || null,
+    p_starts_at: startsAt,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  redirect(appendAdminNotice("/admin/organizations", grantId ? "Temporary grant updated." : "Temporary grant created."));
+}
+
+export async function revokeOrganizationTemporaryEntitlementGrant(formData: FormData) {
+  const grantId = sanitizePlainTextInput(String(formData.get("grantId") ?? ""), 80);
+  const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 240);
+  const { supabase } = await requirePlatformAdmin();
+
+  const { error } = await supabase.rpc("admin_revoke_organization_temporary_entitlement_grant", {
+    p_grant_id: grantId,
+    p_reason: reason || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath("/admin/organizations");
+  redirect(appendAdminNotice("/admin/organizations", "Temporary grant revoked."));
 }
 
 export async function saveOrganizationProfile(formData: FormData) {

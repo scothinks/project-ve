@@ -52,7 +52,7 @@ export default async function AdminCohortsPage({
       {cohorts.length === 0 ? (
         <EmptyAdminState>No cohorts found.</EmptyAdminState>
       ) : (
-        <AdminTable columns={["Cohort", "Organisation", "Members", "Assignments", "Status", "Updated", "Action"]}>
+        <AdminTable columns={["Cohort", "Organisation", "Units", "Members", "Assignments", "Status", "Updated", "Action"]}>
           {cohorts.map((cohort) => (
             <tr key={cohort.id}>
               <td className="min-w-[260px] px-4 py-4">
@@ -66,6 +66,11 @@ export default async function AdminCohortsPage({
               </td>
               <td className="whitespace-nowrap px-4 py-4 font-bold">
                 {cohort.organization?.name ?? cohort.organization_id}
+              </td>
+              <td className="min-w-[180px] px-4 py-4 text-xs font-bold text-[var(--ve-muted-strong)]">
+                {cohort.units && cohort.units.length > 0
+                  ? cohort.units.map((unit) => unit.name).join(", ")
+                  : "No unit"}
               </td>
               <td className="whitespace-nowrap px-4 py-4 font-bold tabular-nums">
                 {cohort.active_member_count ?? 0}

@@ -1129,6 +1129,140 @@ Deferred to later P1.5A tickets:
 
 ---
 
+## Ticket P15-ENT-002: Temporary capability grants and entitlement overrides
+
+### Status
+
+Implemented for P1.5E review on 2026-08-13. This remains a newly approved P1.5E extension of the entitlement foundation established by `P15-ENT-001`, not retroactive P1.5A scope.
+
+### Objective
+
+Formalise temporary entitlement grants so pilots, sponsored organisations, trials and controlled capability evaluations can receive time-bound access without changing the organisation's base plan or billing status.
+
+This ticket preserves the `P15-ENT-001` organisation-specific override concept. The existing granular override path remains valid, but effective entitlement resolution must distinguish:
+
+```text
+base plan entitlements
+active temporary plan grants
+active granular entitlement overrides
+platform safety restrictions
+```
+
+Effective entitlements are resolved as:
+
+```text
+base plan
++ active temporary plan grants
++ active granular overrides
+- platform safety restrictions
+= effective entitlement set
+```
+
+Platform safety restrictions always take precedence. A temporary grant or granular override must never weaken global safety, security, abuse-prevention, storage, media, AI, economic, RLS, RPC or tenant-isolation limits.
+
+### Required capability
+
+Support:
+
+* dated plan trials, such as temporary Team or Professional access;
+* temporary higher-plan access without mutating the base plan assignment;
+* granular temporary privileges, such as one AI capability, one media capability, expanded storage or a reporting feature;
+* additive allocations where the entitlement is naturally additive, such as extra AI budget, extra storage or extra learner capacity;
+* explicit start and expiry timestamps;
+* immediate revocation before expiry;
+* audit history for grant creation, activation, update, revocation and expiry processing;
+* non-destructive expiry that stops future access without deleting historical records, generated content, activity logs or learner history.
+
+### Entitlement coherence
+
+Capability dependencies must remain coherent.
+
+At minimum:
+
+* AI authoring access requires an active AI allocation and the server-side AI metering controls in `P15-AI-001`;
+* temporary AI access must be granted through the generic entitlement/grant mechanism in this ticket, not an AI-only privilege path;
+* media grants must include compatible content, storage, upload and lesson-block entitlements;
+* storage or media expansion must not bypass file validation, scanning, accounting or per-organisation isolation;
+* assessment, mission, reward or reporting grants must continue to respect existing plan, role and tenant boundaries;
+* expiry must not invalidate already-earned learner progress, assessment attempts, point transactions, reward history or audit history.
+
+### Data model guidance
+
+Extend the existing plan and override foundation instead of introducing a parallel privilege system.
+
+Expected concepts may include:
+
+```text
+organization_temporary_entitlement_grants
+grant_type
+source_plan_key
+entitlement_delta
+starts_at
+expires_at
+revoked_at
+revoked_by
+reason
+created_by
+created_at
+updated_at
+```
+
+`entitlement_delta` must be validated against the central typed entitlement schema. Unknown keys, incompatible types and incoherent capability combinations must be rejected.
+
+### Acceptance criteria
+
+* Base plan assignment remains separate from temporary grants.
+* Billing status is not changed merely to grant temporary capability.
+* Effective entitlement resolution is centralised and deterministic.
+* Temporary grants and granular overrides are visible to platform admins.
+* Organisation owners/admins can see the effective capability state where appropriate, but cannot self-grant privileged capabilities.
+* Expired or revoked grants stop future privileged action immediately.
+* Historical data remains readable according to normal organisation permissions after expiry.
+* All grant lifecycle changes are audited.
+* Direct RPC/API access cannot bypass expiry, revocation or dependency checks.
+* `P15-AI-001` consumes this mechanism for organisation AI enablement.
+
+### Implementation evidence
+
+Delivered in:
+
+```text
+supabase/migrations/20260813140000_p15_ent_002_temporary_entitlement_grants.sql
+features/organizations/entitlements.ts
+features/organizations/admin/data.ts
+app/admin/organizations/actions.ts
+app/admin/organizations/page.tsx
+supabase/tests/database/lms_organization_entitlements.sql
+tests/unit/organization-entitlements.test.mjs
+```
+
+Implemented behavior:
+
+* `organization_temporary_entitlement_grants` stores dated, revocable, non-destructive grants with `grant_type`, optional `source_plan_key`, validated `entitlement_delta`, lifecycle timestamps, creator/revoker attribution and expiry-audit tracking.
+* Effective entitlement resolution is now centralised through the private resolver used by public entitlement reads and enforcement helpers: active base plan, active temporary grants, active granular overrides and platform safety restrictions resolve deterministically in one path.
+* Temporary higher-plan access can be granted without changing `organization_plan_assignments.plan_key` or `billing_status`.
+* Additive allocations are supported for naturally additive numeric entitlement keys, including storage, learner/course-style limits and generic AI allocation keys for later `P15-AI-001` consumption.
+* Incoherent grant combinations are rejected server-side: AI authoring grants require an allocation, and granular media block grants must include compatible storage entitlement.
+* Platform admins manage grants through audited RPCs; organisation owners/admins can read relevant grant state but cannot self-grant.
+* Expired/revoked grants stop contributing to future entitlement resolution while history remains readable under normal organisation permissions.
+
+Validation:
+
+```text
+node scripts/supabase-cli.mjs migration up
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_organization_entitlements.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run test:unit
+npm run build
+```
+
+Focused entitlement pgTAP passed 32/32. The full `npm run test:db` directory command was attempted twice after focused validation but failed at local Postgres connection setup before running tests; it did not report a test assertion failure.
+
+---
+
 ## Ticket P15-ORG-001: Extend organisation profile and lifecycle
 
 ### Objective
@@ -3043,6 +3177,34 @@ Maximum 3 levels
 * unit-scoped supervisors see only permitted learners;
 * no table is created separately for each institution’s terminology.
 
+### Implementation status
+
+Implemented on 2026-08-13 for review.
+
+Delivered:
+* added `organization_units`, `organization_unit_members`, and `cohort_units` in forward migration `20260813110000_p15_ops_001_organization_units.sql`;
+* enforced same-organisation parent, member, and cohort-unit boundaries with trigger-backed checks;
+* capped Phase 1.5 unit hierarchy depth at three levels;
+* added organisation unit management and per-unit learner/staff assignment in `/admin/organizations`;
+* added cohort-unit association in the cohort create/detail workflow and surfaced unit labels in the cohort list;
+* extended LMS reporting and CSV export with a unit filter;
+* updated the reporting RPC so unit-scoped supervisors can read only learners attached to their permitted unit.
+
+Validation completed on 2026-08-13:
+
+```bash
+node scripts/supabase-cli.mjs db reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_reporting.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+Result: local migration replay passed including `20260813110000_p15_ops_001_organization_units.sql`; focused LMS reporting pgTAP passed 21/21, including unit depth, cross-organisation boundaries, cohort-unit association, unit reporting filters and unit-scoped supervisor denial paths; generated database types are current; typecheck, lint, production build and whitespace checks passed.
+
 ---
 
 ## Ticket P15-OPS-002: Instructor and supervisor workspace
@@ -3100,6 +3262,34 @@ An instructor may not automatically:
 * intervention and proof actions are audited;
 * learner notifications use current infrastructure.
 
+### Implementation status
+
+Implemented on 2026-08-13 for review.
+
+Delivered:
+* added forward migration `20260813120000_p15_ops_002_instructor_workspace.sql`;
+* added `/admin/instructor` as the composed instructor and supervisor workspace for assigned cohorts, learner progress, inactive learners, overdue learners, mission evidence, open interventions, announcements and reminders;
+* added `admin_get_instructor_workspace` to compose existing cohorts, reporting/progress, mission proof, intervention and notification data behind one assignment-scoped RPC;
+* added scoped instructor actions for creating interventions, updating interventions and sending learner reminders through the existing private notification primitive;
+* tightened instructor authorization so active instructor membership alone no longer grants broad organisation audience management or reporting access;
+* kept report viewers read-only in the instructor workspace while preserving programme-manager operations;
+* routed proof and intervention action checks through learner/unit scope and kept existing audit events for those actions.
+
+Validation completed on 2026-08-13:
+
+```bash
+node scripts/supabase-cli.mjs db reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_reporting.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+Result: local migration replay passed including `20260813120000_p15_ops_002_instructor_workspace.sql`; focused LMS reporting pgTAP passed 29/29 including unit-scoped instructor workspace data, read-only report viewer behavior, instructor reminder notification delivery and audit, scoped intervention updates and broad-instructor denial paths; generated database types are current; typecheck, lint, production build and whitespace checks passed.
+
 ---
 
 ## Ticket P15-OPS-003: Organisation activity history
@@ -3146,13 +3336,38 @@ Do not expose raw JSON as the primary interface.
 * sensitive values are redacted;
 * high-risk economic actions retain before/after context.
 
+### Status: completed in this pass
+
+Implemented P15-OPS-003:
+
+* added forward migration `20260813130000_p15_ops_003_organization_activity_history.sql`;
+* made `audit_events` immutable through update/delete prevention triggers;
+* added activity normalization helpers for organisation resolution, safe object links, readable summaries, redacted details and redacted before/after changes;
+* added `admin_get_organization_activity(...)` so platform admins can inspect all organisation activity while organisation owners/admins are constrained to their organisation;
+* added coverage triggers for organisation reward configuration, reward claim state changes and organisation assessment version publishing so gaps outside explicit admin RPC emitters still enter the organisation activity history;
+* preserved high-risk before/after context for reward configuration, reward claim state changes, XP account control changes and manual organisation points adjustments;
+* added the `/admin/activity` page with organisation, actor, action, object-type and date filters plus safe admin object links and human-readable summaries;
+* added focused pgTAP coverage in `supabase/tests/database/organization_activity_history.sql` for scoped visibility, redaction, immutability, before/after context and RPC grants.
+
+Result: local migration replay passed including `20260813130000_p15_ops_003_organization_activity_history.sql`; focused organisation activity and LMS reporting pgTAP passed 39/39; generated database types are current; typecheck, lint, production build and whitespace checks passed.
+
 ---
 
-## Conditional ticket P15-AI-001: Organisation AI metering
+## Required ticket P15-AI-001: Organisation AI metering, budgets and abuse controls
 
-This ticket is required only before paid organisations are given AI access.
+### Status
 
-### Extend existing system
+Implemented for P1.5E review on 2026-08-14. Organisation AI access still must not be enabled for a target path until this ticket and `P15-ENT-002` are accepted and closed for that path.
+
+### Priority
+
+Required before AI is enabled for any organisation.
+
+This replaces the earlier pilot-dependent wording. Organisation AI access must not be enabled for free, trial, sponsored, paid, temporary, pilot or manually granted organisations until this ticket is implemented and accepted.
+
+### Objective
+
+Add organisation AI metering, budget enforcement and abuse controls while preserving the existing durable and idempotent AI job architecture.
 
 Build on:
 
@@ -3160,31 +3375,197 @@ Build on:
 ai_generation_jobs
 current durable worker lease system
 existing AI activity panel
+central entitlement resolver
+P15-ENT-002 temporary grant and entitlement override mechanism
 ```
 
-Add:
+Do not create a separate AI-only privilege system. AI availability, allocations, trials and top-ups must be represented through the generic entitlement and temporary grant mechanism from `P15-ENT-002`.
+
+### Required attribution
+
+AI jobs and AI activity must attribute usage to:
 
 ```text
 organization_id
 programme_id where applicable
+course_id / lesson_id / assessment_id / mission_id where applicable
 operation type
-estimated credits
-actual provider usage
-actual internal cost
+actor_user_id
+source entitlement or temporary grant
 ```
 
-Introduce organisation AI budgets:
+The model must preserve the durable/idempotent job lifecycle already used for AI generation. Idempotency keys, worker leases, retries, stale-lease recovery and existing job status transitions remain part of the architecture.
+
+### Budget and allocation model
+
+Introduce configurable organisation AI allocations through entitlement resolution:
 
 ```text
 monthly allocation
+temporary allocation
+top-up allocation
 warning threshold
 hard limit
+allowed operation types
 allowed roles
+per-user rate limits
+organisation concurrency limit
 ```
 
-Do not create an AI credit market.
+Allocations are not wallets, balances or transferable credits. They are enforcement limits for internal cost and usage control.
 
-Do not make AI credits transferable.
+Top-ups must:
+
+* be organisation-scoped;
+* be non-transferable;
+* be auditable;
+* have optional expiry;
+* be included in effective entitlement calculation;
+* remain subject to platform safety restrictions and hard caps.
+
+### Cost estimation and reservation
+
+Before queuing a job, the server must:
+
+* resolve effective organisation AI entitlement;
+* verify AI access is active;
+* verify the requested operation is allowed;
+* estimate expected provider usage and internal cost;
+* reserve budget or capacity for the job;
+* reject requests that would exceed hard caps, rate limits or concurrency limits.
+
+Reservation must be idempotent with job creation so retries do not double-reserve allocation.
+
+### Server-side enforcement
+
+Enforcement must occur on trusted server/database paths, not only in UI code.
+
+At minimum:
+
+* browser actions and API routes must call server-side entitlement and budget checks;
+* public RPCs must not be able to bypass organisation AI caps;
+* worker claim and execution paths must revalidate organisation AI entitlement, reservation state, rate limits and concurrency before doing provider work;
+* stale, cancelled, failed and retried jobs must not leak reserved budget or concurrency slots;
+* user-level rate limits must prevent one staff user from exhausting the organisation allocation too quickly;
+* organisation concurrency limits must prevent parallel job spikes.
+
+### Actual usage, cost recording and reconciliation
+
+When a provider call completes, record:
+
+```text
+actual provider model
+actual provider usage
+actual provider cost where available
+actual internal cost
+reserved estimate
+final charged amount
+reconciliation status
+```
+
+Reconciliation must compare reservation, estimate and actual usage. Differences must be auditable and visible in the AI activity/admin view.
+
+### Failed-job charging and refund policy
+
+Define and enforce a clear policy:
+
+* validation failures before provider work must not consume organisation allocation;
+* jobs rejected by server-side caps must not consume allocation;
+* provider calls that start but fail may charge estimated or actual internal cost only according to an explicit policy;
+* system failures after reservation but before provider work must release the reservation;
+* cancelled jobs must release or charge according to whether provider work began;
+* retries must not double-charge for the same idempotent operation;
+* refunds or releases must be auditable.
+
+### Abuse controls
+
+Include:
+
+* hard server-side organisation caps;
+* per-user request rate limits;
+* organisation concurrency limits;
+* operation allowlists by plan/grant;
+* worker-side validation immediately before provider calls;
+* suspicious usage audit events;
+* admin-visible warning and blocked states.
+
+### Non-goals
+
+Do not create:
+
+```text
+AI wallets
+transferable AI credits
+AI credit exchanges
+AI credit marketplaces
+cross-organisation AI credit transfers
+learner-owned AI balances
+```
+
+Do not replace the existing durable/idempotent AI job architecture.
+
+### Acceptance criteria
+
+* No organisation can use AI without an effective entitlement from base plan, temporary grant or granular override.
+* AI access via temporary trial or top-up uses `P15-ENT-002`.
+* AI access always has an allocation.
+* Job creation estimates and reserves budget idempotently.
+* Worker execution revalidates entitlement, reservation, rate limit and concurrency state.
+* Hard caps are enforced server-side.
+* User rate limits and organisation concurrency limits are enforced.
+* Actual provider usage and internal cost are recorded.
+* Estimate-versus-actual reconciliation is visible and audited.
+* Failed-job charging and refund/release policy is implemented and tested.
+* Existing AI job durability, idempotency, lease and retry behaviour is preserved.
+* No AI wallet, transferable credit, exchange or marketplace is introduced.
+
+### Implementation evidence
+
+Delivered in:
+
+```text
+supabase/migrations/20260814100000_p15_ai_001_organization_ai_metering.sql
+supabase/migrations/20260814101000_p15_ai_001_course_text_usage_reconciliation.sql
+supabase/migrations/20260814102000_p15_ai_001_nullable_new_course_attribution.sql
+supabase/migrations/20260814103000_p15_ai_001_service_role_detection.sql
+supabase/migrations/20260814104000_p15_ai_001_service_role_session_detection.sql
+supabase/migrations/20260814105000_p15_ai_001_service_role_setting_detection.sql
+supabase/migrations/20260814110000_p15_ai_001_service_role_reconciliation.sql
+features/ai-generation/application/organization-ai-metering.ts
+features/ai-generation/application/job-orchestration.ts
+features/ai-generation/application/job-requests.ts
+features/ai-generation/application/media-asset-commands.ts
+features/ai-generation/data/jobs.ts
+features/ai-generation/data/workflow.ts
+features/learning/admin/planner-commands.ts
+features/learning/admin/ai-activity.ts
+features/learning/admin/ai-activity-panel.tsx
+app/admin/courses/ai-actions.ts
+supabase/tests/database/organization_ai_metering.sql
+```
+
+Implemented behavior:
+
+* `organization_ai_usage_records` is an enforcement ledger for organisation attribution, reservations, actual provider usage/cost, internal charged units, reconciliation status and failed-job policy. It is not a wallet, transferable credit system, exchange or marketplace.
+* Organisation AI availability consumes the generic entitlement/grant mechanism from `P15-ENT-002`: AI authoring requires effective `ai_authoring_enabled` plus active allocation keys, hard caps, allowed operation types, allowed roles, per-user daily limits and organisation concurrency limits.
+* AI job creation estimates and reserves usage idempotently through trusted RPCs before queuing durable jobs; planner calls reserve and reconcile around direct provider calls.
+* Worker claim paths revalidate organisation entitlement and reservation state before provider work; course-text materialization, replacement, generic completion and failure RPCs reconcile reserved usage without replacing the durable worker lease/idempotency architecture.
+* Usage reconciliation is service-role-only. Authenticated organisation users may reserve and queue within entitlement limits, but they cannot release, undercharge or otherwise reconcile visible usage records from browser-accessible RPCs.
+* New-course draft jobs may exist before a course row exists; `course_id` attribution is populated only when the course exists, while organisation, actor, operation and source attribution remain required.
+* Admin AI activity now surfaces recent usage records and reserved/charged/released unit totals alongside durable job status.
+* Failed provider/job outcomes use explicit release or charge policies and write auditable reconciliation events.
+
+Validation:
+
+```text
+node scripts/supabase-cli.mjs migration up
+npm run db:types:local
+npm run db:types:local:check
+node scripts/supabase-cli.mjs test db supabase/tests/database/organization_ai_metering.sql
+npm run typecheck
+```
+
+Focused organisation AI metering pgTAP passed 17/17. The wrapper form, `npm run test:db -- supabase/tests/database/organization_ai_metering.sql`, was attempted first but failed at local Supabase CLI connection setup before running assertions; the direct single-file CLI form above passed.
 
 ---
 
@@ -4241,12 +4622,16 @@ Stop for review before P1.5E.
 Implement:
 
 ```text
+P15-ENT-002 (implemented 2026-08-13; pending acceptance)
+P15-AI-001 (implemented 2026-08-14; pending acceptance)
 P15-OPS-001
 P15-OPS-002
 P15-OPS-003
 ```
 
-Implement conditional AI or media tickets only with explicit pilot authorisation.
+Do not enable organisation AI until `P15-ENT-002` and `P15-AI-001` have been implemented, tested, accepted and closed for the target access path.
+
+Implement `P15-MEDIA-001` only when a pilot or product decision explicitly depends on organisation-hosted video or audio.
 
 Then stop for review.
 
@@ -4290,6 +4675,10 @@ Starter referral missions
 Starter direct reward mission awards
 Starter inventory-backed rewards
 AI credit trading
+AI wallets
+Transferable AI credits
+AI credit exchanges
+AI credit marketplaces
 A generic reward integration marketplace
 Custom organisation domains
 SAML
@@ -4320,6 +4709,7 @@ Phase 1.5 is complete when:
 * public learning remains available;
 * self-service users can create Starter organisations;
 * plan entitlements are centrally enforced;
+* controlled temporary entitlements, trials, top-ups and granular overrides are centrally resolved, auditable and revocable wherever they are used;
 * Starter is limited to one course and five lessons;
 * Starter uses text and image-oriented lesson blocks only;
 * Starter has no AI access;
@@ -4338,6 +4728,8 @@ Phase 1.5 is complete when:
 * plan-based assessment capabilities are enforced;
 * organisation units and instructor supervision are usable;
 * organisation activity is auditable;
+* organisation AI access is disabled unless `P15-ENT-002` and `P15-AI-001` are implemented and accepted for that access path;
+* wherever organisation AI access is enabled, AI economic enforcement includes allocation, reservation, hard caps, rate limits, concurrency limits, worker validation, actual usage/cost recording and reconciliation;
 * CMS and learner UI cleanup is complete;
 * database and browser release gates pass;
 * public Project Ve behaviour remains intact.

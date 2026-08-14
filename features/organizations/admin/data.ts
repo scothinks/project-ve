@@ -62,6 +62,21 @@ export type AdminOrganizationEntitlementOverrideRow = {
   starts_at: string;
 };
 
+export type AdminOrganizationTemporaryEntitlementGrantRow = {
+  id: string;
+  organization_id: string;
+  grant_type: Database["public"]["Enums"]["organization_temporary_entitlement_grant_type"];
+  source_plan_key: string | null;
+  entitlement_delta: Database["public"]["Tables"]["organization_temporary_entitlement_grants"]["Row"]["entitlement_delta"];
+  starts_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+  expired_audited_at: string | null;
+  reason: string | null;
+  created_at: string;
+  sourcePlan?: Pick<AdminOrganizationPlanRow, "key" | "name"> | null;
+};
+
 export type AdminOrganizationXpAccountOverview = {
   account: {
     displayFormat: string;
@@ -139,6 +154,35 @@ export type AdminOrganizationMembershipRow = {
   } | null;
 };
 
+export type AdminOrganizationUnitRow = {
+  id: string;
+  organization_id: string;
+  parent_unit_id: string | null;
+  name: string;
+  unit_type: string;
+  status: Database["public"]["Enums"]["content_status"];
+  created_at: string;
+  updated_at: string;
+  organization?: Pick<AdminOrganizationRow, "id" | "name" | "slug"> | null;
+  active_member_count?: number;
+  cohort_count?: number;
+};
+
+export type AdminOrganizationUnitMemberRow = {
+  unit_id: string;
+  organization_id: string;
+  user_id: string;
+  role: Database["public"]["Enums"]["organization_role_key"];
+  status: Database["public"]["Enums"]["organization_membership_status"];
+  created_at: string;
+  updated_at: string;
+  profile?: {
+    id: string;
+    display_name: string | null;
+    role: string;
+  } | null;
+};
+
 export type AdminOrganizationAdjustmentLearnerOption = {
   displayName: string | null;
   sourceLabel: string;
@@ -196,7 +240,15 @@ type MembershipSelectRow = AdminOrganizationMembershipRow & {
   }> | null;
 };
 
+type UnitSelectRow = AdminOrganizationUnitRow & {
+  organizations?: Pick<AdminOrganizationRow, "id" | "name" | "slug"> | Array<Pick<AdminOrganizationRow, "id" | "name" | "slug">> | null;
+};
+
 type PlanAssignmentSelectRow = AdminOrganizationPlanAssignmentRow & {
+  organization_plans?: Pick<AdminOrganizationPlanRow, "key" | "name"> | Array<Pick<AdminOrganizationPlanRow, "key" | "name">> | null;
+};
+
+type TemporaryEntitlementGrantSelectRow = AdminOrganizationTemporaryEntitlementGrantRow & {
   organization_plans?: Pick<AdminOrganizationPlanRow, "key" | "name"> | Array<Pick<AdminOrganizationPlanRow, "key" | "name">> | null;
 };
 
@@ -239,6 +291,26 @@ function roleToLabel(role: string) {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function normalizeOrganizationUnit(row: UnitSelectRow): AdminOrganizationUnitRow {
+  const organization = Array.isArray(row.organizations)
+    ? row.organizations[0] ?? null
+    : row.organizations ?? row.organization ?? null;
+
+  return {
+    ...row,
+    organization,
+  };
+}
+
+function countByUnitId(rows: Array<{ unit_id: string | null }>) {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.unit_id) continue;
+    counts.set(row.unit_id, (counts.get(row.unit_id) ?? 0) + 1);
+  }
+  return counts;
 }
 
 export async function getAdminOrganizationContexts(
@@ -318,6 +390,98 @@ export async function getAdminOrganizations(
   }
 
   return (data ?? []) as AdminOrganizationRow[];
+}
+
+export async function getAdminOrganizationUnits(
+  supabase: SupabaseClient<Database>,
+): Promise<AdminOrganizationUnitRow[]> {
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  let query = supabase
+    .from("organization_units")
+    .select(`
+      id,
+      organization_id,
+      parent_unit_id,
+      name,
+      unit_type,
+      status,
+      created_at,
+      updated_at,
+      organizations!organization_units_organization_id_fkey(id, name, slug)
+    `)
+    .order("name", { ascending: true });
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  const units = ((data ?? []) as unknown as UnitSelectRow[]).map(normalizeOrganizationUnit);
+  const unitIds = units.map((unit) => unit.id);
+
+  if (unitIds.length === 0) {
+    return [];
+  }
+
+  const [membersResult, cohortsResult] = await Promise.all([
+    supabase
+      .from("organization_unit_members")
+      .select("unit_id")
+      .in("unit_id", unitIds)
+      .eq("status", "active"),
+    supabase
+      .from("cohort_units")
+      .select("unit_id")
+      .in("unit_id", unitIds),
+  ]);
+
+  if (membersResult.error) throw membersResult.error;
+  if (cohortsResult.error) throw cohortsResult.error;
+
+  const memberCounts = countByUnitId((membersResult.data ?? []) as Array<{ unit_id: string | null }>);
+  const cohortCounts = countByUnitId((cohortsResult.data ?? []) as Array<{ unit_id: string | null }>);
+
+  return units.map((unit) => ({
+    ...unit,
+    active_member_count: memberCounts.get(unit.id) ?? 0,
+    cohort_count: cohortCounts.get(unit.id) ?? 0,
+  }));
+}
+
+export async function getAdminOrganizationUnitMembers(
+  supabase: SupabaseClient<Database>,
+): Promise<AdminOrganizationUnitMemberRow[]> {
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  let query = supabase
+    .from("organization_unit_members")
+    .select(`
+      unit_id,
+      organization_id,
+      user_id,
+      role,
+      status,
+      created_at,
+      updated_at,
+      profile:profiles!organization_unit_members_user_id_fkey(id, display_name, role)
+    `)
+    .order("updated_at", { ascending: false });
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as unknown as AdminOrganizationUnitMemberRow[];
 }
 
 export async function getAdminOrganizationPlans(
@@ -400,6 +564,61 @@ export async function getAdminOrganizationEntitlementOverrides(
   }
 
   return (data ?? []) as AdminOrganizationEntitlementOverrideRow[];
+}
+
+export async function getAdminOrganizationTemporaryEntitlementGrants(
+  supabase: SupabaseClient<Database>,
+): Promise<AdminOrganizationTemporaryEntitlementGrantRow[]> {
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  let query = supabase
+    .from("organization_temporary_entitlement_grants")
+    .select(`
+      id,
+      organization_id,
+      grant_type,
+      source_plan_key,
+      entitlement_delta,
+      starts_at,
+      expires_at,
+      revoked_at,
+      expired_audited_at,
+      reason,
+      created_at,
+      organization_plans!organization_temporary_entitlement_grants_source_plan_key_fkey(key, name)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(250);
+
+  if (selectedWorkspaceId !== "platform") {
+    query = query.eq("organization_id", selectedWorkspaceId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as unknown as TemporaryEntitlementGrantSelectRow[]).map((row) => {
+    const sourcePlan = Array.isArray(row.organization_plans)
+      ? row.organization_plans[0] ?? null
+      : row.organization_plans ?? null;
+
+    return {
+      id: row.id,
+      organization_id: row.organization_id,
+      grant_type: row.grant_type,
+      source_plan_key: row.source_plan_key,
+      entitlement_delta: row.entitlement_delta,
+      starts_at: row.starts_at,
+      expires_at: row.expires_at,
+      revoked_at: row.revoked_at,
+      expired_audited_at: row.expired_audited_at,
+      reason: row.reason,
+      created_at: row.created_at,
+      sourcePlan,
+    };
+  });
 }
 
 export async function getAdminOrganizationXpAccountOverview(

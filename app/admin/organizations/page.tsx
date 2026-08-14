@@ -11,9 +11,12 @@ import {
   getAdminOrganizationAdjustmentLearners,
   getAdminOrganizationInvitations,
   getAdminOrganizationMemberships,
+  getAdminOrganizationUnitMembers,
+  getAdminOrganizationUnits,
   getAdminOrganizations,
   getAdminOrganizationPlanAssignments,
   getAdminOrganizationPlans,
+  getAdminOrganizationTemporaryEntitlementGrants,
   getAdminOrganizationXpAccountOverview,
   getAdminCohorts,
   getAdminProgrammes,
@@ -28,11 +31,15 @@ import {
   saveOrganization,
   saveOrganizationInvitation,
   saveOrganizationMembership,
+  saveOrganizationUnit,
+  saveOrganizationUnitMembers,
   saveOrganizationPlanAssignment,
   saveOrganizationProfile,
+  saveOrganizationTemporaryEntitlementGrant,
   saveOrganizationXpAccountControls,
   saveOrganizationXpAccountPresentation,
   saveOrganizationXpAccountAdjustment,
+  revokeOrganizationTemporaryEntitlementGrant,
 } from "./actions";
 
 const ORGANIZATION_ROLES = [
@@ -50,6 +57,7 @@ const MEMBERSHIP_STATUSES = ["active", "invited", "suspended", "removed"] as con
 const BILLING_STATUSES = ["free", "trial", "active", "past_due", "cancelled", "sponsored"] as const;
 const LIFECYCLE_STATUSES = ["trial", "active", "suspended", "archived"] as const;
 const VERIFICATION_STATUSES = ["unverified", "verification_pending", "verified", "rejected"] as const;
+const TEMPORARY_GRANT_TYPES = ["plan_trial", "temporary_plan", "granular_override", "additive_allocation"] as const;
 
 const INTEGER_OVERRIDE_FIELDS = [
   ["max_courses", "Max courses"],
@@ -60,6 +68,17 @@ const INTEGER_OVERRIDE_FIELDS = [
   ["max_active_rewards", "Active rewards"],
   ["max_open_reward_claims", "Open claims"],
   ["max_fulfilled_reward_claims_per_month", "Fulfilled claims/month"],
+] as const;
+
+const TEMPORARY_NUMERIC_ENTITLEMENT_FIELDS = [
+  ...INTEGER_OVERRIDE_FIELDS,
+  ["ai_monthly_allocation", "AI monthly allocation"],
+  ["ai_temporary_allocation", "AI temporary allocation"],
+  ["ai_top_up_allocation", "AI top-up allocation"],
+  ["ai_warning_threshold", "AI warning threshold"],
+  ["ai_hard_limit", "AI hard limit"],
+  ["ai_user_rate_limit_per_day", "AI user rate/day"],
+  ["ai_organization_concurrency_limit", "AI concurrency limit"],
 ] as const;
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -89,10 +108,30 @@ function organizationDisplayName(organization: { name: string; short_name: strin
   return organization.short_name || organization.name;
 }
 
+function unitParentName(
+  parentUnitId: string | null,
+  units: Array<{ id: string; name: string }>,
+) {
+  if (!parentUnitId) return "Top level";
+  return units.find((unit) => unit.id === parentUnitId)?.name ?? parentUnitId;
+}
+
 function statusTone(status: string) {
   return status === "published" || status === "active" || status === "verified" || status === "sponsored"
     ? "good"
     : "warning";
+}
+
+function temporaryGrantStatus(grant: { starts_at: string; expires_at: string | null; revoked_at: string | null }) {
+  const now = Date.now();
+  if (grant.revoked_at) return "revoked";
+  if (new Date(grant.starts_at).getTime() > now) return "scheduled";
+  if (grant.expires_at && new Date(grant.expires_at).getTime() <= now) return "expired";
+  return "active";
+}
+
+function formatDateTime(value: string | null) {
+  return value ? new Date(value).toLocaleString() : "No expiry";
 }
 
 export default async function AdminOrganizationsPage({
@@ -104,16 +143,19 @@ export default async function AdminOrganizationsPage({
     "organisation_owner",
     "organisation_admin",
   ]);
-  const [organizations, memberships, invitations, users, programmes, cohorts, plans, planAssignments, entitlementOverrides] = await Promise.all([
+  const [organizations, memberships, invitations, users, programmes, cohorts, units, unitMembers, plans, planAssignments, entitlementOverrides, temporaryEntitlementGrants] = await Promise.all([
     getAdminOrganizations(supabase),
     getAdminOrganizationMemberships(supabase),
     getAdminOrganizationInvitations(supabase),
     getAdminUsers(supabase),
     getAdminProgrammes(supabase),
     getAdminCohorts(supabase),
+    getAdminOrganizationUnits(supabase),
+    getAdminOrganizationUnitMembers(supabase),
     getAdminOrganizationPlans(supabase),
     getAdminOrganizationPlanAssignments(supabase),
     getAdminOrganizationEntitlementOverrides(supabase),
+    getAdminOrganizationTemporaryEntitlementGrants(supabase),
   ]);
   const notice = firstSearchValue((await searchParams)?.notice);
   const assignmentsByOrganization = new Map(
@@ -122,6 +164,13 @@ export default async function AdminOrganizationsPage({
   const overridesByOrganization = new Map(
     entitlementOverrides.map((override) => [override.organization_id, override]),
   );
+  const temporaryGrantsByOrganization = new Map<string, typeof temporaryEntitlementGrants>();
+  for (const grant of temporaryEntitlementGrants) {
+    temporaryGrantsByOrganization.set(grant.organization_id, [
+      ...(temporaryGrantsByOrganization.get(grant.organization_id) ?? []),
+      grant,
+    ]);
+  }
   const isPlatformWorkspace = workspace.type === "platform";
   const selectedOrganization = organizations[0] ?? null;
   const [xpAccountOverview, adjustmentLearners] = selectedOrganization
@@ -151,6 +200,9 @@ export default async function AdminOrganizationsPage({
                 {organizations.map((organization) => {
                   const assignment = assignmentsByOrganization.get(organization.id);
                   const override = overridesByOrganization.get(organization.id);
+                  const activeTemporaryGrantCount = (temporaryGrantsByOrganization.get(organization.id) ?? [])
+                    .filter((grant) => temporaryGrantStatus(grant) === "active")
+                    .length;
 
                   return (
                     <tr key={organization.id}>
@@ -185,6 +237,11 @@ export default async function AdminOrganizationsPage({
                             {assignment?.billing_status ?? "free"}
                           </AdminStatusBadge>
                           {override ? <AdminStatusBadge tone="warning">override</AdminStatusBadge> : null}
+                          {activeTemporaryGrantCount > 0 ? (
+                            <AdminStatusBadge tone="warning">
+                              {activeTemporaryGrantCount} temporary
+                            </AdminStatusBadge>
+                          ) : null}
                         </div>
                       </td>
                       <td className="min-w-48 px-4 py-3">
@@ -219,6 +276,68 @@ export default async function AdminOrganizationsPage({
                   );
                 })}
               </AdminTable>
+            </div>
+          </AdminCard>
+
+          <AdminCard>
+            <h2 className="text-base font-black">Temporary capability grants</h2>
+            <div className="mt-4 overflow-x-auto">
+              <AdminTable columns={["Organisation", "Grant", "Window", "Status", "Controls"]}>
+                {temporaryEntitlementGrants.map((grant) => {
+                  const organization = organizations.find((item) => item.id === grant.organization_id);
+                  const state = temporaryGrantStatus(grant);
+
+                  return (
+                    <tr key={grant.id}>
+                      <td className="min-w-52 px-4 py-3">
+                        <p className="font-black">{organization?.name ?? grant.organization_id}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{grant.id}</p>
+                      </td>
+                      <td className="min-w-72 px-4 py-3">
+                        <p className="font-black">{grant.grant_type.replaceAll("_", " ")}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                          {grant.sourcePlan?.name ?? grant.source_plan_key ?? "Granular entitlement delta"}
+                        </p>
+                        {grant.reason ? (
+                          <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">{grant.reason}</p>
+                        ) : null}
+                        <pre className="mt-2 max-h-28 overflow-auto rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-soft)] p-2 text-[11px] font-semibold text-[var(--ve-muted)]">
+                          {JSON.stringify(grant.entitlement_delta, null, 2)}
+                        </pre>
+                      </td>
+                      <td className="min-w-56 px-4 py-3 text-xs font-bold text-[var(--ve-muted)]">
+                        <p>Starts {formatDateTime(grant.starts_at)}</p>
+                        <p className="mt-1">Ends {formatDateTime(grant.expires_at)}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <AdminStatusBadge tone={state === "active" ? "good" : "warning"}>
+                          {state}
+                        </AdminStatusBadge>
+                      </td>
+                      <td className="min-w-44 px-4 py-3">
+                        {isPlatformWorkspace && (state === "active" || state === "scheduled") ? (
+                          <form action={revokeOrganizationTemporaryEntitlementGrant} className="space-y-2">
+                            <input name="grantId" type="hidden" value={grant.id} />
+                            <input
+                              className={fieldClasses()}
+                              name="reason"
+                              placeholder="Revocation reason"
+                            />
+                            <button className={adminButtonClasses("secondary", "w-full")} type="submit">
+                              Revoke
+                            </button>
+                          </form>
+                        ) : (
+                          <span className="text-xs font-bold text-[var(--ve-muted)]">Read only</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </AdminTable>
+              {temporaryEntitlementGrants.length === 0 ? (
+                <p className="mt-4 text-sm font-semibold text-[var(--ve-muted)]">No temporary grants recorded.</p>
+              ) : null}
             </div>
           </AdminCard>
 
@@ -279,6 +398,106 @@ export default async function AdminOrganizationsPage({
                   </tr>
                 ))}
               </AdminTable>
+            </div>
+          </AdminCard>
+
+          <AdminCard>
+            <h2 className="text-base font-black">Organisation units</h2>
+            <div className="mt-4 overflow-x-auto">
+              <AdminTable columns={["Unit", "Organisation", "Parent", "Members", "Cohorts", "Status"]}>
+                {units.map((unit) => (
+                  <tr key={unit.id}>
+                    <td className="min-w-64 px-4 py-3">
+                      <p className="font-black">{unit.name}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.unit_type}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.id}</p>
+                    </td>
+                    <td className="min-w-44 px-4 py-3 font-bold">
+                      {unit.organization?.name ?? unit.organization_id}
+                    </td>
+                    <td className="min-w-44 px-4 py-3 text-sm font-bold">
+                      {unitParentName(unit.parent_unit_id, units)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 font-black tabular-nums">
+                      {unit.active_member_count ?? 0}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 font-black tabular-nums">
+                      {unit.cohort_count ?? 0}
+                    </td>
+                    <td className="px-4 py-3">
+                      <AdminStatusBadge tone={statusTone(unit.status)}>{unit.status}</AdminStatusBadge>
+                    </td>
+                  </tr>
+                ))}
+              </AdminTable>
+            </div>
+            <div className="mt-5 grid gap-4 xl:grid-cols-2">
+              {units.map((unit) => {
+                const assignableMemberships = memberships.filter(
+                  (membership) =>
+                    membership.organization_id === unit.organization_id &&
+                    (membership.status === "active" || membership.status === "invited"),
+                );
+                const activeUnitMembers = new Set(
+                  unitMembers
+                    .filter((member) => member.unit_id === unit.id && member.status === "active")
+                    .map((member) => `${member.user_id}:${member.role}`),
+                );
+
+                return (
+                  <form
+                    action={saveOrganizationUnitMembers}
+                    className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4"
+                    key={`unit-members:${unit.id}`}
+                  >
+                    <input name="organizationId" type="hidden" value={unit.organization_id} />
+                    <input name="unitId" type="hidden" value={unit.id} />
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black">{unit.name}</h3>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.unit_type}</p>
+                      </div>
+                      <button className={adminButtonClasses("secondary", "min-h-9 px-3 text-xs")} type="submit">
+                        Save members
+                      </button>
+                    </div>
+                    <div className="mt-3 grid max-h-72 gap-2 overflow-auto pr-1">
+                      {assignableMemberships.map((membership) => (
+                        <label
+                          className="flex items-start gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 text-xs"
+                          key={`${unit.id}:${membership.user_id}:${membership.role}`}
+                        >
+                          <input
+                            className="mt-1 size-4"
+                            defaultChecked={activeUnitMembers.has(`${membership.user_id}:${membership.role}`)}
+                            name="unitMembers"
+                            type="checkbox"
+                            value={`${membership.user_id}:${membership.role}`}
+                          />
+                          <span>
+                            <span className="block font-black">
+                              {displayUser(membership.profile?.display_name, membership.user_id)}
+                            </span>
+                            <span className="mt-1 block font-semibold text-[var(--ve-muted)]">
+                              {membership.roleDefinition?.label ?? roleLabel(membership.role)}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                      {assignableMemberships.length === 0 ? (
+                        <p className="text-xs font-semibold text-[var(--ve-muted)]">
+                          Add organisation memberships before assigning unit members.
+                        </p>
+                      ) : null}
+                    </div>
+                  </form>
+                );
+              })}
+              {units.length === 0 ? (
+                <p className="text-sm font-semibold text-[var(--ve-muted)]">
+                  No organisation units have been created.
+                </p>
+              ) : null}
             </div>
           </AdminCard>
         </div>
@@ -776,10 +995,70 @@ export default async function AdminOrganizationsPage({
             </form>
           </AdminCard>
 
+          <AdminCard>
+            <h2 className="text-base font-black">Create or update unit</h2>
+            <form action={saveOrganizationUnit} className="mt-4 space-y-4">
+              <label className="block">
+                <span className={labelClasses()}>Existing unit</span>
+                <select className={fieldClasses()} name="unitId" defaultValue="">
+                  <option value="">Create new</option>
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name} ({unit.unit_type})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className={labelClasses()}>Organisation</span>
+                <select className={fieldClasses()} name="organizationId" required>
+                  {organizations.map((organization) => (
+                    <option key={organization.id} value={organization.id}>
+                      {organization.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className={labelClasses()}>Parent unit</span>
+                <select className={fieldClasses()} name="parentUnitId" defaultValue="">
+                  <option value="">Top level</option>
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name} ({unit.unit_type})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className={labelClasses()}>Name</span>
+                  <input className={fieldClasses()} name="name" required />
+                </label>
+                <label className="block">
+                  <span className={labelClasses()}>Type</span>
+                  <input className={fieldClasses()} name="unitType" placeholder="Department" required />
+                </label>
+              </div>
+              <label className="block">
+                <span className={labelClasses()}>Status</span>
+                <select className={fieldClasses()} name="status" defaultValue="published">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+              <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                Save unit
+              </button>
+            </form>
+          </AdminCard>
+
           {isPlatformWorkspace ? (
-            <AdminCard>
-              <h2 className="text-base font-black">Assign plan</h2>
-              <form action={saveOrganizationPlanAssignment} className="mt-4 space-y-4">
+            <>
+              <AdminCard>
+                <h2 className="text-base font-black">Assign plan</h2>
+                <form action={saveOrganizationPlanAssignment} className="mt-4 space-y-4">
               <label className="block">
                 <span className={labelClasses()}>Organisation</span>
                 <select className={fieldClasses()} name="organizationId" required>
@@ -838,8 +1117,92 @@ export default async function AdminOrganizationsPage({
                 <button className={adminButtonClasses("primary", "w-full")} type="submit">
                   Save plan assignment
                 </button>
-              </form>
-            </AdminCard>
+                </form>
+              </AdminCard>
+
+              <AdminCard>
+                <h2 className="text-base font-black">Create temporary grant</h2>
+                <form action={saveOrganizationTemporaryEntitlementGrant} className="mt-4 space-y-4">
+                  <label className="block">
+                    <span className={labelClasses()}>Organisation</span>
+                    <select className={fieldClasses()} name="organizationId" required>
+                      {organizations.map((organization) => (
+                        <option key={organization.id} value={organization.id}>
+                          {organization.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className={labelClasses()}>Grant type</span>
+                    <select className={fieldClasses()} name="grantType" defaultValue="granular_override">
+                      {TEMPORARY_GRANT_TYPES.map((grantType) => (
+                        <option key={grantType} value={grantType}>
+                          {grantType.replaceAll("_", " ")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className={labelClasses()}>Source plan</span>
+                    <select className={fieldClasses()} name="sourcePlanKey" defaultValue="">
+                      <option value="">No source plan</option>
+                      {plans.map((plan) => (
+                        <option key={plan.key} value={plan.key}>
+                          {plan.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={labelClasses()}>Starts at</span>
+                      <input className={fieldClasses()} name="startsAt" type="datetime-local" />
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Expires at</span>
+                      <input className={fieldClasses()} name="expiresAt" type="datetime-local" />
+                    </label>
+                  </div>
+                  <div>
+                    <p className={labelClasses()}>Numeric entitlement delta</p>
+                    <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                      {TEMPORARY_NUMERIC_ENTITLEMENT_FIELDS.map(([key, label]) => (
+                        <label className="block" key={key}>
+                          <span className="text-xs font-bold text-[var(--ve-muted)]">{label}</span>
+                          <input
+                            className={fieldClasses()}
+                            min="0"
+                            name={key}
+                            placeholder="No delta"
+                            type="number"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="block">
+                    <span className={labelClasses()}>Entitlement delta JSON</span>
+                    <textarea
+                      className={`${fieldClasses()} min-h-28 resize-y font-mono text-xs`}
+                      name="entitlementDeltaJson"
+                      placeholder='{"allowed_lesson_block_types":["text","image","video"],"max_storage_bytes":1073741824}'
+                    />
+                  </label>
+                  <label className="block">
+                    <span className={labelClasses()}>Reason</span>
+                    <textarea
+                      className={`${fieldClasses()} min-h-24 resize-y`}
+                      name="reason"
+                      placeholder="Trial, sponsored capability evaluation, top-up or immediate revocation context"
+                    />
+                  </label>
+                  <button className={adminButtonClasses("primary", "w-full")} type="submit">
+                    Save temporary grant
+                  </button>
+                </form>
+              </AdminCard>
+            </>
           ) : null}
         </aside>
       </section>

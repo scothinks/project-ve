@@ -16,6 +16,7 @@ type AiGenerationAdminClient = SupabaseClient<Database>;
 
 export type WorkflowCourseRow = {
   id: string;
+  organization_id: string | null;
   slug?: string;
   title: string;
   description: string;
@@ -136,7 +137,7 @@ export async function getCourseWorkflowData(
 ) {
   const { data: course, error: courseError } = await supabase
     .from("courses")
-    .select("id, slug, title, description, category, level, thumbnail, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by")
+    .select("id, organization_id, slug, title, description, category, level, thumbnail, status, ai_generated, ai_text_status, ai_media_status, ai_publish_status, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by")
     .eq("id", courseId)
     .maybeSingle();
 

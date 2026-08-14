@@ -48,6 +48,9 @@ import { requireAdmin } from "@/lib/admin";
 import {
   getAiMediaConfig,
 } from "@/lib/ai-media-generator";
+import {
+  getAdminWorkspaceOrganizationId,
+} from "@/features/ai-generation/application/organization-ai-metering";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 import {
   requireAdminCourseAiAuthoring,
@@ -60,7 +63,12 @@ export async function generateAiCourseDraft(formData: FormData) {
   await requireAdminWorkspaceAiAuthoring(admin, "/admin/courses");
   const { supabase, profile } = admin;
   const input = parseAiGenerationInput(formData);
-  const result = await requestAiCourseDraftJob(supabase, profile.id, input);
+  const result = await requestAiCourseDraftJob(
+    supabase,
+    profile.id,
+    input,
+    getAdminWorkspaceOrganizationId(admin),
+  );
 
   revalidatePath("/admin/courses");
   redirect(

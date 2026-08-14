@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { OrganizationAiOperationType } from "@/features/ai-generation/application/organization-ai-metering";
 import { ValidationError } from "@/lib/app-errors";
 import type { Database, Json } from "@/types/database";
 
@@ -119,12 +120,49 @@ export async function createAiGenerationJob(
   jobType: AiGenerationJobType,
   prompt: Record<string, unknown>,
   options: {
+    courseId?: string | null;
     entityId?: string | null;
+    estimatedUnits?: number;
+    lessonId?: string | null;
+    operationType?: OrganizationAiOperationType;
+    organizationId?: string | null;
     status?: AiGenerationJobStatus;
   } = {},
 ) {
   const entityId = options.entityId ?? null;
   const idempotencyKey = buildAiGenerationJobIdempotencyKey(actorUserId, jobType, prompt, entityId);
+
+  if (options.organizationId && options.operationType && options.estimatedUnits) {
+    const { data, error } = await supabase.rpc("create_organization_ai_generation_job", {
+      p_actor_user_id: actorUserId,
+      p_assessment_id: undefined,
+      p_course_id: options.courseId ?? entityId ?? undefined,
+      p_entity_id: entityId ?? "",
+      p_estimated_provider_cost: undefined,
+      p_estimated_units: options.estimatedUnits,
+      p_idempotency_key: idempotencyKey,
+      p_job_type: jobType,
+      p_lesson_id: options.lessonId ?? undefined,
+      p_mission_id: undefined,
+      p_operation_type: options.operationType,
+      p_organization_id: options.organizationId,
+      p_programme_id: undefined,
+      p_prompt: prompt as Json,
+      p_status: options.status ?? "queued",
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const result = data as { jobId?: string };
+    if (!result.jobId) {
+      throw new Error("Organization AI job creation did not return a job id.");
+    }
+
+    return result.jobId;
+  }
+
   const { data, error } = await supabase
     .from("ai_generation_jobs")
     .insert({

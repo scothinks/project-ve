@@ -3,6 +3,7 @@ import type {
   AdminCohortDetail,
   AdminCourseRow,
   AdminOrganizationRow,
+  AdminOrganizationUnitRow,
   AdminProfileRow,
   AdminProgrammeRow,
 } from "@/lib/admin";
@@ -109,12 +110,14 @@ export function CohortEditorForm({
   courses,
   organizations,
   programmes,
+  units,
   users,
 }: {
   cohort?: AdminCohortDetail | null;
   courses: AdminCourseRow[];
   organizations: AdminOrganizationRow[];
   programmes: AdminProgrammeRow[];
+  units: AdminOrganizationUnitRow[];
   users: AdminProfileRow[];
 }) {
   const selectedOrganizationId = cohort?.organization_id ?? organizations[0]?.id ?? "";
@@ -131,6 +134,10 @@ export function CohortEditorForm({
   const availableProgrammes = programmes.filter(
     (programme) => programme.organization_id === selectedOrganizationId,
   );
+  const availableUnits = units.filter(
+    (unit) => unit.organization_id === selectedOrganizationId && unit.status !== "archived",
+  );
+  const selectedUnitIds = new Set((cohort?.units ?? []).map((unit) => unit.id));
 
   return (
     <div className="space-y-5">
@@ -221,6 +228,35 @@ export function CohortEditorForm({
               <span className={labelClasses()}>Ends</span>
               <input className={fieldClasses()} name="endsAt" type="datetime-local" defaultValue={toDateTimeLocal(cohort?.ends_at)} />
             </label>
+          </FormSection>
+
+          <FormSection title="Units">
+            {availableUnits.length === 0 ? (
+              <EmptyPanel>No active organisation units are available.</EmptyPanel>
+            ) : (
+              <div className="grid max-h-72 gap-3 overflow-auto pr-1">
+                {availableUnits.map((unit) => (
+                  <label
+                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm"
+                    key={unit.id}
+                  >
+                    <input
+                      className="mt-1 size-4"
+                      defaultChecked={selectedUnitIds.has(unit.id)}
+                      name="unitIds"
+                      type="checkbox"
+                      value={unit.id}
+                    />
+                    <span>
+                      <span className="block font-black">{unit.name}</span>
+                      <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                        {unit.unit_type}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
           </FormSection>
 
           {cohort ? (
@@ -371,6 +407,14 @@ export function CohortEditorForm({
             <div className="space-y-4">
               {cohort.courseAssignments.length === 0 && cohort.programmeAssignments.length === 0 ? (
                 <EmptyPanel>No cohort assignments have been created.</EmptyPanel>
+              ) : null}
+              {cohort.units.length > 0 ? (
+                <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
+                  <p className="font-black">Units</p>
+                  <p className={helperTextClasses()}>
+                    {cohort.units.map((unit) => `${unit.unit_type}: ${unit.name}`).join(", ")}
+                  </p>
+                </div>
               ) : null}
               {cohort.courseAssignments.map((assignment) => (
                 <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3" key={assignment.id}>
