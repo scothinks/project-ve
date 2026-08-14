@@ -7532,16 +7532,26 @@ export type Database = {
         }
         Returns: Json
       }
-      admin_get_lms_reporting: {
-        Args: {
-          p_cohort_id?: string
-          p_limit?: number
-          p_organization_id?: string
-          p_programme_id?: string
-          p_unit_id?: string
-        }
-        Returns: Json
-      }
+      admin_get_lms_reporting:
+        | {
+            Args: {
+              p_cohort_id?: string
+              p_limit?: number
+              p_organization_id?: string
+              p_programme_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_cohort_id?: string
+              p_limit?: number
+              p_organization_id?: string
+              p_programme_id?: string
+              p_unit_id?: string
+            }
+            Returns: Json
+          }
       admin_get_organization_activity: {
         Args: {
           p_actor_user_id?: string
