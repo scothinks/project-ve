@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(29);
+select extensions.plan(34);
 
 insert into auth.users (
   id,
@@ -63,6 +63,17 @@ values
     '{}'::jsonb,
     now(),
     now()
+  ),
+  (
+    '55555555-5555-4555-8555-555555555205',
+    'authenticated',
+    'authenticated',
+    'pgtap-reporting-content-editor@example.test',
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
   )
 on conflict (id) do update
   set email = excluded.email,
@@ -85,7 +96,8 @@ values
   ('11111111-1111-4111-8111-111111111201', 'Local pgTAP Reporting Learner One', 0, 0, 'learner', now() - interval '2 days'),
   ('22222222-2222-4222-8222-222222222202', 'Local pgTAP Reporting Learner Two', 0, 0, 'learner', now() - interval '2 days'),
   ('33333333-3333-4333-8333-333333333203', 'Local pgTAP Reporting Unit Supervisor', 0, 0, 'learner', now() - interval '2 days'),
-  ('44444444-4444-4444-8444-444444444204', 'Local pgTAP Reporting Broad Instructor', 0, 0, 'learner', now() - interval '2 days')
+  ('44444444-4444-4444-8444-444444444204', 'Local pgTAP Reporting Broad Instructor', 0, 0, 'learner', now() - interval '2 days'),
+  ('55555555-5555-4555-8555-555555555205', 'Local pgTAP Reporting Content Editor', 0, 0, 'learner', now() - interval '2 days')
 on conflict (id) do update
   set display_name = excluded.display_name,
       xp = excluded.xp,
@@ -125,7 +137,8 @@ values
   (:'reporting_alpha_org_id'::uuid, '11111111-1111-4111-8111-111111111201'::uuid, 'learner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
   (:'reporting_alpha_org_id'::uuid, '22222222-2222-4222-8222-222222222202'::uuid, 'learner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
   (:'reporting_alpha_org_id'::uuid, '33333333-3333-4333-8333-333333333203'::uuid, 'instructor', 'invited', :'TEST_ADMIN_USER_ID'::uuid),
-  (:'reporting_alpha_org_id'::uuid, '44444444-4444-4444-8444-444444444204'::uuid, 'instructor', 'active', :'TEST_ADMIN_USER_ID'::uuid)
+  (:'reporting_alpha_org_id'::uuid, '44444444-4444-4444-8444-444444444204'::uuid, 'instructor', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'reporting_alpha_org_id'::uuid, '55555555-5555-4555-8555-555555555205'::uuid, 'content_editor', 'active', :'TEST_ADMIN_USER_ID'::uuid)
 on conflict (organization_id, user_id, role) do update
   set status = excluded.status,
       invited_by = excluded.invited_by;
@@ -924,6 +937,34 @@ reset role;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333203', true);
 set local role authenticated;
 
+select extensions.throws_ok(
+  format($$ select public.admin_get_lms_reporting(%L::uuid, null, null, %L::uuid, 50) $$, :'reporting_alpha_org_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa1301'),
+  '42501',
+  'Reporting access required.',
+  'invited instructor with an active unit preassignment cannot read unit reporting'
+);
+
+select extensions.throws_ok(
+  format($$ select public.admin_get_instructor_workspace(%L::uuid, %L::uuid, 50) $$, :'reporting_alpha_org_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa1301'),
+  '42501',
+  'Instructor workspace access required.',
+  'invited instructor with an active unit preassignment cannot read instructor workspace data'
+);
+
+reset role;
+set local role service_role;
+
+update public.organization_memberships
+set status = 'active',
+    updated_at = now()
+where organization_id = :'reporting_alpha_org_id'::uuid
+  and user_id = '33333333-3333-4333-8333-333333333203'::uuid
+  and role = 'instructor';
+
+reset role;
+select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333203', true);
+set local role authenticated;
+
 select public.admin_get_lms_reporting(:'reporting_alpha_org_id'::uuid, null, null, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa1301'::uuid, 50) as supervisor_unit_reporting_result
 \gset
 
@@ -1024,6 +1065,45 @@ select extensions.ok(
   'unit-scoped instructor can update permitted interventions with audit trail'
 );
 
+update public.organization_memberships
+set status = 'suspended',
+    updated_at = now()
+where organization_id = :'reporting_alpha_org_id'::uuid
+  and user_id = '33333333-3333-4333-8333-333333333203'::uuid
+  and role = 'instructor';
+
+reset role;
+select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333203', true);
+set local role authenticated;
+
+select extensions.throws_ok(
+  format($$ select public.admin_get_instructor_workspace(%L::uuid, %L::uuid, 50) $$, :'reporting_alpha_org_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa1301'),
+  '42501',
+  'Instructor workspace access required.',
+  'suspended instructor membership immediately revokes active unit-assignment access'
+);
+
+reset role;
+set local role service_role;
+
+update public.organization_memberships
+set status = 'removed',
+    updated_at = now()
+where organization_id = :'reporting_alpha_org_id'::uuid
+  and user_id = '33333333-3333-4333-8333-333333333203'::uuid
+  and role = 'instructor';
+
+reset role;
+select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333203', true);
+set local role authenticated;
+
+select extensions.throws_ok(
+  format($$ select public.admin_get_lms_reporting(%L::uuid, null, null, %L::uuid, 50) $$, :'reporting_alpha_org_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa1301'),
+  '42501',
+  'Reporting access required.',
+  'removed instructor membership cannot regain unit reporting through a stale unit row'
+);
+
 reset role;
 select set_config('request.jwt.claim.sub', '44444444-4444-4444-8444-444444444204', true);
 set local role authenticated;
@@ -1040,6 +1120,17 @@ select extensions.throws_ok(
   '42501',
   'Scoped instructor access required.',
   'active instructor membership alone cannot update unrelated interventions'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '55555555-5555-4555-8555-555555555205', true);
+set local role authenticated;
+
+select extensions.throws_ok(
+  format($$ select public.admin_get_instructor_workspace(%L::uuid, null, 50) $$, :'reporting_alpha_org_id'),
+  '42501',
+  'Instructor workspace access required.',
+  'content editors cannot directly call the instructor workspace RPC'
 );
 
 reset role;

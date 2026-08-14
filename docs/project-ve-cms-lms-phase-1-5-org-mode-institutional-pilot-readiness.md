@@ -3205,6 +3205,8 @@ git diff --check
 
 Result: local migration replay passed including `20260813110000_p15_ops_001_organization_units.sql`; focused LMS reporting pgTAP passed 21/21, including unit depth, cross-organisation boundaries, cohort-unit association, unit reporting filters and unit-scoped supervisor denial paths; generated database types are current; typecheck, lint, production build and whitespace checks passed.
 
+Focused closure on 2026-08-15 added forward migration `20260815100000_p15e_focused_boundary_closure.sql` so unit-derived supervision now requires both an active unit assignment and a matching active organisation membership at access time. Invited/preassigned instructors remain storable, but they receive no reporting, instructor workspace, reminder or intervention authority until the organisation membership becomes active; suspended or removed organisation memberships immediately revoke that operational unit scope.
+
 ---
 
 ## Ticket P15-OPS-002: Instructor and supervisor workspace
@@ -3289,6 +3291,8 @@ git diff --check
 ```
 
 Result: local migration replay passed including `20260813120000_p15_ops_002_instructor_workspace.sql`; focused LMS reporting pgTAP passed 29/29 including unit-scoped instructor workspace data, read-only report viewer behavior, instructor reminder notification delivery and audit, scoped intervention updates and broad-instructor denial paths; generated database types are current; typecheck, lint, production build and whitespace checks passed.
+
+Focused closure on 2026-08-15 aligned the instructor workspace RPC with the UI/server role contract. Broad instructor workspace reads now use a dedicated role helper that includes owner, admin, programme manager, reviewer and report viewer, while deliberately excluding `content_editor`; assignment-scoped instructor/report-viewer access still requires active organisation membership plus active unit assignment. The focused LMS reporting pgTAP now covers invited, active, suspended and removed membership transitions and direct `content_editor` RPC denial.
 
 ---
 
@@ -3531,6 +3535,7 @@ supabase/migrations/20260814103000_p15_ai_001_service_role_detection.sql
 supabase/migrations/20260814104000_p15_ai_001_service_role_session_detection.sql
 supabase/migrations/20260814105000_p15_ai_001_service_role_setting_detection.sql
 supabase/migrations/20260814110000_p15_ai_001_service_role_reconciliation.sql
+supabase/migrations/20260815100000_p15e_focused_boundary_closure.sql
 features/ai-generation/application/organization-ai-metering.ts
 features/ai-generation/application/job-orchestration.ts
 features/ai-generation/application/job-requests.ts
@@ -3542,14 +3547,15 @@ features/learning/admin/ai-activity.ts
 features/learning/admin/ai-activity-panel.tsx
 app/admin/courses/ai-actions.ts
 supabase/tests/database/organization_ai_metering.sql
+scripts/test-organization-ai-concurrency-local.mjs
 ```
 
 Implemented behavior:
 
 * `organization_ai_usage_records` is an enforcement ledger for organisation attribution, reservations, actual provider usage/cost, internal charged units, reconciliation status and failed-job policy. It is not a wallet, transferable credit system, exchange or marketplace.
 * Organisation AI availability consumes the generic entitlement/grant mechanism from `P15-ENT-002`: AI authoring requires effective `ai_authoring_enabled` plus active allocation keys, hard caps, allowed operation types, allowed roles, per-user daily limits and organisation concurrency limits.
-* AI job creation estimates and reserves usage idempotently through trusted RPCs before queuing durable jobs; planner calls reserve and reconcile around direct provider calls.
-* Worker claim paths revalidate organisation entitlement and reservation state before provider work; course-text materialization, replacement, generic completion and failure RPCs reconcile reserved usage without replacing the durable worker lease/idempotency architecture.
+* AI job creation estimates and reserves usage idempotently through trusted RPCs before queuing durable jobs; reservation validation and insertion are serialized at the organisation row so concurrent requests cannot overspend the effective cap.
+* Worker claim paths revalidate organisation entitlement, reservation state, actor role authorization, operation allow-lists, effective hard caps, rate limits and concurrency limits before provider work; course-text materialization, replacement, generic completion and failure RPCs reconcile reserved usage without replacing the durable worker lease/idempotency architecture.
 * Usage reconciliation is service-role-only. Authenticated organisation users may reserve and queue within entitlement limits, but they cannot release, undercharge or otherwise reconcile visible usage records from browser-accessible RPCs.
 * New-course draft jobs may exist before a course row exists; `course_id` attribution is populated only when the course exists, while organisation, actor, operation and source attribution remain required.
 * Admin AI activity now surfaces recent usage records and reserved/charged/released unit totals alongside durable job status.
@@ -3562,10 +3568,26 @@ node scripts/supabase-cli.mjs migration up
 npm run db:types:local
 npm run db:types:local:check
 node scripts/supabase-cli.mjs test db supabase/tests/database/organization_ai_metering.sql
+npm run test:organization-ai-concurrency:local
 npm run typecheck
 ```
 
-Focused organisation AI metering pgTAP passed 17/17. The wrapper form, `npm run test:db -- supabase/tests/database/organization_ai_metering.sql`, was attempted first but failed at local Supabase CLI connection setup before running assertions; the direct single-file CLI form above passed.
+Focused organisation AI metering pgTAP passed 18/18 after adding role-revocation worker revalidation coverage. The local two-session AI reservation concurrency regression passed and proves that two overlapping requests with insufficient combined budget produce exactly one reservation and one hard-limit rejection. Focused closure validation also passed full local pgTAP, generated type drift, typecheck, lint, production build and whitespace checks:
+
+```text
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/organization_ai_metering.sql
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_reporting.sql
+npm run test:organization-ai-concurrency:local
+npm run test:db
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+Result: focused pgTAP passed 18/18 and 34/34; full pgTAP passed 33 files / 695 tests; the AI concurrency script, generated type drift check, typecheck, lint, production build and whitespace checks passed.
 
 ---
 
@@ -4623,7 +4645,7 @@ Implement:
 
 ```text
 P15-ENT-002 (implemented 2026-08-13; pending acceptance)
-P15-AI-001 (implemented 2026-08-14; pending acceptance)
+P15-AI-001 (implemented 2026-08-14; focused closure implemented 2026-08-15; pending acceptance)
 P15-OPS-001
 P15-OPS-002
 P15-OPS-003

@@ -2649,10 +2649,11 @@ Final remediation closure recommendation:
   persistence, and active queued/running job enqueueing uses deterministic
   idempotency keys while allowing later jobs after completion/failure.
 * `VE-TEST-003`: complete locally. The remediation gate now includes actual
-  signup E2E through `/api/auth/signup`, concurrent reward redemption coverage,
-  duplicate XP mission and reward mission domain-event assertions, and
-  ledger/cache consistency checks after economic mutations. The economic script
-  is local-only and refuses non-local database URLs by default.
+  signup E2E through `/api/auth/signup`, quiz XP concurrency, organisation AI
+  reservation concurrency, concurrent reward redemption coverage, duplicate XP
+  mission and reward mission domain-event assertions, and ledger/cache
+  consistency checks after economic mutations. The local concurrency/economic
+  scripts refuse non-local database URLs by default.
 * `VE-SEC-003`: complete and linked-DB validated. RPC governance now compares
   `anon`, `authenticated`, and `service_role` against declared classification
   ACLs, checks classification rows resolve to current signatures, and aligns
@@ -2716,7 +2717,8 @@ Result: PASS, Playwright 5 passed
 npm run test:remediation:local
 Result: PASS; local db reset/replay, local type drift check, pgTAP
 Files=7 / Tests=147, repository contracts, quiz XP concurrency regression,
-economic integrity regression, and Playwright E2E 5 passed
+organisation AI reservation concurrency regression, economic integrity
+regression, and Playwright E2E 5 passed
 
 git diff --check
 Result: PASS
