@@ -1431,81 +1431,164 @@ export type Database = {
       }
       ai_generation_jobs: {
         Row: {
+          actual_internal_cost: number | null
+          actual_provider_cost: number | null
+          actual_provider_model: string | null
+          actual_provider_usage: Json
+          assessment_id: string | null
           attempt_count: number
           available_at: string
           completed_at: string | null
+          course_id: string | null
           created_at: string
           created_by: string | null
           entity_id: string | null
           entity_type: string
           error: string | null
+          estimated_units: number
+          failed_job_charge_policy: string | null
           failure_code: string | null
           failure_detail: Json
+          final_charged_units: number | null
           heartbeat_at: string | null
           id: string
           idempotency_key: string | null
           job_type: string
+          lesson_id: string | null
           lock_token: string | null
           lock_version: number
           locked_at: string | null
           locked_by: string | null
+          mission_id: string | null
+          operation_type: string | null
+          organization_ai_usage_record_id: string | null
+          organization_id: string | null
+          programme_id: string | null
           prompt: Json
+          reconciliation_status: string
+          reserved_units: number
           result: Json
+          source_entitlement: Json
           started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          actual_internal_cost?: number | null
+          actual_provider_cost?: number | null
+          actual_provider_model?: string | null
+          actual_provider_usage?: Json
+          assessment_id?: string | null
           attempt_count?: number
           available_at?: string
           completed_at?: string | null
+          course_id?: string | null
           created_at?: string
           created_by?: string | null
           entity_id?: string | null
           entity_type: string
           error?: string | null
+          estimated_units?: number
+          failed_job_charge_policy?: string | null
           failure_code?: string | null
           failure_detail?: Json
+          final_charged_units?: number | null
           heartbeat_at?: string | null
           id?: string
           idempotency_key?: string | null
           job_type: string
+          lesson_id?: string | null
           lock_token?: string | null
           lock_version?: number
           locked_at?: string | null
           locked_by?: string | null
+          mission_id?: string | null
+          operation_type?: string | null
+          organization_ai_usage_record_id?: string | null
+          organization_id?: string | null
+          programme_id?: string | null
           prompt?: Json
+          reconciliation_status?: string
+          reserved_units?: number
           result?: Json
+          source_entitlement?: Json
           started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          actual_internal_cost?: number | null
+          actual_provider_cost?: number | null
+          actual_provider_model?: string | null
+          actual_provider_usage?: Json
+          assessment_id?: string | null
           attempt_count?: number
           available_at?: string
           completed_at?: string | null
+          course_id?: string | null
           created_at?: string
           created_by?: string | null
           entity_id?: string | null
           entity_type?: string
           error?: string | null
+          estimated_units?: number
+          failed_job_charge_policy?: string | null
           failure_code?: string | null
           failure_detail?: Json
+          final_charged_units?: number | null
           heartbeat_at?: string | null
           id?: string
           idempotency_key?: string | null
           job_type?: string
+          lesson_id?: string | null
           lock_token?: string | null
           lock_version?: number
           locked_at?: string | null
           locked_by?: string | null
+          mission_id?: string | null
+          operation_type?: string | null
+          organization_ai_usage_record_id?: string | null
+          organization_id?: string | null
+          programme_id?: string | null
           prompt?: Json
+          reconciliation_status?: string
+          reserved_units?: number
           result?: Json
+          source_entitlement?: Json
           started_at?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_generation_jobs_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_organization_ai_usage_record_id_fkey"
+            columns: ["organization_ai_usage_record_id"]
+            isOneToOne: false
+            referencedRelation: "organization_ai_usage_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       assessment_option_dimension_weights: {
         Row: {
@@ -1817,6 +1900,59 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_units: {
+        Row: {
+          assigned_by: string | null
+          cohort_id: string
+          created_at: string
+          organization_id: string
+          unit_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          cohort_id: string
+          created_at?: string
+          organization_id: string
+          unit_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          cohort_id?: string
+          created_at?: string
+          organization_id?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_units_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_units_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_units_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "organization_units"
             referencedColumns: ["id"]
           },
         ]
@@ -3256,6 +3392,134 @@ export type Database = {
           },
         ]
       }
+      organization_ai_usage_records: {
+        Row: {
+          actor_user_id: string | null
+          actual_internal_cost: number | null
+          actual_provider_cost: number | null
+          actual_provider_model: string | null
+          actual_provider_usage: Json
+          assessment_id: string | null
+          completed_at: string | null
+          course_id: string | null
+          created_at: string
+          estimated_provider_cost: number | null
+          estimated_units: number
+          failed_job_charge_policy: string | null
+          failure_code: string | null
+          final_charged_units: number | null
+          id: string
+          idempotency_key: string
+          lesson_id: string | null
+          metadata: Json
+          mission_id: string | null
+          operation_type: string
+          organization_id: string
+          programme_id: string | null
+          provider_started_at: string | null
+          reconciliation_status: string
+          reserved_units: number
+          source_entitlement: Json
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          actual_internal_cost?: number | null
+          actual_provider_cost?: number | null
+          actual_provider_model?: string | null
+          actual_provider_usage?: Json
+          assessment_id?: string | null
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          estimated_provider_cost?: number | null
+          estimated_units: number
+          failed_job_charge_policy?: string | null
+          failure_code?: string | null
+          final_charged_units?: number | null
+          id?: string
+          idempotency_key: string
+          lesson_id?: string | null
+          metadata?: Json
+          mission_id?: string | null
+          operation_type: string
+          organization_id: string
+          programme_id?: string | null
+          provider_started_at?: string | null
+          reconciliation_status?: string
+          reserved_units: number
+          source_entitlement?: Json
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          actual_internal_cost?: number | null
+          actual_provider_cost?: number | null
+          actual_provider_model?: string | null
+          actual_provider_usage?: Json
+          assessment_id?: string | null
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          estimated_provider_cost?: number | null
+          estimated_units?: number
+          failed_job_charge_policy?: string | null
+          failure_code?: string | null
+          final_charged_units?: number | null
+          id?: string
+          idempotency_key?: string
+          lesson_id?: string | null
+          metadata?: Json
+          mission_id?: string | null
+          operation_type?: string
+          organization_id?: string
+          programme_id?: string | null
+          provider_started_at?: string | null
+          reconciliation_status?: string
+          reserved_units?: number
+          source_entitlement?: Json
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_ai_usage_records_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_ai_usage_records_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_ai_usage_records_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_ai_usage_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_creation_attempts: {
         Row: {
           attempted_slug: string
@@ -3661,6 +3925,206 @@ export type Database = {
           sort_order?: number
         }
         Relationships: []
+      }
+      organization_temporary_entitlement_grants: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entitlement_delta: Json
+          expired_audited_at: string | null
+          expires_at: string | null
+          grant_type: Database["public"]["Enums"]["organization_temporary_entitlement_grant_type"]
+          id: string
+          organization_id: string
+          reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          source_plan_key: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entitlement_delta?: Json
+          expired_audited_at?: string | null
+          expires_at?: string | null
+          grant_type: Database["public"]["Enums"]["organization_temporary_entitlement_grant_type"]
+          id?: string
+          organization_id: string
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source_plan_key?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entitlement_delta?: Json
+          expired_audited_at?: string | null
+          expires_at?: string | null
+          grant_type?: Database["public"]["Enums"]["organization_temporary_entitlement_grant_type"]
+          id?: string
+          organization_id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source_plan_key?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_temporary_entitlement_grants_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_temporary_entitlement_grants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_temporary_entitlement_grants_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_temporary_entitlement_grants_source_plan_key_fkey"
+            columns: ["source_plan_key"]
+            isOneToOne: false
+            referencedRelation: "organization_plans"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      organization_unit_members: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status: Database["public"]["Enums"]["organization_membership_status"]
+          unit_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          unit_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          unit_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_unit_members_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_unit_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_unit_members_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "organization_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_unit_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_units: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          parent_unit_id: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          unit_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          parent_unit_id?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          unit_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          parent_unit_id?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          unit_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_units_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_units_parent_unit_id_fkey"
+            columns: ["parent_unit_id"]
+            isOneToOne: false
+            referencedRelation: "organization_units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizations: {
         Row: {
@@ -6835,6 +7299,18 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_create_instructor_intervention: {
+        Args: {
+          p_cohort_id: string
+          p_intervention_type: Database["public"]["Enums"]["lms_intervention_type"]
+          p_organization_id: string
+          p_programme_id: string
+          p_reason: string
+          p_severity: Database["public"]["Enums"]["lms_intervention_severity"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       admin_create_mission:
         | {
             Args: {
@@ -7048,12 +7524,43 @@ export type Database = {
         Args: { p_source_course_id: string; p_title?: string }
         Returns: Json
       }
-      admin_get_lms_reporting: {
+      admin_get_instructor_workspace: {
         Args: {
-          p_cohort_id?: string
+          p_limit?: number
+          p_organization_id: string
+          p_unit_id?: string
+        }
+        Returns: Json
+      }
+      admin_get_lms_reporting:
+        | {
+            Args: {
+              p_cohort_id?: string
+              p_limit?: number
+              p_organization_id?: string
+              p_programme_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_cohort_id?: string
+              p_limit?: number
+              p_organization_id?: string
+              p_programme_id?: string
+              p_unit_id?: string
+            }
+            Returns: Json
+          }
+      admin_get_organization_activity: {
+        Args: {
+          p_actor_user_id?: string
+          p_date_from?: string
+          p_date_to?: string
+          p_entity_type?: string
+          p_event_type?: string
           p_limit?: number
           p_organization_id?: string
-          p_programme_id?: string
         }
         Returns: Json
       }
@@ -7110,6 +7617,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_record_expired_organization_temporary_entitlement_grants: {
+        Args: { p_limit?: number }
+        Returns: number
+      }
       admin_register_ad_creative_asset: {
         Args: { p_payload: Json }
         Returns: Json
@@ -7136,6 +7647,14 @@ export type Database = {
       }
       admin_replace_cohort_members: {
         Args: { p_cohort_id: string; p_user_ids: string[] }
+        Returns: Json
+      }
+      admin_replace_cohort_units: {
+        Args: { p_cohort_id: string; p_unit_ids: string[] }
+        Returns: Json
+      }
+      admin_replace_organization_unit_members: {
+        Args: { p_members: Json; p_unit_id: string }
         Returns: Json
       }
       admin_reset_ai_course_media: {
@@ -7172,6 +7691,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: Json
       }
+      admin_revoke_organization_temporary_entitlement_grant: {
+        Args: { p_grant_id: string; p_reason?: string }
+        Returns: Json
+      }
       admin_reward_assignment_counts: {
         Args: { p_reward_ids?: string[] }
         Returns: {
@@ -7180,6 +7703,17 @@ export type Database = {
           reward_id: string
           total_available: number
         }[]
+      }
+      admin_send_instructor_scoped_notification: {
+        Args: {
+          p_body?: string
+          p_cta_href?: string
+          p_organization_id: string
+          p_title?: string
+          p_unit_id?: string
+          p_user_ids?: string[]
+        }
+        Returns: Json
       }
       admin_set_ad_entity_status: {
         Args: {
@@ -7719,6 +8253,30 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_upsert_organization_temporary_entitlement_grant: {
+        Args: {
+          p_entitlement_delta?: Json
+          p_expires_at?: string
+          p_grant_id: string
+          p_grant_type: Database["public"]["Enums"]["organization_temporary_entitlement_grant_type"]
+          p_organization_id: string
+          p_reason?: string
+          p_source_plan_key?: string
+          p_starts_at?: string
+        }
+        Returns: Json
+      }
+      admin_upsert_organization_unit: {
+        Args: {
+          p_name: string
+          p_organization_id: string
+          p_parent_unit_id: string
+          p_status?: Database["public"]["Enums"]["content_status"]
+          p_unit_id: string
+          p_unit_type: string
+        }
+        Returns: Json
+      }
       admin_upsert_perk_bundle_prize: {
         Args: {
           p_available_from?: string
@@ -7911,6 +8469,26 @@ export type Database = {
         Returns: Json
       }
       create_ad_make_good_recommendations: { Args: never; Returns: Json }
+      create_organization_ai_generation_job: {
+        Args: {
+          p_actor_user_id: string
+          p_assessment_id?: string
+          p_course_id?: string
+          p_entity_id: string
+          p_estimated_provider_cost?: number
+          p_estimated_units: number
+          p_idempotency_key: string
+          p_job_type: string
+          p_lesson_id?: string
+          p_mission_id?: string
+          p_operation_type: string
+          p_organization_id: string
+          p_programme_id?: string
+          p_prompt: Json
+          p_status?: string
+        }
+        Returns: Json
+      }
       create_self_service_organization: {
         Args: {
           p_description: string
@@ -7932,6 +8510,10 @@ export type Database = {
       }
       current_user_can_access_reward: {
         Args: { p_reward_id: string }
+        Returns: boolean
+      }
+      current_user_can_act_on_scoped_learner: {
+        Args: { p_organization_id: string; p_user_id: string }
         Returns: boolean
       }
       current_user_can_edit_course: {
@@ -7994,8 +8576,20 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: boolean
       }
+      current_user_can_read_organization_unit: {
+        Args: { p_unit_id: string }
+        Returns: boolean
+      }
       current_user_can_read_programme: {
         Args: { p_programme_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_unit_learner: {
+        Args: { p_organization_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      current_user_can_supervise_organization_unit: {
+        Args: { p_unit_id: string }
         Returns: boolean
       }
       current_user_has_course_enrolment: {
@@ -8280,6 +8874,21 @@ export type Database = {
         }
         Returns: string
       }
+      reconcile_organization_ai_usage: {
+        Args: {
+          p_actual_internal_cost?: number
+          p_actual_provider_cost?: number
+          p_actual_provider_model?: string
+          p_actual_provider_usage?: Json
+          p_failed_job_charge_policy?: string
+          p_failure_code?: string
+          p_final_charged_units?: number
+          p_metadata?: Json
+          p_status: string
+          p_usage_record_id: string
+        }
+        Returns: Json
+      }
       record_ad_decision: {
         Args: {
           p_campaign_id: string
@@ -8415,6 +9024,25 @@ export type Database = {
             }
             Returns: undefined
           }
+      reserve_organization_ai_usage: {
+        Args: {
+          p_actor_user_id: string
+          p_assessment_id?: string
+          p_course_id?: string
+          p_estimated_provider_cost?: number
+          p_estimated_units: number
+          p_idempotency_key: string
+          p_lesson_id?: string
+          p_metadata?: Json
+          p_mission_id?: string
+          p_operation_type: string
+          p_organization_id: string
+          p_programme_id?: string
+          p_source_id: string
+          p_source_type: string
+        }
+        Returns: Json
+      }
       resolve_organization_entitlements: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -8715,6 +9343,11 @@ export type Database = {
         | "instructor"
         | "report_viewer"
         | "learner"
+      organization_temporary_entitlement_grant_type:
+        | "plan_trial"
+        | "temporary_plan"
+        | "granular_override"
+        | "additive_allocation"
       organization_verification_status:
         | "unverified"
         | "verification_pending"
@@ -9040,6 +9673,12 @@ export const Constants = {
         "instructor",
         "report_viewer",
         "learner",
+      ],
+      organization_temporary_entitlement_grant_type: [
+        "plan_trial",
+        "temporary_plan",
+        "granular_override",
+        "additive_allocation",
       ],
       organization_verification_status: [
         "unverified",

@@ -10,6 +10,7 @@ import {
 import {
   getAdminCohorts,
   getAdminLmsReporting,
+  getAdminOrganizationUnits,
   getAdminOrganizations,
   getAdminProgrammes,
   requireAdmin,
@@ -20,6 +21,7 @@ type ReportingSearchParams = {
   cohortId?: string | string[];
   organizationId?: string | string[];
   programmeId?: string | string[];
+  unitId?: string | string[];
 };
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -41,33 +43,40 @@ export default async function AdminLmsReportingPage({
 }) {
   const { supabase } = await requireAdmin();
   const params = (await searchParams) ?? {};
-  const [organizations, programmes, cohorts] = await Promise.all([
+  const [organizations, programmes, cohorts, units] = await Promise.all([
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
     getAdminCohorts(supabase),
+    getAdminOrganizationUnits(supabase),
   ]);
   const requestedOrganizationId = selectedOrEmpty(firstSearchValue(params.organizationId));
   const selectedOrganizationId =
     requestedOrganizationId || (organizations.length === 1 ? organizations[0]?.id ?? "" : "");
   const selectedProgrammeId = selectedOrEmpty(firstSearchValue(params.programmeId));
   const selectedCohortId = selectedOrEmpty(firstSearchValue(params.cohortId));
+  const selectedUnitId = selectedOrEmpty(firstSearchValue(params.unitId));
   const filteredProgrammes = selectedOrganizationId
     ? programmes.filter((programme) => programme.organization_id === selectedOrganizationId)
     : programmes;
   const filteredCohorts = selectedOrganizationId
     ? cohorts.filter((cohort) => cohort.organization_id === selectedOrganizationId)
     : cohorts;
+  const filteredUnits = selectedOrganizationId
+    ? units.filter((unit) => unit.organization_id === selectedOrganizationId)
+    : units;
   const report = await getAdminLmsReporting(supabase, {
     cohortId: selectedCohortId || null,
     limit: 100,
     organizationId: selectedOrganizationId || null,
     programmeId: selectedProgrammeId || null,
+    unitId: selectedUnitId || null,
   });
   const exportParams = new URLSearchParams();
 
   if (selectedOrganizationId) exportParams.set("organizationId", selectedOrganizationId);
   if (selectedProgrammeId) exportParams.set("programmeId", selectedProgrammeId);
   if (selectedCohortId) exportParams.set("cohortId", selectedCohortId);
+  if (selectedUnitId) exportParams.set("unitId", selectedUnitId);
 
   const exportHref = `/admin/reporting/export${exportParams.size > 0 ? `?${exportParams.toString()}` : ""}`;
 
@@ -82,7 +91,7 @@ export default async function AdminLmsReportingPage({
       />
 
       <AdminCard className="mb-5">
-        <form className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto_auto]">
+        <form className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
           <label>
             <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
               Organisation
@@ -130,6 +139,23 @@ export default async function AdminLmsReportingPage({
               {filteredCohorts.map((cohort) => (
                 <option key={cohort.id} value={cohort.id}>
                   {cohort.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+              Unit
+            </span>
+            <select
+              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+              defaultValue={selectedUnitId || "all"}
+              name="unitId"
+            >
+              <option value="all">All units</option>
+              {filteredUnits.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.name}
                 </option>
               ))}
             </select>

@@ -7,6 +7,7 @@ export type AdminLmsReportingSummary = {
   organizationId: string | null;
   programmeId: string | null;
   cohortId: string | null;
+  unitId: string | null;
   assignedLearners: number;
   startedLearners: number;
   inProgressLearners: number;
@@ -82,6 +83,7 @@ export type AdminLmsReportingFilters = {
   organizationId?: string | null;
   programmeId?: string | null;
   cohortId?: string | null;
+  unitId?: string | null;
   limit?: number;
 };
 
@@ -89,6 +91,7 @@ const emptySummary: AdminLmsReportingSummary = {
   organizationId: null,
   programmeId: null,
   cohortId: null,
+  unitId: null,
   assignedLearners: 0,
   startedLearners: 0,
   inProgressLearners: 0,
@@ -136,6 +139,7 @@ function parseSummary(value: unknown): AdminLmsReportingSummary {
     organizationId: asString(record.organizationId),
     programmeId: asString(record.programmeId),
     cohortId: asString(record.cohortId),
+    unitId: asString(record.unitId),
     assignedLearners: asNumber(record.assignedLearners),
     startedLearners: asNumber(record.startedLearners),
     inProgressLearners: asNumber(record.inProgressLearners),
@@ -168,12 +172,15 @@ export async function getAdminLmsReporting(
   supabase: SupabaseClient<Database>,
   filters: AdminLmsReportingFilters = {},
 ): Promise<AdminLmsReporting> {
-  const { data, error } = await supabase.rpc("admin_get_lms_reporting", {
-    p_cohort_id: filters.cohortId || undefined,
+  const reportingArgs = {
+    p_cohort_id: filters.cohortId || null,
     p_limit: filters.limit ?? 100,
-    p_organization_id: filters.organizationId || undefined,
-    p_programme_id: filters.programmeId || undefined,
-  });
+    p_organization_id: filters.organizationId || null,
+    p_programme_id: filters.programmeId || null,
+    p_unit_id: filters.unitId || null,
+  } as unknown as Database["public"]["Functions"]["admin_get_lms_reporting"]["Args"];
+
+  const { data, error } = await supabase.rpc("admin_get_lms_reporting", reportingArgs);
 
   if (error) {
     throw error;

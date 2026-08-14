@@ -12,9 +12,9 @@ type AiActivityPanelProps = {
 };
 
 function statusTone(status: string) {
-  if (status === "completed") return "good" as const;
+  if (status === "charged" || status === "completed") return "good" as const;
   if (status === "failed") return "danger" as const;
-  if (status === "running") return "warning" as const;
+  if (status === "reserved" || status === "running") return "warning" as const;
   return "neutral" as const;
 }
 
@@ -27,6 +27,12 @@ function formatTime(value: string) {
 
 function jobLabel(jobType: string) {
   return jobType.replaceAll("_", " ");
+}
+
+function formatUnits(value: number | null | undefined) {
+  return new Intl.NumberFormat("en-NG", {
+    maximumFractionDigits: 2,
+  }).format(Number(value ?? 0));
 }
 
 export function AiActivityPanel({
@@ -66,6 +72,17 @@ export function AiActivityPanel({
           {activity.summary.completed} completed
         </AdminStatusBadge>
       </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <AdminStatusBadge tone={activity.summary.reservedUnits > 0 ? "warning" : "neutral"}>
+          {formatUnits(activity.summary.reservedUnits)} reserved units
+        </AdminStatusBadge>
+        <AdminStatusBadge tone={activity.summary.chargedUnits > 0 ? "good" : "neutral"}>
+          {formatUnits(activity.summary.chargedUnits)} charged units
+        </AdminStatusBadge>
+        <AdminStatusBadge tone={activity.summary.releasedUnits > 0 ? "neutral" : "good"}>
+          {formatUnits(activity.summary.releasedUnits)} released units
+        </AdminStatusBadge>
+      </div>
 
       <div className="mt-5 space-y-3">
         {activity.plansNeedingReview.length > 0 ? (
@@ -90,25 +107,57 @@ export function AiActivityPanel({
           ))
         ) : null}
 
-        {activity.jobs.length === 0 && activity.plansNeedingReview.length === 0 ? (
+        {activity.jobs.length === 0 && activity.plansNeedingReview.length === 0 && activity.usageRecords.length === 0 ? (
           <EmptyAdminState>No AI activity yet.</EmptyAdminState>
         ) : (
-          activity.jobs.map((job) => (
-            <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4" key={job.id}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-black capitalize">{jobLabel(job.job_type)}</p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-                    {job.entity_type} · Updated {formatTime(job.updated_at)}
-                  </p>
+          <>
+            {activity.usageRecords.slice(0, 4).map((record) => (
+              <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4" key={record.id}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black capitalize">{jobLabel(record.operation_type)}</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      {record.source_type.replaceAll("_", " ")} · {formatUnits(record.reserved_units)} reserved
+                      {record.final_charged_units !== null
+                        ? ` · ${formatUnits(record.final_charged_units)} charged`
+                        : ""}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      Created {formatTime(record.created_at)}
+                    </p>
+                  </div>
+                  <AdminStatusBadge tone={statusTone(record.status)}>{record.status}</AdminStatusBadge>
                 </div>
-                <AdminStatusBadge tone={statusTone(job.status)}>{job.status}</AdminStatusBadge>
+                <p className="mt-3 text-xs font-semibold capitalize text-[var(--ve-muted)]">
+                  {record.reconciliation_status.replaceAll("_", " ")}
+                </p>
               </div>
-              {job.error ? (
-                <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-danger)]">{job.error}</p>
-              ) : null}
-            </div>
-          ))
+            ))}
+
+            {activity.jobs.map((job) => (
+              <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4" key={job.id}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black capitalize">{jobLabel(job.job_type)}</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      {job.entity_type} · Updated {formatTime(job.updated_at)}
+                    </p>
+                    {job.operation_type ? (
+                      <p className="mt-1 text-xs font-semibold capitalize text-[var(--ve-muted)]">
+                        {jobLabel(job.operation_type)}
+                        {job.reserved_units ? ` · ${formatUnits(job.reserved_units)} reserved` : ""}
+                        {job.final_charged_units ? ` · ${formatUnits(job.final_charged_units)} charged` : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                  <AdminStatusBadge tone={statusTone(job.status)}>{job.status}</AdminStatusBadge>
+                </div>
+                {job.error ? (
+                  <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-danger)]">{job.error}</p>
+                ) : null}
+              </div>
+            ))}
+          </>
         )}
       </div>
     </AdminCard>

@@ -14,6 +14,15 @@ export const ORGANIZATION_ENTITLEMENT_KEYS = [
   "max_fulfilled_reward_claims_per_month",
   "assessment_capability",
   "reporting_level",
+  "ai_monthly_allocation",
+  "ai_temporary_allocation",
+  "ai_top_up_allocation",
+  "ai_warning_threshold",
+  "ai_hard_limit",
+  "ai_user_rate_limit_per_day",
+  "ai_organization_concurrency_limit",
+  "allowed_ai_operation_types",
+  "allowed_ai_roles",
 ] as const;
 
 export type OrganizationEntitlementKey = typeof ORGANIZATION_ENTITLEMENT_KEYS[number];
@@ -46,6 +55,15 @@ export type OrganizationEntitlements = {
   maxFulfilledRewardClaimsPerMonth: number;
   assessmentCapability: OrganizationAssessmentCapability;
   reportingLevel: OrganizationReportingLevel;
+  aiMonthlyAllocation: number;
+  aiTemporaryAllocation: number;
+  aiTopUpAllocation: number;
+  aiWarningThreshold: number;
+  aiHardLimit: number;
+  aiUserRateLimitPerDay: number;
+  aiOrganizationConcurrencyLimit: number;
+  allowedAiOperationTypes: string[];
+  allowedAiRoles: string[];
 };
 
 export const STARTER_ORGANIZATION_ENTITLEMENTS: OrganizationEntitlements = {
@@ -64,6 +82,15 @@ export const STARTER_ORGANIZATION_ENTITLEMENTS: OrganizationEntitlements = {
   maxFulfilledRewardClaimsPerMonth: 25,
   assessmentCapability: "assigned_only",
   reportingLevel: "basic",
+  aiMonthlyAllocation: 0,
+  aiTemporaryAllocation: 0,
+  aiTopUpAllocation: 0,
+  aiWarningThreshold: 0,
+  aiHardLimit: 0,
+  aiUserRateLimitPerDay: 0,
+  aiOrganizationConcurrencyLimit: 0,
+  allowedAiOperationTypes: [],
+  allowedAiRoles: [],
 };
 
 type EntitlementJson = Record<string, unknown>;
@@ -132,6 +159,18 @@ export function parseOrganizationEntitlements(
     ),
     assessmentCapability: toAssessmentCapability(source.assessment_capability, fallback.assessmentCapability),
     reportingLevel: toReportingLevel(source.reporting_level, fallback.reportingLevel),
+    aiMonthlyAllocation: toFiniteLimit(source.ai_monthly_allocation, fallback.aiMonthlyAllocation),
+    aiTemporaryAllocation: toFiniteLimit(source.ai_temporary_allocation, fallback.aiTemporaryAllocation),
+    aiTopUpAllocation: toFiniteLimit(source.ai_top_up_allocation, fallback.aiTopUpAllocation),
+    aiWarningThreshold: toFiniteLimit(source.ai_warning_threshold, fallback.aiWarningThreshold),
+    aiHardLimit: toFiniteLimit(source.ai_hard_limit, fallback.aiHardLimit),
+    aiUserRateLimitPerDay: toFiniteLimit(source.ai_user_rate_limit_per_day, fallback.aiUserRateLimitPerDay),
+    aiOrganizationConcurrencyLimit: toFiniteLimit(
+      source.ai_organization_concurrency_limit,
+      fallback.aiOrganizationConcurrencyLimit,
+    ),
+    allowedAiOperationTypes: toStringList(source.allowed_ai_operation_types, fallback.allowedAiOperationTypes),
+    allowedAiRoles: toStringList(source.allowed_ai_roles, fallback.allowedAiRoles),
   };
 }
 

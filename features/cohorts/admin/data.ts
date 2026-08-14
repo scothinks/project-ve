@@ -5,6 +5,7 @@ import { getSelectedAdminWorkspaceId } from "@/features/admin/application/contex
 import type { Database } from "@/types/database";
 import type { AdminCourseRow } from "@/features/learning/admin/data";
 import type { AdminProfileRow } from "@/features/users/admin/data";
+import type { AdminOrganizationUnitRow } from "@/features/organizations/admin/data";
 
 export type AdminCohortOrganizationRow = {
   id: string;
@@ -28,6 +29,7 @@ export type AdminCohortRow = {
   active_member_count?: number;
   course_assignment_count?: number;
   programme_assignment_count?: number;
+  units?: Pick<AdminOrganizationUnitRow, "id" | "name" | "unit_type">[];
 };
 
 export type AdminCohortMemberRow = {
@@ -106,6 +108,7 @@ export type AdminCohortDetail = AdminCohortRow & {
   enrolments: AdminEnrolmentRow[];
   members: AdminCohortMemberRow[];
   programmeAssignments: AdminProgrammeAssignmentRow[];
+  units: Pick<AdminOrganizationUnitRow, "id" | "name" | "unit_type">[];
 };
 
 type CohortSelectRow = AdminCohortRow & {
@@ -130,6 +133,29 @@ function countByCohortId(rows: Array<{ cohort_id: string | null }>) {
     counts.set(row.cohort_id, (counts.get(row.cohort_id) ?? 0) + 1);
   }
   return counts;
+}
+
+type CohortUnitSelectRow = {
+  cohort_id: string;
+  organization_units?: Pick<AdminOrganizationUnitRow, "id" | "name" | "unit_type"> | Array<Pick<AdminOrganizationUnitRow, "id" | "name" | "unit_type">> | null;
+};
+
+function groupUnitsByCohortId(rows: CohortUnitSelectRow[]) {
+  const unitsByCohortId = new Map<string, Pick<AdminOrganizationUnitRow, "id" | "name" | "unit_type">[]>();
+
+  for (const row of rows) {
+    const unit = Array.isArray(row.organization_units)
+      ? row.organization_units[0] ?? null
+      : row.organization_units ?? null;
+
+    if (!unit) continue;
+
+    const units = unitsByCohortId.get(row.cohort_id) ?? [];
+    units.push(unit);
+    unitsByCohortId.set(row.cohort_id, units);
+  }
+
+  return unitsByCohortId;
 }
 
 export async function getAdminCohorts(
@@ -171,7 +197,7 @@ export async function getAdminCohorts(
     return [];
   }
 
-  const [membersResult, coursesResult, programmesResult] = await Promise.all([
+  const [membersResult, coursesResult, programmesResult, unitsResult] = await Promise.all([
     supabase
       .from("cohort_members")
       .select("cohort_id")
@@ -185,21 +211,28 @@ export async function getAdminCohorts(
       .from("programme_assignments")
       .select("cohort_id")
       .in("cohort_id", cohortIds),
+    supabase
+      .from("cohort_units")
+      .select("cohort_id, organization_units!cohort_units_unit_id_fkey(id, name, unit_type)")
+      .in("cohort_id", cohortIds),
   ]);
 
   if (membersResult.error) throw membersResult.error;
   if (coursesResult.error) throw coursesResult.error;
   if (programmesResult.error) throw programmesResult.error;
+  if (unitsResult.error) throw unitsResult.error;
 
   const memberCounts = countByCohortId((membersResult.data ?? []) as Array<{ cohort_id: string | null }>);
   const courseAssignmentCounts = countByCohortId((coursesResult.data ?? []) as Array<{ cohort_id: string | null }>);
   const programmeAssignmentCounts = countByCohortId((programmesResult.data ?? []) as Array<{ cohort_id: string | null }>);
+  const unitsByCohortId = groupUnitsByCohortId((unitsResult.data ?? []) as unknown as CohortUnitSelectRow[]);
 
   return cohorts.map((cohort) => ({
     ...cohort,
     active_member_count: memberCounts.get(cohort.id) ?? 0,
     course_assignment_count: courseAssignmentCounts.get(cohort.id) ?? 0,
     programme_assignment_count: programmeAssignmentCounts.get(cohort.id) ?? 0,
+    units: unitsByCohortId.get(cohort.id) ?? [],
   }));
 }
 
@@ -234,7 +267,7 @@ export async function getAdminCohort(
     return null;
   }
 
-  const [membersResult, courseAssignmentsResult, programmeAssignmentsResult, enrolmentsResult] =
+  const [membersResult, courseAssignmentsResult, programmeAssignmentsResult, enrolmentsResult, unitsResult] =
     await Promise.all([
       supabase
         .from("cohort_members")
@@ -313,12 +346,19 @@ export async function getAdminCohort(
         .eq("organization_id", (data as unknown as AdminCohortRow).organization_id)
         .contains("metadata", { cohortId })
         .order("updated_at", { ascending: false }),
+      supabase
+        .from("cohort_units")
+        .select("cohort_id, organization_units!cohort_units_unit_id_fkey(id, name, unit_type)")
+        .eq("cohort_id", cohortId),
     ]);
 
   if (membersResult.error) throw membersResult.error;
   if (courseAssignmentsResult.error) throw courseAssignmentsResult.error;
   if (programmeAssignmentsResult.error) throw programmeAssignmentsResult.error;
   if (enrolmentsResult.error) throw enrolmentsResult.error;
+  if (unitsResult.error) throw unitsResult.error;
+
+  const unitsByCohortId = groupUnitsByCohortId((unitsResult.data ?? []) as unknown as CohortUnitSelectRow[]);
 
   return {
     ...normalizeCohort(data as unknown as CohortSelectRow),
@@ -326,5 +366,6 @@ export async function getAdminCohort(
     enrolments: (enrolmentsResult.data ?? []) as unknown as AdminEnrolmentRow[],
     members: (membersResult.data ?? []) as unknown as AdminCohortMemberRow[],
     programmeAssignments: (programmeAssignmentsResult.data ?? []) as unknown as AdminProgrammeAssignmentRow[],
+    units: unitsByCohortId.get(cohortId) ?? [],
   };
 }

@@ -81,23 +81,40 @@ export {
 } from "@/features/users/admin/data";
 
 export {
+  getAdminOrganizationActivity,
+  type AdminOrganizationActivity,
+  type AdminOrganizationActivityActor,
+  type AdminOrganizationActivityChanges,
+  type AdminOrganizationActivityDetail,
+  type AdminOrganizationActivityEvent,
+  type AdminOrganizationActivityFilters,
+  type AdminOrganizationActivityFilterOptions,
+} from "@/features/organizations/admin/activity";
+
+export {
   getAdminOrganizationEntitlementOverrides,
   getAdminOrganizationAdjustmentLearners,
   getAdminOrganizationInvitations,
   getAdminOrganizationMemberships,
+  getAdminOrganizationUnitMembers,
+  getAdminOrganizationUnits,
   getAdminOrganizations,
   getAdminOrganizationContexts,
   getAdminOrganizationPlanAssignments,
   getAdminOrganizationPlans,
+  getAdminOrganizationTemporaryEntitlementGrants,
   getAdminOrganizationXpAccountOverview,
   type AdminOrganizationEntitlementOverrideRow,
   type AdminOrganizationAdjustmentLearnerOption,
   type AdminOrganizationInvitationRow,
   type AdminOrganizationMembershipRow,
+  type AdminOrganizationUnitMemberRow,
+  type AdminOrganizationUnitRow,
   type AdminOrganizationRow,
   type AdminOrganizationContext,
   type AdminOrganizationPlanAssignmentRow,
   type AdminOrganizationPlanRow,
+  type AdminOrganizationTemporaryEntitlementGrantRow,
   type AdminOrganizationXpAccountOverview,
 } from "@/features/organizations/admin/data";
 
@@ -158,6 +175,20 @@ export {
   type AdminLmsInterventionStatus,
   type AdminLmsInterventionType,
 } from "@/features/interventions/admin/data";
+
+export {
+  getAdminInstructorWorkspace,
+  parseAdminInstructorWorkspace,
+  type AdminInstructorWorkspace,
+  type AdminInstructorWorkspaceCohort,
+  type AdminInstructorWorkspaceInactiveLearner,
+  type AdminInstructorWorkspaceIntervention,
+  type AdminInstructorWorkspaceLearner,
+  type AdminInstructorWorkspaceMissionEvidence,
+  type AdminInstructorWorkspaceOverdueLearner,
+  type AdminInstructorWorkspaceReminderTarget,
+  type AdminInstructorWorkspaceUnit,
+} from "@/features/instructors/admin/data";
 
 export {
   getAdminPerkDraws,

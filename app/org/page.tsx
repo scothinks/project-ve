@@ -211,7 +211,7 @@ export default async function OrgModePage() {
         </div>
       </section>
 
-      <BottomNav active="Orgs" />
+      {user ? <BottomNav active="Orgs" /> : null}
     </main>
   );
 }

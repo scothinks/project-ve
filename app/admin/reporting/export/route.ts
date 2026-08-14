@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     limit: 500,
     organizationId: firstParam(params, "organizationId"),
     programmeId: firstParam(params, "programmeId"),
+    unitId: firstParam(params, "unitId"),
   });
   const header = [
     "user_id",

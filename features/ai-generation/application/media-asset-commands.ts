@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAiGenerationJob } from "@/features/ai-generation/data/jobs";
+import { estimateMediaUnits } from "@/features/ai-generation/application/organization-ai-metering";
 import {
   applyLearningMediaAssetTarget,
   clearLearningMediaAssetTarget,
@@ -150,7 +151,14 @@ export async function queueSingleLearningMediaAssetGeneration(
     courseId,
     mode: "single_media_asset",
   }, {
+    courseId,
     entityId: courseId,
+    estimatedUnits: course.organization_id
+      ? estimateMediaUnits("ai_single_media_asset", 1)
+      : undefined,
+    lessonId: asset.lesson_id,
+    operationType: course.organization_id ? "ai_single_media_asset" : undefined,
+    organizationId: course.organization_id,
     status: "queued",
   });
 

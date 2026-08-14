@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(18);
+select extensions.plan(32);
 
 insert into auth.users (
   id,
@@ -210,6 +210,188 @@ select extensions.ok(
   'plan assignment is audited'
 );
 
+create temporary table test_temporary_entitlement_org_result
+on commit drop
+as
+select public.admin_upsert_organization(
+  null,
+  'P15 Temporary Grant Organisation',
+  'p15-temporary-grant-organisation',
+  'published'
+) as result;
+
+grant select on test_temporary_entitlement_org_result to anon, authenticated, service_role;
+
+select extensions.is(
+  (
+    select plan_key
+    from public.organization_plan_assignments
+    where organization_id = (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+      and ended_at is null
+  ),
+  'starter',
+  'temporary grant target starts from its base Starter assignment'
+);
+
+create temporary table test_active_temporary_grant_result
+on commit drop
+as
+select public.admin_upsert_organization_temporary_entitlement_grant(
+  null,
+  (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result),
+  'temporary_plan',
+  'team',
+  '{}'::jsonb,
+  now() - interval '1 minute',
+  now() + interval '7 days',
+  'Team trial without billing change'
+) as result;
+
+grant select on test_active_temporary_grant_result to anon, authenticated, service_role;
+
+select extensions.is(
+  (
+    select plan_key
+    from public.organization_plan_assignments
+    where organization_id = (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+      and ended_at is null
+  ),
+  'starter',
+  'temporary higher-plan grants do not change the base plan assignment'
+);
+
+select extensions.is(
+  (
+    select billing_status
+    from public.organization_plan_assignments
+    where organization_id = (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+      and ended_at is null
+  ),
+  'free'::public.organization_billing_status,
+  'temporary higher-plan grants do not change billing status'
+);
+
+select extensions.is(
+  (
+    select public.resolve_organization_entitlements(
+      (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+    ) ->> 'max_courses'
+  ),
+  '5',
+  'active temporary source-plan grant contributes plan entitlements'
+);
+
+select public.admin_upsert_organization_temporary_entitlement_grant(
+  null,
+  (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result),
+  'additive_allocation',
+  null,
+  '{"max_total_lessons": 5}'::jsonb,
+  now() - interval '1 minute',
+  now() + interval '7 days',
+  'Temporary extra lesson allocation'
+);
+
+select extensions.is(
+  (
+    select public.resolve_organization_entitlements(
+      (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+    ) ->> 'max_total_lessons'
+  ),
+  '55',
+  'additive temporary allocations are added to resolved plan limits'
+);
+
+select public.admin_upsert_organization_temporary_entitlement_grant(
+  null,
+  (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result),
+  'granular_override',
+  null,
+  '{"max_courses": 99}'::jsonb,
+  now() - interval '2 days',
+  now() - interval '1 day',
+  'Expired capability check'
+);
+
+select extensions.is(
+  (
+    select public.resolve_organization_entitlements(
+      (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+    ) ->> 'max_courses'
+  ),
+  '5',
+  'expired temporary grants do not affect future entitlement resolution'
+);
+
+create temporary table test_expired_grant_audit_result
+on commit drop
+as
+select public.admin_record_expired_organization_temporary_entitlement_grants(25) as expired_count;
+
+grant select on test_expired_grant_audit_result to anon, authenticated, service_role;
+
+select extensions.ok(
+  (select expired_count from test_expired_grant_audit_result) >= 1
+  and exists (
+    select 1
+    from public.audit_events
+    where event_type = 'organization_temporary_entitlement_grant_expired'
+      and entity_id = (select result ->> 'organizationId' from test_temporary_entitlement_org_result)
+  ),
+  'expired temporary grants can be audited without deleting grant history'
+);
+
+select public.admin_revoke_organization_temporary_entitlement_grant(
+  (select (result ->> 'grantId')::uuid from test_active_temporary_grant_result),
+  'Trial ended early'
+);
+
+select extensions.is(
+  (
+    select public.resolve_organization_entitlements(
+      (select (result ->> 'organizationId')::uuid from test_temporary_entitlement_org_result)
+    ) ->> 'max_courses'
+  ),
+  '1',
+  'revoked temporary grants stop contributing to future entitlement resolution immediately'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from public.organization_temporary_entitlement_grants
+    where id = (select (result ->> 'grantId')::uuid from test_active_temporary_grant_result)
+      and revoked_at is not null
+  )
+  and exists (
+    select 1
+    from public.audit_events
+    where event_type = 'organization_temporary_entitlement_grant_revoked'
+      and entity_id = (select result ->> 'organizationId' from test_temporary_entitlement_org_result)
+  ),
+  'temporary grant revocation is non-destructive and audited'
+);
+
+select extensions.throws_ok(
+  format(
+    $$ select public.admin_upsert_organization_temporary_entitlement_grant(null, %L::uuid, 'granular_override', null, '{"ai_authoring_enabled": true}'::jsonb, now(), now() + interval '1 day', 'bad ai grant') $$,
+    (select result ->> 'organizationId' from test_temporary_entitlement_org_result)
+  ),
+  'P0001',
+  'Temporary entitlement grant is incoherent.',
+  'temporary AI grants require an allocation through the generic entitlement grant model'
+);
+
+select extensions.throws_ok(
+  format(
+    $$ select public.admin_upsert_organization_temporary_entitlement_grant(null, %L::uuid, 'granular_override', null, '{"allowed_lesson_block_types": ["video"]}'::jsonb, now(), now() + interval '1 day', 'bad media grant') $$,
+    (select result ->> 'organizationId' from test_temporary_entitlement_org_result)
+  ),
+  'P0001',
+  'Temporary entitlement grant is incoherent.',
+  'temporary media grants must include compatible storage entitlement'
+);
+
 reset role;
 set local role service_role;
 
@@ -257,12 +439,32 @@ select extensions.throws_ok(
 
 select extensions.throws_ok(
   format(
+    $$ select public.admin_upsert_organization_temporary_entitlement_grant(null, %L::uuid, 'granular_override', null, '{"max_courses": 50}'::jsonb, now(), now() + interval '1 day', 'self grant') $$,
+    (select result ->> 'organizationId' from test_entitlement_org_result)
+  ),
+  'P0001',
+  'Only a platform admin can manage temporary entitlement grants.',
+  'organization admins cannot self-grant temporary entitlements'
+);
+
+select extensions.throws_ok(
+  format(
     $$ insert into public.organization_plan_assignments (organization_id, plan_key) values (%L::uuid, 'team') $$,
     (select result ->> 'organizationId' from test_entitlement_org_result)
   ),
   '42501',
   'new row violates row-level security policy for table "organization_plan_assignments"',
   'direct authenticated table writes cannot bypass plan assignment RPC authorization'
+);
+
+select extensions.throws_ok(
+  format(
+    $$ insert into public.organization_temporary_entitlement_grants (organization_id, grant_type, entitlement_delta) values (%L::uuid, 'granular_override', '{"max_courses": 50}'::jsonb) $$,
+    (select result ->> 'organizationId' from test_entitlement_org_result)
+  ),
+  '42501',
+  'permission denied for table organization_temporary_entitlement_grants',
+  'direct authenticated table writes cannot bypass temporary grant RPC authorization'
 );
 
 reset role;
@@ -322,6 +524,16 @@ select extensions.ok(
     'public.resolve_organization_entitlements(uuid)',
     'execute'
   )
+  and has_function_privilege(
+    'authenticated',
+    'public.admin_upsert_organization_temporary_entitlement_grant(uuid, uuid, public.organization_temporary_entitlement_grant_type, text, jsonb, timestamp with time zone, timestamp with time zone, text)',
+    'execute'
+  )
+  and has_function_privilege(
+    'authenticated',
+    'public.admin_revoke_organization_temporary_entitlement_grant(uuid, text)',
+    'execute'
+  )
   and not has_function_privilege(
     'anon',
     'public.resolve_organization_entitlements(uuid)',
@@ -342,6 +554,26 @@ select extensions.ok(
       and classification = 'ADMIN_AUTHENTICATED'
   ),
   'plan assignment RPC is explicitly classified'
+);
+
+select extensions.ok(
+  exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_schema = 'public'
+      and function_name = 'admin_upsert_organization_temporary_entitlement_grant'
+      and identity_arguments = 'p_grant_id uuid, p_organization_id uuid, p_grant_type organization_temporary_entitlement_grant_type, p_source_plan_key text, p_entitlement_delta jsonb, p_starts_at timestamp with time zone, p_expires_at timestamp with time zone, p_reason text'
+      and classification = 'ADMIN_AUTHENTICATED'
+  )
+  and exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_schema = 'public'
+      and function_name = 'admin_revoke_organization_temporary_entitlement_grant'
+      and identity_arguments = 'p_grant_id uuid, p_reason text'
+      and classification = 'ADMIN_AUTHENTICATED'
+  ),
+  'temporary entitlement grant RPCs are explicitly classified'
 );
 
 select * from extensions.finish();

@@ -23,6 +23,15 @@ test("organization entitlement parser maps database keys into the typed contract
     max_fulfilled_reward_claims_per_month: 40,
     assessment_capability: "template_adaptation",
     reporting_level: "advanced",
+    ai_monthly_allocation: 1000,
+    ai_temporary_allocation: 250,
+    ai_top_up_allocation: 50,
+    ai_warning_threshold: 900,
+    ai_hard_limit: 1300,
+    ai_user_rate_limit_per_day: 20,
+    ai_organization_concurrency_limit: 3,
+    allowed_ai_operation_types: ["course_outline"],
+    allowed_ai_roles: ["organisation_admin"],
   });
 
   assert.equal(entitlements.maxCourses, 3);
@@ -32,6 +41,12 @@ test("organization entitlement parser maps database keys into the typed contract
   assert.equal(entitlements.aiAuthoringEnabled, true);
   assert.equal(entitlements.assessmentCapability, "template_adaptation");
   assert.equal(entitlements.reportingLevel, "advanced");
+  assert.equal(entitlements.aiMonthlyAllocation, 1000);
+  assert.equal(entitlements.aiTemporaryAllocation, 250);
+  assert.equal(entitlements.aiTopUpAllocation, 50);
+  assert.equal(entitlements.aiHardLimit, 1300);
+  assert.deepEqual(entitlements.allowedAiOperationTypes, ["course_outline"]);
+  assert.deepEqual(entitlements.allowedAiRoles, ["organisation_admin"]);
 });
 
 test("organization entitlement parser falls back to Starter values for invalid shapes", () => {

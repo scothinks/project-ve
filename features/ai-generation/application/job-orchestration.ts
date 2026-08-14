@@ -10,6 +10,7 @@ import {
 import {
   getPromptString,
 } from "@/features/ai-generation/application/job-prompts";
+import type { OrganizationAiOperationType } from "@/features/ai-generation/application/organization-ai-metering";
 import {
   processCreateCourseTextJob,
   processExtendCourseTextJob,
@@ -30,9 +31,18 @@ export async function enqueueCourseTextJob(
   actorUserId: string,
   prompt: Record<string, unknown>,
   entityId?: string | null,
+  metering?: {
+    estimatedUnits: number;
+    operationType: OrganizationAiOperationType;
+    organizationId: string | null;
+  },
 ) {
   return createAiGenerationJob(supabase, actorUserId, "course_text", prompt, {
+    courseId: entityId,
     entityId,
+    estimatedUnits: metering?.estimatedUnits,
+    operationType: metering?.operationType,
+    organizationId: metering?.organizationId,
     status: "queued",
   });
 }
@@ -42,9 +52,20 @@ export async function enqueueMediaAssetsJob(
   actorUserId: string,
   prompt: Record<string, unknown>,
   entityId: string,
+  metering?: {
+    estimatedUnits: number;
+    lessonId?: string | null;
+    operationType: OrganizationAiOperationType;
+    organizationId: string | null;
+  },
 ) {
   return createAiGenerationJob(supabase, actorUserId, "media_assets", prompt, {
+    courseId: entityId,
     entityId,
+    estimatedUnits: metering?.estimatedUnits,
+    lessonId: metering?.lessonId,
+    operationType: metering?.operationType,
+    organizationId: metering?.organizationId,
     status: "queued",
   });
 }

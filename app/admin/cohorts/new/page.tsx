@@ -4,6 +4,7 @@ import {
   getAdminCourses,
   getAdminOrganizationLearners,
   getAdminOrganizations,
+  getAdminOrganizationUnits,
   getAdminProgrammes,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
@@ -23,10 +24,11 @@ export default async function NewCohortPage({
     "programme_manager",
     "instructor",
   ]);
-  const [courses, organizations, programmes] = await Promise.all([
+  const [courses, organizations, programmes, units] = await Promise.all([
     getAdminCourses(supabase),
     getAdminOrganizations(supabase),
     getAdminProgrammes(supabase),
+    getAdminOrganizationUnits(supabase),
   ]);
   const users = await getAdminOrganizationLearners(supabase, organizations[0]?.id);
   const notice = firstSearchValue((await searchParams)?.notice);
@@ -45,6 +47,7 @@ export default async function NewCohortPage({
         courses={courses}
         organizations={organizations}
         programmes={programmes}
+        units={units}
         users={users}
       />
     </>

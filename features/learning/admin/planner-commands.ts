@@ -16,6 +16,15 @@ import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { logAppError } from "@/lib/app-errors";
 import type { AdminContext } from "@/features/admin/application/context";
 import {
+  buildOrganizationAiIdempotencyKey,
+  estimatePlannerUnits,
+  getAdminWorkspaceOrganizationId,
+  getCourseOrganizationId,
+  reconcileOrganizationAiUsage,
+  reserveOrganizationAiUsage,
+  type OrganizationAiReservation,
+} from "@/features/ai-generation/application/organization-ai-metering";
+import {
   asString,
   buildExpansionContinuityInstruction,
   buildExpansionDraftNotes,
@@ -116,16 +125,51 @@ function buildPlannedLessonsDraftFormData(
 }
 
 export async function generateNewCoursePlanOptionsCommand(
-  { supabase, profile }: AdminContext,
+  admin: AdminContext,
   formData: FormData,
 ): Promise<PlannerCommandResult> {
+  const { supabase, profile } = admin;
   const input = parseNewCoursePlanInput(formData);
 
   if (!input.roughIdea || !input.audience || !input.region || !input.tone) {
     throw new Error("Rough idea, audience, region, and tone are required.");
   }
 
-  const result = await generateNewCoursePlans(input);
+  const operationType = "ai_planner_new_course";
+  const organizationId = getAdminWorkspaceOrganizationId(admin);
+  const estimatedUnits = estimatePlannerUnits(operationType, 3);
+  const idempotencyKey = buildOrganizationAiIdempotencyKey(profile.id, operationType, {
+    input,
+  });
+  let reservation: OrganizationAiReservation | null = null;
+  let result: Awaited<ReturnType<typeof generateNewCoursePlans>>;
+
+  try {
+    reservation = await reserveOrganizationAiUsage(supabase, {
+      actorUserId: profile.id,
+      estimatedUnits,
+      idempotencyKey,
+      metadata: { plannerMode: "new_course" },
+      operationType,
+      organizationId,
+      sourceId: idempotencyKey,
+      sourceType: "ai_course_plan",
+    });
+    result = await generateNewCoursePlans(input);
+  } catch (error) {
+    await reconcileOrganizationAiUsage(supabase, reservation, {
+      failedJobChargePolicy: "release_failed_planner_call_without_provider_usage",
+      failureCode: "planner_generation_failed",
+      status: "released",
+    }).catch((reconcileError) => {
+      logAppError(reconcileError, {
+        operation: "admin.ai_planner.new_course.release_reservation",
+        resourceId: reservation?.usageRecordId,
+      });
+    });
+    throw error;
+  }
+
   const { data, error } = await supabase
     .from("ai_course_plans")
     .insert({
@@ -152,8 +196,22 @@ export async function generateNewCoursePlanOptionsCommand(
     .select("id")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    await reconcileOrganizationAiUsage(supabase, reservation, {
+      failedJobChargePolicy: "charge_reserved_estimate_after_provider_success_and_persistence_failure",
+      failureCode: "planner_persistence_failed",
+      finalChargedUnits: estimatedUnits,
+      metadata: { plannerMode: "new_course" },
+      status: "charged",
+    });
+    throw error;
+  }
   const plan = data as { id: string };
+  await reconcileOrganizationAiUsage(supabase, reservation, {
+    finalChargedUnits: estimatedUnits,
+    metadata: { planId: plan.id },
+    status: "charged",
+  });
 
   return {
     courseId: null,
@@ -163,9 +221,10 @@ export async function generateNewCoursePlanOptionsCommand(
 }
 
 export async function generateCourseExpansionPlanCommand(
-  { supabase, profile }: AdminContext,
+  admin: AdminContext,
   formData: FormData,
 ): Promise<PlannerCommandResult> {
+  const { supabase, profile } = admin;
   const {
     courseId,
     expansionGoal,
@@ -184,7 +243,44 @@ export async function generateCourseExpansionPlanCommand(
     numberOfSuggestions,
     notes,
   );
-  const result = await generateCourseExpansionPlans(context);
+  const operationType = "ai_planner_expand_course";
+  const organizationId = await getCourseOrganizationId(supabase, courseId);
+  const estimatedUnits = estimatePlannerUnits(operationType, numberOfSuggestions);
+  const idempotencyKey = buildOrganizationAiIdempotencyKey(profile.id, operationType, {
+    courseId,
+    expansionGoal,
+    notes,
+    numberOfSuggestions,
+  });
+  let reservation: OrganizationAiReservation | null = null;
+  let result: Awaited<ReturnType<typeof generateCourseExpansionPlans>>;
+
+  try {
+    reservation = await reserveOrganizationAiUsage(supabase, {
+      actorUserId: profile.id,
+      courseId,
+      estimatedUnits,
+      idempotencyKey,
+      metadata: { plannerMode: "expand_course" },
+      operationType,
+      organizationId,
+      sourceId: idempotencyKey,
+      sourceType: "ai_course_plan",
+    });
+    result = await generateCourseExpansionPlans(context);
+  } catch (error) {
+    await reconcileOrganizationAiUsage(supabase, reservation, {
+      failedJobChargePolicy: "release_failed_planner_call_without_provider_usage",
+      failureCode: "planner_generation_failed",
+      status: "released",
+    }).catch((reconcileError) => {
+      logAppError(reconcileError, {
+        operation: "admin.ai_planner.expand_course.release_reservation",
+        resourceId: reservation?.usageRecordId,
+      });
+    });
+    throw error;
+  }
 
   const { data, error } = await supabase
     .from("ai_course_plans")
@@ -210,8 +306,22 @@ export async function generateCourseExpansionPlanCommand(
     .select("id")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    await reconcileOrganizationAiUsage(supabase, reservation, {
+      failedJobChargePolicy: "charge_reserved_estimate_after_provider_success_and_persistence_failure",
+      failureCode: "planner_persistence_failed",
+      finalChargedUnits: estimatedUnits,
+      metadata: { plannerMode: "expand_course" },
+      status: "charged",
+    });
+    throw error;
+  }
   const plan = data as { id: string };
+  await reconcileOrganizationAiUsage(supabase, reservation, {
+    finalChargedUnits: estimatedUnits,
+    metadata: { planId: plan.id },
+    status: "charged",
+  });
 
   return {
     courseId,

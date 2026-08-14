@@ -223,6 +223,7 @@ const adminLinkGroups: AdminLinkGroup[] = [
       { href: "/admin/programmes", label: "Programmes", icon: ProgrammesIcon },
       { href: "/admin/assessments", label: "Assessments", icon: RecommendationsIcon },
       { href: "/admin/cohorts", label: "Cohorts", icon: CohortsIcon },
+      { href: "/admin/instructor", label: "Instructor workspace", icon: CohortsIcon },
       { href: "/admin/reporting", label: "Reporting", icon: ReportingIcon },
       { href: "/admin/interventions", label: "Interventions", icon: InterventionsIcon },
       { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
@@ -250,6 +251,7 @@ const adminLinkGroups: AdminLinkGroup[] = [
       { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
       { href: "/admin/proofs", label: "Proof reviews", icon: ProofsIcon },
       { href: "/admin/organizations", label: "Organisations", icon: UsersIcon },
+      { href: "/admin/activity", label: "Activity history", icon: XpLedgerIcon },
       { href: "/admin/users", label: "Users", icon: UsersIcon },
       { href: "/admin/xp-ledger", label: "XP activity", icon: XpLedgerIcon },
     ],
@@ -299,7 +301,16 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
+    ]);
+  }
+  if (link.href.startsWith("/admin/instructor")) {
+    return hasAnyRole(workspace, [
+      "organisation_owner",
+      "organisation_admin",
+      "programme_manager",
+      "reviewer",
       "instructor",
+      "report_viewer",
     ]);
   }
   if (link.href.startsWith("/admin/reporting")) {
@@ -307,7 +318,6 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
-      "instructor",
       "report_viewer",
     ]);
   }
@@ -316,7 +326,6 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
-      "instructor",
     ]);
   }
   if (link.href.startsWith("/admin/rewards")) {
@@ -329,6 +338,9 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
       "programme_manager",
       "content_editor",
     ]);
+  }
+  if (link.href.startsWith("/admin/activity")) {
+    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin"]);
   }
 
   return false;
@@ -422,6 +434,8 @@ function getBreadcrumbs(pathname: string) {
     crumbs.push({ href: pathname, label: "Reward workspace" });
   } else if (pathname.startsWith("/admin/organizations")) {
     crumbs.push({ href: pathname, label: "Organisation workspaces" });
+  } else if (pathname.startsWith("/admin/activity")) {
+    crumbs.push({ href: pathname, label: "Organisation activity" });
   } else if (pathname.startsWith("/admin/ads/")) {
     crumbs.push({
       href: pathname,
