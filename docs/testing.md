@@ -65,7 +65,8 @@ tests, and the local quiz XP concurrency regression.
 by GitHub Actions. It resets/replays the local database from migrations, checks
 generated local database types against `types/database.ts`, runs local pgTAP,
 runs repository contracts, runs the quiz XP concurrency regression, runs the
-economic integrity regression, and then runs the current E2E command.
+organisation AI reservation concurrency regression, runs the economic integrity
+regression, and then runs the current E2E command.
 
 `npm run test:quiz-xp-concurrency:local` runs the `VE-QUIZ-003` concurrency
 regression directly against local Supabase Postgres. It creates throwaway local
@@ -74,6 +75,14 @@ two correct answers concurrently, verifies the daily quiz XP cap is not
 exceeded, checks ledger/cache consistency, and cleans up afterward. The script
 refuses non-local database URLs unless `ALLOW_NONLOCAL_DB_CONCURRENCY_TESTS=1`
 is explicitly set.
+
+`npm run test:organization-ai-concurrency:local` runs the P1.5E organisation AI
+reservation concurrency regression directly against local Supabase Postgres. It
+creates a throwaway organisation entitlement fixture, opens two real `psql`
+sessions with overlapping reservations that cannot both fit under the hard cap,
+and verifies exactly one reservation succeeds while total reserved units remain
+within budget. The script refuses non-local database URLs unless
+`ALLOW_NONLOCAL_DB_CONCURRENCY_TESTS=1` is explicitly set.
 
 `npm run test:economic-integrity:local` runs the `VE-TEST-003` economic
 integrity regression directly against local Supabase Postgres. It creates
@@ -126,16 +135,34 @@ build for the Playwright server, and enables a local-only verification bypass
 fenced to `PROJECT_VE_LOCAL_E2E=1`, non-Vercel execution, and the local Supabase
 URL.
 
-Latest local remediation gate:
+Current local remediation gate shape:
 
 ```text
 npm run test:remediation:local
+Expected coverage: local DB reset/replay, generated type drift, full pgTAP,
+repository contracts, quiz XP concurrency, organisation AI reservation
+concurrency, economic integrity, and E2E.
+```
+
+Latest focused P1.5E boundary-closure validation:
+
+```text
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/organization_ai_metering.sql
+node scripts/supabase-cli.mjs test db supabase/tests/database/lms_reporting.sql
+npm run test:organization-ai-concurrency:local
+npm run test:db
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+
 Result: PASS
-pgTAP: Files=23, Tests=509
-Repository contracts: PASS
-Quiz XP concurrency regression: PASS
-Economic integrity regression: PASS
-Playwright: 9 passed
+Focused pgTAP: organization AI metering 18/18; LMS reporting 34/34
+Full pgTAP: Files=33, Tests=695
+Organisation AI reservation concurrency regression: PASS
+Build/type/lint/whitespace: PASS
 ```
 
 GitHub Actions now blocks pull requests and pushes on:

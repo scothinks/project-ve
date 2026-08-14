@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(17);
+select extensions.plan(18);
 
 insert into auth.users (
   id,
@@ -537,6 +537,31 @@ select extensions.ok(
   ),
   'organization AI job creation links durable jobs to reserved usage records'
 );
+
+update public.organization_memberships
+set status = 'suspended',
+    updated_at = now()
+where organization_id = (select (result ->> 'organizationId')::uuid from test_ai_metering_worker_org_result)
+  and user_id = :'TEST_LEARNER_USER_ID'::uuid
+  and role = 'organisation_admin';
+
+create temporary table test_ai_worker_claim_after_role_revoke
+on commit drop
+as
+select * from public.claim_ai_generation_job('pgtap-ai-metering-worker-role-revoked', 1800, 3);
+
+select extensions.is(
+  (select count(*)::integer from test_ai_worker_claim_after_role_revoke),
+  0,
+  'worker-side validation refuses queued organization AI jobs after actor role revocation'
+);
+
+update public.organization_memberships
+set status = 'active',
+    updated_at = now()
+where organization_id = (select (result ->> 'organizationId')::uuid from test_ai_metering_worker_org_result)
+  and user_id = :'TEST_LEARNER_USER_ID'::uuid
+  and role = 'organisation_admin';
 
 reset role;
 select set_config('request.jwt.claim.sub', :'TEST_ADMIN_USER_ID', true);

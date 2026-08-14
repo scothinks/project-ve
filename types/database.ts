@@ -8568,6 +8568,10 @@ export type Database = {
         Args: { p_course_id: string }
         Returns: boolean
       }
+      current_user_can_read_instructor_workspace_audience: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
       current_user_can_read_organization_audience: {
         Args: { p_organization_id: string }
         Returns: boolean
