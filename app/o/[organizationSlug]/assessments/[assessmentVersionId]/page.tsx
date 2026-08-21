@@ -1,10 +1,13 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { submitOrganizationValuesAssessment } from "@/app/o/[organizationSlug]/assessments/actions";
-import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
-import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
+import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import { ValuesAssessmentFlow } from "@/components/onboarding/ValuesAssessmentFlow";
+import {
+  OrgBottomNav,
+  OrgLearnerChrome,
+} from "@/components/organizations/OrgLearnerMobile";
+import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
 import { getPublishedValuesAssessmentById } from "@/lib/values-assessment";
 
 type OrgAssessmentRouteParams = Promise<{
@@ -24,7 +27,7 @@ export default async function OrganizationAssessmentPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const resolvedParams = await params;
-  const { profile, supabase, workspace } = await requireOrgLearnerRoute(params);
+  const { profile, supabase, user, workspace } = await requireOrgLearnerRoute(params);
   const programmeId = firstParam((await searchParams)?.programmeId)?.trim() ?? "";
 
   if (!programmeId || !workspace.programmeIds.includes(programmeId)) {
@@ -58,23 +61,29 @@ export default async function OrganizationAssessmentPage({
   const paramsObject = (await searchParams) ?? {};
   const errorMessage = firstParam(paramsObject.error) ?? null;
   const organizationName = workspace.branding.shortName || workspace.branding.name;
+  const myOrgsState = await getMyOrganizationState(supabase, user.id);
 
   return (
-    <main className="mobile-shell min-h-screen">
-      <AppHeader
-        title={`${organizationName} Assessment`}
-        backHref={orgHref(workspace, "/learn")}
-        showMenu={false}
+    <main className="learner-system orgs-learner min-h-screen">
+      <OrgLearnerChrome
+        active="Lessons"
+        balance={workspace.xpAccount.balance}
+        logoUrl={workspace.branding.logoUrl}
+        organizationName={organizationName}
+        organizationSlug={workspace.organizationSlug}
+        pointsLabel={workspace.xpAccount.label}
+        workspaceSwitcher={
+          <LearnerWorkspaceSwitcher
+            currentOrganizationSlug={workspace.organizationSlug}
+            organizations={myOrgsState.organizations}
+          />
+        }
       />
-      <section className="learner-page learner-page--standard pb-28">
-        <div className="mb-4">
-          <Link className="text-sm font-black text-[var(--ve-green)]" href={orgHref(workspace, "/learn")}>
-            Return to {organizationName} learning
-          </Link>
-        </div>
+      <section className="learner-page learner-page--standard org-assessment-page">
         <ValuesAssessmentFlow
           action={submitOrganizationValuesAssessment}
           assessment={assessment}
+          contextLabel={organizationName}
           errorMessage={errorMessage}
           heading={assessment.title}
           hiddenFields={[
@@ -82,11 +91,13 @@ export default async function OrganizationAssessmentPage({
             { name: "programmeId", value: programmeId },
           ]}
           introCopy={programmeAssessment.introduction_copy || assessment.introductionCopy || assessment.description}
+          nextLabel="Next Question"
           preferredName={profile.display_name ?? null}
           unitLabel={workspace.xpAccount.label}
+          variant="organization"
         />
       </section>
-      <BottomNav active="Lesson" />
+      <OrgBottomNav active="Lessons" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }
