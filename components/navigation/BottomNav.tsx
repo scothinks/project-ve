@@ -69,7 +69,7 @@ const items = [
   },
   {
     href: "/courses",
-    label: "Lesson",
+    label: "Lessons",
     icon: <LessonIcon />,
     activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
   },
@@ -89,23 +89,31 @@ const items = [
     href: "/org",
     label: "Orgs",
     icon: <OrgModeIcon />,
-    activeClassName: "bg-[var(--ve-panel-soft)] text-[var(--foreground)]",
+    activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
   },
 ] satisfies Array<{ href: string; label: string; icon: ReactNode; activeClassName: string }>;
 
-export function BottomNav({ active }: { active: string }) {
+type BottomNavLabel = (typeof items)[number]["label"];
+
+export function BottomNav({
+  active,
+  hrefs,
+}: {
+  active: string;
+  hrefs?: Partial<Record<BottomNavLabel, string>>;
+}) {
   return (
-    <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 pb-5 pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
+    <nav className="learner-bottom-nav fixed inset-x-0 bottom-0 z-20 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:right-auto lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
       <div className="mx-auto grid max-w-[25rem] grid-cols-5 gap-1.5 sm:gap-2 md:max-w-[30rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
         {items.map((item) => {
-          const isActive = item.label === active;
+          const isActive = item.label === active || (item.label === "Lessons" && active === "Lesson");
           return (
             <Link
               className={cn(
                 "flex h-12 flex-col items-center justify-center rounded-[16px] text-center text-[9px] font-semibold leading-3 text-[var(--ve-muted)] sm:text-[10px] lg:h-[4.25rem] lg:rounded-[22px]",
                 isActive && item.activeClassName,
               )}
-              href={item.href}
+              href={hrefs?.[item.label] ?? item.href}
               key={item.href}
             >
               <span className="mb-0.5 grid h-5 place-items-center text-base font-black leading-none">
