@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { QuizResultDetails } from "@/components/quiz/QuizResultDetails";
 import {
   appendOrganizationDeliverySearchParam,
@@ -56,7 +56,7 @@ export default async function OrganizationResultsPage({ params, searchParams }: 
         unitLabel={workspace.xpAccount.label}
       />
 
-      <BottomNav active="Store" />
+      <OrgBottomNav active="Store" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

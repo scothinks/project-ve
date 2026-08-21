@@ -1,7 +1,7 @@
 import { markNotificationRead } from "@/app/notifications/actions";
 import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getOrganizationUserNotifications } from "@/lib/notifications";
@@ -107,7 +107,7 @@ export default async function OrganizationNotificationsPage({
           </Card>
         )}
       </section>
-      <BottomNav active="Home" />
+      <OrgBottomNav active="Home" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

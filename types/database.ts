@@ -6966,7 +6966,7 @@ export type Database = {
       }
       xp_accounts: {
         Row: {
-          accounting_currency: string
+          accounting_currency: string | null
           accounting_value_per_unit: number
           created_at: string
           display_format: string
@@ -6991,7 +6991,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          accounting_currency?: string
+          accounting_currency?: string | null
           accounting_value_per_unit?: number
           created_at?: string
           display_format?: string
@@ -7016,7 +7016,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          accounting_currency?: string
+          accounting_currency?: string | null
           accounting_value_per_unit?: number
           created_at?: string
           display_format?: string
@@ -7990,6 +7990,7 @@ export type Database = {
           }
       admin_update_xp_account_controls: {
         Args: {
+          p_accounting_currency: string
           p_accounting_value_per_unit: number
           p_exposure_hard_threshold?: number
           p_exposure_warning_threshold?: number
@@ -8000,7 +8001,7 @@ export type Database = {
           p_xp_account_id: string
         }
         Returns: {
-          accounting_currency: string
+          accounting_currency: string | null
           accounting_value_per_unit: number
           created_at: string
           display_format: string
@@ -8042,7 +8043,7 @@ export type Database = {
               p_xp_account_id: string
             }
             Returns: {
-              accounting_currency: string
+              accounting_currency: string | null
               accounting_value_per_unit: number
               created_at: string
               display_format: string
@@ -8084,7 +8085,7 @@ export type Database = {
               p_xp_account_id: string
             }
             Returns: {
-              accounting_currency: string
+              accounting_currency: string | null
               accounting_value_per_unit: number
               created_at: string
               display_format: string

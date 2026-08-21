@@ -1,0 +1,1146 @@
+diff --git a/app/notifications/page.tsx b/app/notifications/page.tsx
+index 2d518c0..ea2a2c4 100644
+--- a/app/notifications/page.tsx
++++ b/app/notifications/page.tsx
+@@ -1,6 +1,5 @@
+ import { redirect } from "next/navigation";
+ import { markAllNotificationsRead, markNotificationRead } from "@/app/notifications/actions";
+-import { AppHeader } from "@/components/navigation/AppHeader";
+ import { BottomNav } from "@/components/navigation/BottomNav";
+ import { Button } from "@/components/ui/Button";
+ import { Card } from "@/components/ui/Card";
+@@ -9,24 +8,53 @@ import { getUnreadNotificationCount, getUserNotifications } from "@/lib/notifica
+ import { loadNotificationPageState } from "@/lib/observability";
+ import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+
+-const categoryTone = {
+-  account:
+-    "bg-[color:color-mix(in_srgb,var(--ve-sky-soft)_92%,var(--ve-card))] text-[var(--ve-sky)]",
+-  missions:
+-    "bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_92%,var(--ve-card))] text-[var(--ve-mission)]",
+-  rewards:
+-    "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_92%,var(--ve-card))] text-[var(--ve-green)]",
+-  system:
+-    "bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_92%,var(--ve-card))] text-[var(--ve-violet)]",
++const categoryMeta = {
++  account: {
++    icon: "o",
++    tone: "text-[#a65319]",
++  },
++  missions: {
++    icon: "*",
++    tone: "text-[#946400]",
++  },
++  rewards: {
++    icon: "T",
++    tone: "text-[var(--ve-green)]",
++  },
++  system: {
++    icon: "i",
++    tone: "text-[var(--ve-muted-strong)]",
++  },
+ } as const;
+
+ function formatNotificationTime(value: string) {
+-  return new Intl.DateTimeFormat("en-NG", {
+-    dateStyle: "medium",
+-    timeStyle: "short",
++  return new Intl.DateTimeFormat("en-US", {
++    day: "numeric",
++    hour: "numeric",
++    minute: "2-digit",
++    month: "short",
+   }).format(new Date(value));
+ }
+
++function splitNotificationTime(value: string) {
++  const [date, time] = formatNotificationTime(value).split(", ");
++
++  return {
++    date: date ?? "",
++    time: time ?? "",
++  };
++}
++
++function isMissionCompletionNotification(eventType: string, title: string) {
++  const event = eventType.toLowerCase();
++  const heading = title.toLowerCase();
++
++  return (
++    (event.includes("mission") && event.includes("complete"))
++    || heading.includes("mission completed")
++  );
++}
++
+ export default async function NotificationsPage() {
+   const { user } = await getCurrentUserProfile();
+
+@@ -52,83 +80,108 @@ export default async function NotificationsPage() {
+   }
+
+   return (
+-    <main className="mobile-shell flex min-h-screen flex-col bg-[var(--ve-shell)]">
+-      <AppHeader title="Notifications" backHref="/profile" showMenu={false} />
+-      <section className="learner-page learner-page--standard flex-1 space-y-5">
+-        {unreadCount > 0 ? (
+-          <form action={markAllNotificationsRead}>
+-            <Button className="h-10 px-4" type="submit" variant="soft">
+-              Read all
+-            </Button>
+-          </form>
+-        ) : null}
++    <main className="mobile-shell learner-compact-shell flex min-h-screen flex-col bg-[var(--ve-shell)]">
++      <section className="flex-1 px-5 pb-28 pt-8">
++        <div className="flex items-center justify-between gap-4">
++          <h1 className="text-2xl font-black leading-8 text-[var(--foreground)]">Notifications</h1>
++          {unreadCount > 0 ? (
++            <form action={markAllNotificationsRead}>
++              <button className="text-xs font-black text-[var(--ve-green)]" type="submit">
++                Read all
++              </button>
++            </form>
++          ) : null}
++        </div>
+
+         {notificationLoadFailed ? (
+-          <Card className="p-5">
++          <Card className="mt-6 rounded-[8px] p-5">
+             <h2 className="text-base font-black">Notifications unavailable</h2>
+             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+               We could not load notifications right now. Try again shortly.
+             </p>
+           </Card>
+         ) : notifications.length > 0 ? (
+-          <div className="learner-card-grid">
++          <div className="mt-5 space-y-3">
+             {notifications.map((notification) => {
+-            const unread = !notification.readAt;
+-            return (
+-              <Card
+-                className={
+-                  unread
+-                    ? "border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[var(--ve-card)] p-4"
+-                    : "bg-[var(--ve-card-muted)] p-4"
+-                }
+-                key={notification.id}
+-              >
+-                <div className="flex items-start justify-between gap-4">
+-                  <div>
+-                    <div className="flex items-center gap-2">
+-                      <span
+-                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${categoryTone[notification.category]}`}
+-                      >
+-                        {notification.category}
++              const unread = !notification.readAt;
++              const meta = categoryMeta[notification.category];
++              const timestamp = splitNotificationTime(notification.createdAt);
++              const showCta =
++                Boolean(notification.ctaHref)
++                && !isMissionCompletionNotification(notification.eventType, notification.title);
++
++              return (
++                <Card
++                  className={`rounded-[8px] p-0 shadow-[0_10px_24px_rgba(var(--ve-shadow-rgb),0.06)] ${
++                    unread
++                      ? "border-[color:color-mix(in_srgb,#946400_60%,var(--ve-line-soft))] bg-[var(--ve-card)]"
++                      : "border-[var(--ve-line-soft)] bg-[var(--ve-card)]"
++                  }`}
++                  key={notification.id}
++                >
++                  <div className={`border-l-4 px-4 py-4 ${unread ? "border-[#946400]" : "border-transparent"}`}>
++                    <div className="grid grid-cols-[1.5rem_1fr_auto] gap-2">
++                      <span className={`mt-1 text-center text-base font-black leading-none ${meta.tone}`}>
++                        {meta.icon}
+                       </span>
+-                      <p className="text-xs font-semibold text-[var(--ve-muted)]">
+-                        {formatNotificationTime(notification.createdAt)}
+-                      </p>
++                      <div className="min-w-0">
++                        <div className="flex items-start gap-1.5">
++                          <span className={`pt-1 text-[10px] font-black uppercase tracking-[0.1em] ${meta.tone}`}>
++                            {notification.category === "missions" ? "Mission" : notification.category}
++                          </span>
++                          <h2 className="text-xl font-black leading-[1.08] tracking-[-0.02em] text-[var(--foreground)]">
++                            {notification.title}
++                          </h2>
++                        </div>
++                        <p className="mt-4 text-sm font-medium leading-6 text-[var(--ve-muted-strong)]">
++                          {notification.body}
++                        </p>
++                      </div>
++                      <div className="w-12 text-right text-[11px] font-medium leading-4 text-[var(--ve-muted)]">
++                        <span className="block">{timestamp.date}</span>
++                        <span className="block">{timestamp.time}</span>
++                        {unread ? (
++                          <span className="mt-2 inline-flex size-2 rounded-full bg-[var(--ve-green)]" />
++                        ) : null}
++                      </div>
+                     </div>
+-                    <h2 className="mt-2 text-base font-black text-[var(--foreground)]">
+-                      {notification.title}
+-                    </h2>
+-                    <p className="mt-1 text-sm font-medium leading-6 text-[var(--ve-muted-strong)]">
+-                      {notification.body}
+-                    </p>
+-                  </div>
+-                  {unread ? (
+-                    <span className="mt-1 inline-flex size-2.5 rounded-full bg-[var(--ve-green)]" />
+-                  ) : null}
+-                </div>
+-                <div className="mt-3 flex items-center justify-end gap-2">
+-                  <div className="flex items-center gap-2">
+-                    {notification.ctaHref ? (
+-                      <Button className="h-9 px-4 text-sm" href={notification.ctaHref} variant="ghost">
+-                        {notification.ctaLabel ?? "Open"}
+-                      </Button>
+-                    ) : null}
+-                    {unread ? (
+-                      <form action={markNotificationRead}>
+-                        <input name="notificationId" type="hidden" value={notification.id} />
+-                        <Button className="h-9 px-4 text-sm" type="submit" variant="soft">
+-                          Read
++                    <div className="mt-4 flex items-center justify-end gap-2">
++                      {showCta && notification.ctaHref ? (
++                        <Button className="h-8 rounded-[16px] px-4 text-xs" href={notification.ctaHref} variant="outline">
++                          {notification.ctaLabel ?? "Open"}
+                         </Button>
+-                      </form>
+-                    ) : null}
++                      ) : null}
++                      {unread ? (
++                        <form action={markNotificationRead}>
++                          <input name="notificationId" type="hidden" value={notification.id} />
++                          <button
++                            aria-label={`Mark ${notification.title} as read`}
++                            className="grid size-7 place-items-center rounded-full text-[var(--ve-muted-strong)]"
++                            type="submit"
++                          >
++                            <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
++                              <path
++                                d="m6 12.5 3.7 3.7L18 8"
++                                stroke="currentColor"
++                                strokeLinecap="round"
++                                strokeLinejoin="round"
++                                strokeWidth="2.2"
++                              />
++                            </svg>
++                          </button>
++                        </form>
++                      ) : null}
++                    </div>
+                   </div>
+-                </div>
+-              </Card>
+-            );
+-          })}
++                </Card>
++              );
++            })}
++            <p className="py-5 text-center text-xs font-black text-[var(--ve-muted-strong)]">
++              You are all caught up!
++            </p>
+           </div>
+         ) : (
+-          <Card className="p-5">
++          <Card className="mt-6 rounded-[8px] p-5">
+             <h2 className="text-base font-black">No notifications</h2>
+           </Card>
+         )}
+diff --git a/app/profile/page.tsx b/app/profile/page.tsx
+index 25622c5..cc8ec4f 100644
+--- a/app/profile/page.tsx
++++ b/app/profile/page.tsx
+@@ -1,13 +1,9 @@
+ import { redirect } from "next/navigation";
+-import Link from "next/link";
+-import { AppHeader } from "@/components/navigation/AppHeader";
+ import { BottomNav } from "@/components/navigation/BottomNav";
+ import { ProfileForm } from "@/components/profile/ProfileForm";
+-import { Card } from "@/components/ui/Card";
+-import { BellIcon, ChevronRightIcon } from "@/components/ui/Icons";
+ import { withLoggedFallback } from "@/lib/app-errors";
+ import { isDemoMode, isLiveMode } from "@/lib/app-mode";
+-import { getNotificationPreferences, getUnreadNotificationCount } from "@/lib/notifications";
++import { getNotificationPreferences } from "@/lib/notifications";
+ import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+
+ const defaultNotificationPreferences = {
+@@ -38,62 +34,9 @@ export default async function ProfilePage() {
+           promise: getNotificationPreferences(supabase, user.id),
+         })
+       : defaultNotificationPreferences;
+-  const unreadNotificationCount =
+-    supabase && user
+-      ? await withLoggedFallback({
+-          context: {
+-            operation: "profile.notifications.unread_count",
+-            userId: user.id,
+-          },
+-          fallback: 0,
+-          promise: getUnreadNotificationCount(supabase, user.id),
+-        })
+-      : 0;
+
+   return (
+-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+-      <AppHeader
+-        title="Profile"
+-        backHref="/dashboard"
+-        menu={(
+-          <Link
+-            aria-label={
+-              unreadNotificationCount > 0
+-                ? `Open notifications (${unreadNotificationCount} unread)`
+-                : "Open notifications"
+-            }
+-            className="relative grid size-10 place-items-center rounded-full bg-[var(--ve-panel-soft)] text-[var(--foreground)]"
+-            href="/notifications"
+-          >
+-            <BellIcon className="h-5 w-5" />
+-            {unreadNotificationCount > 0 ? (
+-              <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-[#ff7a59] px-1.5 py-0.5 text-center text-[10px] font-black leading-none text-white">
+-                {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+-              </span>
+-            ) : null}
+-          </Link>
+-        )}
+-      />
+-      <section className="px-5 pb-2">
+-        <Link href="/profile/transcript">
+-          <Card className="rounded-[20px] p-4" variant="quiet">
+-            <div className="flex items-center justify-between gap-4">
+-              <div>
+-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+-                  Learning record
+-                </p>
+-                <h2 className="mt-1 text-base font-black text-[var(--foreground)]">Transcript</h2>
+-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+-                  View course and programme completion status.
+-                </p>
+-              </div>
+-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--ve-panel-soft)] text-lg font-black text-[var(--ve-green)]">
+-                <ChevronRightIcon className="h-5 w-5" />
+-              </span>
+-            </div>
+-          </Card>
+-        </Link>
+-      </section>
++    <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ve-shell)]">
+       <ProfileForm
+         avatarUrl={profile?.avatar_url ?? ""}
+         displayName={profile?.display_name ?? ""}
+diff --git a/app/profile/transcript/page.tsx b/app/profile/transcript/page.tsx
+index b94f1c1..83556fd 100644
+--- a/app/profile/transcript/page.tsx
++++ b/app/profile/transcript/page.tsx
+@@ -1,9 +1,8 @@
+ import { redirect } from "next/navigation";
+-import { AppHeader } from "@/components/navigation/AppHeader";
+ import { BottomNav } from "@/components/navigation/BottomNav";
+ import { Button } from "@/components/ui/Button";
+ import { Card } from "@/components/ui/Card";
+-import { SectionHeader } from "@/components/ui/SectionHeader";
++import { ChevronRightIcon } from "@/components/ui/Icons";
+ import {
+   getLearnerTranscript,
+   type LearnerTranscriptItem,
+@@ -46,51 +45,55 @@ function missingRequirementCount(item: LearnerTranscriptItem): number {
+ function TranscriptCard({ item }: { item: LearnerTranscriptItem }) {
+   const isComplete = item.status === "completed";
+   const missingCount = missingRequirementCount(item);
++  const kindLabel = item.kind === "programme" ? "Programme" : "Course";
+
+   return (
+-    <Card className="overflow-hidden rounded-[20px]" variant="quiet">
+-      <div className="p-4">
+-        <div className="flex items-start justify-between gap-3">
+-          <div>
+-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+-              {item.kind}
+-            </p>
+-            <h2 className="mt-1 text-base font-black leading-snug text-[var(--foreground)]">
+-              {item.title}
+-            </h2>
++    <Card className="overflow-hidden rounded-[8px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)]">
++      <div className="relative p-4 pb-5">
++        <div className="flex items-start gap-3">
++          <div className="min-w-0 flex-1">
++            <div className="flex items-center gap-2">
++              <h3 className="text-xl font-semibold leading-6 tracking-[-0.02em] text-[var(--foreground)]">
++                {item.title}
++              </h3>
++              <span className="shrink-0 rounded-full bg-[var(--ve-green-soft)] px-2 py-1 text-[10px] font-black text-[#8a6a16]">
++                {kindLabel}
++              </span>
++            </div>
+             {item.category ? (
+-              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{item.category}</p>
++              <p className="mt-2 text-sm font-semibold leading-5 text-[var(--ve-muted-strong)]">
++                {item.category}
++              </p>
+             ) : null}
+           </div>
+-          <span
+-            className={
+-              isComplete
+-                ? "rounded-full bg-[var(--ve-green-soft)] px-3 py-1 text-xs font-black text-[var(--ve-green)]"
+-                : "rounded-full bg-[var(--ve-panel-soft)] px-3 py-1 text-xs font-black text-[var(--ve-muted-strong)]"
+-            }
+-          >
+-            {isComplete ? "Completed" : "In progress"}
+-          </span>
++          {isComplete ? <ChevronRightIcon className="mt-1 h-5 w-5 shrink-0 text-[var(--ve-muted-soft)]" /> : null}
+         </div>
+
+-        <div className="mt-4">
+-          <div className="h-2 overflow-hidden rounded-full bg-[var(--ve-panel-soft)]">
+-            <div
+-              className="h-full rounded-full bg-[var(--ve-green)]"
+-              style={{ width: `${item.progressPercent}%` }}
+-            />
+-          </div>
+-          <div className="mt-2 flex items-center justify-between text-xs font-bold text-[var(--ve-muted)]">
+-            <span>{item.progressPercent}% complete</span>
+-            <span>{formatDate(item.completedAt)}</span>
+-          </div>
+-        </div>
+-
+-        {!isComplete && missingCount > 0 ? (
+-          <p className="mt-3 rounded-[14px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+-            {missingCount} requirement{missingCount === 1 ? "" : "s"} remaining
++        {isComplete ? (
++          <p className="mt-4 text-sm font-semibold text-[var(--ve-muted-strong)]">
++            Completed - {formatDate(item.completedAt)}
+           </p>
+-        ) : null}
++        ) : (
++          <div className="mt-5">
++            <div className="flex items-center justify-between text-sm font-black">
++              <span className="text-[var(--ve-green)]">In progress</span>
++              <span className="text-[color:color-mix(in_srgb,var(--ve-green)_76%,var(--foreground))]">
++                {item.progressPercent}%
++              </span>
++            </div>
++            {missingCount > 0 ? (
++              <p className="mt-1 text-xs font-black text-[var(--ve-muted-strong)]">
++                {missingCount} requirement{missingCount === 1 ? "" : "s"} remaining
++              </p>
++            ) : null}
++            <div className="absolute inset-x-0 bottom-0 h-2 overflow-hidden bg-[var(--ve-line-soft)]">
++              <div
++                className="h-full bg-[var(--ve-green)]"
++                style={{ width: `${item.progressPercent}%` }}
++              />
++            </div>
++          </div>
++        )}
+       </div>
+     </Card>
+   );
+@@ -107,12 +110,15 @@ function TranscriptSection({
+ }) {
+   return (
+     <section className="mt-6">
+-      <h2 className="text-sm font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">{title}</h2>
++      <div className="flex items-center gap-2">
++        <span className="grid size-5 place-items-center rounded-[4px] border border-[var(--ve-green)] text-[var(--ve-green)]" />
++        <h2 className="text-xl font-semibold text-[var(--foreground)]">{title}</h2>
++      </div>
+       <div className="mt-3 space-y-3">
+         {items.length > 0 ? (
+           items.map((item) => <TranscriptCard item={item} key={`${item.kind}-${item.id}`} />)
+         ) : (
+-          <Card className="rounded-[20px] p-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]" variant="quiet">
++          <Card className="rounded-[8px] p-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]" variant="quiet">
+             {emptyText}
+           </Card>
+         )}
+@@ -148,40 +154,28 @@ export default async function LearnerTranscriptPage() {
+       programmes: [],
+     };
+
+-  const completedCount = [...transcript.courses, ...transcript.programmes]
+-    .filter((item) => item.status === "completed")
+-    .length;
+-
+   return (
+-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+-      <AppHeader title="Transcript" backHref="/profile" showMenu={false} />
+-      <section className="learner-page learner-page--standard pb-28">
+-        <SectionHeader
+-          eyebrow="Learning record"
+-          subtitle="Course and programme completion records refresh from your assigned learning."
++    <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ve-shell)]">
++      <header className="border-b border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_42%,var(--ve-card))] px-5 pb-6 pt-8">
++        <h1 className="text-2xl font-black leading-8 text-[var(--foreground)]">Learning Transcript</h1>
++        <p className="mt-2 max-w-[18rem] text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
++          Your personal record of learning and progression.
++        </p>
++      </header>
++      <section className="px-5 pb-28 pt-5">
++        <TranscriptSection
++          emptyText="Assigned programme records will appear here."
++          items={transcript.programmes}
++          title="Programmes"
+         />
+-
+-        <Card className="mt-5 rounded-[20px] p-4" variant="quiet">
+-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Completed</p>
+-          <p className="mt-2 text-3xl font-black text-[var(--foreground)]">{completedCount}</p>
+-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+-            Certificates are not issued in this P1 ticket.
+-          </p>
+-        </Card>
+-
+         <TranscriptSection
+-          emptyText="Assigned course completions will appear here."
++          emptyText="Assigned course records will appear here."
+           items={transcript.courses}
+           title="Courses"
+         />
+-        <TranscriptSection
+-          emptyText="Assigned programme completions will appear here."
+-          items={transcript.programmes}
+-          title="Programmes"
+-        />
+
+         <div className="mt-6">
+-          <Button className="w-full" href="/courses" variant="soft">
++          <Button className="w-full rounded-[8px]" href="/courses" variant="soft">
+             Open course library
+           </Button>
+         </div>
+diff --git a/components/navigation/BottomNav.tsx b/components/navigation/BottomNav.tsx
+index 6f6449c..4642e72 100644
+--- a/components/navigation/BottomNav.tsx
++++ b/components/navigation/BottomNav.tsx
+@@ -69,7 +69,7 @@ const items = [
+   },
+   {
+     href: "/courses",
+-    label: "Lesson",
++    label: "Lessons",
+     icon: <LessonIcon />,
+     activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+   },
+@@ -98,7 +98,7 @@ export function BottomNav({ active }: { active: string }) {
+     <nav className="sticky bottom-0 z-20 mt-8 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 pb-5 pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
+       <div className="mx-auto grid max-w-[25rem] grid-cols-5 gap-1.5 sm:gap-2 md:max-w-[30rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
+         {items.map((item) => {
+-          const isActive = item.label === active;
++          const isActive = item.label === active || (item.label === "Lessons" && active === "Lesson");
+           return (
+             <Link
+               className={cn(
+diff --git a/components/profile/ProfileForm.tsx b/components/profile/ProfileForm.tsx
+index 02cdca4..1d5d3a5 100644
+--- a/components/profile/ProfileForm.tsx
++++ b/components/profile/ProfileForm.tsx
+@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
+ import { Avatar } from "@/components/profile/Avatar";
+ import { Button } from "@/components/ui/Button";
+ import { Card } from "@/components/ui/Card";
++import { ArrowLeftIcon, BellIcon, ChevronRightIcon } from "@/components/ui/Icons";
+ import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
+ import type { NotificationPreferences } from "@/lib/notifications";
+ import {
+@@ -35,11 +36,13 @@ type ProfileSection = "account" | "notifications" | "help";
+
+ function ToggleRow({
+   checked,
++  description,
+   disabled = false,
+   label,
+   onToggle,
+ }: {
+   checked: boolean;
++  description: string;
+   disabled?: boolean;
+   label: string;
+   onToggle: () => void;
+@@ -51,9 +54,14 @@ function ToggleRow({
+       onClick={onToggle}
+       type="button"
+     >
+-      <span className="text-sm font-black text-[var(--foreground)]">{label}</span>
++      <span>
++        <span className="block text-sm font-black text-[var(--foreground)]">{label}</span>
++        <span className="mt-0.5 block text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
++          {description}
++        </span>
++      </span>
+       <span
+-        className={`relative h-7 w-12 rounded-full transition ${
++        className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+           checked ? "bg-[var(--ve-green)]" : "bg-[var(--ve-line)]"
+         }`}
+       >
+@@ -67,6 +75,121 @@ function ToggleRow({
+   );
+ }
+
++function ProfileTabs({
++  activeSection,
++  setActiveSection,
++}: {
++  activeSection: ProfileSection;
++  setActiveSection: (section: ProfileSection) => void;
++}) {
++  return (
++    <div className="grid grid-cols-3 border-b border-[var(--ve-line-soft)] text-[11px] font-black">
++      {[
++        { id: "account", label: "Account" },
++        { id: "notifications", label: "Notifications" },
++        { id: "help", label: "Help & Legal" },
++      ].map((section) => {
++        const isActive = activeSection === section.id;
++
++        return (
++          <button
++            className={`border-b-2 px-0 pb-3 pt-1 text-left transition ${
++              isActive
++                ? "border-[var(--ve-green)] text-[var(--ve-green)]"
++                : "border-transparent text-[var(--ve-muted-strong)]"
++            }`}
++            key={section.id}
++            onClick={() => setActiveSection(section.id as ProfileSection)}
++            type="button"
++          >
++            {section.label}
++          </button>
++        );
++      })}
++    </div>
++  );
++}
++
++function ShortcutRow({
++  description,
++  icon,
++  label,
++  onClick,
++}: {
++  description: string;
++  icon: string;
++  label: string;
++  onClick?: () => void;
++}) {
++  const content = (
++    <>
++      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-store-soft)] text-base font-black text-[#a66d00]">
++        {icon}
++      </span>
++      <span className="min-w-0 flex-1">
++        <span className="block text-sm font-black text-[var(--foreground)]">{label}</span>
++        <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--ve-muted-strong)]">
++          {description}
++        </span>
++      </span>
++      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ve-muted-strong)]" />
++    </>
++  );
++
++  if (onClick) {
++    return (
++      <button
++        className="flex w-full items-center gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-left shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)]"
++        onClick={onClick}
++        type="button"
++      >
++        {content}
++      </button>
++    );
++  }
++
++  return (
++    <Link
++      className="flex items-center gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)]"
++      href="/profile/transcript"
++    >
++      {content}
++    </Link>
++  );
++}
++
++function HelpLink({
++  compact = false,
++  href,
++  icon,
++  label,
++}: {
++  compact?: boolean;
++  href: string;
++  icon: string;
++  label: string;
++}) {
++  return (
++    <Link
++      className={`group relative flex items-center justify-between overflow-hidden rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] text-[var(--foreground)] ${
++        compact ? "px-4 py-4" : "min-h-[112px] px-4 py-5"
++      }`}
++      href={href}
++    >
++      <span className="flex items-center gap-3">
++        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-sm font-black text-[var(--ve-green)]">
++          {icon}
++        </span>
++        <span className={compact ? "text-sm font-semibold" : "text-xl font-semibold"}>{label}</span>
++      </span>
++      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ve-muted-soft)]" />
++      {!compact ? (
++        <span className="pointer-events-none absolute -right-10 -top-16 size-32 rounded-full bg-[color:color-mix(in_srgb,var(--ve-green-soft)_72%,transparent)]" />
++      ) : null}
++    </Link>
++  );
++}
++
+ export function ProfileForm({
+   displayName,
+   avatarUrl,
+@@ -326,193 +449,229 @@ export function ProfileForm({
+     setPreferences(nextPreferences);
+   }
+
+-  return (
+-    <section className="learner-page learner-page--spacious space-y-5">
+-      <div>
+-        <h1 className="mt-2 text-2xl font-black leading-8">Manage profile</h1>
+-        <p className="mt-2 text-sm font-semibold leading-5 text-[var(--ve-muted)]">{email}</p>
+-      </div>
++  const pushStateLabel =
++    pushPermission === "unsupported" || !vapidPublicKey
++      ? "Unavailable"
++      : pushPermission === "denied" && !pushEnabled
++        ? "Blocked"
++        : pushEnabled
++          ? "On"
++          : "Off";
++  const profileName = name || "Your profile";
+
+-      <Card className="p-5">
+-        <div className="flex items-center gap-4">
+-          <Avatar avatarUrl={avatar} className="size-20 shrink-0 text-2xl" email={email} name={name} />
+-          <div>
+-            <p className="text-sm font-black">{name || "Your profile"}</p>
+-            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+-              Your avatar can be any public image URL.
+-            </p>
+-          </div>
+-        </div>
+-      </Card>
+-
+-      <div className="grid grid-cols-3 rounded-[24px] bg-[var(--ve-panel-soft)] p-1.5">
+-        {[
+-          { id: "account", label: "Account" },
+-          { id: "notifications", label: "Notifications" },
+-          { id: "help", label: "Help & Legal" },
+-        ].map((section) => {
+-          const isActive = activeSection === section.id;
+-          return (
++  return (
++    <section className="px-5 pb-28 pt-8">
++      <div className="space-y-4">
++        <div className="flex items-center gap-3">
++          {activeSection === "help" ? (
+             <button
+-              className={`rounded-[18px] px-3 py-3 text-center text-[11px] font-black tracking-[-0.01em] transition ${
+-                isActive
+-                  ? "bg-[var(--ve-card)] text-[var(--foreground)] shadow-[0_10px_24px_rgba(var(--ve-shadow-rgb),0.12)]"
+-                  : "text-[var(--ve-muted)]"
+-              }`}
+-              key={section.id}
+-              onClick={() => setActiveSection(section.id as ProfileSection)}
++              aria-label="Back to account profile"
++              className="grid size-7 place-items-center text-[var(--foreground)]"
++              onClick={() => setActiveSection("account")}
+               type="button"
+             >
+-              {section.label}
++              <ArrowLeftIcon className="h-5 w-5" />
+             </button>
+-          );
+-        })}
++          ) : null}
++          <h1 className="text-2xl font-black leading-8 text-[var(--foreground)]">Profile</h1>
++        </div>
++        <ProfileTabs activeSection={activeSection} setActiveSection={setActiveSection} />
+       </div>
+
+       {activeSection === "account" ? (
+-        <>
+-          <form className="space-y-3" onSubmit={(event) => void saveProfile(event)}>
+-            <label className="block">
+-              <span className="px-2 text-[11px] font-bold text-[var(--ve-muted)]">Account email</span>
+-              <input
+-                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-panel-soft)] px-5 text-sm font-semibold text-[var(--ve-muted)] outline-none"
+-                readOnly
+-                value={email}
+-              />
+-            </label>
++        <div className="mt-6 space-y-7">
++          <div className="text-center">
++            <Avatar avatarUrl={avatar} className="mx-auto size-20 text-2xl" email={email} name={profileName} />
++            <h2 className="mt-4 text-xl font-semibold leading-7 text-[var(--foreground)]">{profileName}</h2>
++            <p className="text-xs font-medium text-[var(--ve-muted-strong)]">{email}</p>
++          </div>
+
++          <form className="space-y-4" onSubmit={(event) => void saveProfile(event)}>
+             <label className="block">
+-              <span className="px-2 text-[11px] font-bold text-[var(--ve-muted)]">Full name</span>
++              <span className="text-xs font-medium text-[var(--ve-muted-strong)]">Display Name</span>
+               <input
+-                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
++                className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-sm font-medium outline-none focus:border-[var(--ve-green)]"
+                 maxLength={120}
+                 onBlur={() => setName((current) => sanitizePlainTextInput(current, 120).trim())}
+                 onChange={(event) => setName(sanitizePlainTextInput(event.target.value, 120))}
+-                placeholder="Enter full name"
++                placeholder="Enter display name"
+                 value={name}
+               />
+             </label>
+
+             <label className="block">
+-              <span className="px-2 text-[11px] font-bold text-[var(--ve-muted)]">Avatar URL</span>
++              <span className="text-xs font-medium text-[var(--ve-muted-strong)]">
++                Email Address (Read-only)
++              </span>
+               <input
+-                className="mt-1 h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
++                className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 text-sm font-medium text-[var(--ve-muted)] outline-none"
++                readOnly
++                value={email}
++              />
++            </label>
++
++            <label className="block">
++              <span className="text-xs font-medium text-[var(--ve-muted-strong)]">Avatar URL</span>
++              <input
++                className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-sm font-medium outline-none focus:border-[var(--ve-green)]"
+                 maxLength={1000}
+                 onBlur={() => setAvatar((current) => sanitizeUrlInput(current))}
+                 onChange={(event) => setAvatar(event.target.value)}
+-                placeholder="https://..."
++                placeholder="https://example.com/avatar.jpg"
+                 value={avatar}
+               />
+             </label>
+
+-            <Button className="w-full" disabled={savingProfile} type="submit">
++            <Button className="h-12 w-full rounded-[8px] text-sm !text-white" disabled={savingProfile} type="submit">
+               {savingProfile ? "Saving..." : "Save Profile"}
+             </Button>
+           </form>
+
+-          <Card className="p-5">
+-            <h2 className="text-base font-black">Password</h2>
+-            <div className="relative mt-4">
+-              <input
+-                className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 pr-20 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+-                autoComplete="new-password"
+-                maxLength={128}
+-                minLength={8}
+-                onChange={(event) => setNewPassword(event.target.value)}
+-                placeholder="New password"
+-                type={showPassword ? "text" : "password"}
+-                value={newPassword}
+-              />
+-              <button
+-                className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[var(--ve-green)]"
+-                onClick={() => setShowPassword((current) => !current)}
+-                type="button"
+-              >
+-                {showPassword ? "Hide" : "Show"}
+-              </button>
+-            </div>
++          <div className="border-t border-[var(--ve-line-soft)] pt-6">
++            <h2 className="text-xl font-semibold text-[var(--foreground)]">Account Security</h2>
++            <label className="mt-4 block">
++              <span className="text-xs font-medium text-[var(--ve-muted-strong)]">New Password</span>
++              <span className="relative mt-2 block">
++                <input
++                  className="h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 pr-20 text-sm font-medium outline-none focus:border-[var(--ve-green)]"
++                  autoComplete="new-password"
++                  maxLength={128}
++                  minLength={8}
++                  onChange={(event) => setNewPassword(event.target.value)}
++                  placeholder="Enter new password"
++                  type={showPassword ? "text" : "password"}
++                  value={newPassword}
++                />
++                <button
++                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-[var(--ve-muted-strong)]"
++                  onClick={() => setShowPassword((current) => !current)}
++                  type="button"
++                >
++                  {showPassword ? "Hide" : "Show"}
++                </button>
++              </span>
++            </label>
+             <Button
+-              className="mt-3 w-full"
+-              disabled={savingPassword}
++              className="mt-3 h-12 w-full rounded-[8px] bg-[var(--ve-line-soft)] text-sm text-[var(--ve-muted-strong)]"
++              disabled={savingPassword || newPassword.length < 8}
+               onClick={() => void updatePassword()}
+               type="button"
+-              variant="soft"
++              variant="outline"
+             >
+               {savingPassword ? "Updating..." : "Update Password"}
+             </Button>
+-          </Card>
++          </div>
++
++          <div className="space-y-3">
++            <ShortcutRow description="View your learning record" icon="+" label="Learning Transcript" />
++            <ShortcutRow
++              description="Manage alerts and notifications"
++              icon="!"
++              label="Notification Preferences"
++              onClick={() => setActiveSection("notifications")}
++            />
++          </div>
+
+           <Button
+-            className="w-full"
++            className="h-11 w-full rounded-[8px] border-[#ef5b5b] text-[#d84242]"
+             disabled={signingOut}
+             onClick={() => void logout()}
+             type="button"
+             variant="outline"
+           >
+-            {signingOut ? "Logging out..." : "Log out"}
++            {signingOut ? "Logging out..." : "Logout"}
+           </Button>
+-        </>
++        </div>
+       ) : null}
+
+       {activeSection === "notifications" ? (
+-        <Card className="p-5">
+-          <div className="divide-y divide-[var(--ve-line-soft)]">
++        <div className="mt-6 space-y-5">
++          <div>
++            <h2 className="text-xl font-semibold text-[var(--foreground)]">Notification Preferences</h2>
++            <p className="mt-1 text-sm font-semibold leading-5 text-[var(--ve-muted-strong)]">
++              Manage how and when Project Ve communicates with you.
++            </p>
++          </div>
++
++          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 py-3 shadow-none">
+             <ToggleRow
+               checked={preferences.inAppEnabled}
++              description="Allow alerts within the app"
+               disabled={savingPreferenceKey === "inAppEnabled"}
+-              label="In-app"
++              label="In-app notifications"
+               onToggle={() =>
+                 void updateNotificationPreference("inAppEnabled", !preferences.inAppEnabled)
+               }
+             />
+-            <ToggleRow
+-              checked={preferences.rewardsEnabled}
+-              disabled={!preferences.inAppEnabled || savingPreferenceKey === "rewardsEnabled"}
+-              label="Reward updates"
+-              onToggle={() =>
+-                void updateNotificationPreference("rewardsEnabled", !preferences.rewardsEnabled)
+-              }
+-            />
+-            <ToggleRow
+-              checked={preferences.missionsEnabled}
+-              disabled={!preferences.inAppEnabled || savingPreferenceKey === "missionsEnabled"}
+-              label="Mission reviews"
+-              onToggle={() =>
+-                void updateNotificationPreference("missionsEnabled", !preferences.missionsEnabled)
+-              }
+-            />
+-            <ToggleRow
+-              checked={preferences.accountEnabled}
+-              disabled={!preferences.inAppEnabled || savingPreferenceKey === "accountEnabled"}
+-              label="Account alerts"
+-              onToggle={() =>
+-                void updateNotificationPreference("accountEnabled", !preferences.accountEnabled)
+-              }
+-            />
+-            <ToggleRow
+-              checked={preferences.systemEnabled}
+-              disabled={!preferences.inAppEnabled || savingPreferenceKey === "systemEnabled"}
+-              label="System alerts"
+-              onToggle={() =>
+-                void updateNotificationPreference("systemEnabled", !preferences.systemEnabled)
+-              }
+-            />
+-          </div>
++          </Card>
++
++          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none">
++            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted-strong)]">
++              Activity Updates
++            </p>
++            <div className="divide-y divide-[var(--ve-line-soft)]">
++              <ToggleRow
++                checked={preferences.rewardsEnabled}
++                description="Reward availability, redemption and fulfillment updates."
++                disabled={!preferences.inAppEnabled || savingPreferenceKey === "rewardsEnabled"}
++                label="Reward updates"
++                onToggle={() =>
++                  void updateNotificationPreference("rewardsEnabled", !preferences.rewardsEnabled)
++                }
++              />
++              <ToggleRow
++                checked={preferences.missionsEnabled}
++                description="Mission progress, proof review and Mission status updates."
++                disabled={!preferences.inAppEnabled || savingPreferenceKey === "missionsEnabled"}
++                label="Mission reviews"
++                onToggle={() =>
++                  void updateNotificationPreference("missionsEnabled", !preferences.missionsEnabled)
++                }
++              />
++            </div>
++          </Card>
+
+-          <div className="mt-4 rounded-[20px] bg-[var(--ve-panel-soft)] px-4 py-4">
++          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none">
++            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted-strong)]">
++              System & Security
++            </p>
++            <div className="divide-y divide-[var(--ve-line-soft)]">
++              <ToggleRow
++                checked={preferences.accountEnabled}
++                description="Login activity and password changes"
++                disabled={!preferences.inAppEnabled || savingPreferenceKey === "accountEnabled"}
++                label="Account alerts"
++                onToggle={() =>
++                  void updateNotificationPreference("accountEnabled", !preferences.accountEnabled)
++                }
++              />
++              <ToggleRow
++                checked={preferences.systemEnabled}
++                description="Maintenance and app updates"
++                disabled={!preferences.inAppEnabled || savingPreferenceKey === "systemEnabled"}
++                label="System alerts"
++                onToggle={() =>
++                  void updateNotificationPreference("systemEnabled", !preferences.systemEnabled)
++                }
++              />
++            </div>
++          </Card>
++
++          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none">
+             <div className="flex items-center justify-between gap-4">
+-              <div>
+-                <p className="text-sm font-black text-[var(--foreground)]">Push alerts</p>
+-                {pushPermission === "unsupported" ? (
+-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">Unavailable</p>
+-                ) : pushPermission === "denied" && !preferences.webPushEnabled ? (
+-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">Blocked in browser</p>
+-                ) : !vapidPublicKey ? (
+-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">Unavailable</p>
+-                ) : null}
++              <div className="flex gap-3">
++                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ve-card)] text-[var(--ve-muted-strong)]">
++                  <BellIcon className="h-4 w-4" />
++                </span>
++                <div>
++                  <p className="text-sm font-black text-[var(--foreground)]">Push alerts</p>
++                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
++                    Browser push notifications are managed at the system level.
++                  </p>
++                </div>
+               </div>
+               <Button
+-                className="h-10 px-4"
++                className="h-9 shrink-0 rounded-[8px] px-3 text-[11px]"
+                 disabled={
+                   managingPush
+                   || pushPermission === "unsupported"
+@@ -524,76 +683,36 @@ export function ProfileForm({
+                 type="button"
+                 variant={pushEnabled ? "outline" : "soft"}
+               >
+-                {managingPush
+-                  ? pushEnabled
+-                    ? "Turning off..."
+-                    : "Turning on..."
+-                  : pushEnabled
+-                    ? "On"
+-                    : "Off"}
++                {managingPush ? "Saving" : pushStateLabel}
+               </Button>
+             </div>
+-          </div>
+-        </Card>
++          </Card>
++        </div>
+       ) : null}
+
+       {activeSection === "help" ? (
+-        <Card className="p-5">
+-          <div className="space-y-3">
+-            <Link
+-              className="flex items-center justify-between rounded-[16px] border border-[var(--ve-line-soft)] px-4 py-4 text-sm font-black text-[var(--foreground)]"
+-              href="/support"
+-            >
+-              <span>Support</span>
+-              <span aria-hidden="true" className="text-[var(--ve-muted)]">
+-                &gt;
+-              </span>
+-            </Link>
+-            <Link
+-              className="flex items-center justify-between rounded-[16px] border border-[var(--ve-line-soft)] px-4 py-4 text-sm font-black text-[var(--foreground)]"
+-              href="/faq"
+-            >
+-              <span>FAQ</span>
+-              <span aria-hidden="true" className="text-[var(--ve-muted)]">
+-                &gt;
+-              </span>
+-            </Link>
+-            <Link
+-              className="flex items-center justify-between rounded-[16px] border border-[var(--ve-line-soft)] px-4 py-4 text-sm font-black text-[var(--foreground)]"
+-              href="/terms"
+-            >
+-              <span>Terms</span>
+-              <span aria-hidden="true" className="text-[var(--ve-muted)]">
+-                &gt;
+-              </span>
+-            </Link>
+-            <Link
+-              className="flex items-center justify-between rounded-[16px] border border-[var(--ve-line-soft)] px-4 py-4 text-sm font-black text-[var(--foreground)]"
+-              href="/privacy"
+-            >
+-              <span>Privacy</span>
+-              <span aria-hidden="true" className="text-[var(--ve-muted)]">
+-                &gt;
+-              </span>
+-            </Link>
+-          </div>
+-        </Card>
++        <div className="mt-6 space-y-3">
++          <HelpLink href="/support" icon="?" label="Support" />
++          <HelpLink href="/faq" icon="!" label="FAQ" />
++          <HelpLink compact href="/terms" icon="T" label="Terms of Service" />
++          <HelpLink compact href="/privacy" icon="P" label="Privacy Policy" />
++        </div>
+       ) : null}
+
+       {message ? (
+-        <p className="rounded-[18px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[var(--ve-green)]">
++        <p className="mt-5 rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[var(--ve-green)]">
+           {message}
+         </p>
+       ) : null}
+
+       {error ? (
+-        <p className="rounded-[18px] bg-[color:color-mix(in_srgb,#b63a3a_16%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[#d96b6b]">
++        <p className="mt-5 rounded-[14px] bg-[color:color-mix(in_srgb,#b63a3a_16%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[#b63a3a]">
+           {error}
+         </p>
+       ) : null}
+
+       {isDemoMode && !supabase ? (
+-        <p className="rounded-[18px] bg-[var(--ve-panel-soft)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
++        <p className="mt-5 rounded-[14px] bg-[var(--ve-card-muted)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)]">
+           Demo mode is active, so profile changes stay in this browser session.
+         </p>
+       ) : null}

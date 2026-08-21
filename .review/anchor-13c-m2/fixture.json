@@ -1,0 +1,9 @@
+{
+  "assessmentId": "e4b6d02c-28a7-4ee0-9d16-fca6ce91e3ff",
+  "email": "a13-m2-learner@example.test",
+  "organizationId": "bde3c8fd-d630-4c1e-a2f9-39cf026ed3a5",
+  "programmeId": "07fe3064-0632-4689-a298-a1e1760dc18a",
+  "slug": "a13-m2-police-academy",
+  "supabaseUrl": "http://127.0.0.1:54321",
+  "userId": "d803e8dd-4d1b-4d0b-bd41-88313b3ac61f"
+}

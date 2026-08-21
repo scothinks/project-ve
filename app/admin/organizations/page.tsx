@@ -27,6 +27,7 @@ import {
   ORGANIZATION_ACCENT_LABELS,
   ORGANIZATION_ACCENT_TOKENS,
 } from "@/features/organizations/identity";
+import { formatAccountingCurrencyAmount } from "@/lib/xp-format";
 import {
   saveOrganization,
   saveOrganizationInvitation,
@@ -58,6 +59,18 @@ const BILLING_STATUSES = ["free", "trial", "active", "past_due", "cancelled", "s
 const LIFECYCLE_STATUSES = ["trial", "active", "suspended", "archived"] as const;
 const VERIFICATION_STATUSES = ["unverified", "verification_pending", "verified", "rejected"] as const;
 const TEMPORARY_GRANT_TYPES = ["plan_trial", "temporary_plan", "granular_override", "additive_allocation"] as const;
+const ACCOUNTING_CURRENCY_OPTIONS = [
+  ["NGN", "Nigerian Naira"],
+  ["GBP", "British Pound"],
+  ["USD", "US Dollar"],
+  ["EUR", "Euro"],
+  ["KES", "Kenyan Shilling"],
+  ["ZAR", "South African Rand"],
+  ["GHS", "Ghanaian Cedi"],
+  ["CAD", "Canadian Dollar"],
+  ["AUD", "Australian Dollar"],
+  ["JPY", "Japanese Yen"],
+] as const;
 
 const INTEGER_OVERRIDE_FIELDS = [
   ["max_courses", "Max courses"],
@@ -569,14 +582,32 @@ export default async function AdminOrganizationsPage({
               <div className="mt-6 border-t border-[var(--ve-line)] pt-5">
                 <h3 className="text-sm font-black">Issuance and exposure controls</h3>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  Caps apply to organisation-account earning transactions. Exposure is an estimate based on outstanding balances and the configured accounting value.
+                  Caps apply to organisation-account earning transactions. Accounting currency is used internally to estimate the value of outstanding Points and exposure. It does not make Points cash-redeemable.
                 </p>
                 <form action={saveOrganizationXpAccountControls} className="mt-4 space-y-4">
                   <input name="organizationId" type="hidden" value={selectedOrganization.id} />
                   <input name="xpAccountId" type="hidden" value={xpAccountOverview.account.id} />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label className="block">
-                      <span className={labelClasses()}>Value per point</span>
+                      <span className={labelClasses()}>Accounting currency</span>
+                      <input
+                        className={fieldClasses()}
+                        defaultValue={xpAccountOverview.controls.accountingCurrency ?? ""}
+                        list="accounting-currency-options"
+                        maxLength={3}
+                        name="accountingCurrency"
+                        pattern="[A-Za-z]{3}"
+                        placeholder="Accounting currency not configured"
+                        type="text"
+                      />
+                      <datalist id="accounting-currency-options">
+                        {ACCOUNTING_CURRENCY_OPTIONS.map(([code, name]) => (
+                          <option key={code} label={name} value={code} />
+                        ))}
+                      </datalist>
+                    </label>
+                    <label className="block">
+                      <span className={labelClasses()}>Accounting value per point</span>
                       <input
                         className={fieldClasses()}
                         defaultValue={xpAccountOverview.controls.accountingValuePerUnit}
@@ -658,7 +689,39 @@ export default async function AdminOrganizationsPage({
                   <div className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
                     <p>Issued in current rolling period: {xpAccountOverview.controls.periodIssued}</p>
                     <p className="mt-1">Remaining period capacity: {xpAccountOverview.controls.periodRemaining}</p>
-                    <p className="mt-1">Estimated unredeemed liability: {xpAccountOverview.exposure.estimatedUnredeemedLiability}</p>
+                    <p className="mt-1">
+                      Accounting currency: {xpAccountOverview.controls.accountingCurrency ?? "Accounting currency not configured"}
+                    </p>
+                    <p className="mt-1">
+                      Accounting value per point: {formatAccountingCurrencyAmount(
+                        xpAccountOverview.controls.accountingValuePerUnit,
+                        xpAccountOverview.controls.accountingCurrency,
+                      )}
+                    </p>
+                    <p className="mt-1">
+                      Funded reward budget: {formatAccountingCurrencyAmount(
+                        xpAccountOverview.controls.fundedRewardBudget,
+                        xpAccountOverview.controls.accountingCurrency,
+                      )}
+                    </p>
+                    <p className="mt-1">
+                      Exposure warning: {formatAccountingCurrencyAmount(
+                        xpAccountOverview.controls.exposureWarningThreshold,
+                        xpAccountOverview.controls.accountingCurrency,
+                      )}
+                    </p>
+                    <p className="mt-1">
+                      Exposure hard threshold: {formatAccountingCurrencyAmount(
+                        xpAccountOverview.controls.exposureHardThreshold,
+                        xpAccountOverview.controls.accountingCurrency,
+                      )}
+                    </p>
+                    <p className="mt-1">
+                      Estimated unredeemed liability: {formatAccountingCurrencyAmount(
+                        xpAccountOverview.exposure.estimatedUnredeemedLiability,
+                        xpAccountOverview.controls.accountingCurrency,
+                      )}
+                    </p>
                     {xpAccountOverview.exposure.warning ? <p className="mt-1 font-black text-[var(--ve-store)]">Exposure warning threshold reached.</p> : null}
                     {xpAccountOverview.exposure.hardBlocked ? <p className="mt-1 font-black text-[var(--foreground)]">New issuance is blocked by the exposure threshold.</p> : null}
                   </div>

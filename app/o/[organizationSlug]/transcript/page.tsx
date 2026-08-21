@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -128,7 +128,7 @@ export default async function OrganizationTranscriptPage({
           </Button>
         </div>
       </section>
-      <BottomNav active="Home" />
+      <OrgBottomNav active="Home" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

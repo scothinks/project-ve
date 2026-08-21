@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { Avatar } from "@/components/profile/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -88,7 +88,7 @@ export default async function OrganizationProfilePage({
           <Button href={orgHref(workspace, "/notifications")} variant="outline">Notifications</Button>
         </div>
       </section>
-      <BottomNav active="Profile" />
+      <OrgBottomNav active="Home" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

@@ -96,3 +96,33 @@ export function BellIcon({ className = "h-5 w-5" }: IconProps) {
     </svg>
   );
 }
+
+export function GraduationCapIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M3.8 9.4 12 5.5l8.2 3.9-8.2 3.9-8.2-3.9Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+      <path
+        d="M7.2 11.1v4.1c1.3 1.5 2.9 2.3 4.8 2.3s3.5-.8 4.8-2.3v-4.1"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+      <path
+        d="M20.2 9.5v4.2"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2.2"
+      />
+    </svg>
+  );
+}

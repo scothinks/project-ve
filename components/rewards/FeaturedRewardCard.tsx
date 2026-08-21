@@ -28,12 +28,17 @@ export function FeaturedRewardCard({
 }) {
   return (
     <Link href="/xp-store" className="block h-full">
-      <Card className="flex h-full flex-col overflow-hidden border border-[#fff1bf]" variant="store">
-        <div className={`relative shrink-0 ${compact ? "h-16" : "h-28"}`}>
+      <Card
+        className={`dashboard-featured-reward-card flex h-full flex-col overflow-hidden border border-[#fff1bf] ${
+          compact ? "dashboard-featured-reward-card--compact" : ""
+        }`}
+        variant="store"
+      >
+        <div className={`dashboard-featured-reward-card__media relative shrink-0 ${compact ? "h-16" : "h-28"}`}>
           <RewardThumbnail reward={reward} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
+          <div className="dashboard-featured-reward-card__media-scrim absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
           <div
-            className={`absolute left-4 right-4 flex items-end justify-end ${
+            className={`dashboard-featured-reward-card__cost absolute left-4 right-4 flex items-end justify-end ${
               compact ? "bottom-3" : "bottom-4"
             }`}
           >
@@ -47,7 +52,7 @@ export function FeaturedRewardCard({
             </StatusBadge>
           </div>
         </div>
-        <div className={`flex flex-1 flex-col ${compact ? "p-3.5" : "p-5"}`}>
+        <div className={`dashboard-featured-reward-card__body flex flex-1 flex-col ${compact ? "p-3.5" : "p-5"}`}>
           <h3
             className={`${
               compact

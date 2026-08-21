@@ -1133,7 +1133,7 @@ Deferred to later P1.5A tickets:
 
 ### Status
 
-Implemented for P1.5E review on 2026-08-13. This remains a newly approved P1.5E extension of the entitlement foundation established by `P15-ENT-001`, not retroactive P1.5A scope.
+Implemented for P1.5E review on 2026-08-13 and accepted as part of P1.5E closure on 2026-08-15. This remains a newly approved P1.5E extension of the entitlement foundation established by `P15-ENT-001`, not retroactive P1.5A scope.
 
 ### Objective
 
@@ -3361,13 +3361,13 @@ Result: local migration replay passed including `20260813130000_p15_ops_003_orga
 
 ### Status
 
-Implemented for P1.5E review on 2026-08-14. Organisation AI access still must not be enabled for a target path until this ticket and `P15-ENT-002` are accepted and closed for that path.
+Implemented for P1.5E review on 2026-08-14 and accepted as part of P1.5E closure on 2026-08-15.
 
 ### Priority
 
 Required before AI is enabled for any organisation.
 
-This replaces the earlier pilot-dependent wording. Organisation AI access must not be enabled for free, trial, sponsored, paid, temporary, pilot or manually granted organisations until this ticket is implemented and accepted.
+This replaces the earlier pilot-dependent wording. Organisation AI access for free, trial, sponsored, paid, temporary, pilot or manually granted organisations must pass through the accepted P1.5E entitlement, allocation, cap, rate-limit, concurrency, worker-validation and reconciliation boundaries.
 
 ### Objective
 
@@ -4644,20 +4644,74 @@ Stop for review before P1.5E.
 Implement:
 
 ```text
-P15-ENT-002 (implemented 2026-08-13; pending acceptance)
-P15-AI-001 (implemented 2026-08-14; focused closure implemented 2026-08-15; pending acceptance)
+P15-ENT-002 (implemented 2026-08-13; accepted and closed 2026-08-15)
+P15-AI-001 (implemented 2026-08-14; focused closure implemented 2026-08-15; accepted and closed 2026-08-15)
 P15-OPS-001
 P15-OPS-002
 P15-OPS-003
 ```
 
-Do not enable organisation AI until `P15-ENT-002` and `P15-AI-001` have been implemented, tested, accepted and closed for the target access path.
+P1.5E was accepted and closed on 2026-08-15. Organisation AI access remains governed by the accepted P1.5E entitlement, allocation, cap, rate-limit, concurrency, worker-validation and reconciliation boundaries.
 
 Implement `P15-MEDIA-001` only when a pilot or product decision explicitly depends on organisation-hosted video or audio.
 
 Then stop for review.
 
+## Pre-P1.5F hotfix
+
+`HOTFIX-P15C-CURRENCY-001` is a high-priority P1.5C product-model correction and must be merged before P1.5F implementation begins.
+
+Status: implemented on 2026-08-18 and ready for review.
+
+Scope:
+
+* correct `xp_accounts.accounting_currency` so it stores a nullable per-account ISO-4217 accounting currency code rather than the legacy `XP` sentinel;
+* migrate legacy `XP` values to unconfigured/null without assuming NGN, USD or any other fiat currency;
+* keep accounting currency on `xp_accounts`, not organisations;
+* update `admin_update_xp_account_controls(...)` so the one authoritative manager-controlled RPC path validates, normalizes and persists accounting currency while retiring any stale writable overload;
+* update `admin_get_xp_account_overview(p_organization_id)` and server-side mappers so the overview exposes `accountingCurrency`;
+* preserve existing exposure mathematics: outstanding organisation Points balances multiplied by `accounting_value_per_unit`; currency is context only and must not perform conversion;
+* minimally update the current organisation Points controls and displays so accounting/exposure amounts format from the configured ISO code, while Points quantities remain Points quantities;
+* state in admin copy that accounting currency is used internally for exposure/liability estimates and does not make Points cash-redeemable;
+* regenerate checked-in database types through the existing workflow;
+* add database/app regression coverage for authorised and cross-organisation currency updates, legacy sentinel migration, malformed currency rejection, unchanged exposure mathematics, threshold validation and no RPC privilege regression.
+
+Out of scope: P1.5F Stitch/Points redesign, FX rates, automatic conversion, cash redemption, wallets, withdrawals, crypto, organisation-country inference, learner currency settings, multiple Points-account UX and historical exposure charts.
+
+Implementation evidence:
+
+* migration `20260815110000_hotfix_p15c_currency_accounting.sql` drops the legacy `XP` default, makes `xp_accounts.accounting_currency` nullable, migrates existing `XP` values to null/unconfigured and adds the configured-code constraint;
+* the final writable admin control RPC is `public.admin_update_xp_account_controls(uuid, text, numeric, integer, integer, integer, numeric, numeric, numeric)`;
+* the previous writable overload `public.admin_update_xp_account_controls(uuid, numeric, integer, integer, integer, numeric, numeric, numeric)` is revoked, dropped and removed from RPC security classifications;
+* `admin_get_xp_account_overview(p_organization_id)` now returns `controls.accountingCurrency`;
+* the current organisation admin Points controls expose accounting currency with code-based input and format accounting/exposure values from the configured ISO code;
+* `types/database.ts` was regenerated from the local database.
+
+Validation completed on 2026-08-18:
+
+```bash
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_issuance_controls.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+npm run test:unit
+node scripts/supabase-cli.mjs test db supabase/tests/database/ai_generation_worker.sql supabase/tests/database/cms_template_duplication.sql supabase/tests/database/lms_assessment_plan_capabilities.sql supabase/tests/database/lms_cohorts_assignments.sql supabase/tests/database/lms_completion_transcripts.sql supabase/tests/database/lms_course_catalog_model.sql supabase/tests/database/lms_organization_content_limits.sql supabase/tests/database/lms_organization_entitlements.sql supabase/tests/database/lms_organization_invitations.sql supabase/tests/database/lms_organization_missions.sql supabase/tests/database/lms_organization_profile_lifecycle.sql supabase/tests/database/lms_organizations_memberships.sql supabase/tests/database/lms_p1_release_gate.sql supabase/tests/database/lms_programme_builder.sql supabase/tests/database/lms_programme_engagement.sql supabase/tests/database/lms_programme_notifications.sql supabase/tests/database/lms_reporting.sql supabase/tests/database/lms_self_service_organizations.sql supabase/tests/database/notification_security.sql supabase/tests/database/organization_activity_history.sql supabase/tests/database/organization_ai_metering.sql supabase/tests/database/p0_release_gate.sql supabase/tests/database/p15_rwd_starter_rewards.sql supabase/tests/database/p15_xp_accounts.sql supabase/tests/database/p15_xp_balances.sql supabase/tests/database/p15_xp_issuance_controls.sql supabase/tests/database/p15_xp_learning_earning.sql supabase/tests/database/p15_xp_presentation.sql supabase/tests/database/p15_xp_rewards.sql supabase/tests/database/progress_security.sql supabase/tests/database/quiz_security.sql supabase/tests/database/rpc_security.sql supabase/tests/database/xp_ledger_security.sql
+npm run test:repositories:local
+npm run test:quiz-xp-concurrency:local
+npm run test:organization-ai-concurrency:local
+npm run test:economic-integrity:local
+npm run test:e2e
+git diff --check
+```
+
+Result: migration replay passed; focused issuance controls pgTAP passed 34/34; full explicit pgTAP passed 33 files / 711 tests; generated type drift, typecheck, lint, production build, 140 unit tests, repository contracts, quiz XP concurrency, organisation AI concurrency, economic integrity, 15/15 Playwright E2E flows and whitespace checks passed.
+
 ## Batch P1.5F
+
+Do not begin this batch until `HOTFIX-P15C-CURRENCY-001` has been reviewed, merged and verified.
 
 Implement:
 
@@ -4750,7 +4804,7 @@ Phase 1.5 is complete when:
 * plan-based assessment capabilities are enforced;
 * organisation units and instructor supervision are usable;
 * organisation activity is auditable;
-* organisation AI access is disabled unless `P15-ENT-002` and `P15-AI-001` are implemented and accepted for that access path;
+* organisation AI access is governed by the accepted `P15-ENT-002` and `P15-AI-001` entitlement, allocation, cap, rate-limit, concurrency, worker-validation and reconciliation boundaries;
 * wherever organisation AI access is enabled, AI economic enforcement includes allocation, reservation, hard caps, rate limits, concurrency limits, worker validation, actual usage/cost recording and reconciliation;
 * CMS and learner UI cleanup is complete;
 * database and browser release gates pass;
@@ -4766,8 +4820,8 @@ P1 Hybrid LMS foundation
 → CLOSED
 
 P1.5 Org Mode and institutional pilot readiness
-→ MUST CLOSE
+→ P1.5E CLOSED; HOTFIX-P15C-CURRENCY-001 THEN P1.5F REMAIN
 
 P2 Enterprise and institutional expansion
-→ MAY BEGIN
+→ BLOCKED UNTIL P1.5F FINAL REVIEW CLOSES
 ```

@@ -1,15 +1,17 @@
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { MissionPanel } from "@/components/missions/MissionPanel";
-import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
-import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 export default async function MissionsPage() {
   const supabase = await createSupabaseServerClient();
-  const { user } = await getCurrentUserProfile(supabase);
+  const { user, profile } = await getCurrentUserProfile(supabase);
+  const rawDisplayName = profile?.display_name ?? "";
+  const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
   const segmentKeys = await withLoggedFallback({
     context: {
       operation: "missions.ads.segments",
@@ -24,40 +26,44 @@ export default async function MissionsPage() {
     userId: user?.id,
     segmentKeys,
   });
+  const unreadNotificationCount =
+    user && supabase
+      ? await withLoggedFallback({
+          context: {
+            operation: "missions.notifications.unread_count",
+            userId: user.id,
+          },
+          fallback: 0,
+          promise: getUnreadNotificationCount(supabase, user.id),
+        })
+      : 0;
 
   return (
-    <main className="mobile-shell min-h-screen bg-[#fffaf4]">
-      <AppHeader
-        title="Missions"
-        backHref="/dashboard"
-        className="bg-[#fffaf4] shadow-none"
-        showMenu={false}
+    <main className="learner-system missions-learner min-h-screen">
+      <LearnerTopChrome
+        active="Missions"
+        avatarUrl={profile?.avatar_url}
+        displayName={displayName}
+        email={user?.email}
+        unreadNotificationCount={unreadNotificationCount}
       />
       <section className="learner-page learner-page--standard">
-        <ExperienceHeader
-          badge={
-            <div className="grid size-16 place-items-center rounded-[22px] bg-[#ff7a59] text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_12px_24px_rgba(255,122,89,0.22)]">
-              Wins
-            </div>
-          }
-          eyebrow="XP And Rewards"
-          metrics={[
-            { label: "Act", value: "Go", valueClassName: "text-[#ff7a59]" },
-            { label: "Prove", value: "Do", valueClassName: "text-[#087f5b]" },
-            { label: "Earn", value: "Win", valueClassName: "text-[#c08a00]" },
-          ]}
-          subtitle="Quick challenges, community actions, and prize wins outside lessons."
-          title="Welcome to Missions"
-          tone="mission"
-        />
-        <div className="mt-6">
-          <MissionPanel />
+        <div className="mb-5">
+          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+            Missions
+          </h1>
+          <p className="mt-1 max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ve-muted)]">
+            Complete tasks to earn XP and rewards.
+          </p>
         </div>
+        <MissionPanel />
         <div className="mt-6">
           <DirectAdCard ad={missionsAd} />
         </div>
       </section>
-      <BottomNav active="Missions" />
+      <div className="learner-mobile-nav">
+        <BottomNav active="Missions" />
+      </div>
     </main>
   );
 }

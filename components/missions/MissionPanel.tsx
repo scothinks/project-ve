@@ -50,69 +50,69 @@ const categoryTheme: Record<
   }
 > = {
   course: {
-    card: "border-[#c7e6d8] bg-[#edf9f2] shadow-[0_16px_36px_rgba(8,127,91,0.12)]",
-    accent: "text-[#087f5b]",
-    progress: "bg-[#109365]",
-    pill: "bg-[#def3e8] text-[#087f5b]",
-    label: "bg-[#daf1e4] text-[#087f5b]",
-    buttonBg: "#0d8a5e",
+    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
+    accent: "text-[#0b6f4d]",
+    progress: "bg-[#0b6f4d]",
+    pill: "bg-transparent text-[#0b6f4d]",
+    label: "bg-transparent text-[#8b6b1c]",
+    buttonBg: "#007a53",
     buttonFg: "#ffffff",
-    buttonShadow: "0 12px 28px rgba(8,127,91,0.22)",
-    buttonSoftBg: "#e7f6ef",
-    buttonSoftFg: "#087f5b",
-    buttonSoftBorder: "#c7e6d8",
+    buttonShadow: "none",
+    buttonSoftBg: "#eef4ec",
+    buttonSoftFg: "#0b6f4d",
+    buttonSoftBorder: "#b9c7b9",
   },
   referral: {
-    card: "border-[#d9c7ff] bg-[#f3ebff] shadow-[0_16px_36px_rgba(107,67,204,0.16)]",
-    accent: "text-[#6b43cc]",
-    progress: "bg-[#8d68f2]",
-    pill: "bg-[#ece3ff] text-[#6b43cc]",
-    label: "bg-[#e8ddff] text-[#6b43cc]",
-    buttonBg: "#8d68f2",
+    card: "!rounded-[8px] border-[#e4eadf] bg-[#f4f7ef] shadow-none",
+    accent: "text-[#0b6f4d]",
+    progress: "bg-[#0b6f4d]",
+    pill: "bg-[#007a53] text-white",
+    label: "bg-transparent text-[#8b6b1c]",
+    buttonBg: "#007a53",
     buttonFg: "#ffffff",
-    buttonShadow: "0 12px 28px rgba(107,67,204,0.24)",
-    buttonSoftBg: "#ede5ff",
-    buttonSoftFg: "#6b43cc",
-    buttonSoftBorder: "#d9c7ff",
+    buttonShadow: "none",
+    buttonSoftBg: "#eef4ec",
+    buttonSoftFg: "#0b6f4d",
+    buttonSoftBorder: "#b9c7b9",
   },
   feedback: {
-    card: "border-[#ffcbb6] bg-[#fff0e8] shadow-[0_16px_36px_rgba(255,122,89,0.16)]",
-    accent: "text-[#c94f2e]",
-    progress: "bg-[#ff7a59]",
-    pill: "bg-[#ffe7dc] text-[#c94f2e]",
-    label: "bg-[#ffe1d5] text-[#c94f2e]",
-    buttonBg: "#ff7a59",
+    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
+    accent: "text-[#0b6f4d]",
+    progress: "bg-[#0b6f4d]",
+    pill: "bg-[#ffdd76] text-[#2c2614]",
+    label: "bg-transparent text-[#8b6b1c]",
+    buttonBg: "#007a53",
     buttonFg: "#ffffff",
-    buttonShadow: "0 12px 28px rgba(255,122,89,0.24)",
-    buttonSoftBg: "#ffe7dc",
-    buttonSoftFg: "#c94f2e",
-    buttonSoftBorder: "#ffcbb6",
+    buttonShadow: "none",
+    buttonSoftBg: "#eef4ec",
+    buttonSoftFg: "#0b6f4d",
+    buttonSoftBorder: "#b9c7b9",
   },
   campaign: {
-    card: "border-[#f1db8d] bg-[#fff5d9] shadow-[0_16px_36px_rgba(192,138,0,0.16)]",
-    accent: "text-[#a36d00]",
-    progress: "bg-[#d59a13]",
-    pill: "bg-[#fff0c8] text-[#a36d00]",
-    label: "bg-[#ffefc2] text-[#a36d00]",
-    buttonBg: "#d59a13",
+    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
+    accent: "text-[#0b6f4d]",
+    progress: "bg-[#0b6f4d]",
+    pill: "bg-[#ffdd76] text-[#2c2614]",
+    label: "bg-transparent text-[#8b6b1c]",
+    buttonBg: "#007a53",
     buttonFg: "#ffffff",
-    buttonShadow: "0 12px 28px rgba(192,138,0,0.22)",
-    buttonSoftBg: "#fff0c8",
-    buttonSoftFg: "#a36d00",
-    buttonSoftBorder: "#f1db8d",
+    buttonShadow: "none",
+    buttonSoftBg: "#eef4ec",
+    buttonSoftFg: "#0b6f4d",
+    buttonSoftBorder: "#b9c7b9",
   },
   custom: {
-    card: "border-[#d6dde6] bg-[#f1f5f9] shadow-[0_16px_36px_rgba(16,16,16,0.09)]",
-    accent: "text-[#475569]",
-    progress: "bg-[#64748b]",
-    pill: "bg-[#e8edf5] text-[#475569]",
-    label: "bg-[#e5ebf3] text-[#475569]",
-    buttonBg: "#64748b",
+    card: "!rounded-[8px] border-[#d8ddd2] bg-[#f4f7ef] shadow-none",
+    accent: "text-[#0b6f4d]",
+    progress: "bg-[#0b6f4d]",
+    pill: "bg-[#e8eee3] text-[#3f4b45]",
+    label: "bg-transparent text-[#8b6b1c]",
+    buttonBg: "#007a53",
     buttonFg: "#ffffff",
-    buttonShadow: "0 12px 28px rgba(71,85,105,0.22)",
-    buttonSoftBg: "#e8edf5",
-    buttonSoftFg: "#475569",
-    buttonSoftBorder: "#d6dde6",
+    buttonShadow: "none",
+    buttonSoftBg: "#eef4ec",
+    buttonSoftFg: "#0b6f4d",
+    buttonSoftBorder: "#b9c7b9",
   },
 };
 
@@ -139,15 +139,30 @@ function getProofRequirementSummary(mission: UserMissionSummary) {
 function getProofFieldPlaceholder(field: NonNullable<UserMissionSummary["proofRequiredFields"]>[number]) {
   switch (field) {
     case "image":
-      return "Paste a shareable photo link";
+      return "https://...";
     case "video":
-      return "Paste a shareable video link";
+      return "https://...";
     case "text":
       return "Describe what you did";
     case "link":
-      return "Paste the supporting link";
+      return "https://...";
     case "location":
       return "Enter the place or address";
+  }
+}
+
+function getProofFieldInstruction(field: NonNullable<UserMissionSummary["proofRequiredFields"]>[number]) {
+  switch (field) {
+    case "image":
+      return "Add a photo URL that shows the completed activity.";
+    case "video":
+      return "Add a video URL that shows the completed activity.";
+    case "text":
+      return "Describe what you did during the session.";
+    case "link":
+      return "Add the supporting page, post, or document URL.";
+    case "location":
+      return "Enter the place or address connected to this proof.";
   }
 }
 
@@ -200,6 +215,37 @@ function getProofFieldStatusLabel(
     default:
       return requirementMode === "any" ? "Optional" : "Pending";
   }
+}
+
+function getMissionRewardEffect(mission: UserMissionSummary) {
+  const config =
+    mission.rewardFulfillmentConfig && typeof mission.rewardFulfillmentConfig === "object"
+      ? mission.rewardFulfillmentConfig
+      : null;
+  const effect = typeof config?.effect === "string" ? config.effect : null;
+  return effect === "xp_boost" ? "boost" : "standard";
+}
+
+function BoostIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-[1.05em] shrink-0 translate-y-px"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M8.95 1.5 3.4 8.55h4.05l-.42 5.95 5.58-7.2H8.55l.4-5.8Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function getBoostRewardChipLabel(rewardLabel: string) {
+  return rewardLabel.replace(/\s*XP\s+Boost$/i, " Boost");
 }
 
 function getMissionPrimaryAction(mission: UserMissionSummary) {
@@ -280,7 +326,7 @@ function MissionActionButton({
   style,
 }: MissionActionButtonProps) {
   const classes = cn(
-    "inline-flex h-11 min-w-[148px] items-center justify-center rounded-[30px] px-6 text-[0.95rem] font-semibold tracking-[-0.01em] transition",
+    "inline-flex h-9 min-w-0 items-center justify-center rounded-[6px] px-4 text-[0.76rem] font-black tracking-[-0.01em] transition",
     disabled && "cursor-not-allowed",
     className,
   );
@@ -314,6 +360,7 @@ export function MissionPanel({
   const [proofDrafts, setProofDrafts] = useState<ProofDrafts>({});
   const [proofFieldMessage, setProofFieldMessage] = useState<string | null>(null);
   const [submittingProofField, setSubmittingProofField] = useState<string | null>(null);
+  const [uploadingProofField, setUploadingProofField] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   const loadMissions = useCallback(async function loadMissions() {
@@ -363,13 +410,15 @@ export function MissionPanel({
     setActiveProofMissionId(null);
     setProofFieldMessage(null);
     setSubmittingProofField(null);
+    setUploadingProofField(null);
   }
 
   async function submitProofField(
     mission: UserMissionSummary,
     field: NonNullable<UserMissionSummary["proofRequiredFields"]>[number],
+    submittedValue?: string,
   ) {
-    const value = (proofDrafts[field] ?? "").trim();
+    const value = (submittedValue ?? proofDrafts[field] ?? "").trim();
     if (!value) {
       setProofFieldMessage(`Add ${getMissionProofFieldLabel(field).toLowerCase()} proof before submitting.`);
       return;
@@ -405,6 +454,49 @@ export function MissionPanel({
     setProofFieldMessage(`${getMissionProofFieldLabel(field)} submitted.`);
     setProofDrafts((current) => ({ ...current, [field]: "" }));
     await loadMissions();
+  }
+
+  async function uploadAndSubmitProofMedia(
+    mission: UserMissionSummary,
+    field: Extract<NonNullable<UserMissionSummary["proofRequiredFields"]>[number], "image" | "video">,
+    file: File | null,
+  ) {
+    if (!file) {
+      return;
+    }
+
+    setUploadingProofField(field);
+    setProofFieldMessage(null);
+
+    const proofMissionId = mission.baseMissionId ?? mission.id;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", field);
+
+    const uploadResponse = await fetch(`/api/missions/${proofMissionId}/proof/media`, {
+      method: "POST",
+      body: formData,
+    });
+    const uploadData = await uploadResponse.json();
+    setUploadingProofField(null);
+
+    if (!uploadResponse.ok) {
+      setProofFieldMessage(uploadData.error ?? "Could not upload proof media.");
+      return;
+    }
+
+    const uploadedUrl =
+      uploadData && typeof uploadData === "object" && typeof uploadData.url === "string"
+        ? uploadData.url
+        : "";
+
+    if (!uploadedUrl) {
+      setProofFieldMessage("Proof media uploaded, but no URL was returned.");
+      return;
+    }
+
+    setProofDrafts((current) => ({ ...current, [field]: uploadedUrl }));
+    await submitProofField(mission, field, uploadedUrl);
   }
 
   async function copyReferralLink(missionId: string, url: string) {
@@ -457,6 +549,35 @@ export function MissionPanel({
   );
   const visibleMissions = maxItems ? missions.slice(0, maxItems) : paginatedMissions.items;
   const isFeatured = mode === "featured";
+  const missionGroups = useMemo(() => {
+    if (isFeatured) {
+      return [{ key: "featured", title: null, missions: visibleMissions }];
+    }
+
+    const activeStatuses = new Set<UserMissionSummary["status"]>([
+      "not_started",
+      "in_progress",
+      "submitted",
+      "under_review",
+      "rejected",
+    ]);
+    const active = visibleMissions
+      .filter((mission) => activeStatuses.has(mission.status) && !mission.referral)
+      .slice(0, 2);
+    const activeIds = new Set(active.map((mission) => mission.id));
+    const available = visibleMissions.filter(
+      (mission) => !activeIds.has(mission.id) && mission.status !== "completed",
+    );
+    const history = visibleMissions.filter((mission) => mission.status === "completed");
+
+    const groups = [
+      { key: "active", title: "Active", missions: active },
+      { key: "available", title: "Available", missions: available },
+      { key: "history", title: "History", missions: history },
+    ];
+
+    return groups.filter((group) => group.key === "history" || group.missions.length > 0);
+  }, [isFeatured, visibleMissions]);
   const skeletonCount = maxItems ?? 3;
 
   useEffect(() => {
@@ -464,7 +585,7 @@ export function MissionPanel({
   }, [missions.length, maxItems, mode]);
 
   return (
-    <section>
+    <section className="mission-panel">
       {isFeatured ? (
         <SectionHeader
           actionHref="/missions"
@@ -481,7 +602,7 @@ export function MissionPanel({
         </div>
       ) : null}
 
-      <div className={cn("learner-card-grid", isFeatured ? "mt-3" : "mt-0")}>
+      <div className={cn(isFeatured ? "learner-card-grid mt-3" : "mission-panel__groups space-y-5")}>
         {loading
           ? Array.from({ length: skeletonCount }).map((_, index) => (
               <Card
@@ -511,8 +632,36 @@ export function MissionPanel({
           </Card>
         ) : null}
 
-        {!loading &&
-          visibleMissions.map((mission) => {
+        {!loading && visibleMissions.length > 0 &&
+          missionGroups.map((group) => (
+            <div
+              className={cn(
+                "mission-panel__group",
+                group.title && "space-y-3",
+                `mission-panel__group--${group.key}`,
+              )}
+              key={group.key}
+            >
+              {group.title ? (
+                <h2 className="mission-panel__group-title text-[1.05rem] font-black tracking-[-0.01em] text-[var(--foreground)]">
+                  {group.key === "history" ? "Mission History" : group.title}
+                </h2>
+              ) : null}
+              <div
+                className={cn(
+                  "learner-card-grid mission-panel__group-grid",
+                  `mission-panel__group-grid--${group.key}`,
+                  group.title ? "gap-3" : null,
+                )}
+              >
+                {group.key === "history" && group.missions.length === 0 ? (
+                  <Card className="mission-card mission-card--empty !rounded-[8px] p-6 text-center" variant="quiet">
+                    <p className="text-xs font-semibold text-[var(--ve-muted)]">
+                      No completed missions yet. Get started above!
+                    </p>
+                  </Card>
+                ) : null}
+                {group.missions.map((mission) => {
             const theme = categoryTheme[mission.category];
             const rewardLabel = getMissionRewardLabel(mission);
             const progressPercent =
@@ -521,8 +670,7 @@ export function MissionPanel({
                 : 0;
             const hasStructuredProgress =
               !mission.referral &&
-              (mission.targetCount > 1 ||
-                mission.progressCount > 0 ||
+              (mission.progressCount > 0 ||
                 mission.status === "completed" ||
                 mission.requiresProof ||
                 mission.status === "submitted" ||
@@ -530,9 +678,12 @@ export function MissionPanel({
                 mission.status === "rejected");
             const copied = copiedMissionId === mission.id;
             const action = getMissionPrimaryAction(mission);
+            const rewardEffect = getMissionRewardEffect(mission);
             const requiredReferralLessons = mission.referral?.requiredFriendLessonCount ?? 0;
             const referralLessonLabel = requiredReferralLessons === 1 ? "lesson" : "lessons";
             const proofRequirementSummary = mission.requiresProof ? getProofRequirementSummary(mission) : null;
+            const showReviewStatus =
+              mission.status === "submitted" || mission.status === "under_review" || mission.status === "rejected";
             const primaryActionStyle: CSSProperties = action.disabled
               ? {
                   backgroundColor: theme.buttonSoftBg,
@@ -562,40 +713,55 @@ export function MissionPanel({
 
             return (
               <Card
-                className={cn("overflow-hidden p-5 sm:p-6", theme.card)}
+                className={cn(
+                  "mission-card overflow-hidden p-4 sm:p-4",
+                  `mission-card--${mission.category}`,
+                  mission.referral && "mission-card--referral",
+                  theme.card,
+                )}
                 key={mission.id}
                 variant="quiet"
               >
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0">
+                <div className="mission-card__top-row flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <div
                       className={cn(
-                        "inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em]",
+                        "inline-flex rounded-[8px] px-0 py-1 text-[10px] font-black uppercase tracking-[0.12em]",
                         theme.label,
                       )}
                     >
-                      {mission.category}
+                      {mission.category} mission
                     </div>
+                    {showReviewStatus ? (
+                      <span className="rounded-[8px] bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-2.5 py-1 text-[10px] font-black text-[var(--ve-muted-strong)]">
+                        {statusCopy[mission.status]}
+                      </span>
+                    ) : null}
                   </div>
 
                   <div
                     className={cn(
-                      "ml-auto max-w-[72%] rounded-[18px] px-4 py-2.5 text-right sm:max-w-[18rem]",
+                      "mission-card__reward",
+                      "ml-auto max-w-[58%] rounded-[12px] px-3 py-2 text-right sm:max-w-[18rem]",
                       theme.pill,
+                      rewardEffect === "boost" && "rounded-full bg-[#007a53] px-3.5 py-2 text-white",
                     )}
                     title={rewardLabel}
                   >
-                    <span className="block text-[0.95rem] font-black tracking-[-0.02em] sm:text-base">
-                      {rewardLabel}
+                    <span className="inline-flex min-h-4 items-center justify-center gap-1.5 align-middle text-[0.78rem] font-black leading-none tracking-[-0.01em] sm:text-sm">
+                      {rewardEffect === "boost" ? <BoostIcon /> : null}
+                      <span className="leading-none">
+                        {rewardEffect === "boost" ? getBoostRewardChipLabel(rewardLabel) : rewardLabel}
+                      </span>
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-5 min-w-0">
-                  <h3 className="text-[1.24rem] font-semibold tracking-[-0.025em] text-[var(--foreground)]">
+                <div className="mission-card__body mt-4 min-w-0">
+                  <h3 className="mission-card__title text-[1.08rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--foreground)]">
                     {mission.title}
                   </h3>
-                  <p className="mt-3 max-w-none text-[0.98rem] font-medium leading-[1.7] text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
+                  <p className="mission-card__description mt-1.5 max-w-none text-[0.82rem] font-medium leading-5 text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
                     {mission.description}
                   </p>
                   {mission.presentation?.fullInstructions ? (
@@ -621,8 +787,8 @@ export function MissionPanel({
                 </div>
 
                 {hasStructuredProgress ? (
-                  <div className="mt-5">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[0.9rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
+                  <div className="mission-card__progress mt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[0.78rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
                       <span className="min-w-0 flex-1">
                         {mission.completionLabel
                           ? mission.availableAgainAt
@@ -636,7 +802,7 @@ export function MissionPanel({
                         {mission.progressCount}/{mission.targetCount}
                       </span>
                     </div>
-                    <div className="mt-3 h-2 rounded-full bg-[color:color-mix(in_srgb,var(--ve-card)_65%,transparent)]">
+                    <div className="mt-2 h-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--ve-card)_65%,transparent)]">
                       <div
                         className={cn("h-full rounded-full", theme.progress)}
                         style={{ width: `${progressPercent}%` }}
@@ -645,7 +811,7 @@ export function MissionPanel({
                   </div>
                 ) : null}
 
-                <div className={cn("mt-5 flex flex-wrap items-center gap-3", mission.referral && "items-stretch")}>
+                <div className={cn("mission-card__actions mt-4 flex flex-wrap items-center gap-2", mission.referral && "items-stretch")}>
                   {action.type === "share" && mission.referral ? (
                     <>
                       <MissionActionButton
@@ -684,8 +850,8 @@ export function MissionPanel({
                 </div>
 
                 {mission.referral ? (
-                  <div className="mt-4 rounded-[20px] border border-white/80 bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-4 py-4">
-                    <div className="rounded-[16px] bg-[var(--ve-card)] px-4 py-3 text-left">
+                  <div className="mission-card__referral mt-4 rounded-[20px] border border-white/80 bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-4 py-4">
+                    <div className="mission-card__invite rounded-[16px] bg-[var(--ve-card)] px-4 py-3 text-left">
                       <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
                         Invite link
                       </p>
@@ -726,7 +892,10 @@ export function MissionPanel({
                 ) : null}
               </Card>
             );
-          })}
+                })}
+              </div>
+            </div>
+          ))}
       </div>
 
       {!loading && !maxItems && mode === "full" ? (
@@ -739,20 +908,19 @@ export function MissionPanel({
       ) : null}
 
       {activeProofMission ? (
-        <div className="fixed inset-0 z-50 bg-black/35 px-4 py-6">
-          <div className="mx-auto max-w-[420px]">
-            <Card className="max-h-[calc(100vh-3rem)] overflow-y-auto p-6">
+        <div className="mission-proof-overlay fixed inset-0 z-50 grid place-items-end bg-black/35 px-0 sm:px-4 sm:py-6">
+          <div className="mission-proof-shell w-full sm:mx-auto sm:max-w-[420px]">
+            <Card className="mission-proof-dialog max-h-[calc(100dvh-1rem)] overflow-y-auto rounded-b-none p-5 sm:rounded-b-[24px] sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
-                    Submit Proof
-                  </p>
-                  <h2 className="mt-2 text-xl font-black">{activeProofMission.title}</h2>
-                  <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-                    {activeProofMission.proofRequirementMode === "any"
-                      ? `Choose any one of these ${activeProofMission.proofRequiredFields?.length ?? 0} proof options.`
-                      : `Submit all ${activeProofMission.proofRequiredFields?.length ?? 0} proof items below.`}
-                  </p>
+                  <div className="mb-3 h-1 w-12 rounded-full bg-[var(--ve-line)]" />
+                  <h2 className="text-xl font-black tracking-[-0.02em]">{activeProofMission.title}</h2>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="rounded-[8px] bg-[#dff2e9] px-2.5 py-1 text-[11px] font-black text-[#087f5b]">
+                      {getMissionRewardLabel(activeProofMission)}
+                    </span>
+                    <span className="text-[11px] font-black text-[var(--ve-muted)]">Proof Required</span>
+                  </div>
                   {activeProofMission.status === "under_review" ? (
                     <p className="mt-2 text-xs font-semibold text-[#a66d00]">
                       {activeProofMission.presentation?.pendingMessage
@@ -761,12 +929,19 @@ export function MissionPanel({
                   ) : null}
                 </div>
                 <button
-                  className="rounded-[12px] border border-[var(--ve-line-soft)] px-3 py-2 text-sm font-black text-[var(--ve-muted-strong)]"
+                  aria-label="Close proof submission"
+                  className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--ve-card-muted)] text-sm font-black text-[var(--foreground)]"
                   onClick={closeProofModal}
                   type="button"
                 >
-                  Close
+                  x
                 </button>
+              </div>
+
+              <div className="mt-4 rounded-[10px] bg-[var(--ve-card-muted)] px-4 py-3 text-[0.82rem] font-medium leading-5 text-[var(--ve-muted-strong)]">
+                {activeProofMission.proofRequirementMode === "any"
+                  ? `Provide any one of these ${activeProofMission.proofRequiredFields?.length ?? 0} proof options for review.`
+                  : `Provide the following evidence for review.`}
               </div>
 
               {proofFieldMessage ? (
@@ -775,21 +950,21 @@ export function MissionPanel({
                 </div>
               ) : null}
 
-              <div className="learner-card-grid mt-5">
+              <div className="mission-proof-grid learner-card-grid mt-5">
                 {(activeProofMission.proofRequiredFields ?? []).map((field) => {
                   const fieldStatus = activeProofMission.proofFieldStatuses?.[field];
                   const isLocked = fieldStatus === "approved" || fieldStatus === "submitted";
 
                   return (
                     <div
-                      className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4"
+                      className="mission-proof-field rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4"
                       key={field}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-black">{getMissionProofFieldLabel(field)}</p>
                           <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-                            {getProofFieldPlaceholder(field)}
+                            {getProofFieldInstruction(field)}
                           </p>
                         </div>
                         <span
@@ -813,22 +988,51 @@ export function MissionPanel({
                           value={proofDrafts[field] ?? ""}
                         />
                       ) : (
-                        <input
-                          className="mt-3 h-12 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-medium outline-none"
-                          disabled={isLocked}
-                          onChange={(event) =>
-                            setProofDrafts((current) => ({ ...current, [field]: event.target.value }))
-                          }
-                          placeholder={getProofFieldPlaceholder(field)}
-                          type={getProofFieldInputType(field)}
-                          value={proofDrafts[field] ?? ""}
-                        />
+                        <>
+                          {(field === "image" || field === "video") ? (
+                            <>
+                              <label className="mt-3 flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] bg-[#087f5b] px-4 text-sm font-black text-white">
+                                <input
+                                  accept={
+                                    field === "image"
+                                      ? "image/png,image/jpeg,image/webp"
+                                      : "video/mp4,video/webm,video/quicktime"
+                                  }
+                                  className="sr-only"
+                                  disabled={isLocked || uploadingProofField === field}
+                                  onChange={(event) => {
+                                    const file = event.target.files?.[0] ?? null;
+                                    event.target.value = "";
+                                    void uploadAndSubmitProofMedia(activeProofMission, field, file);
+                                  }}
+                                  type="file"
+                                />
+                                {uploadingProofField === field
+                                  ? "Uploading..."
+                                  : `Upload ${getMissionProofFieldLabel(field)}`}
+                              </label>
+                              <p className="mt-3 text-xs font-semibold text-[var(--ve-muted)]">
+                                Or paste {field === "image" ? "image" : "video"} link instead
+                              </p>
+                            </>
+                          ) : null}
+                          <input
+                            className="mt-2 h-12 w-full rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-medium outline-none"
+                            disabled={isLocked}
+                            onChange={(event) =>
+                              setProofDrafts((current) => ({ ...current, [field]: event.target.value }))
+                            }
+                            placeholder={getProofFieldPlaceholder(field)}
+                            type={getProofFieldInputType(field)}
+                            value={proofDrafts[field] ?? ""}
+                          />
+                        </>
                       )}
 
                       <div className="mt-3 flex justify-end">
                         <button
-                          className="rounded-[14px] bg-[#ff7a59] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
-                          disabled={isLocked || submittingProofField === field}
+                          className="min-h-10 rounded-[10px] bg-[#087f5b] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                          disabled={isLocked || submittingProofField === field || uploadingProofField === field}
                           onClick={() => void submitProofField(activeProofMission, field)}
                           type="button"
                         >

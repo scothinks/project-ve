@@ -144,7 +144,7 @@ repository contracts, quiz XP concurrency, organisation AI reservation
 concurrency, economic integrity, and E2E.
 ```
 
-Latest focused P1.5E boundary-closure validation:
+Latest focused P1.5E boundary-closure validation, accepted for P1.5E closure on 2026-08-15:
 
 ```text
 npm run db:reset
@@ -163,6 +163,33 @@ Focused pgTAP: organization AI metering 18/18; LMS reporting 34/34
 Full pgTAP: Files=33, Tests=695
 Organisation AI reservation concurrency regression: PASS
 Build/type/lint/whitespace: PASS
+```
+
+Latest `HOTFIX-P15C-CURRENCY-001` validation:
+
+```text
+npm run db:reset
+node scripts/supabase-cli.mjs test db supabase/tests/database/p15_xp_issuance_controls.sql
+npm run db:types:local
+npm run db:types:local:check
+npm run typecheck
+npm run lint
+npm run build
+npm run test:unit
+node scripts/supabase-cli.mjs test db [all 33 database SQL files explicitly]
+npm run test:repositories:local
+npm run test:quiz-xp-concurrency:local
+npm run test:organization-ai-concurrency:local
+npm run test:economic-integrity:local
+npm run test:e2e
+git diff --check
+
+Result: PASS
+Focused pgTAP: P1.5 XP issuance controls 34/34
+Full explicit pgTAP: Files=33, Tests=711
+App/regression: typecheck, lint, build, 140 unit tests, repository contracts,
+quiz XP concurrency, organisation AI concurrency, economic integrity and 15/15
+Playwright E2E flows passed.
 ```
 
 GitHub Actions now blocks pull requests and pushes on:

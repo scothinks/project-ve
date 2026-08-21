@@ -2,7 +2,7 @@ begin;
 \ir ./_test_constants.psql
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, private;
-select extensions.plan(18);
+select extensions.plan(34);
 
 insert into auth.users (
   id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -45,7 +45,8 @@ insert into public.organization_memberships (organization_id, user_id, role, sta
 values
   (:'p15_xp_controls_alpha_id'::uuid, :'TEST_ADMIN_USER_ID'::uuid, 'organisation_owner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
   (:'p15_xp_controls_beta_id'::uuid, :'TEST_ADMIN_USER_ID'::uuid, 'organisation_owner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
-  (:'p15_xp_controls_exposure_id'::uuid, :'TEST_ADMIN_USER_ID'::uuid, 'organisation_owner', 'active', :'TEST_ADMIN_USER_ID'::uuid)
+  (:'p15_xp_controls_exposure_id'::uuid, :'TEST_ADMIN_USER_ID'::uuid, 'organisation_owner', 'active', :'TEST_ADMIN_USER_ID'::uuid),
+  (:'p15_xp_controls_beta_id'::uuid, '99999999-9999-4999-8999-999999999901'::uuid, 'organisation_owner', 'active', :'TEST_ADMIN_USER_ID'::uuid)
 on conflict (organization_id, user_id, role) do update
   set status = excluded.status,
       updated_at = now();
@@ -91,6 +92,7 @@ set local role authenticated;
 
 select public.admin_update_xp_account_controls(
   :'p15_xp_controls_alpha_account_id'::uuid,
+  'ngn',
   1.5,
   30,
   50,
@@ -102,6 +104,7 @@ select public.admin_update_xp_account_controls(
 
 select public.admin_update_xp_account_controls(
   :'p15_xp_controls_beta_account_id'::uuid,
+  'GBP',
   1::numeric,
   30,
   100,
@@ -113,6 +116,7 @@ select public.admin_update_xp_account_controls(
 
 select public.admin_update_xp_account_controls(
   :'p15_xp_controls_exposure_account_id'::uuid,
+  'NGN',
   2,
   30,
   1000,
@@ -129,9 +133,90 @@ select extensions.is(
 );
 
 select extensions.is(
+  (select accounting_currency from public.xp_accounts where id = :'p15_xp_controls_alpha_account_id'::uuid),
+  'NGN',
+  'organisation manager can configure and normalize the accounting currency'
+);
+
+select extensions.is(
+  public.admin_get_xp_account_overview(:'p15_xp_controls_alpha_id'::uuid) -> 'controls' ->> 'accountingCurrency',
+  'NGN',
+  'overview returns the configured accounting currency'
+);
+
+select extensions.is(
+  (select funded_reward_budget from public.xp_accounts where id = :'p15_xp_controls_alpha_account_id'::uuid),
+  1000::numeric,
+  'accounting currency updates preserve other exposure controls'
+);
+
+select extensions.is(
   (select issuance_cap_per_user from public.xp_accounts where id = :'p15_xp_controls_beta_account_id'::uuid),
   30,
   'organisation manager can configure the per-user issuance cap'
+);
+
+select extensions.is(
+  public.admin_get_xp_account_overview(:'p15_xp_controls_beta_id'::uuid) -> 'controls' ->> 'accountingCurrency',
+  'GBP',
+  'different organisations may use different accounting currencies'
+);
+
+select extensions.is(
+  (select count(*)::integer from public.xp_accounts where accounting_currency = 'XP'),
+  0,
+  'legacy XP accounting currency sentinel is not retained'
+);
+
+select extensions.is(
+  (select accounting_currency from public.xp_accounts where scope = 'platform' and is_default),
+  null::text,
+  'legacy Project Ve XP account accounting currency is unconfigured'
+);
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'USDT', 1, 30, 100, 100, null, null, null) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Accounting currency must be a three-letter ISO currency code%',
+  'four-letter currency-like values are rejected'
+);
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, '$', 1, 30, 100, 100, null, null, null) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Accounting currency must be a three-letter ISO currency code%',
+  'currency symbols are rejected'
+);
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'NAIRA', 1, 30, 100, 100, null, null, null) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Accounting currency must be a three-letter ISO currency code%',
+  'currency names are rejected'
+);
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'XP', 1, 30, 100, 100, null, null, null) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Accounting currency must be a three-letter ISO currency code%',
+  'learner points labels are rejected as accounting currency'
+);
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'NGN', 1, 30, 100, 100, null, 80, 40) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Exposure hard threshold cannot be below the warning threshold%',
+  'accounting currency changes do not weaken exposure threshold validation'
 );
 
 reset role;
@@ -292,6 +377,29 @@ select extensions.is(
   'overview reports estimated unredeemed liability from outstanding balances'
 );
 
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_ADMIN_USER_ID', true);
+set local role authenticated;
+
+select extensions.lives_ok(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'GBP', 2, 30, 1000, 1000, 100, 30, 50) $$,
+    :'p15_xp_controls_exposure_account_id'
+  ),
+  'manager can change accounting currency without converting balances'
+);
+
+select extensions.is(
+  (public.admin_get_xp_account_overview(:'p15_xp_controls_exposure_id'::uuid) -> 'exposure' ->> 'estimatedUnredeemedLiability')::numeric,
+  40::numeric,
+  'changing accounting currency does not change estimated liability math'
+);
+
+select extensions.ok(
+  (public.admin_get_xp_account_overview(:'p15_xp_controls_exposure_id'::uuid) -> 'exposure' ->> 'warning')::boolean,
+  'changing accounting currency does not change exposure warning state'
+);
+
 select extensions.ok(
   (public.admin_get_xp_account_overview(:'p15_xp_controls_alpha_id'::uuid) -> 'exposure' ->> 'warning')::boolean,
   'overview exposes the configured exposure warning state'
@@ -337,6 +445,9 @@ select extensions.is(
   'programme-only adjustment does not create an organization membership'
 );
 
+reset role;
+set local role service_role;
+
 select extensions.throws_like(
   format($$
     insert into public.xp_transactions (
@@ -362,12 +473,29 @@ set local role authenticated;
 
 select extensions.throws_like(
   format(
-    $$ select public.admin_update_xp_account_controls(%L::uuid, 1, 30, 100, 100, null, null, null) $$,
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'NGN', 1, 30, 100, 100, null, null, null) $$,
     :'p15_xp_controls_alpha_account_id'
   ),
   '%Organisation XP account access is required%',
   'learners cannot change issuance or exposure controls'
 );
+
+reset role;
+select set_config('request.jwt.claim.sub', '99999999-9999-4999-8999-999999999901', true);
+set local role authenticated;
+
+select extensions.throws_like(
+  format(
+    $$ select public.admin_update_xp_account_controls(%L::uuid, 'NGN', 1, 30, 100, 100, null, null, null) $$,
+    :'p15_xp_controls_alpha_account_id'
+  ),
+  '%Organisation XP account access is required%',
+  'organisation managers cannot change another organisation accounting currency'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
+set local role authenticated;
 
 select extensions.throws_like(
   format($$ select public.admin_get_xp_account_overview(%L::uuid) $$, :'p15_xp_controls_alpha_id'),
@@ -376,9 +504,15 @@ select extensions.throws_like(
 );
 
 select extensions.ok(
-  has_function_privilege('authenticated', 'public.admin_update_xp_account_controls(uuid, numeric, integer, integer, integer, numeric, numeric, numeric)', 'execute')
-  and not has_function_privilege('anon', 'public.admin_update_xp_account_controls(uuid, numeric, integer, integer, integer, numeric, numeric, numeric)', 'execute'),
+  has_function_privilege('authenticated', 'public.admin_update_xp_account_controls(uuid, text, numeric, integer, integer, integer, numeric, numeric, numeric)', 'execute')
+  and not has_function_privilege('anon', 'public.admin_update_xp_account_controls(uuid, text, numeric, integer, integer, integer, numeric, numeric, numeric)', 'execute'),
   'issuance controls RPC is manager-facing and not anonymous'
+);
+
+select extensions.is(
+  to_regprocedure('public.admin_update_xp_account_controls(uuid, numeric, integer, integer, integer, numeric, numeric, numeric)'),
+  null::regprocedure,
+  'previous issuance controls RPC overload is retired'
 );
 
 select * from extensions.finish();

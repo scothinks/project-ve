@@ -92,6 +92,7 @@ export type AdminOrganizationXpAccountOverview = {
   redemptions: number;
   adjustments: number;
   controls: {
+    accountingCurrency: string | null;
     accountingValuePerUnit: number;
     exposureHardThreshold: number | null;
     exposureWarningThreshold: number | null;

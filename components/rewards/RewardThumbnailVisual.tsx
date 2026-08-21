@@ -73,6 +73,8 @@ export function RewardThumbnailVisual({
   const fallbackText = thumbnail.icon ?? getInitialsFallback(title);
 
   if (thumbnail.url && !imageFailed) {
+    const isRemoteImage = /^https?:\/\//i.test(thumbnail.url);
+
     return (
       <div className="relative h-full w-full">
         <Image
@@ -82,6 +84,7 @@ export function RewardThumbnailVisual({
           sizes="(max-width: 768px) 33vw, 160px"
           onError={() => setImageFailed(true)}
           src={thumbnail.url}
+          unoptimized={isRemoteImage}
         />
       </div>
     );

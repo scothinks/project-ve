@@ -1,7 +1,6 @@
 import { CourseLibrary } from "@/components/course/CourseLibrary";
-import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { createLearningRepository } from "@/features/app/repositories/learning";
 import { createProgressRepository } from "@/features/app/repositories/progress";
 import {
@@ -25,11 +24,18 @@ export default async function CoursesPage() {
     hasSupabaseAuthCookies(),
   ]);
   let lessonProgress: LessonProgressRecord[] = [];
+  let displayName = "Learner";
+  let email: string | null | undefined;
+  let avatarUrl: string | null | undefined;
 
   if (isDemoMode) {
     lessonProgress = await progressRepository.getLessonProgress(DEMO_USER_ID);
   } else if (isLiveMode && hasAuthCookies) {
-    const { user } = await getCurrentUserProfile(supabase);
+    const { user, profile } = await getCurrentUserProfile(supabase);
+    const rawDisplayName = profile?.display_name ?? "";
+    displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
+    email = user?.email;
+    avatarUrl = profile?.avatar_url;
     lessonProgress = user ? await progressRepository.getLessonProgress(user.id) : [];
   }
 
@@ -41,18 +47,24 @@ export default async function CoursesPage() {
   );
 
   return (
-    <main className="mobile-shell min-h-screen">
-      <AppHeader title="Course Library" backHref="/dashboard" showMenu={false} />
-      <section className="learner-page learner-page--standard">
-        <SectionHeader
-          eyebrow="Discover"
-          subtitle="Search the Project VE library."
+    <main className="learner-system courses-learner min-h-screen">
+      <LearnerTopChrome
+        active="Lessons"
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        email={email}
+      />
+      <section className="courses-canvas">
+        <CourseLibrary
+          completedLessonIds={completedLessonIds}
+          courses={catalog}
+          lessonProgress={lessonProgress}
+          variant="learnerEditorial"
         />
-        <div className="mt-5">
-          <CourseLibrary completedLessonIds={completedLessonIds} courses={catalog} />
-        </div>
       </section>
-      <BottomNav active="Lesson" />
+      <div className="learner-mobile-nav">
+        <BottomNav active="Lesson" />
+      </div>
     </main>
   );
 }
