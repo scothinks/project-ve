@@ -108,6 +108,12 @@ export function ValuesAssessmentFlow({
         <h1 className="text-[1.25rem] font-[650] leading-6 text-[var(--learner-text)]">
           {displayHeading}
         </h1>
+        <p className="mt-3 text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+          {displayIntro}
+        </p>
+        <p className="mt-3 inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--learner-green)_22%,var(--learner-border-soft))] px-3 py-1 text-[0.68rem] font-semibold text-[var(--learner-green-deep)]">
+          {assessment.xpAward} {unitLabel} reward
+        </p>
         {errorMessage ? (
           <div className="mt-3 rounded-lg border border-[color:color-mix(in_srgb,var(--ve-mission)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission)_10%,var(--ve-card))] px-3 py-2 text-[0.72rem] font-semibold text-[var(--foreground)]">
             {errorMessage}

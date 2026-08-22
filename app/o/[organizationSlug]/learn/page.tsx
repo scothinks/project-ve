@@ -154,6 +154,9 @@ export default async function OrganizationLearnPage({
   const requiredCheckpoint = incompleteCheckpoints.find((checkpoint) => checkpoint.isRequired)
     ?? incompleteCheckpoints[0]
     ?? null;
+  const hasMultiProgrammeCourseDelivery = Object.values(workspace.courseDeliveryOptions).some(
+    (options) => options.length > 1,
+  );
 
   return (
     <main className="learner-system orgs-learner min-h-screen">
@@ -214,16 +217,24 @@ export default async function OrganizationLearnPage({
 
         {requiredCheckpoint ? (
           <section className="org-learning-required-state mb-5 rounded-lg bg-[var(--learner-background-cream)]">
+            <p className="org-learning-required-state__label mb-2 text-[0.64rem] font-semibold text-[var(--learner-text-muted)]">
+              Assessment checkpoints
+            </p>
             <span className="inline-flex rounded-full bg-[color:color-mix(in_srgb,var(--learner-attention-soft)_80%,white)] px-2.5 py-1 text-[0.58rem] font-extrabold text-[var(--learner-attention)]">
               Required Assessment
             </span>
             <h1 className="mt-4 text-[1.38rem] font-[650] leading-tight text-[var(--learner-text)]">
               {requiredCheckpoint.title}
             </h1>
-            <p className="mt-3 text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
-              {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
-            </p>
-            <div className="mt-4 flex min-h-28 items-center justify-between rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
+            <div className="org-learning-required-state__checkpoint mt-3">
+              <p className="text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+                {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
+              </p>
+              <OrgActionLink ariaLabel="Start" className="mt-4 w-full" href={requiredCheckpoint.href}>
+                Start Assessment
+              </OrgActionLink>
+            </div>
+            <div className="org-learning-required-state__card mt-4 flex min-h-28 items-center justify-between rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
               <span className="rounded-full bg-[var(--learner-attention-soft)] px-2 py-1 text-[0.58rem] font-bold leading-3 text-[var(--learner-attention)]">
                 Required Assessment
               </span>
@@ -231,16 +242,11 @@ export default async function OrganizationLearnPage({
                 {requiredCheckpoint.title}
               </strong>
             </div>
-            <div className="mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
+            <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
               <p className="text-[0.74rem] font-[650] text-[var(--learner-text)]">Before you begin</p>
               <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
                 Ensure you are in a quiet environment. This assessment is timed and cannot be paused once started.
               </p>
-            </div>
-            <div className="mt-5">
-              <OrgActionLink className="w-full" href={requiredCheckpoint.href}>
-                Start Assessment
-              </OrgActionLink>
             </div>
           </section>
         ) : null}
@@ -295,7 +301,7 @@ export default async function OrganizationLearnPage({
           </section>
         ) : null}
 
-        {!assessmentCompletionNotice && !requiredCheckpoint ? (
+        {!assessmentCompletionNotice && (!requiredCheckpoint || hasMultiProgrammeCourseDelivery) ? (
           <CourseLibrary
             completedLessonIdsByDeliveryKey={completedLessonIdsByDeliveryKey}
             completedLessonIds={completedLessonIds}

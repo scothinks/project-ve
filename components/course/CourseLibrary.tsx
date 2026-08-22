@@ -52,6 +52,26 @@ function getDeliveryKey(courseId: string, option: OrganizationCourseDeliveryOpti
   return `${courseId}:${option?.programmeId ?? "organization"}`;
 }
 
+function getUniqueDeliveryOptions(
+  options: OrganizationCourseDeliveryOption[] | undefined,
+): Array<OrganizationCourseDeliveryOption | null> {
+  if (!options) {
+    return [null];
+  }
+
+  const seen = new Set<string>();
+  return options.filter((option) => {
+    const key = option.programmeId ?? "organization";
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 function buildCourseHref(
   courseHrefPrefix: string,
   courseId: string,
@@ -249,7 +269,7 @@ export function CourseLibrary({
   const courseItems = useMemo(
     () =>
       filteredCourses.flatMap((course) => {
-        const options = deliveryOptions?.[course.id] ?? [null];
+        const options = getUniqueDeliveryOptions(deliveryOptions?.[course.id]);
         return options.map((option) => ({ course, option }));
       }),
     [deliveryOptions, filteredCourses],
@@ -259,7 +279,7 @@ export function CourseLibrary({
   const editorialItems = useMemo<CourseLibraryItem[]>(
     () =>
       courses.flatMap((course) => {
-        const options = deliveryOptions?.[course.id] ?? [null];
+        const options = getUniqueDeliveryOptions(deliveryOptions?.[course.id]);
 
         return options.map((option) => {
           const deliveryKey = getDeliveryKey(course.id, option);
@@ -438,15 +458,28 @@ export function CourseLibrary({
     );
   }
 
-  const inProgressItems = editorialItems.filter((item) => item.isInProgress);
-  const completedItems = editorialItems.filter((item) => item.isCompleted);
+  const isMultiDeliveryCourse = (item: CourseLibraryItem) =>
+    (deliveryOptions?.[item.course.id]?.length ?? 0) > 1;
+  const directEditorialItems = editorialItems.filter((item) => !isMultiDeliveryCourse(item));
+  const inProgressItems = directEditorialItems.filter((item) => item.isInProgress);
+  const completedItems = directEditorialItems.filter((item) => item.isCompleted);
   const featuredItem =
     inProgressItems[0] ??
     editorialItems.find((item) => !item.isCompleted) ??
     editorialItems[0];
-  const pickUpItems = inProgressItems.filter((item) => item.key !== featuredItem.key).slice(0, 2);
+  const featuredCourseDeliveryCount = new Set(
+    editorialItems
+      .filter((item) => item.course.id === featuredItem.course.id)
+      .map((item) => item.option?.programmeId ?? "organization"),
+  ).size;
+  const featuredHref = featuredCourseDeliveryCount > 1
+    ? "#all-learning"
+    : (featuredItem.resumeTarget?.href ?? featuredItem.href);
+  const pickUpItems = inProgressItems
+    .filter((item) => item.key !== featuredItem.key)
+    .slice(0, 2);
   const curatedItems = editorialItems
-    .filter((item) => item.key !== featuredItem.key && !item.isCompleted)
+    .filter((item) => item.key !== featuredItem.key && !item.isCompleted && !isMultiDeliveryCourse(item))
     .slice(0, 3);
 
   return (
@@ -499,7 +532,7 @@ export function CourseLibrary({
             ) : null}
             <Button
               className="course-library-primary-action"
-              href={featuredItem.resumeTarget?.href ?? featuredItem.href}
+              href={featuredHref}
             >
               {getEditorialCta(featuredItem)}
               <ChevronRightIcon className="h-4 w-4" />

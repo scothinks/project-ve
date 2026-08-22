@@ -4129,10 +4129,11 @@ select {
     text-align: center;
   }
 
-  .org-learning-required-state > span:first-child,
+  .org-learning-required-state > span:first-of-type,
   .org-learning-required-state > h1,
-  .org-learning-required-state > p,
-  .org-learning-required-state > div:last-child {
+  .org-learning-required-state__label,
+  .org-learning-required-state__checkpoint,
+  .org-learning-required-state__before {
     grid-column: 1;
     justify-self: center;
   }
@@ -4143,17 +4144,18 @@ select {
     line-height: 1.12;
   }
 
-  .org-learning-required-state > p {
+  .org-learning-required-state__checkpoint,
+  .org-learning-required-state__label {
     max-width: 27rem;
     font-size: 0.98rem;
     line-height: 1.65;
   }
 
-  .org-learning-required-state > div:nth-of-type(1) {
+  .org-learning-required-state__card {
     display: none;
   }
 
-  .org-learning-required-state > div:nth-of-type(2) {
+  .org-learning-required-state__before {
     grid-column: 1;
     margin-top: 1.15rem;
     text-align: left;

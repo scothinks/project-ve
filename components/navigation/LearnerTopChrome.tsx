@@ -45,13 +45,13 @@ export function LearnerTopChrome({
       <Link className="learner-topbar__brand" href="/dashboard">
         Project Ve
       </Link>
-      <nav aria-label="Learner sections" className="learner-topbar__nav">
+      <div aria-label="Learner sections" className="learner-topbar__nav">
         {navItems.map(([label, href]) => (
           <Link className={label === active ? "is-active" : undefined} href={href} key={href}>
             {label}
           </Link>
         ))}
-      </nav>
+      </div>
       {workspaceSwitcher ? (
         <div className="learner-topbar__workspace">{workspaceSwitcher}</div>
       ) : null}

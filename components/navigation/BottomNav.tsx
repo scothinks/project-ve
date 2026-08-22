@@ -97,9 +97,11 @@ type BottomNavLabel = (typeof items)[number]["label"];
 
 export function BottomNav({
   active,
+  ariaLabels,
   hrefs,
 }: {
   active: string;
+  ariaLabels?: Partial<Record<BottomNavLabel, string>>;
   hrefs?: Partial<Record<BottomNavLabel, string>>;
 }) {
   return (
@@ -109,6 +111,7 @@ export function BottomNav({
           const isActive = item.label === active || (item.label === "Lessons" && active === "Lesson");
           return (
             <Link
+              aria-label={ariaLabels?.[item.label]}
               className={cn(
                 "flex h-12 flex-col items-center justify-center rounded-[16px] text-center text-[9px] font-semibold leading-3 text-[var(--ve-muted)] sm:text-[10px] lg:h-[4.25rem] lg:rounded-[22px]",
                 isActive && item.activeClassName,

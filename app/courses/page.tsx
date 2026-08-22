@@ -55,6 +55,7 @@ export default async function CoursesPage() {
         email={email}
       />
       <section className="courses-canvas">
+        <h1 className="sr-only">Course Library</h1>
         <CourseLibrary
           completedLessonIds={completedLessonIds}
           courses={catalog}
@@ -62,9 +63,7 @@ export default async function CoursesPage() {
           variant="learnerEditorial"
         />
       </section>
-      <div className="learner-mobile-nav">
-        <BottomNav active="Lesson" />
-      </div>
+      <BottomNav active="Lesson" />
     </main>
   );
 }

@@ -237,6 +237,16 @@ export default async function OrganizationLearnerHomePage({
                 <strong>{organizationName}</strong>
                 <span>Use the switcher in the header to change organisation context.</span>
               </section>
+              <Link className="org-mobile-card org-home-context-card block" href={orgHref(workspace, "/notifications")}>
+                <p>Workspace updates</p>
+                <strong>Notifications</strong>
+                <span>Review messages for this organisation.</span>
+              </Link>
+              <Link className="org-mobile-card org-home-context-card block" href="/dashboard">
+                <p>Project Ve</p>
+                <strong>Return to Project Ve</strong>
+                <span>Leave this organisation workspace.</span>
+              </Link>
             </aside>
           </div>
         ) : (
@@ -302,6 +312,16 @@ export default async function OrganizationLearnerHomePage({
                 <strong>{organizationName}</strong>
                 <span>Your active workspace is set by the organisation context.</span>
               </section>
+              <Link className="org-mobile-card org-home-context-card block" href={orgHref(workspace, "/notifications")}>
+                <p>Workspace updates</p>
+                <strong>Notifications</strong>
+                <span>Review messages for this organisation.</span>
+              </Link>
+              <Link className="org-mobile-card org-home-context-card block" href="/dashboard">
+                <p>Project Ve</p>
+                <strong>Return to Project Ve</strong>
+                <span>Leave this organisation workspace.</span>
+              </Link>
             </aside>
           </div>
         )}

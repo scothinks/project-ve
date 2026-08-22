@@ -37,6 +37,7 @@ export function OrgBottomNav({
   return (
     <BottomNav
       active={active === "Lessons" ? "Lesson" : active}
+      ariaLabels={{ Lessons: "Organisation learning navigation" }}
       hrefs={getOrgBottomNavHrefs(organizationSlug)}
     />
   );
@@ -208,16 +209,18 @@ export function OrgProgressMeter({
 }
 
 export function OrgActionLink({
+  ariaLabel,
   children,
   className,
   href,
 }: {
+  ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
   href: string;
 }) {
   return (
-    <Link className={cn("org-action-link", className)} href={href}>
+    <Link aria-label={ariaLabel} className={cn("org-action-link", className)} href={href}>
       {children}
       <span aria-hidden="true">-&gt;</span>
     </Link>

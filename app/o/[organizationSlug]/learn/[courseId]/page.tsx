@@ -127,7 +127,7 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
                   Your Progress
                 </span>
                 <span className="text-[0.68rem] font-bold text-[var(--learner-green-deep)]">
-                  {progressPercent}%
+                  {progressPercent}% complete
                 </span>
               </div>
               <p className="text-[0.72rem] font-medium text-[var(--learner-text)]">

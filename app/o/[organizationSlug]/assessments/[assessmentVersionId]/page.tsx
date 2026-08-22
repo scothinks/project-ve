@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { submitOrganizationValuesAssessment } from "@/app/o/[organizationSlug]/assessments/actions";
-import { requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
+import { orgHref, requireOrgLearnerRoute } from "@/app/o/[organizationSlug]/workspace";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import { ValuesAssessmentFlow } from "@/components/onboarding/ValuesAssessmentFlow";
 import {
@@ -80,6 +81,12 @@ export default async function OrganizationAssessmentPage({
         }
       />
       <section className="learner-page learner-page--standard org-assessment-page">
+        <Link
+          className="mb-4 inline-flex text-[0.72rem] font-semibold text-[var(--learner-green-deep)]"
+          href={orgHref(workspace, "/learn")}
+        >
+          Return to Learning
+        </Link>
         <ValuesAssessmentFlow
           action={submitOrganizationValuesAssessment}
           assessment={assessment}

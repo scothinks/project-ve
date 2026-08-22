@@ -40,6 +40,7 @@ export default async function OrgModePage() {
       )}
 
       <section className="learner-page orgs-landing">
+        <h1 className="sr-only">Orgs</h1>
         <div className="orgs-landing__hero">
           <p className="orgs-landing__eyebrow">Introducing Orgs</p>
           <h1 className="orgs-landing__title">

@@ -206,15 +206,21 @@ export function XPStore({
     <section className="store-panel learner-page learner-page--standard">
       <div className="store-panel__header flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
-            XP Store
+          <h1 className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-green)]">
+            {workspaceLabel} rewards
           </h1>
+          <h2 className="mt-1 text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+            XP Store
+          </h2>
           <p className="store-panel__subtitle mt-1 hidden text-[0.82rem] font-medium leading-5 text-[var(--ve-muted)] lg:block">
-            Redeem your hard-earned XP for exclusive rewards.
+            Redeem your hard-earned {workspaceLabel} for exclusive rewards.
           </p>
         </div>
         <span className="store-panel__balance shrink-0 rounded-full bg-[#dff2e9] px-3 py-2 text-[0.72rem] font-black tabular-nums text-[#087f5b]">
-          {formatXpLabel(snapshot.xpBalance, workspaceLabel)}
+          <span className="block text-[0.56rem] uppercase tracking-[0.08em]">
+            Available {workspaceLabel}
+          </span>
+          <span className="block">{formatXpLabel(snapshot.xpBalance, workspaceLabel)}</span>
         </span>
       </div>
 
@@ -596,7 +602,7 @@ export function XPStore({
               <p className="mt-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
                 {confirmReward.distributionMode === "perk_bundle"
                   ? `This will spend ${formatXpLabel(confirmReward.costXp, workspaceLabel)} to reveal a surprise reward.`
-                  : `This spends ${formatXpLabel(confirmReward.costXp, workspaceLabel)} and adds the reward to your history.`}
+                  : `This will redeem ${formatXpLabel(confirmReward.costXp, workspaceLabel)} and add the reward to your history.`}
               </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <Button
