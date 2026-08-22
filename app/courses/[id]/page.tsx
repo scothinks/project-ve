@@ -177,7 +177,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           </aside>
         </div>
       </section>
-      <BottomNav active="Lesson" />
+      <div className="learner-mobile-nav">
+        <BottomNav active="Lesson" />
+      </div>
     </main>
   );
 }
