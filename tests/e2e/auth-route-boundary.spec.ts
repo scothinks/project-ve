@@ -51,6 +51,18 @@ async function expectLearnerBottomNavVisible(page: Page) {
   await expect(page.locator('nav a[href="/courses"]')).toBeVisible();
 }
 
+async function expectLearnerBottomNavHiddenOnDesktop(page: Page) {
+  await expect(page.locator('nav a[href="/courses"]')).toBeHidden();
+}
+
+async function expectLearnerTopNavigationVisible(page: Page) {
+  const learnerSections = page.getByLabel("Learner sections");
+
+  await expect(learnerSections.getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(learnerSections.getByRole("link", { name: "Lessons" })).toBeVisible();
+  await expect(learnerSections.getByRole("link", { name: "Missions" })).toBeVisible();
+}
+
 async function expectLoginRedirectTo(page: Page, expectedNextPath: string) {
   await expect(page).toHaveURL(/\/login/);
   await expect(page.getByPlaceholder("Enter Email Address")).toBeVisible();
@@ -123,7 +135,8 @@ test.describe("public shell and authenticated learner route boundary", () => {
     await signIn(page, "/courses");
     await expect(page).toHaveURL(/\/courses$/);
     await expect(page.getByRole("heading", { name: "Course Library" })).toBeVisible();
-    await expectLearnerBottomNavVisible(page);
+    await expectLearnerTopNavigationVisible(page);
+    await expectLearnerBottomNavHiddenOnDesktop(page);
   });
 
   test("signed-in learner still receives learner navigation on public information pages", async ({ page }) => {
