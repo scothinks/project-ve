@@ -63,7 +63,9 @@ export default async function CoursesPage() {
           variant="learnerEditorial"
         />
       </section>
-      <BottomNav active="Lesson" />
+      <div className="learner-mobile-nav">
+        <BottomNav active="Lesson" />
+      </div>
     </main>
   );
 }

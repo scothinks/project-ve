@@ -49,11 +49,19 @@ export async function LessonDeliveryPage({
   }
 
   const { lesson, course } = detail;
+  if (lesson.pages.length === 0) {
+    notFound();
+  }
+
   const requestedPage = Number.parseInt(pageParam ?? "1", 10);
   const currentPageNumber = Number.isFinite(requestedPage)
     ? Math.min(Math.max(requestedPage, 1), lesson.pages.length)
     : 1;
   const page = lesson.pages[currentPageNumber - 1];
+  if (!page) {
+    notFound();
+  }
+
   const isFirstPage = currentPageNumber === 1;
   const isLastPage = currentPageNumber === lesson.pages.length;
   const makeLessonHref = lessonHref ?? ((pageNumber: number) => `/lessons/${lesson.id}?page=${pageNumber}`);
