@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { MissionPanel } from "@/components/missions/MissionPanel";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { Card } from "@/components/ui/Card";
 import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
 import { getOrganizationWorkspaceMissions } from "@/features/organizations/application/learner-workspace";
@@ -61,7 +61,7 @@ export default async function OrganizationMissionsPage({
           )}
         </div>
       </section>
-      <BottomNav active="Missions" />
+      <OrgBottomNav active="Missions" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

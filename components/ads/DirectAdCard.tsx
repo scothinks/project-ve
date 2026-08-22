@@ -23,6 +23,7 @@ function AdShell({
       aria-label={`${ad.disclosureLabel}: ${ad.sponsorLabel}`}
       className={cn(
         "overflow-hidden rounded-[22px] border border-[color:color-mix(in_srgb,var(--ve-green)_16%,var(--ve-line-soft))] bg-[var(--ve-card)] shadow-sm",
+        !ad.imageUrl && "ad-shell--no-image",
         className,
       )}
     >

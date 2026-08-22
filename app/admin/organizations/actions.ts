@@ -84,6 +84,18 @@ const INTEGER_OVERRIDE_KEYS: OrganizationEntitlementKey[] = [
 
 const ORGANIZATION_MANAGER_ROLES = ["organisation_owner", "organisation_admin"];
 
+function normalizeAccountingCurrencyInput(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim().toUpperCase();
+  if (!normalized) {
+    return "";
+  }
+  if (!/^[A-Z]{3}$/.test(normalized)) {
+    throw new Error("Accounting currency must be a three-letter ISO currency code.");
+  }
+
+  return normalized;
+}
+
 function normalizeContentStatus(value: FormDataEntryValue | null): ContentStatus {
   const status = String(value ?? "draft");
   return status === "published" || status === "archived" ? status : "draft";
@@ -498,6 +510,7 @@ export async function saveOrganizationXpAccountPresentation(formData: FormData) 
 export async function saveOrganizationXpAccountControls(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const xpAccountId = sanitizePlainTextInput(String(formData.get("xpAccountId") ?? ""), 80);
+  const accountingCurrency = normalizeAccountingCurrencyInput(formData.get("accountingCurrency"));
   const accountingValuePerUnit = Number(formData.get("accountingValuePerUnit") ?? "");
   const issuancePeriodDays = Number(formData.get("issuancePeriodDays") ?? "");
   const issuanceCapPerPeriod = Number(formData.get("issuanceCapPerPeriod") ?? "");
@@ -526,6 +539,7 @@ export async function saveOrganizationXpAccountControls(formData: FormData) {
   }
 
   const { error } = await supabase.rpc("admin_update_xp_account_controls", {
+    p_accounting_currency: accountingCurrency,
     p_accounting_value_per_unit: accountingValuePerUnit,
     p_exposure_hard_threshold: exposureHardThreshold,
     p_exposure_warning_threshold: exposureWarningThreshold,

@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ExperienceHeader } from "@/components/ui/ExperienceHeader";
 import { RewardThumbnailVisual } from "@/components/rewards/RewardThumbnailVisual";
 import type { RewardRedemption, StoreReward } from "@/lib/rewards";
 import { cn } from "@/lib/utils";
@@ -36,18 +35,14 @@ export function RewardThumb({
 export function StoreLoadingState() {
   return (
     <section className="learner-page learner-page--standard">
-      <ExperienceHeader
-        badge={
-          <div className="grid size-16 place-items-center rounded-[22px] bg-[#f6c453] text-xl font-black text-[#251b08] shadow-[0_12px_24px_rgba(246,196,83,0.26)]">
-            XP
-          </div>
-        }
-        eyebrow="Reward Time"
-        subtitle="Loading rewards and your purchase history."
-        title="Redeem XP rewards"
-        tone="store"
-      />
-      <Card className="mt-6 space-y-4 p-5" variant="store">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <div className="h-7 w-28 rounded-full bg-[#eeeeee]" />
+          <div className="h-4 w-56 rounded-full bg-[#f3f3f1]" />
+        </div>
+        <div className="h-8 w-20 rounded-full bg-[#dff2e9]" />
+      </div>
+      <Card className="mt-5 space-y-4 p-5" variant="store">
         <div className="flex items-center justify-between">
           <div className="space-y-3">
             <div className="h-3 w-24 rounded-full bg-[#fff4c4]" />
@@ -86,9 +81,20 @@ export function RewardFulfillment({
   suppressNativeEyebrow?: boolean;
 }) {
   const payload = redemption.fulfillmentPayload;
+  const [copiedCode, setCopiedCode] = useState(false);
   const redemptionExpired =
     redemption.claimState === "expired" ||
     Boolean(redemption.redemptionExpiresAt && new Date(redemption.redemptionExpiresAt) <= new Date());
+
+  async function copyCode(value: string) {
+    if (!navigator.clipboard?.writeText) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(value);
+    setCopiedCode(true);
+    window.setTimeout(() => setCopiedCode(false), 1800);
+  }
 
   if (redemptionExpired) {
     return (
@@ -122,7 +128,7 @@ export function RewardFulfillment({
     const code = parseText(payload.code) || "Code pending";
 
     return (
-      <div className="rounded-[22px] border border-[#ffe7a6] bg-[#fffaf0] p-4 shadow-[0_16px_32px_rgba(246,196,83,0.12)]">
+      <div className="rounded-[8px] border border-[#dfe9dc] bg-[#f4f7ef] p-4 shadow-none">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#a66d00]">
@@ -136,14 +142,23 @@ export function RewardFulfillment({
             Ready
           </div>
         </div>
-        <div className="mt-4 rounded-[18px] border border-dashed border-[#efcf70] bg-[var(--ve-card)] px-4 py-4 text-center">
+        <div className="mt-4 rounded-[8px] border border-dashed border-[#cdd8cb] bg-[var(--ve-card)] px-4 py-4 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ve-muted)]">
-            Redemption Code
+            Voucher Code
           </p>
-          <p className="mt-2 break-all text-[1.45rem] font-black tracking-[0.18em] text-[#111111]">
+          <p className="mt-2 break-all text-[1.15rem] font-black tracking-[0.16em] text-[#111111]">
             {code}
           </p>
         </div>
+        {code !== "Code pending" ? (
+          <button
+            className="mt-3 w-full rounded-[8px] border border-[#b9c7b9] bg-[var(--ve-card)] px-4 py-2 text-xs font-black text-[#0b6f4d]"
+            onClick={() => void copyCode(code)}
+            type="button"
+          >
+            {copiedCode ? "Copied" : "Copy Code"}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -152,7 +167,7 @@ export function RewardFulfillment({
     const qrPayload = parseText(payload.qrPayload) || redemption.id;
 
     return (
-      <div className="rounded-[22px] border border-[#dce8ff] bg-[#f7fbff] p-4 shadow-[0_16px_32px_rgba(65,105,225,0.08)]">
+    <div className="rounded-[8px] border border-[#dfe9dc] bg-[#f4f7ef] p-4 shadow-none">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#35508f]">
@@ -166,7 +181,7 @@ export function RewardFulfillment({
             Ready
           </div>
         </div>
-        <div className="mt-4 rounded-[22px] bg-[var(--ve-card)] p-4">
+        <div className="mt-4 rounded-[8px] bg-[var(--ve-card)] p-4">
           <Image
             alt="Reward pass"
             className="mx-auto size-44 rounded-[18px]"
@@ -190,7 +205,7 @@ export function RewardFulfillment({
     const url = parseText(payload.url);
     return (
       <Button
-        className="w-full"
+        className="w-full !text-white"
         href={url || "/xp-store"}
         target={url ? "_blank" : undefined}
         variant="primary"
@@ -203,7 +218,7 @@ export function RewardFulfillment({
   const nativeOutcome = getNativeOutcomeDetails(redemption);
 
   return (
-    <div className="rounded-[22px] border border-[#cde8db] bg-[#eefaf4] p-4 shadow-[0_16px_32px_rgba(8,127,91,0.08)]">
+    <div className="rounded-[8px] border border-[#cde8db] bg-[#eefaf4] p-4 shadow-none">
       {!suppressNativeEyebrow ? (
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#087f5b]">
           {nativeOutcome.eyebrow}

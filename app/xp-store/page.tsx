@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
-import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { XPStore } from "@/components/rewards/XPStore";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
+import { getUnreadNotificationCount } from "@/lib/notifications";
 import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { createRewardRepository } from "@/features/app/repositories/rewards";
@@ -17,7 +18,9 @@ export default async function XPStorePage() {
   if (isLiveMode && !user) {
     redirect("/login");
   }
-  const [segmentKeys, rewardSnapshot] = await Promise.all([
+  const rawDisplayName = profile?.display_name ?? "";
+  const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
+  const [segmentKeys, rewardSnapshot, unreadNotificationCount] = await Promise.all([
     withLoggedFallback({
       context: {
         operation: "xp_store.ads.segments",
@@ -38,6 +41,16 @@ export default async function XPStorePage() {
       : isDemoMode
         ? rewardRepository.getStoreSnapshot("demo-user", 0)
         : Promise.resolve(null),
+    user && supabase
+      ? withLoggedFallback({
+          context: {
+            operation: "xp_store.notifications.unread_count",
+            userId: user.id,
+          },
+          fallback: 0,
+          promise: getUnreadNotificationCount(supabase, user.id),
+        })
+      : Promise.resolve(0),
   ]);
   const storeAd = await getAdDecision(supabase, {
     placementKey: "xp_store_card",
@@ -47,18 +60,21 @@ export default async function XPStorePage() {
   });
 
   return (
-    <main className="mobile-shell min-h-screen bg-[#fffaf0]">
-      <AppHeader
-        title="Store"
-        backHref="/dashboard"
-        className="bg-[#fffaf0] shadow-none"
-        showMenu={false}
+    <main className="learner-system store-learner min-h-screen">
+      <LearnerTopChrome
+        active="Store"
+        avatarUrl={profile?.avatar_url}
+        displayName={displayName}
+        email={user?.email}
+        unreadNotificationCount={unreadNotificationCount}
       />
       <XPStore initialSnapshot={rewardSnapshot} />
       <section className="learner-page">
         <DirectAdCard ad={storeAd} />
       </section>
-      <BottomNav active="Store" />
+      <div className="learner-mobile-nav">
+        <BottomNav active="Store" />
+      </div>
     </main>
   );
 }

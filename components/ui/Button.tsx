@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "soft" | "outline" | "ghost";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-[var(--ve-green)] text-white shadow-[0_12px_24px_rgba(8,127,91,0.22)]",
+  primary: "bg-[var(--ve-green)] !text-white shadow-[0_12px_24px_rgba(8,127,91,0.22)]",
   soft: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
   outline: "border border-[var(--ve-line)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)]",
   ghost: "bg-transparent text-[var(--ve-green)]",

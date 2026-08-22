@@ -259,22 +259,24 @@ export function getCourseResumeTarget(
     };
   }
 
+  const isCourseComplete =
+    course.lessons.length > 0 &&
+    course.lessons.every((lesson) => completedIdSet.has(lesson.id));
+  const completedCourseLessonCount = course.lessons.filter((lesson) => completedIdSet.has(lesson.id)).length;
   const firstAvailableLesson =
-    course.lessons.find((lesson) => lesson.status !== "locked") ?? course.lessons[0];
+    course.lessons.find((lesson) => lesson.status !== "locked" && !completedIdSet.has(lesson.id))
+    ?? course.lessons.find((lesson) => lesson.status !== "locked")
+    ?? course.lessons[0];
 
   if (!firstAvailableLesson) {
     return null;
   }
 
-  const isCourseComplete =
-    course.lessons.length > 0 &&
-    course.lessons.every((lesson) => completedIdSet.has(lesson.id));
-
   return {
     href: hrefs.lessonHref
       ? hrefs.lessonHref(firstAvailableLesson.id)
       : `/lessons/${firstAvailableLesson.id}`,
-    label: isCourseComplete ? "Review Course" : "Start Course",
+    label: isCourseComplete ? "Review Course" : completedCourseLessonCount > 0 ? "Continue Course" : "Start Course",
   };
 }
 

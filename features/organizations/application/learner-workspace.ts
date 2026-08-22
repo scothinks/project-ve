@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserProfile } from "@/lib/supabase-server";
-import { getLearningCourseSummariesByIds, getLearningCoursesByIds } from "@/lib/supabase-learning";
+import { getLearningCoursesByIds } from "@/lib/supabase-learning";
 import {
   getSupabaseMissionSummaries,
   type MissionDeliveryRequest,
@@ -414,7 +414,7 @@ export async function getOrganizationWorkspaceCourses(
   supabase: SupabaseClient<Database>,
   workspace: OrganizationLearnerWorkspaceContext,
 ): Promise<Course[]> {
-  return getLearningCourseSummariesByIds(supabase, workspace.courseIds);
+  return getLearningCoursesByIds(supabase, workspace.courseIds);
 }
 
 export async function getOrganizationWorkspaceCourse(

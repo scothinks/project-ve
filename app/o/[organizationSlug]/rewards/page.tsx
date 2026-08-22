@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
+import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
 import { XPStore } from "@/components/rewards/XPStore";
 import { getOrganizationWorkspaceRewardSnapshot } from "@/features/organizations/application/learner-workspace";
 import { withLoggedFallback } from "@/lib/app-errors";
@@ -42,7 +42,7 @@ export default async function OrganizationRewardsPage({
         redeemPathPrefix={`/api/organizations/${workspace.organizationSlug}/rewards`}
         workspaceLabel={workspace.xpAccount.label}
       />
-      <BottomNav active="Store" />
+      <OrgBottomNav active="Store" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

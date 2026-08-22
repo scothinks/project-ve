@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isDemoMode } from "@/lib/app-mode";
 import { isProtectedLearnerRoutePath } from "@/lib/route-auth-policy";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase";
 
@@ -18,7 +19,7 @@ function ensureDeviceCookie(request: NextRequest, response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
-  if (!supabaseUrl || !supabasePublishableKey) {
+  if (isDemoMode || !supabaseUrl || !supabasePublishableKey) {
     const response = NextResponse.next({ request });
     ensureDeviceCookie(request, response);
     return response;

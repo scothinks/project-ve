@@ -92,6 +92,7 @@ export type AdminOrganizationXpAccountOverview = {
   redemptions: number;
   adjustments: number;
   controls: {
+    accountingCurrency: string | null;
     accountingValuePerUnit: number;
     exposureHardThreshold: number | null;
     exposureWarningThreshold: number | null;
@@ -377,6 +378,7 @@ export async function getAdminOrganizations(
   let query = supabase
     .from("organizations")
     .select("id, slug, name, short_name, description, logo_url, accent_token, support_email, support_phone, status, creation_source, verification_status, lifecycle_status, created_at, updated_at")
+    .order("updated_at", { ascending: false })
     .order("name", { ascending: true });
 
   if (selectedWorkspaceId !== "platform") {

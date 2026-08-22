@@ -1,9 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CourseLibrary } from "@/components/course/CourseLibrary";
-import { AppHeader } from "@/components/navigation/AppHeader";
-import { BottomNav } from "@/components/navigation/BottomNav";
-import { Card } from "@/components/ui/Card";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import {
+  OrgActionLink,
+  OrgBottomNav,
+  OrgLearnerChrome,
+  OrgLearningTopBar,
+} from "@/components/organizations/OrgLearnerMobile";
+import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import {
   getOrganizationLearnerAssessmentCheckpoints,
   getOrganizationLearnerAssessmentCompletionNotice,
@@ -14,6 +18,7 @@ import {
   getOrganizationDeliveryLessonProgress,
   getOrganizationWorkspaceCourses,
 } from "@/features/organizations/application/learner-workspace";
+import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
 import { createProgressRepository } from "@/features/app/repositories/progress";
 import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getCompletedLessonIds } from "@/lib/progress";
@@ -34,7 +39,7 @@ export default async function OrganizationLearnPage({
   const completedAssessmentVersionId = Array.isArray(resolvedSearchParams.assessmentVersionId)
     ? resolvedSearchParams.assessmentVersionId[0]
     : resolvedSearchParams.assessmentVersionId;
-  const [assessmentCheckpoints, assessmentCompletionNotice, courses, lessonProgress] = await Promise.all([
+  const [assessmentCheckpoints, assessmentCompletionNotice, courses, lessonProgress, myOrgsState] = await Promise.all([
     getOrganizationLearnerAssessmentCheckpoints({
       hrefBuilder: ({ assessmentVersionId, programmeId }) =>
         `${orgHref(workspace, `/assessments/${assessmentVersionId}`)}?programmeId=${encodeURIComponent(programmeId)}`,
@@ -51,6 +56,7 @@ export default async function OrganizationLearnPage({
     }),
     getOrganizationWorkspaceCourses(supabase, workspace),
     createProgressRepository(supabase).getLessonProgress(user.id),
+    getMyOrganizationState(supabase, user.id),
   ]);
   const completedLessonIds = Array.from(
     getCompletedLessonIds(
@@ -127,128 +133,190 @@ export default async function OrganizationLearnPage({
     .filter((section) => section.id !== "mission")
     .flatMap((section) => section.items);
   const organizationName = workspace.branding.shortName || workspace.branding.name;
+  const completedCheckpoint = assessmentCompletionNotice
+    ? assessmentCheckpoints.find(
+        (checkpoint) =>
+          checkpoint.assessmentVersionId === assessmentCompletionNotice.assessmentVersionId &&
+          checkpoint.programmeId === assessmentCompletionNotice.programmeId,
+      )
+    : null;
+  const incompleteCheckpoints = assessmentCheckpoints.filter((checkpoint) => {
+    if (
+      assessmentCompletionNotice &&
+      checkpoint.assessmentVersionId === assessmentCompletionNotice.assessmentVersionId &&
+      checkpoint.programmeId === assessmentCompletionNotice.programmeId
+    ) {
+      return false;
+    }
+
+    return !checkpoint.completedAt;
+  });
+  const requiredCheckpoint = incompleteCheckpoints.find((checkpoint) => checkpoint.isRequired)
+    ?? incompleteCheckpoints[0]
+    ?? null;
+  const hasMultiProgrammeCourseDelivery = Object.values(workspace.courseDeliveryOptions).some(
+    (options) => options.length > 1,
+  );
 
   return (
-    <main className="mobile-shell min-h-screen">
-      <AppHeader title={`${organizationName} Learning`} backHref={orgHref(workspace)} showMenu={false} />
+    <main className="learner-system orgs-learner min-h-screen">
+      {assessmentCompletionNotice ? (
+        <OrgLearningTopBar backHref={orgHref(workspace, "/learn")} title="Learning" />
+      ) : null}
+      <OrgLearnerChrome
+        active="Lessons"
+        balance={workspace.xpAccount.balance}
+        logoUrl={workspace.branding.logoUrl}
+        organizationName={organizationName}
+        organizationSlug={workspace.organizationSlug}
+        pointsLabel={workspace.xpAccount.label}
+        showMobileHeader={!assessmentCompletionNotice}
+        workspaceSwitcher={
+          <LearnerWorkspaceSwitcher
+            currentOrganizationSlug={workspace.organizationSlug}
+            organizations={myOrgsState.organizations}
+          />
+        }
+      />
       <section className="learner-page learner-page--standard">
-        <div className="mb-4">
-          <Link className="text-sm font-black text-[var(--ve-green)]" href="/courses">
-            Return to Project Ve
-          </Link>
+        <div className="org-desktop-page-heading">
+          <p>Learning</p>
+          <h1>Organisation Learning</h1>
+          <span>{organizationName}</span>
         </div>
-        <SectionHeader
-          eyebrow="Org learning"
-          subtitle="Assigned programmes and organisation-accessible courses for this workspace."
-        />
         {assessmentCompletionNotice ? (
-          <Card className="mt-5 border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] p-5" variant="quiet">
-            <p className="text-xs font-black uppercase text-[var(--ve-green)]">
-              Assessment complete
-            </p>
-            <h2 className="mt-2 text-xl font-black text-[var(--foreground)]">
-              {assessmentCompletionNotice.title}
-            </h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-              {assessmentCompletionNotice.completionCopy}
-            </p>
-            <p className="mt-3 text-xs font-black text-[var(--ve-muted)]">
-              {assessmentCompletionNotice.programmeTitle}
-            </p>
-          </Card>
+          <section className="org-completion-notice mb-6 rounded-lg border border-[color:color-mix(in_srgb,var(--learner-green)_16%,var(--learner-border))] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_36%,var(--learner-surface))] p-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_18%,transparent)] text-[0.65rem] font-black text-[var(--learner-green-deep)]">
+                  OK
+                </span>
+                <div className="min-w-0">
+                  <h1 className="org-completion-notice__desktop-title">Assessment Complete</h1>
+                  <h2 className="org-completion-notice__mobile-title text-[0.78rem] font-[700] leading-4 text-[var(--learner-text)]">
+                    {assessmentCompletionNotice.title} Complete
+                  </h2>
+                  <p className="mt-0.5 text-[0.58rem] font-medium leading-3 text-[var(--learner-text-muted)]">
+                    {assessmentCompletionNotice.completionCopy}
+                  </p>
+                </div>
+              </div>
+              {completedCheckpoint ? (
+                <div className="shrink-0 text-right">
+                  <strong className="block text-[0.72rem] leading-3 text-[var(--learner-reward)]">
+                    +{completedCheckpoint.xpAward}
+                  </strong>
+                  <span className="block text-[0.5rem] font-bold uppercase leading-3 text-[var(--learner-text-muted)]">
+                    {workspace.xpAccount.label}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </section>
         ) : null}
-        {assessmentCheckpoints.length > 0 ? (
-          <section className="mt-5">
-            <SectionHeader
-              eyebrow="Assessment checkpoints"
-              subtitle={`Complete ${organizationName} assessment checkpoints to tune recommendations for this workspace.`}
-            />
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              {assessmentCheckpoints.map((checkpoint) => (
-                <Card
-                  className="flex h-full flex-col justify-between p-5"
-                  key={`${checkpoint.programmeId}:${checkpoint.assessmentVersionId}`}
-                  variant="quiet"
-                >
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[var(--ve-panel)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
-                        {checkpoint.programmeTitle}
-                      </span>
-                      <span className="rounded-full bg-[color:color-mix(in_srgb,var(--ve-green)_10%,var(--ve-card))] px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-green)]">
-                        {checkpoint.completedAt ? "Completed" : checkpoint.isRequired ? "Required" : "Optional"}
+
+        {requiredCheckpoint ? (
+          <section className="org-learning-required-state mb-5 rounded-lg bg-[var(--learner-background-cream)]">
+            <p className="org-learning-required-state__label mb-2 text-[0.64rem] font-semibold text-[var(--learner-text-muted)]">
+              Assessment checkpoints
+            </p>
+            <span className="inline-flex rounded-full bg-[color:color-mix(in_srgb,var(--learner-attention-soft)_80%,white)] px-2.5 py-1 text-[0.58rem] font-extrabold text-[var(--learner-attention)]">
+              Required Assessment
+            </span>
+            <h1 className="mt-4 text-[1.38rem] font-[650] leading-tight text-[var(--learner-text)]">
+              {requiredCheckpoint.title}
+            </h1>
+            <div className="org-learning-required-state__checkpoint mt-3">
+              <p className="text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+                {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
+              </p>
+              <OrgActionLink ariaLabel="Start" className="mt-4 w-full" href={requiredCheckpoint.href}>
+                Start Assessment
+              </OrgActionLink>
+            </div>
+            <div className="org-learning-required-state__card mt-4 flex min-h-28 items-center justify-between rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
+              <span className="rounded-full bg-[var(--learner-attention-soft)] px-2 py-1 text-[0.58rem] font-bold leading-3 text-[var(--learner-attention)]">
+                Required Assessment
+              </span>
+              <strong className="max-w-[8rem] text-right text-[1.42rem] font-[650] leading-tight text-[var(--learner-text)]">
+                {requiredCheckpoint.title}
+              </strong>
+            </div>
+            <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
+              <p className="text-[0.74rem] font-[650] text-[var(--learner-text)]">Before you begin</p>
+              <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                Ensure you are in a quiet environment. This assessment is timed and cannot be paused once started.
+              </p>
+            </div>
+          </section>
+        ) : null}
+
+        {assessmentCompletionNotice && recommendationItems.length > 0 ? (
+          <section className="org-recommendations-section mb-5">
+            <h2 className="text-[1.28rem] font-[650] leading-tight text-[var(--learner-text)]">
+              Recommended Next Learning
+            </h2>
+            <p className="mt-2 text-[0.74rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+              Based on your recent assessment profile.
+            </p>
+            <div className="mt-4 grid gap-3">
+              {recommendationItems.map((item) => {
+                const image = item.course?.thumbnail ?? item.course?.coverImage;
+
+                return (
+                  <Link
+                    className="grid grid-cols-[minmax(0,1fr)_4rem] gap-3 rounded-lg border border-[color:color-mix(in_srgb,var(--learner-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--learner-surface)_78%,transparent)] p-3"
+                    href={item.href}
+                    key={`${item.content_type}:${item.id}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[0.56rem] font-semibold italic leading-3 text-[var(--learner-reward)]">
+                        {item.reason}
+                      </p>
+                      <h3 className="mt-1 text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 text-[0.64rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                        {item.description}
+                      </p>
+                      <span className="mt-3 inline-flex text-[0.68rem] font-[650] text-[var(--learner-green-deep)]">
+                        Open
                       </span>
                     </div>
-                    <h2 className="mt-3 text-xl font-black tracking-[-0.03em] text-[var(--foreground)]">
-                      {checkpoint.title}
-                    </h2>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-                      {checkpoint.introductionCopy || checkpoint.description || "Answer a short assessment for this programme."}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <span className="text-xs font-black text-[var(--ve-muted)]">
-                      {checkpoint.xpAward} {workspace.xpAccount.label}
-                    </span>
-                    <Link
-                      className="inline-flex h-10 items-center rounded-[12px] bg-[var(--ve-green)] px-4 text-sm font-black text-white"
-                      href={checkpoint.href}
-                    >
-                      {checkpoint.completedAt ? "Retake" : "Start"}
-                    </Link>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </section>
-        ) : null}
-        {recommendationItems.length > 0 ? (
-          <section className="mt-5">
-            <SectionHeader
-              eyebrow="Recommended"
-              subtitle={`Based on your ${organizationName} assessment profile.`}
-            />
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              {recommendationItems.map((item) => (
-                <Card className="p-5" key={`${item.content_type}:${item.id}`}>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-                    {item.content_type.replace("_", " ")}
-                  </p>
-                  <h2 className="mt-2 text-xl font-black tracking-[-0.03em] text-[var(--foreground)]">
-                    {item.title}
-                  </h2>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-                    {item.reason}
-                  </p>
-                  <Link
-                    className="mt-4 inline-flex h-10 items-center rounded-[12px] bg-[var(--ve-green)] px-4 text-sm font-black text-white"
-                    href={item.href}
-                  >
-                    Open
+                    <div className="relative h-16 overflow-hidden rounded bg-[var(--learner-surface-soft)]">
+                      {image ? (
+                        <Image
+                          alt={image.alt}
+                          className="h-full w-full object-cover"
+                          fill
+                          sizes="72px"
+                          src={image.src}
+                        />
+                      ) : null}
+                    </div>
                   </Link>
-                </Card>
-              ))}
+                );
+              })}
             </div>
           </section>
         ) : null}
-        <div className="mt-5">
-          {courses.length > 0 ? (
-            <CourseLibrary
-              completedLessonIdsByDeliveryKey={completedLessonIdsByDeliveryKey}
-              completedLessonIds={completedLessonIds}
-              courseHrefPrefix={orgHref(workspace, "/learn")}
-              courses={courses}
-              deliveryOptions={workspace.courseDeliveryOptions}
-              unitLabel={workspace.xpAccount.label}
-            />
-          ) : (
-            <Card className="p-5 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]" variant="quiet">
-              No courses are available in this organisation workspace yet.
-            </Card>
-          )}
-        </div>
+
+        {!assessmentCompletionNotice && (!requiredCheckpoint || hasMultiProgrammeCourseDelivery) ? (
+          <CourseLibrary
+            completedLessonIdsByDeliveryKey={completedLessonIdsByDeliveryKey}
+            completedLessonIds={completedLessonIds}
+            courseHrefPrefix={orgHref(workspace, "/learn")}
+            courses={courses}
+            deliveryOptions={workspace.courseDeliveryOptions}
+            introSubtitle="Continue programme learning, revisit completed lessons, and explore available organisation courses."
+            introTitle="Continue Learning"
+            lessonProgress={lessonProgress}
+            unitLabel={workspace.xpAccount.label}
+            variant="learnerEditorial"
+          />
+        ) : null}
       </section>
-      <BottomNav active="Lesson" />
+      <OrgBottomNav active="Lessons" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }
