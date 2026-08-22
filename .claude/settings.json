@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/inject-guardrails.py SessionStart",
+            "statusMessage": "Loading Project VE guardrails..."
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/inject-guardrails.py PostCompact",
+            "statusMessage": "Reloading Project VE guardrails..."
+          }
+        ]
+      }
+    ]
+  }
+}
