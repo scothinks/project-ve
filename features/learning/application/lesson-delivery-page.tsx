@@ -95,18 +95,27 @@ export async function LessonDeliveryPage({
       promise: getLearnerAdSegments(supabase, user?.id),
     }),
   ]);
-  const footerAd = await getAdDecision(supabase, {
-    placementKey: "lesson_footer_card",
-    route: routePath ?? `/lessons/${lesson.id}`,
-    userId: user?.id,
-    courseId: course.id,
-    courseCategory: course.category,
-    lessonId: lesson.id,
-    pageId: page.id,
-    pageNumber: currentPageNumber,
-    pageType: page.type,
-    contentValueTags,
-    segmentKeys,
+  const footerAd = await withLoggedFallback({
+    context: {
+      operation: "lesson.ads.decision",
+      resourceId: lesson.id,
+      userId: user?.id,
+      metadata: { courseId: course.id, pageId: page.id },
+    },
+    fallback: null,
+    promise: getAdDecision(supabase, {
+      placementKey: "lesson_footer_card",
+      route: routePath ?? `/lessons/${lesson.id}`,
+      userId: user?.id,
+      courseId: course.id,
+      courseCategory: course.category,
+      lessonId: lesson.id,
+      pageId: page.id,
+      pageNumber: currentPageNumber,
+      pageType: page.type,
+      contentValueTags,
+      segmentKeys,
+    }),
   });
 
   return (
