@@ -979,6 +979,7 @@ export function getMissionSummaries(
       rewardId: mission.rewardId,
       rewardTitle: mission.rewardTitle,
       rewardFulfillmentType: mission.rewardFulfillmentType,
+      rewardFulfillmentConfig: mission.rewardFulfillmentConfig ?? null,
       repeatability: mission.repeatability,
       status,
       progressCount: progress.progressCount,

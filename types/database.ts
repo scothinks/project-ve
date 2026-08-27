@@ -8710,6 +8710,27 @@ export type Database = {
         Returns: Json
       }
       get_my_lms_transcript: { Args: never; Returns: Json }
+      get_my_pending_organization_invitations: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          organization_accent_token: Database["public"]["Enums"]["organization_accent_token"]
+          organization_id: string
+          organization_lifecycle_status: Database["public"]["Enums"]["organization_lifecycle_status"]
+          organization_logo_url: string
+          organization_name: string
+          organization_short_name: string
+          organization_slug: string
+          organization_verification_status: Database["public"]["Enums"]["organization_verification_status"]
+          role: Database["public"]["Enums"]["organization_role_key"]
+          target_id: string
+          target_label: string
+          target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
+        }[]
+      }
       grant_mission_award: {
         Args: {
           p_award_scope: string

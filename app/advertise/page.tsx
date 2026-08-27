@@ -1,6 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Card } from "@/components/ui/Card";
+import { BookOpenIcon, GiftIcon, UsersIcon } from "@/components/ui/Icons";
+import { getCurrentUserProfile } from "@/lib/supabase-server";
 
 const placementHighlights = [
   "Sponsor placements that help fund high-value learner rewards",
@@ -12,14 +16,20 @@ const sponsorOptions = [
   {
     title: "Reward Supporter",
     body: "Back the reward pool and appear in warm native placements that explain your support.",
+    icon: GiftIcon,
+    accent: "#087f5b",
   },
   {
     title: "Learning Moment Sponsor",
     body: "Reach learners around lessons, missions, and course discovery without interrupting progress.",
+    icon: BookOpenIcon,
+    accent: "#146c9c",
   },
   {
     title: "Community Partner",
     body: "Build a longer-running presence around learner outcomes, career readiness, or access programs.",
+    icon: UsersIcon,
+    accent: "#8d68f2",
   },
 ];
 
@@ -29,9 +39,21 @@ const nextSteps = [
   "Approved campaigns launch through Project VE’s first-party direct ads system.",
 ];
 
-export default function AdvertisePage() {
+export default async function AdvertisePage() {
+  const { user, profile } = await getCurrentUserProfile();
+  const rawDisplayName = profile?.display_name ?? "";
+  const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
+
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
+      <div className="hidden lg:block">
+        <LearnerTopChrome
+          active="Home"
+          avatarUrl={profile?.avatar_url}
+          displayName={displayName}
+          email={user?.email}
+        />
+      </div>
       <AppHeader title="Advertise" backHref="/" />
       <section className="learner-page learner-page--spacious space-y-5">
         <div>
@@ -46,6 +68,17 @@ export default function AdvertisePage() {
             actually feel. Your brand reaches motivated learners while helping fund
             meaningful incentives across the community.
           </p>
+        </div>
+
+        <div className="relative h-48 w-full overflow-hidden rounded-[24px] border border-[var(--ve-line-soft)]">
+          <Image
+            alt="A calm, modern learning space with natural light and warm wood surfaces."
+            className="object-cover"
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 720px"
+            src="/images/advertise-hero.jpg"
+          />
         </div>
 
         <Card>
@@ -76,11 +109,23 @@ export default function AdvertisePage() {
             </h2>
             <div className="mt-4 grid gap-3">
               {sponsorOptions.map((option) => (
-                <div className="rounded-[18px] bg-[var(--ve-panel)] p-4" key={option.title}>
-                  <h3 className="text-sm font-black">{option.title}</h3>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
-                    {option.body}
-                  </p>
+                <div
+                  className="flex gap-3 rounded-[18px] border-l-4 bg-[var(--ve-panel)] p-4"
+                  key={option.title}
+                  style={{ borderLeftColor: option.accent }}
+                >
+                  <span
+                    className="grid size-9 shrink-0 place-items-center rounded-full"
+                    style={{ backgroundColor: `color-mix(in srgb, ${option.accent} 16%, transparent)`, color: option.accent }}
+                  >
+                    <option.icon className="size-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black">{option.title}</h3>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                      {option.body}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

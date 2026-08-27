@@ -2,21 +2,25 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
+import { BoostIcon, FlagIcon, HubIcon, MedalIcon } from "@/components/missions/MissionIcons";
 import { FeaturedRewardCard } from "@/components/rewards/FeaturedRewardCard";
 import { ReferralAttributionCapture } from "@/components/referrals/ReferralAttributionCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ChevronRightIcon } from "@/components/ui/Icons";
+import { ChatIcon, ChevronRightIcon, GraduationCapIcon, SparkleIcon } from "@/components/ui/Icons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { logAppError } from "@/lib/app-errors";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { Course, Lesson } from "@/lib/lessons";
 import { getCourseXP, getLessonXP } from "@/lib/lessons";
 import {
+  getMissionBoostDetails,
+  getMissionRewardEffect,
   getMissionRewardLabel,
   type MissionCategory,
   type UserMissionSummary,
@@ -262,6 +266,7 @@ const recommendedMissionTheme: Record<
     pill: string;
     label: string;
     progress: string;
+    icon: (props: { className?: string }) => ReactNode;
   }
 > = {
   course: {
@@ -269,30 +274,35 @@ const recommendedMissionTheme: Record<
     pill: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
     label: "bg-[var(--learner-green-soft)] text-[var(--learner-green)]",
     progress: "bg-[var(--learner-mission)]",
+    icon: GraduationCapIcon,
   },
   referral: {
     card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
     pill: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
     label: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
     progress: "bg-[var(--learner-reward)]",
+    icon: HubIcon,
   },
   feedback: {
     card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
     pill: "bg-[var(--learner-attention-soft)] text-[var(--learner-attention)]",
     label: "bg-[var(--learner-attention-soft)] text-[var(--learner-attention)]",
     progress: "bg-[var(--learner-attention)]",
+    icon: ChatIcon,
   },
   campaign: {
     card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
     pill: "bg-[var(--learner-mission-soft)] text-[var(--learner-mission-text)]",
     label: "bg-[var(--learner-mission-soft)] text-[var(--learner-mission-text)]",
     progress: "bg-[var(--learner-mission)]",
+    icon: FlagIcon,
   },
   custom: {
     card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
     pill: "bg-[var(--learner-surface-soft)] text-[var(--learner-text-muted)]",
     label: "bg-[var(--learner-surface-soft)] text-[var(--learner-text-muted)]",
     progress: "bg-[var(--learner-text-muted)]",
+    icon: MedalIcon,
   },
 };
 
@@ -308,7 +318,9 @@ function RecommendedMissionCard({
   mobileTeaser?: boolean;
 }) {
   const theme = recommendedMissionTheme[mission.category];
+  const CategoryIcon = theme.icon;
   const rewardLabel = getMissionRewardLabel(mission);
+  const boostDetails = getMissionRewardEffect(mission) === "boost" ? getMissionBoostDetails(mission) : null;
   const progressPercent =
     mission.targetCount > 0 ? Math.min(100, (mission.progressCount / mission.targetCount) * 100) : 0;
   const hasStructuredProgress = shouldShowMissionProgress(mission);
@@ -321,7 +333,9 @@ function RecommendedMissionCard({
       variant="quiet"
     >
       <div className="dashboard-mission-card__layout">
-        <span className="dashboard-mission-card__icon" aria-hidden="true" />
+        <span className="dashboard-mission-card__icon" aria-hidden="true">
+          <CategoryIcon className="size-4" />
+        </span>
         <div className="dashboard-mission-card__main">
           <div className="dashboard-mission-card__top">
             <div
@@ -340,15 +354,26 @@ function RecommendedMissionCard({
                   ? "max-w-[62%] rounded-[16px] px-3 py-2"
                   : "max-w-[72%] rounded-[18px] px-4 py-2.5 sm:max-w-[18rem]"
               } ${theme.pill}`}
-              title={rewardLabel}
+              title={boostDetails ? `${boostDetails.multiplier}x ${boostDetails.unitLabel} Boost` : rewardLabel}
             >
-              <span
-                className={`block font-black tracking-[-0.02em] ${
-                  compact ? "text-[0.9rem]" : "text-[0.95rem] sm:text-base"
-                }`}
-              >
-                {rewardLabel}
-              </span>
+              {boostDetails ? (
+                <span
+                  className={`inline-flex items-center gap-1.5 font-black tracking-[-0.02em] ${
+                    compact ? "text-[0.9rem]" : "text-[0.95rem] sm:text-base"
+                  }`}
+                >
+                  {boostDetails.multiplier}x
+                  <BoostIcon className="size-[1.05em]" />
+                </span>
+              ) : (
+                <span
+                  className={`block font-black tracking-[-0.02em] ${
+                    compact ? "text-[0.9rem]" : "text-[0.95rem] sm:text-base"
+                  }`}
+                >
+                  {rewardLabel}
+                </span>
+              )}
             </div>
           </div>
 
@@ -399,6 +424,7 @@ function RecommendedMissionCard({
             <Button
               className={`${compact ? "h-9 px-4 text-sm" : "h-10 px-5 text-[0.98rem]"} dashboard-mission-action`}
               href={href}
+              variant="outline"
             >
               Continue Mission
             </Button>
@@ -759,7 +785,18 @@ export default async function DashboardPage() {
                 <ContinueLearningCard item={continueLearningItem} />
               </div>
             </section>
-          ) : null}
+          ) : (
+            <section className="dashboard-empty-hero">
+              <div className="dashboard-empty-hero__icon">
+                <SparkleIcon className="h-8 w-8" />
+              </div>
+              <h2>No Active Learning</h2>
+              <p>There&rsquo;s currently no learning available to continue.</p>
+              <Button className="dashboard-empty-hero__action" href="/courses">
+                Explore Course Library
+              </Button>
+            </section>
+          )}
 
           {recommendedMissionItems.length > 0 ? (
             <section className="dashboard-mobile-section dashboard-mission-section">

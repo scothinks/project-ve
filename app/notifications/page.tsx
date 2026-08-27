@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { GiftIcon, InfoIcon, PersonCircleIcon, TrophyIcon } from "@/components/ui/Icons";
 import { isLiveMode } from "@/lib/app-mode";
 import { getUnreadNotificationCount, getUserNotifications } from "@/lib/notifications";
 import { loadNotificationPageState } from "@/lib/observability";
@@ -11,19 +12,19 @@ import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabas
 
 const categoryMeta = {
   account: {
-    icon: "o",
+    icon: PersonCircleIcon,
     tone: "text-[#a65319]",
   },
   missions: {
-    icon: "*",
+    icon: TrophyIcon,
     tone: "text-[#946400]",
   },
   rewards: {
-    icon: "T",
+    icon: GiftIcon,
     tone: "text-[var(--ve-green)]",
   },
   system: {
-    icon: "i",
+    icon: InfoIcon,
     tone: "text-[var(--ve-muted-strong)]",
   },
 } as const;
@@ -142,8 +143,8 @@ export default async function NotificationsPage() {
                 >
                   <div className={`border-l-4 px-4 py-4 lg:px-5 lg:py-5 ${unread ? "border-[#946400]" : "border-transparent"}`}>
                     <div className="grid grid-cols-[1.5rem_1fr_auto] gap-2">
-                      <span className={`mt-1 text-center text-base font-black leading-none ${meta.tone}`}>
-                        {meta.icon}
+                      <span className={`mt-1 grid place-items-center ${meta.tone}`}>
+                        <meta.icon className="h-5 w-5" />
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-start gap-1.5">
@@ -208,7 +209,7 @@ export default async function NotificationsPage() {
         )}
       </section>
       <div className="lg:hidden">
-        <BottomNav active="Home" />
+        <BottomNav active="Notifications" />
       </div>
     </main>
   );

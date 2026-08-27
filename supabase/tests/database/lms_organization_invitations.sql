@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(18);
+select extensions.plan(21);
 
 insert into auth.users (
   id,
@@ -243,6 +243,48 @@ select extensions.ok(
       and email = 'pgtap-invite-learner@example.test'
   ),
   'invitation stores a token hash and normalized email instead of a plaintext reusable secret'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '83838383-8383-4838-8838-383838383803', true);
+set local role authenticated;
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.get_my_pending_organization_invitations()
+    where id = (select (result ->> 'invitationId')::uuid from test_org_invite_result)
+      and organization_id = :'invite_alpha_org_id'::uuid
+      and organization_slug = 'lms-invite-alpha'
+      and target_type = 'organization'
+      and target_label = 'LMS Invite Alpha'
+  ),
+  1,
+  'invited non-member can list their own pending invitation with safe organisation identity'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.organizations
+    where id = :'invite_alpha_org_id'::uuid
+  ),
+  0,
+  'pending invitation does not grant general organizations table visibility before membership'
+);
+
+reset role;
+select set_config('request.jwt.claim.sub', '85858585-8585-4858-8858-585858585805', true);
+set local role authenticated;
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.get_my_pending_organization_invitations()
+    where id = (select (result ->> 'invitationId')::uuid from test_org_invite_result)
+  ),
+  0,
+  'unrelated authenticated user cannot list another user pending invitation'
 );
 
 reset role;
@@ -491,6 +533,8 @@ set local role anon;
 select extensions.ok(
   not has_function_privilege('anon', 'public.respond_organization_invitation(uuid, text)', 'execute')
   and not has_function_privilege('anon', 'public.admin_create_organization_invitation(uuid, public.organization_invitation_target_type, uuid, text, uuid, public.organization_role_key, timestamp with time zone)', 'execute')
+  and not has_function_privilege('anon', 'public.get_my_pending_organization_invitations()', 'execute')
+  and has_function_privilege('authenticated', 'public.get_my_pending_organization_invitations()', 'execute')
   and has_function_privilege('authenticated', 'public.respond_organization_invitation(uuid, text)', 'execute'),
   'invitation RPC grants are restricted to authenticated/service-role callers'
 );
@@ -519,6 +563,12 @@ select extensions.ok(
     from private.rpc_security_classifications
     where function_name = 'admin_create_organization_invitation'
       and classification = 'ADMIN_AUTHENTICATED'
+  )
+  and exists (
+    select 1
+    from private.rpc_security_classifications
+    where function_name = 'get_my_pending_organization_invitations'
+      and classification = 'PUBLIC_AUTHENTICATED_SELF'
   ),
   'invitation RPCs are classified'
 );

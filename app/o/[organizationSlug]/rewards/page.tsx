@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { AppHeader } from "@/components/navigation/AppHeader";
-import { OrgBottomNav } from "@/components/organizations/OrgLearnerMobile";
+import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
+import { OrgBottomNav, OrgLearnerChrome } from "@/components/organizations/OrgLearnerMobile";
 import { XPStore } from "@/components/rewards/XPStore";
 import { getOrganizationWorkspaceRewardSnapshot } from "@/features/organizations/application/learner-workspace";
+import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
 import { withLoggedFallback } from "@/lib/app-errors";
-import { orgHref, requireOrgLearnerRoute, type OrgRouteParams } from "@/app/o/[organizationSlug]/workspace";
+import { requireOrgLearnerRoute, type OrgRouteParams } from "@/app/o/[organizationSlug]/workspace";
 
 export default async function OrganizationRewardsPage({
   params,
@@ -13,33 +13,40 @@ export default async function OrganizationRewardsPage({
 }) {
   const { supabase, user, workspace } = await requireOrgLearnerRoute(params);
   const organizationName = workspace.branding.shortName || workspace.branding.name;
-  const rewardSnapshot = await withLoggedFallback({
-    context: {
-      operation: "org_workspace.reward_store.load",
-      resourceId: workspace.organizationId,
-      userId: user.id,
-    },
-    fallback: null,
-    promise: getOrganizationWorkspaceRewardSnapshot({ supabase, userId: user.id, workspace }),
-  });
+  const [rewardSnapshot, myOrgsState] = await Promise.all([
+    withLoggedFallback({
+      context: {
+        operation: "org_workspace.reward_store.load",
+        resourceId: workspace.organizationId,
+        userId: user.id,
+      },
+      fallback: null,
+      promise: getOrganizationWorkspaceRewardSnapshot({ supabase, userId: user.id, workspace }),
+    }),
+    getMyOrganizationState(supabase, user.id),
+  ]);
 
   return (
-    <main className="mobile-shell min-h-screen bg-[#fffaf0]">
-      <AppHeader
-        title={`${organizationName} Rewards`}
-        backHref={orgHref(workspace)}
-        className="bg-[#fffaf0] shadow-none"
-        showMenu={false}
+    <main className="learner-system orgs-learner min-h-screen">
+      <OrgLearnerChrome
+        active="Store"
+        balance={workspace.xpAccount.balance}
+        logoUrl={workspace.branding.logoUrl}
+        organizationName={organizationName}
+        organizationSlug={workspace.organizationSlug}
+        pointsLabel={workspace.xpAccount.label}
+        workspaceSwitcher={
+          <LearnerWorkspaceSwitcher
+            currentOrganizationSlug={workspace.organizationSlug}
+            organizations={myOrgsState.organizations}
+          />
+        }
       />
-      <section className="learner-page pt-6">
-        <Link className="text-sm font-black text-[var(--ve-green)]" href="/xp-store">
-          Return to Project Ve
-        </Link>
-      </section>
       <XPStore
         apiPath={`/api/organizations/${workspace.organizationSlug}/rewards`}
         initialSnapshot={rewardSnapshot}
         redeemPathPrefix={`/api/organizations/${workspace.organizationSlug}/rewards`}
+        storeName={`${organizationName} Store`}
         workspaceLabel={workspace.xpAccount.label}
       />
       <OrgBottomNav active="Store" organizationSlug={workspace.organizationSlug} />

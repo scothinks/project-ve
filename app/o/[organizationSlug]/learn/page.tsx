@@ -7,6 +7,7 @@ import {
   OrgLearnerChrome,
   OrgLearningTopBar,
 } from "@/components/organizations/OrgLearnerMobile";
+import { ArrowRightIcon, CheckIcon, ClockIcon } from "@/components/organizations/OrgIcons";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import {
   getOrganizationLearnerAssessmentCheckpoints,
@@ -188,8 +189,8 @@ export default async function OrganizationLearnPage({
           <section className="org-completion-notice mb-6 rounded-lg border border-[color:color-mix(in_srgb,var(--learner-green)_16%,var(--learner-border))] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_36%,var(--learner-surface))] p-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_18%,transparent)] text-[0.65rem] font-black text-[var(--learner-green-deep)]">
-                  OK
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_18%,transparent)] text-[var(--learner-green-deep)]">
+                  <CheckIcon className="size-4" />
                 </span>
                 <div className="min-w-0">
                   <h1 className="org-completion-notice__desktop-title">Assessment Complete</h1>
@@ -226,28 +227,34 @@ export default async function OrganizationLearnPage({
             <h1 className="mt-4 text-[1.38rem] font-[650] leading-tight text-[var(--learner-text)]">
               {requiredCheckpoint.title}
             </h1>
-            <div className="org-learning-required-state__checkpoint mt-3">
-              <p className="text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
-                {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
-              </p>
-              <OrgActionLink ariaLabel="Start" className="mt-4 w-full" href={requiredCheckpoint.href}>
-                Start Assessment
-              </OrgActionLink>
-            </div>
-            <div className="org-learning-required-state__card mt-4 flex min-h-28 items-center justify-between rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
-              <span className="rounded-full bg-[var(--learner-attention-soft)] px-2 py-1 text-[0.58rem] font-bold leading-3 text-[var(--learner-attention)]">
-                Required Assessment
-              </span>
-              <strong className="max-w-[8rem] text-right text-[1.42rem] font-[650] leading-tight text-[var(--learner-text)]">
+            <p className="org-learning-required-state__checkpoint mt-3 text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+              {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
+            </p>
+            <div className="org-learning-required-state__card mt-4 rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex rounded-full bg-[var(--learner-attention-soft)] px-2.5 py-1 text-[0.58rem] font-bold leading-3 text-[var(--learner-attention)]">
+                  Required Assessment
+                </span>
+                <span className="inline-flex items-center gap-1 text-[0.72rem] font-[650] text-[var(--learner-green-deep)]">
+                  {requiredCheckpoint.xpAward} Points
+                </span>
+              </div>
+              <p className="mt-3 text-[0.78rem] font-[650] leading-5 text-[var(--learner-text)]">
                 {requiredCheckpoint.title}
-              </strong>
+              </p>
+              <p className="mt-0.5 text-[0.66rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                {requiredCheckpoint.programmeTitle}
+              </p>
             </div>
             <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
               <p className="text-[0.74rem] font-[650] text-[var(--learner-text)]">Before you begin</p>
               <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
-                Ensure you are in a quiet environment. This assessment is timed and cannot be paused once started.
+                Ensure you are in a quiet environment with a stable connection before you begin.
               </p>
             </div>
+            <OrgActionLink ariaLabel="Start" className="mt-4 w-full" href={requiredCheckpoint.href}>
+              Start Assessment
+            </OrgActionLink>
           </section>
         ) : null}
 
@@ -262,37 +269,51 @@ export default async function OrganizationLearnPage({
             <div className="mt-4 grid gap-3">
               {recommendationItems.map((item) => {
                 const image = item.course?.thumbnail ?? item.course?.coverImage;
+                const durationMinutes = item.course?.estimatedMinutes ?? item.lesson?.estimatedMinutes ?? null;
 
                 return (
                   <Link
-                    className="grid grid-cols-[minmax(0,1fr)_4rem] gap-3 rounded-lg border border-[color:color-mix(in_srgb,var(--learner-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--learner-surface)_78%,transparent)] p-3"
+                    className="rounded-lg border border-[color:color-mix(in_srgb,var(--learner-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--learner-surface)_78%,transparent)] p-3"
                     href={item.href}
                     key={`${item.content_type}:${item.id}`}
                   >
-                    <div className="min-w-0">
-                      <p className="text-[0.56rem] font-semibold italic leading-3 text-[var(--learner-reward)]">
-                        {item.reason}
-                      </p>
-                      <h3 className="mt-1 text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
-                        {item.title}
-                      </h3>
-                      <p className="mt-1 line-clamp-2 text-[0.64rem] font-medium leading-4 text-[var(--learner-text-muted)]">
-                        {item.description}
-                      </p>
-                      <span className="mt-3 inline-flex text-[0.68rem] font-[650] text-[var(--learner-green-deep)]">
-                        Open
-                      </span>
+                    <div className="grid grid-cols-[minmax(0,1fr)_4rem] gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[0.56rem] font-semibold italic leading-3 text-[var(--learner-reward)]">
+                          {item.reason}
+                        </p>
+                        <h3 className="mt-1 text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                          {item.title}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 text-[0.64rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                          {item.description}
+                        </p>
+                      </div>
+                      <div className="relative h-16 overflow-hidden rounded bg-[var(--learner-surface-soft)]">
+                        {image ? (
+                          <Image
+                            alt={image.alt}
+                            className="h-full w-full object-cover"
+                            fill
+                            sizes="72px"
+                            src={image.src}
+                          />
+                        ) : null}
+                      </div>
                     </div>
-                    <div className="relative h-16 overflow-hidden rounded bg-[var(--learner-surface-soft)]">
-                      {image ? (
-                        <Image
-                          alt={image.alt}
-                          className="h-full w-full object-cover"
-                          fill
-                          sizes="72px"
-                          src={image.src}
-                        />
-                      ) : null}
+                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-[color:color-mix(in_srgb,var(--learner-border)_60%,transparent)] pt-3">
+                      {durationMinutes ? (
+                        <span className="inline-flex items-center gap-1 text-[0.64rem] font-[650] text-[var(--learner-text-muted)]">
+                          <ClockIcon className="size-3.5" />
+                          {durationMinutes} Min
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <span className="inline-flex items-center gap-1 text-[0.68rem] font-[650] text-[var(--learner-green-deep)]">
+                        Open
+                        <ArrowRightIcon className="size-3.5" />
+                      </span>
                     </div>
                   </Link>
                 );

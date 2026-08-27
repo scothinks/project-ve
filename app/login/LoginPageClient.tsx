@@ -2,13 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon } from "@/components/ui/Icons";
+import { ArrowLeftIcon, GraduationCapIcon, SparkleIcon, TrophyIcon } from "@/components/ui/Icons";
 import { LoginForm } from "./LoginForm";
 
 const defaultView = {
   title: "Login",
   subtitle: "Enter your email address to login.",
 };
+
+const highlights = [
+  {
+    icon: GraduationCapIcon,
+    title: "Learn",
+    body: "Short, practical civic-values lessons.",
+  },
+  {
+    icon: SparkleIcon,
+    title: "Earn",
+    body: "XP for every lesson and quiz you finish.",
+  },
+  {
+    icon: TrophyIcon,
+    title: "Unlock",
+    body: "Rewards and missions as you progress.",
+  },
+];
 
 type LoginPageClientProps = {
   isDemoMode: boolean;
@@ -37,14 +55,26 @@ export function LoginPageClient({ isDemoMode, nextPath }: LoginPageClientProps) 
             Project VE: Values Education
           </p>
           <h1 className="mt-4 max-w-[12ch] text-[clamp(3rem,5vw,5.25rem)] font-black leading-[0.95] tracking-[-0.065em] text-[var(--foreground)]">
-            Learn, Earn, Spend.
+            Learn, Earn, Unlock.
           </h1>
           <p className="mt-6 max-w-md text-lg font-semibold leading-8 text-[var(--ve-muted-strong)]">
-            An incentivized learning space focused on teaching young people good values.
+            An incentivized learning space focused on teaching and rewarding good values.
           </p>
         </div>
 
-        <div aria-hidden="true" />
+        <div className="max-w-md space-y-4">
+          {highlights.map((item) => (
+            <div className="flex items-center gap-4" key={item.title}>
+              <span className="grid size-11 shrink-0 place-items-center rounded-[16px] bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
+                <item.icon className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-black text-[var(--foreground)]">{item.title}</p>
+                <p className="text-sm font-semibold text-[var(--ve-muted-strong)]">{item.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="flex min-h-screen flex-col bg-[var(--ve-card)] px-7 py-10 sm:px-9 lg:px-14 lg:py-10 lg:shadow-[-28px_0_80px_rgba(var(--ve-shadow-rgb),0.08)]">

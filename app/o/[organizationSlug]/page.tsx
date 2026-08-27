@@ -5,6 +5,14 @@ import {
   OrgLearnerChrome,
   OrgProgressMeter,
 } from "@/components/organizations/OrgLearnerMobile";
+import {
+  ArrowRightIcon,
+  BookIcon,
+  CheckIcon,
+  CompassIcon,
+  KebabIcon,
+  ShopIcon,
+} from "@/components/organizations/OrgIcons";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import {
   getOrganizationLearnerAssessmentCheckpoints,
@@ -177,8 +185,8 @@ export default async function OrganizationLearnerHomePage({
         {isCaughtUp ? (
           <div className="org-home-caught-up grid gap-5 pt-4">
             <div className="mx-auto grid size-16 place-items-center rounded-full border border-[var(--learner-border-soft)] bg-[var(--learner-surface)]">
-              <span className="grid size-8 place-items-center rounded-full bg-[var(--learner-green-deep)] text-[0.62rem] font-black text-white">
-                OK
+              <span className="grid size-8 place-items-center rounded-full bg-[var(--learner-green-deep)] text-white">
+                <CheckIcon className="size-4" />
               </span>
             </div>
             <div className="text-center">
@@ -208,19 +216,34 @@ export default async function OrganizationLearnerHomePage({
             <section>
               <p className="org-mobile-section-label uppercase">Suggested next steps</p>
               <div className="mt-3 grid gap-3">
-                <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/learn")}>
-                  <span className="text-[0.78rem] font-[650] text-[var(--learner-text)]">Explore Library</span>
-                  <p className="mt-0.5 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
-                    Deepen your knowledge with available courses.
-                  </p>
+                <Link
+                  className="org-mobile-card flex items-center gap-3 p-3"
+                  href={orgHref(workspace, "/learn")}
+                >
+                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[color:color-mix(in_srgb,var(--learner-reward-soft)_80%,white)] text-[var(--learner-reward)]">
+                    <BookIcon className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[0.78rem] font-[650] text-[var(--learner-text)]">Explore Library</span>
+                    <p className="mt-0.5 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                      Deepen your knowledge with available courses.
+                    </p>
+                  </span>
+                  <ArrowRightIcon className="size-4 shrink-0 text-[var(--learner-text-muted)]" />
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/missions")}>
-                    <span className="text-[0.72rem] font-[650] text-[var(--learner-text)]">Browse Missions</span>
+                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_14%,transparent)] text-[var(--learner-green-deep)]">
+                      <CompassIcon className="size-4" />
+                    </span>
+                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Browse Missions</span>
                     <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Field exercises</p>
                   </Link>
                   <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/rewards")}>
-                    <span className="text-[0.72rem] font-[650] text-[var(--learner-text)]">Academy Store</span>
+                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_14%,transparent)] text-[var(--learner-green-deep)]">
+                      <ShopIcon className="size-4" />
+                    </span>
+                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Academy Store</span>
                     <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Spend {workspace.xpAccount.label}</p>
                   </Link>
                 </div>
@@ -260,10 +283,10 @@ export default async function OrganizationLearnerHomePage({
               </p>
             </div>
             {activeLearningItem ? (
-              <section className="org-mobile-card org-home-continue p-3">
+              <section className="org-mobile-card org-home-continue relative overflow-hidden p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="org-mobile-kicker">In progress</span>
-                  <span className="text-[0.85rem] font-black leading-none text-[var(--learner-text-muted)]">...</span>
+                  <KebabIcon className="size-4 text-[var(--learner-text-muted)]" />
                 </div>
                 <Link className="mt-2 block" href={activeLearningItem.href}>
                   <h2 className="text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
@@ -274,12 +297,12 @@ export default async function OrganizationLearnerHomePage({
                     {activeLearningItem.totalLessons > 0 ? ` - Module ${Math.min(activeLearningItem.completedLessons + 1, activeLearningItem.totalLessons)}` : ""}
                   </p>
                 </Link>
-                <div className="mt-3 grid gap-3">
+                <div className="mt-3 pb-2">
                   <OrgActionLink className="w-full" href={activeLearningItem.resumeHref}>
                     {activeLearningItem.resumeLabel.replace("Course", "Learning")}
                   </OrgActionLink>
-                  <OrgProgressMeter value={activeLearningItem.progressPercent} />
                 </div>
+                <OrgProgressMeter flush value={activeLearningItem.progressPercent} />
               </section>
             ) : null}
 
@@ -295,8 +318,8 @@ export default async function OrganizationLearnerHomePage({
                       {requiredAssessment.title}
                     </h2>
                   </div>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[var(--learner-reward)] text-[0.9rem] font-bold text-[var(--learner-reward)]">
-                    -&gt;
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[var(--learner-reward)] text-[var(--learner-reward)]">
+                    <ArrowRightIcon className="size-4" />
                   </span>
                 </div>
               </Link>

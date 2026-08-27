@@ -13,6 +13,7 @@ import {
   markLessonPageCompleted,
 } from "../../lib/demo-progress-store.ts";
 import { courses } from "../../lib/lessons.ts";
+import { missions } from "../../lib/missions.ts";
 
 test("demo repositories work without a Supabase client", async () => {
   globalThis.__projectVeDemoStore = createDemoProgressStore();
@@ -51,4 +52,50 @@ test("demo repositories work without a Supabase client", async () => {
   assert.equal(rewards?.xpBalance, 45232);
   assert.ok(missions.length > 0);
   assert.ok(Object.keys(getStore().pageCompletions).length > 0);
+});
+
+test("demo mission repository forwards reward fulfillment config", async () => {
+  globalThis.__projectVeDemoStore = createDemoProgressStore();
+
+  const mission = {
+    id: "mission-demo-boost-regression",
+    title: "Demo Boost Regression",
+    description: "Regression fixture for demo mission reward config.",
+    category: "campaign",
+    rewardType: "reward",
+    rewardId: "reward-demo-boost-regression",
+    rewardTitle: "2x XP Boost",
+    rewardFulfillmentType: "native",
+    rewardFulfillmentConfig: {
+      effect: "xp_boost",
+      multiplier: 2,
+      durationHours: 1,
+      uses: 3,
+    },
+    repeatability: "once",
+    validation: {
+      type: "manual_review",
+      instructions: "Review the demo boost mission.",
+    },
+  };
+
+  missions.push(mission);
+
+  try {
+    const missionRepository = createMissionRepository(null);
+    const summaries = await missionRepository.getSummaries({
+      userId: DEMO_USER_ID,
+      referralCode: null,
+      origin: "http://localhost:3000",
+    });
+    const summary = summaries.find((item) => item.id === mission.id);
+
+    assert.equal(summary?.rewardFulfillmentType, "native");
+    assert.deepEqual(summary?.rewardFulfillmentConfig, mission.rewardFulfillmentConfig);
+  } finally {
+    const missionIndex = missions.findIndex((item) => item.id === mission.id);
+    if (missionIndex >= 0) {
+      missions.splice(missionIndex, 1);
+    }
+  }
 });

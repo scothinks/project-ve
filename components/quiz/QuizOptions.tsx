@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { CheckIcon } from "@/components/ui/Icons";
 import type { PublicQuizQuestion } from "@/lib/lessons";
 import { cn } from "@/lib/utils";
 import { formatXpLabel } from "@/lib/xp-format";
@@ -276,16 +277,24 @@ export function QuizOptions({
     );
   }
 
+  const quizProgressPercent = Math.round(((currentIndex + 1) / liveQuestions.length) * 100);
+
   return (
     <div className="space-y-5">
       <Card className="p-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">
-            Question {currentIndex + 1}
+            Question {currentIndex + 1} of {liveQuestions.length}
           </p>
           <span className="max-w-[8rem] whitespace-nowrap rounded-[18px] bg-[#dff2e9] px-3 py-1 text-center text-xs font-bold leading-none text-[#008751] tabular-nums">
             {attemptMode === "practice" ? "Practice" : formatXpLabel(current.xp, unitLabel)}
           </span>
+        </div>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color:color-mix(in_srgb,#008751_10%,transparent)]">
+          <div
+            className="h-full rounded-full bg-[#008751] transition-all duration-500"
+            style={{ width: `${quizProgressPercent}%` }}
+          />
         </div>
         <h2 className="mt-4 text-xl font-bold leading-7">{current.prompt}</h2>
         {current.type === "multiple_choice" ? (
@@ -301,6 +310,7 @@ export function QuizOptions({
         <div className="mt-6 space-y-3">
           {current.options.map((option) => {
             const isSelected = selectedOptionIds.includes(option.id);
+            const isMultipleChoice = current.type === "multiple_choice";
             return (
               <button
                 className={cn(
@@ -311,14 +321,15 @@ export function QuizOptions({
                 onClick={() => selectOption(option.id)}
                 type="button"
               >
-                <span
-                  className={cn(
-                    "mr-3 grid size-5 shrink-0 place-items-center rounded-[6px] border text-[11px] font-black",
-                    current.type === "multiple_choice" ? "border-current" : "rounded-full border-current",
-                  )}
-                >
-                  {isSelected ? "✓" : ""}
-                </span>
+                {isMultipleChoice ? (
+                  <span className="mr-3 grid size-5 shrink-0 place-items-center rounded-[6px] border border-current">
+                    {isSelected ? <CheckIcon className="size-3.5" /> : null}
+                  </span>
+                ) : (
+                  <span className="mr-3 grid size-5 shrink-0 place-items-center rounded-full border-2 border-current">
+                    <span className={cn("size-2.5 rounded-full", isSelected ? "bg-current" : "bg-transparent")} />
+                  </span>
+                )}
                 <span>{option.label}</span>
               </button>
             );

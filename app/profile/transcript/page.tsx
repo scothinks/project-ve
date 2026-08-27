@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ArrowLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
+import { ArrowLeftIcon, BookOpenIcon, BuildingIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import {
   getLearnerTranscript,
   type LearnerTranscriptItem,
@@ -104,17 +105,19 @@ function TranscriptCard({ item }: { item: LearnerTranscriptItem }) {
 
 function TranscriptSection({
   emptyText,
+  icon,
   items,
   title,
 }: {
   emptyText: string;
+  icon: ReactNode;
   items: LearnerTranscriptItem[];
   title: string;
 }) {
   return (
     <section className="mt-6 lg:mt-0">
       <div className="flex items-center gap-2">
-        <span className="grid size-5 place-items-center rounded-[4px] border border-[var(--ve-green)] text-[var(--ve-green)]" />
+        <span className="grid size-5 place-items-center text-[var(--ve-green)]">{icon}</span>
         <h2 className="text-xl font-semibold text-[var(--foreground)]">{title}</h2>
       </div>
       <div className="mt-3 space-y-3 lg:space-y-4">
@@ -210,11 +213,13 @@ export default async function LearnerTranscriptPage() {
         <div className="grid gap-7 lg:grid-cols-2 lg:items-start">
           <TranscriptSection
             emptyText="Assigned programme records will appear here."
+            icon={<BuildingIcon className="h-5 w-5 text-[#a66d00]" />}
             items={transcript.programmes}
             title="Programmes"
           />
           <TranscriptSection
             emptyText="Assigned course records will appear here."
+            icon={<BookOpenIcon className="h-5 w-5 text-[var(--ve-green)]" />}
             items={transcript.courses}
             title="Courses"
           />
@@ -227,7 +232,7 @@ export default async function LearnerTranscriptPage() {
         </div>
       </section>
       <div className="lg:hidden">
-        <BottomNav active="Home" />
+        <BottomNav active="Transcript" />
       </div>
     </main>
   );

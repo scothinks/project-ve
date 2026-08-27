@@ -1673,6 +1673,11 @@ Scope note:
 * `/org/my` now exposes the learner centre and invitation responses. Full learner workspace context switching remains in `P15-ORG-005`.
 * Email delivery remains conditional on later delivery configuration; in-app notifications are implemented for existing users.
 
+Follow-up fix on 2026-08-26:
+
+* pending invitation listing now uses a self-scoped `get_my_pending_organization_invitations` RPC so invited non-members can see their own pending `/org/my` invitation with safe organisation identity metadata, without broadening general `organizations` table visibility;
+* `lms_organization_invitations.sql` now covers the invited non-member visibility regression, unrelated-user denial and the fact that a pending invitation alone does not grant direct `organizations` table reads.
+
 Validation completed:
 
 ```text

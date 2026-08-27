@@ -56,7 +56,7 @@ export default async function OrganizationResultsPage({ params, searchParams }: 
         unitLabel={workspace.xpAccount.label}
       />
 
-      <OrgBottomNav active="Store" organizationSlug={workspace.organizationSlug} />
+      <OrgBottomNav active="Lessons" organizationSlug={workspace.organizationSlug} />
     </main>
   );
 }

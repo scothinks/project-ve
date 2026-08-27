@@ -37,7 +37,7 @@ export default async function CreateOrganizationPage({
               Sign in to create a private Starter organisation workspace.
             </p>
             <Link
-              className="mt-4 inline-flex h-11 items-center justify-center rounded-[30px] bg-[var(--ve-green)] px-5 text-sm font-black text-white"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-[30px] bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
               href={createLoginHref("/org/create")}
             >
               Sign in

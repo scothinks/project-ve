@@ -3,7 +3,7 @@ import Image from "next/image";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Button } from "@/components/ui/Button";
-import { ChevronRightIcon } from "@/components/ui/Icons";
+import { BookOpenIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { createLoginHref } from "@/lib/auth-redirect";
 import { getCurrentUserProfile } from "@/lib/supabase-server";
 
@@ -80,7 +80,9 @@ export default async function OrgModePage() {
                 </div>
               </div>
               <div className="orgs-landing__mini-card orgs-landing__mini-card--first">
-                <span className="orgs-landing__mini-icon">☘</span>
+                <span className="orgs-landing__mini-icon">
+                  <BookOpenIcon className="size-3" />
+                </span>
                 <span>
                   <small className="orgs-landing__mini-pill">Required Lesson</small>
                   <strong>Volunteer Induction</strong>

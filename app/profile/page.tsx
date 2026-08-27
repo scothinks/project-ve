@@ -70,7 +70,7 @@ export default async function ProfilePage() {
         notificationPreferences={notificationPreferences}
       />
       <div className="lg:hidden">
-        <BottomNav active="Home" />
+        <BottomNav active="Profile" />
       </div>
     </main>
   );

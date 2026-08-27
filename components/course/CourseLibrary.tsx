@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CourseCard } from "@/components/course/CourseCard";
 import { Button } from "@/components/ui/Button";
-import { ChevronRightIcon } from "@/components/ui/Icons";
+import { CheckCircleIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import type { OrganizationCourseDeliveryOption } from "@/features/organizations/application/learner-workspace";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
@@ -611,7 +611,7 @@ export function CourseLibrary({
             {completedItems.slice(0, 2).map((item) => (
               <Link className="course-library-completed-card" href={item.href} key={item.key}>
                 <span aria-hidden="true" className="course-library-completed-card__icon">
-                  OK
+                  <CheckCircleIcon className="h-5 w-5" />
                 </span>
                 <div>
                   <h3>{item.course.title}</h3>

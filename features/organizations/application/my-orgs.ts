@@ -26,11 +26,18 @@ type InvitationRow = {
   email: string | null;
   expires_at: string;
   id: string;
+  organization_accent_token: Database["public"]["Enums"]["organization_accent_token"];
   organization_id: string;
+  organization_lifecycle_status: Database["public"]["Enums"]["organization_lifecycle_status"];
+  organization_logo_url: string | null;
+  organization_name: string;
+  organization_short_name: string | null;
+  organization_slug: string;
+  organization_verification_status: Database["public"]["Enums"]["organization_verification_status"];
   role: Database["public"]["Enums"]["organization_role_key"];
   target_id: string | null;
+  target_label: string;
   target_type: Database["public"]["Enums"]["organization_invitation_target_type"];
-  organizations: OrganizationIdentity | OrganizationIdentity[] | null;
 };
 
 type ProgrammeEnrolmentRow = {
@@ -144,25 +151,10 @@ export async function getMyOrganizationState(
   supabase: SupabaseClient<Database>,
   userId: string,
 ) {
-  const now = new Date().toISOString();
   const [invitationsResult, membershipsResult, programmeEnrolmentsResult, cohortMembershipsResult] =
     await Promise.all([
       supabase
-        .from("organization_invitations")
-        .select(`
-          id,
-          organization_id,
-          target_type,
-          target_id,
-          email,
-          role,
-          expires_at,
-          created_at,
-          organizations!inner(id, name, short_name, slug, logo_url, accent_token, lifecycle_status, verification_status)
-        `)
-        .eq("status", "pending")
-        .gt("expires_at", now)
-        .order("created_at", { ascending: false }),
+        .rpc("get_my_pending_organization_invitations"),
       supabase
         .from("organization_memberships")
         .select(`
@@ -204,45 +196,6 @@ export async function getMyOrganizationState(
   if (programmeEnrolmentsResult.error) throw programmeEnrolmentsResult.error;
   if (cohortMembershipsResult.error) throw cohortMembershipsResult.error;
 
-  const programmeIds = Array.from(
-    new Set(
-      ((invitationsResult.data ?? []) as unknown as InvitationRow[])
-        .filter((invitation) => invitation.target_type === "programme" && invitation.target_id)
-        .map((invitation) => invitation.target_id as string),
-    ),
-  );
-  const cohortIds = Array.from(
-    new Set(
-      ((invitationsResult.data ?? []) as unknown as InvitationRow[])
-        .filter((invitation) => invitation.target_type === "cohort" && invitation.target_id)
-        .map((invitation) => invitation.target_id as string),
-    ),
-  );
-
-  const [invitedProgrammesResult, invitedCohortsResult] = await Promise.all([
-    programmeIds.length > 0
-      ? supabase.from("programmes").select("id, title").in("id", programmeIds)
-      : Promise.resolve({ data: [], error: null }),
-    cohortIds.length > 0
-      ? supabase.from("cohorts").select("id, title").in("id", cohortIds)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  if (invitedProgrammesResult.error) throw invitedProgrammesResult.error;
-  if (invitedCohortsResult.error) throw invitedCohortsResult.error;
-
-  const programmeTitles = new Map(
-    ((invitedProgrammesResult.data ?? []) as Array<{ id: string; title: string }>).map((programme) => [
-      programme.id,
-      programme.title,
-    ]),
-  );
-  const cohortTitles = new Map(
-    ((invitedCohortsResult.data ?? []) as Array<{ id: string; title: string }>).map((cohort) => [
-      cohort.id,
-      cohort.title,
-    ]),
-  );
   const organizations = new Map<string, MyOrganizationSummary>();
 
   for (const row of (membershipsResult.data ?? []) as unknown as MembershipRow[]) {
@@ -314,29 +267,26 @@ export async function getMyOrganizationState(
   }
 
   const invitations = ((invitationsResult.data ?? []) as unknown as InvitationRow[])
-    .map((row): MyOrganizationInvitation | null => {
-      const organization = first(row.organizations);
-      if (!organization) return null;
-
-      const targetLabel = row.target_type === "programme" && row.target_id
-        ? programmeTitles.get(row.target_id) ?? "Programme invitation"
-        : row.target_type === "cohort" && row.target_id
-          ? cohortTitles.get(row.target_id) ?? "Cohort invitation"
-          : organizationLabel(organization);
-
-      return {
-        createdAt: row.created_at,
-        email: row.email,
-        expiresAt: row.expires_at,
-        id: row.id,
-        organization,
-        role: row.role,
-        targetId: row.target_id,
-        targetLabel,
-        targetType: row.target_type,
-      };
-    })
-    .filter((invitation): invitation is MyOrganizationInvitation => Boolean(invitation));
+    .map((row): MyOrganizationInvitation => ({
+      createdAt: row.created_at,
+      email: row.email,
+      expiresAt: row.expires_at,
+      id: row.id,
+      organization: {
+        accent_token: row.organization_accent_token,
+        id: row.organization_id,
+        lifecycle_status: row.organization_lifecycle_status,
+        logo_url: row.organization_logo_url,
+        name: row.organization_name,
+        short_name: row.organization_short_name,
+        slug: row.organization_slug,
+        verification_status: row.organization_verification_status,
+      },
+      role: row.role,
+      targetId: row.target_id,
+      targetLabel: row.target_label,
+      targetType: row.target_type,
+    }));
 
   return {
     invitations,
