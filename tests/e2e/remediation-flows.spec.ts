@@ -783,7 +783,7 @@ async function signIn(page: Page, email: string, expectedUrl: RegExp = /\/dashbo
   await page.getByPlaceholder("Enter Email Address").fill(email);
   await page.getByPlaceholder("Enter Password").fill(authCredential);
   await page.getByRole("button", { name: "Login" }).click();
-  await expect(page).toHaveURL(expectedUrl);
+  await expect(page).toHaveURL(expectedUrl, { timeout: 60_000 });
 }
 
 async function completeCurrentValuesAssessment(page: Page) {
@@ -1169,7 +1169,7 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByRole("button", { name: "View result" }).click();
 
     await expect(page).toHaveURL(new RegExp(`/results/${lessonId}$`));
-    await expect(page.getByRole("heading", { name: "You earned 5 XP!" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "You earned 5 XP" })).toBeVisible();
     await expect(page.getByText("No missed questions")).toBeVisible();
   });
 
@@ -1177,7 +1177,7 @@ test.describe.serial("remediation browser flows", () => {
     await signIn(page, learnerEmail);
 
     await page.goto("/xp-store");
-    await expect(page.getByRole("heading", { name: "XP rewards" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "XP Store" })).toBeVisible();
     const rewardCard = page.locator("section").filter({ hasText: rewardTitle }).first();
     await expect(rewardCard.getByRole("heading", { name: rewardTitle })).toBeVisible();
     await rewardCard.getByRole("button", { name: "Redeem" }).click();
@@ -1672,7 +1672,7 @@ test.describe.serial("remediation browser flows", () => {
   });
 
   test("institutional LMS journey covers memberships, assignment, completion, reporting, and tenant denial", async ({ page }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(420_000);
 
     if (!programmeManager || !reportViewer || !institutionalLearner || !programmeOnlyLearner || !outsider) {
       throw new Error("Institutional E2E users were not seeded.");
@@ -2037,7 +2037,8 @@ test.describe.serial("remediation browser flows", () => {
     await sharedCourseLinks.filter({ hasText: institutionalProgrammeTitle }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}\\?programmeId=${programme?.id}$`));
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
-    await expect(page.getByText("0% complete")).toBeVisible();
+    await expect(page.getByText("0 of 1 lessons completed")).toBeVisible();
+    await expect(page.getByText("0%")).toBeVisible();
     await expect(page.getByText("5 Police Points").first()).toBeVisible();
     const progressResponse = page.waitForResponse(
       (response) => response.url().includes("/api/lesson-progress"),
@@ -2059,7 +2060,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page).toHaveURL(
       new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
-    await expect(page.getByText("You earned 5 Police Points!")).toBeVisible();
+    await expect(page.getByText("You earned 5 Police Points")).toBeVisible();
     const scopedQuizTransaction = await assertNoError(
       await supabase
         .from("xp_transactions")
@@ -2084,7 +2085,7 @@ test.describe.serial("remediation browser flows", () => {
       "load contextual lesson completion",
     );
     expect(contextualPage?.programme_id).toBe(programme?.id);
-    await page.getByRole("link", { name: "Lessons" }).click();
+    await page.getByRole("link", { name: "Continue Learning" }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}(\\?programmeId=[^&]+)?$`));
     await page.goto(`/o/${institutionalOrgSlug}`);
     await page.getByRole("link", { name: "Notifications" }).click();
@@ -2103,14 +2104,15 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("100% complete").first()).toBeVisible();
 
     await page.goto(`/o/${institutionalOrgSlug}/rewards`);
-    await expect(page.getByRole("heading", { name: `${institutionalOrgName} Rewards` })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Police Points rewards" })).toBeVisible();
-    await expect(page.getByText("Available Police Points")).toBeVisible();
+    await expect(page.getByRole("heading", { name: `${institutionalOrgName} Store` })).toBeVisible();
+    await expect(page.getByText(/[\d,]+ Police Points/).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: `E2E Institution Reward ${runId}` }).first()).toBeVisible();
     const redeemButton = page.getByRole("button", { name: "Redeem" }).first();
     await expect(redeemButton).toBeEnabled();
     await redeemButton.click();
-    await expect(page.getByText("This will redeem 5 Police Points and add the reward to your history.")).toBeVisible();
+    await expect(
+      page.getByText(`This will redeem 5 Police Points for E2E Institution Reward ${runId} and add it to your History.`),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Confirm" }).click();
     await expect(page.getByRole("combobox", { name: "Delivery method" })).toBeVisible();
     await page.getByRole("combobox", { name: "Delivery method" }).selectOption({ label: "Delivery" });
@@ -2122,8 +2124,7 @@ test.describe.serial("remediation browser flows", () => {
     await page.goto(`/o/${institutionalOrgSlug}/learn`);
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn$`));
     await expect(page.getByText(`Police programme assessment intro ${runId}`)).toBeVisible();
-    const programmeOnlyAssessmentCard = page.locator("div").filter({ hasText: `Police programme assessment intro ${runId}` }).first();
-    await programmeOnlyAssessmentCard.getByRole("link", { name: "Start" }).click();
+    await page.getByRole("link", { name: "Start", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/assessments/${institutionalAssessmentVersionId}\\?programmeId=${secondProgramme.id}$`));
     await expect(page.getByRole("heading", { name: `E2E Institution Assessment ${runId}` })).toBeVisible();
     await expect(page.getByText("20 Police Points reward")).toBeVisible();

@@ -7,9 +7,11 @@ type LessonPageLayoutProps = {
   blocks: LessonContentBlock[];
   coverImage?: ImageAsset | null;
   isPreview?: boolean;
+  pageNumber?: number;
   pageType: LessonPageType | string;
   subtitle?: string | null;
   title: string;
+  totalPages?: number;
 };
 
 const pageTypeConfig: Record<
@@ -97,9 +99,11 @@ export function LessonPageLayout({
   blocks,
   coverImage,
   isPreview = false,
+  pageNumber,
   pageType,
   subtitle,
   title,
+  totalPages,
 }: LessonPageLayoutProps) {
   const config = getPageTypeConfig(pageType);
   const isImageBeforeTitle = pageType === "primer" || pageType === "concept";
@@ -109,13 +113,20 @@ export function LessonPageLayout({
   return (
     <div className={config.shell}>
       <div className={isPreview && config.shell === "bg-[var(--ve-card)]" ? "" : undefined}>
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] ${config.badge}`}>
-            {config.label}
-          </span>
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[color:color-mix(in_srgb,var(--ve-muted)_90%,var(--foreground))]">
-            {config.intro}
-          </span>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] ${config.badge}`}>
+              {config.label}
+            </span>
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[color:color-mix(in_srgb,var(--ve-muted)_90%,var(--foreground))]">
+              {config.intro}
+            </span>
+          </div>
+          {pageNumber && totalPages ? (
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--ve-muted)]">
+              Page {pageNumber} of {totalPages}
+            </span>
+          ) : null}
         </div>
 
         {coverImage && isImageBeforeTitle ? (

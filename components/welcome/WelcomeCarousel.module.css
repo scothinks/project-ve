@@ -28,10 +28,11 @@
 
 .skipButton {
   height: 40px;
-  padding-inline: 18px;
+  padding-inline: 10px;
+  color: var(--ve-muted-strong);
   font-size: 0.95rem;
-  font-weight: 900;
-  box-shadow: 0 12px 28px rgba(var(--ve-shadow-rgb), 0.08);
+  font-weight: 700;
+  box-shadow: none;
 }
 
 .content {
@@ -49,20 +50,15 @@
   width: 250px;
   height: 250px;
   flex: none;
-}
-
-.artCanvas {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) scale(0.78125);
-  transform-origin: top center;
-}
-
-.artCard {
+  overflow: hidden;
+  border-radius: 32px;
   border: 1px solid var(--ve-intro-line);
   background: var(--ve-intro-card);
   box-shadow: 0 22px 44px rgba(var(--ve-intro-shadow-rgb), var(--ve-intro-shadow-alpha));
+}
+
+.artImage {
+  object-fit: cover;
 }
 
 .copy {
@@ -72,19 +68,19 @@
 }
 
 .anchor {
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.title {
-  margin-top: 10px;
   color: var(--foreground);
   font-size: clamp(1.8rem, 8vw, 2.1rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.045em;
+}
+
+.title {
+  margin-top: 8px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .description {
@@ -124,10 +120,6 @@
     height: 272px;
   }
 
-  .artCanvas {
-    transform: translateX(-50%) scale(0.85);
-  }
-
   .copy {
     margin-top: 22px;
   }
@@ -163,21 +155,17 @@
     height: 205px;
   }
 
-  .artCanvas {
-    transform: translateX(-50%) scale(0.640625);
-  }
-
   .copy {
     margin-top: 12px;
   }
 
   .anchor {
-    font-size: 0.76rem;
+    font-size: clamp(1.65rem, 7.5vw, 1.85rem);
   }
 
   .title {
-    margin-top: 7px;
-    font-size: clamp(1.65rem, 7.5vw, 1.85rem);
+    margin-top: 6px;
+    font-size: 1.2rem;
   }
 
   .description {
@@ -206,16 +194,16 @@
     height: 170px;
   }
 
-  .artCanvas {
-    transform: translateX(-50%) scale(0.53125);
-  }
-
   .copy {
     margin-top: 8px;
   }
 
-  .title {
+  .anchor {
     font-size: 1.55rem;
+  }
+
+  .title {
+    font-size: 1.05rem;
   }
 
   .description {

@@ -84,6 +84,11 @@ async function signIn(page: Page, email: string, nextPath = "/dashboard") {
   await page.getByPlaceholder("Enter Email Address").fill(email);
   await page.getByPlaceholder("Enter Password").fill(authCredential);
   await page.getByRole("button", { name: "Login" }).click();
+  if (!nextPath.startsWith("/login?")) {
+    await expect(page).toHaveURL(new RegExp(`${nextPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), {
+      timeout: 30_000,
+    });
+  }
 }
 
 async function clearBrowserState(page: Page) {
@@ -491,9 +496,8 @@ test.describe.serial("organization mission browser acceptance", () => {
     );
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/learn$`));
     await expect(page.getByText("Assessment checkpoints", { exact: true })).toBeVisible();
-    const assessmentCheckpoint = page.locator("div").filter({ hasText: `Programme assessment checkpoint ${runId}` }).first();
-    await expect(assessmentCheckpoint).toBeVisible();
-    await assessmentCheckpoint.getByRole("link", { name: "Start" }).click();
+    await expect(page.getByText(`Programme assessment checkpoint ${runId}`, { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: /Start/ }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}/assessments/${assessmentVersionId}\\?programmeId=${programmeId}$`));
     await expect(page.getByRole("heading", { name: "Values Starter Check" })).toBeVisible();
     await expect(page.getByText(`Programme assessment checkpoint ${runId}`)).toBeVisible();

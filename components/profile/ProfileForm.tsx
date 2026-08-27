@@ -6,7 +6,20 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/profile/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ArrowLeftIcon, BellIcon, ChevronRightIcon, GraduationCapIcon } from "@/components/ui/Icons";
+import {
+  ArrowLeftIcon,
+  BellIcon,
+  ChatIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  EyeOffIcon,
+  GavelIcon,
+  GraduationCapIcon,
+  HelpCircleIcon,
+  LockIcon,
+  LogoutIcon,
+  ShieldIcon,
+} from "@/components/ui/Icons";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 import type { NotificationPreferences } from "@/lib/notifications";
 import {
@@ -174,7 +187,7 @@ function HelpLink({
 }: {
   compact?: boolean;
   href: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
 }) {
   return (
@@ -185,7 +198,7 @@ function HelpLink({
       href={href}
     >
       <span className="flex items-center gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-sm font-black text-[var(--ve-green)]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
           {icon}
         </span>
         <span className={compact ? "text-sm font-semibold" : "text-xl font-semibold"}>{label}</span>
@@ -537,11 +550,14 @@ export function ProfileForm({
                 <span className="text-xs font-medium text-[var(--ve-muted-strong)]">
                   Email Address (Read-only)
                 </span>
-                <input
-                  className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 text-sm font-medium text-[var(--ve-muted)] outline-none"
-                  readOnly
-                  value={email}
-                />
+                <span className="relative mt-2 block">
+                  <input
+                    className="h-12 w-full rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 pr-11 text-sm font-medium text-[var(--ve-muted)] outline-none"
+                    readOnly
+                    value={email}
+                  />
+                  <LockIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ve-muted)]" />
+                </span>
               </label>
 
               <label className="block">
@@ -577,11 +593,12 @@ export function ProfileForm({
                     value={newPassword}
                   />
                   <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-[var(--ve-muted-strong)]"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ve-muted-strong)]"
                     onClick={() => setShowPassword((current) => !current)}
                     type="button"
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                   </button>
                 </span>
               </label>
@@ -617,12 +634,13 @@ export function ProfileForm({
               onClick={() => setActiveSection("notifications")}
             />
             <Button
-              className="h-11 w-full rounded-[8px] border-[#ef5b5b] text-[#d84242]"
+              className="h-11 w-full gap-2 rounded-[8px] border-[#ef5b5b] text-[#d84242]"
               disabled={signingOut}
               onClick={() => void logout()}
               type="button"
               variant="outline"
             >
+              <LogoutIcon className="h-4 w-4" />
               {signingOut ? "Logging out..." : "Logout"}
             </Button>
           </div>
@@ -741,10 +759,10 @@ export function ProfileForm({
 
       {activeSection === "help" ? (
         <div className="mt-6 space-y-3 lg:mt-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          <HelpLink href="/support" icon="?" label="Support" />
-          <HelpLink href="/faq" icon="!" label="FAQ" />
-          <HelpLink compact href="/terms" icon="T" label="Terms of Service" />
-          <HelpLink compact href="/privacy" icon="P" label="Privacy Policy" />
+          <HelpLink href="/support" icon={<HelpCircleIcon className="h-5 w-5" />} label="Support" />
+          <HelpLink href="/faq" icon={<ChatIcon className="h-5 w-5" />} label="FAQ" />
+          <HelpLink compact href="/terms" icon={<GavelIcon className="h-5 w-5" />} label="Terms of Service" />
+          <HelpLink compact href="/privacy" icon={<ShieldIcon className="h-5 w-5" />} label="Privacy Policy" />
         </div>
       ) : null}
 

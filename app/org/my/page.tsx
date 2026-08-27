@@ -3,6 +3,7 @@ import { acceptOrganizationInvitation, declineOrganizationInvitation } from "@/a
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
+import { ClockIcon, MailIcon, SchoolIcon, SeedlingIcon, StarIcon } from "@/components/organizations/OrgIcons";
 import { Button } from "@/components/ui/Button";
 import { ChevronRightIcon } from "@/components/ui/Icons";
 import {
@@ -68,7 +69,7 @@ function OrganizationLogo({ organization }: { organization: MyOrganizationSummar
   return <div className="org-card__logo">{initials(name)}</div>;
 }
 
-function ActiveOrganizationCard({ item }: { item: MyOrganizationSummary }) {
+function ActiveOrganizationCard({ item, justJoined = false }: { item: MyOrganizationSummary; justJoined?: boolean }) {
   const name = organizationName(item.organization);
   const labels = [
     ...item.programmes.map((programme) => programme.title),
@@ -81,7 +82,13 @@ function ActiveOrganizationCard({ item }: { item: MyOrganizationSummary }) {
         <OrganizationLogo organization={item.organization} />
         <div className="min-w-0 flex-1">
           <h3 className="org-card__title">{name}</h3>
-          <p className="org-card__meta mt-1">{item.accessLabel}</p>
+          {justJoined ? (
+            <span className="mt-1 inline-flex rounded-full bg-[#eef8f1] px-2.5 py-1 text-[11px] font-black text-[var(--learner-green)]">
+              Just joined
+            </span>
+          ) : (
+            <p className="org-card__meta mt-1">{item.accessLabel}</p>
+          )}
           {labels.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {labels.slice(0, 3).map((label) => (
@@ -93,7 +100,8 @@ function ActiveOrganizationCard({ item }: { item: MyOrganizationSummary }) {
       </div>
 
       {item.pointsLabel !== "Not available yet" ? (
-        <div className="mt-4 rounded-[8px] border border-[rgba(210,185,150,0.42)] bg-[#f8f3ea] px-3 py-2 text-sm font-black text-[#765a05]">
+        <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-[rgba(210,185,150,0.42)] bg-[#f8f3ea] px-3 py-2 text-sm font-black text-[#765a05]">
+          <StarIcon className="size-4 shrink-0" />
           {item.pointsLabel}
         </div>
       ) : null}
@@ -144,6 +152,7 @@ function InvitationCard({ invitation }: { invitation: MyOrganizationInvitation }
       <div className="org-invitation-actions org-invitation-actions--mobile">
         <form action={acceptOrganizationInvitation}>
           <input name="invitationId" type="hidden" value={invitation.id} />
+          <input name="organizationSlug" type="hidden" value={invitation.organization.slug} />
           <Button className="h-11 w-full rounded-[8px] text-sm font-black" type="submit">
             Accept Invitation
           </Button>
@@ -198,6 +207,7 @@ function InvitationCard({ invitation }: { invitation: MyOrganizationInvitation }
             </form>
             <form action={acceptOrganizationInvitation}>
               <input name="invitationId" type="hidden" value={invitation.id} />
+              <input name="organizationSlug" type="hidden" value={invitation.organization.slug} />
               <Button className="h-10 w-full rounded-[8px] text-xs font-black" type="submit">
                 Accept Invitation
               </Button>
@@ -248,6 +258,7 @@ function InvitationFocusPanel({ invitation }: { invitation: MyOrganizationInvita
           </form>
           <form action={acceptOrganizationInvitation}>
             <input name="invitationId" type="hidden" value={invitation.id} />
+            <input name="organizationSlug" type="hidden" value={invitation.organization.slug} />
             <Button className="h-10 w-full rounded-[8px] text-xs font-black" type="submit">
               Accept Invitation
             </Button>
@@ -262,7 +273,7 @@ function MobileInvitationCard({ invitation }: { invitation: MyOrganizationInvita
   return (
     <article className="org-card org-card--mobile-invitation">
       <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[14px] border border-[var(--learner-border)] bg-[#f8f3ea] text-[var(--learner-green)]">
-        <span className="text-xl font-black">+</span>
+        <MailIcon className="size-6" />
       </div>
       <div className="text-center">
         <p className="orgs-section-label">{targetLabel(invitation.targetType)} Invitation</p>
@@ -271,17 +282,24 @@ function MobileInvitationCard({ invitation }: { invitation: MyOrganizationInvita
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-[rgba(110,122,115,0.14)] py-4">
         <div>
-          <dt className="org-card__meta uppercase tracking-[0.1em]">Assigned Role</dt>
+          <dt className="org-card__meta flex items-center gap-1 uppercase tracking-[0.1em]">
+            <SchoolIcon className="size-3.5 shrink-0" />
+            Assigned Role
+          </dt>
           <dd className="mt-1 text-sm font-black text-[var(--learner-text)]">{roleLabel(invitation.role)}</dd>
         </div>
         <div>
-          <dt className="org-card__meta uppercase tracking-[0.1em]">Expires</dt>
+          <dt className="org-card__meta flex items-center gap-1 uppercase tracking-[0.1em]">
+            <ClockIcon className="size-3.5 shrink-0" />
+            Expires
+          </dt>
           <dd className="mt-1 text-sm font-black text-[var(--learner-text)]">{formatDate(invitation.expiresAt)}</dd>
         </div>
       </dl>
       <div className="org-invitation-actions org-invitation-actions--legacy">
         <form action={acceptOrganizationInvitation}>
           <input name="invitationId" type="hidden" value={invitation.id} />
+          <input name="organizationSlug" type="hidden" value={invitation.organization.slug} />
           <Button className="h-11 w-full rounded-[8px] text-sm font-black" type="submit">
             Accept Invitation
           </Button>
@@ -301,7 +319,9 @@ function EmptyOrgsState() {
   return (
     <section className="grid min-h-[calc(100dvh-12rem)] content-center text-center">
       <div className="org-empty-visual">
-        <div className="org-empty-visual__plant">+</div>
+        <div className="org-empty-visual__plant">
+          <SeedlingIcon className="size-8" />
+        </div>
       </div>
       <h2 className="mt-8 text-xl font-black tracking-[-0.03em] text-[var(--learner-text)]">
         No organisations yet.
@@ -321,7 +341,12 @@ function EmptyOrgsState() {
 export default async function MyOrganizationsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ invitation?: string | string[]; notice?: string | string[] }>;
+  searchParams?: Promise<{
+    error?: string | string[];
+    invitation?: string | string[];
+    joinedOrg?: string | string[];
+    notice?: string | string[];
+  }>;
 }) {
   const supabase = await createSupabaseServerClient();
   const { user, profile } = await getCurrentUserProfile(supabase);
@@ -335,6 +360,8 @@ export default async function MyOrganizationsPage({
     : { invitations: [], organizations: [] };
   const resolvedSearchParams = await searchParams;
   const notice = firstSearchValue(resolvedSearchParams?.notice);
+  const errorNotice = firstSearchValue(resolvedSearchParams?.error);
+  const justJoinedSlug = firstSearchValue(resolvedSearchParams?.joinedOrg);
   const selectedInvitationId = firstSearchValue(resolvedSearchParams?.invitation);
   const selectedInvitation = state.invitations.find((invitation) => invitation.id === selectedInvitationId);
   const hasAnyOrgState = state.invitations.length > 0 || state.organizations.length > 0;
@@ -357,6 +384,11 @@ export default async function MyOrganizationsPage({
             {notice}
           </div>
         ) : null}
+        {errorNotice ? (
+          <div className="mb-4 rounded-[8px] border border-[var(--learner-attention-soft)] bg-[color:color-mix(in_srgb,var(--learner-attention-soft)_55%,white)] px-4 py-3 text-sm font-black text-[var(--learner-attention)]">
+            {errorNotice}
+          </div>
+        ) : null}
 
         {hasAnyOrgState ? (
           <div className="orgs-state-layout">
@@ -372,7 +404,11 @@ export default async function MyOrganizationsPage({
               <div className="mt-4 grid gap-4">
                 {state.organizations.length > 0 ? (
                   state.organizations.map((item) => (
-                    <ActiveOrganizationCard item={item} key={item.organization.id} />
+                    <ActiveOrganizationCard
+                      item={item}
+                      justJoined={item.organization.slug === justJoinedSlug}
+                      key={item.organization.id}
+                    />
                   ))
                 ) : (
                   <p className="org-card__meta">No active memberships yet.</p>

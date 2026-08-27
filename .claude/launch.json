@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "demo-dev",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["scripts/dev-demo.sh"],
+      "port": 3000
+    }
+  ]
+}

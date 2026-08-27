@@ -199,12 +199,15 @@ export function getMission(id: string) {
   return missions.find((mission) => mission.id === id);
 }
 
-export function getMissionRewardLabel(mission: {
-  rewardType?: MissionRewardType;
-  rewardXp?: number | null;
-  rewardTitle?: string | null;
-  rewardFulfillmentConfig?: Record<string, unknown> | null;
-}) {
+export function getMissionRewardLabel(
+  mission: {
+    rewardType?: MissionRewardType;
+    rewardXp?: number | null;
+    rewardTitle?: string | null;
+    rewardFulfillmentConfig?: Record<string, unknown> | null;
+  },
+  unitLabel = "XP",
+) {
   const rewardConfig =
     mission.rewardFulfillmentConfig && typeof mission.rewardFulfillmentConfig === "object"
       ? mission.rewardFulfillmentConfig
@@ -217,7 +220,7 @@ export function getMissionRewardLabel(mission: {
     if (Number.isFinite(multiplier) && multiplier > 0) {
       return `${new Intl.NumberFormat("en", {
         maximumFractionDigits: 2,
-      }).format(multiplier)}x XP Boost`;
+      }).format(multiplier)}x ${unitLabel} Boost`;
     }
   }
 
@@ -225,7 +228,7 @@ export function getMissionRewardLabel(mission: {
     const amount = Number(rewardConfig?.amount ?? 0);
 
     if (Number.isFinite(amount) && amount > 0) {
-      return formatXpLabel(amount);
+      return formatXpLabel(amount, unitLabel);
     }
   }
 
@@ -239,7 +242,44 @@ export function getMissionRewardLabel(mission: {
     return "Linked reward";
   }
 
-  return formatXpLabel(Math.max(0, Number(mission.rewardXp ?? 0)));
+  return formatXpLabel(Math.max(0, Number(mission.rewardXp ?? 0)), unitLabel);
+}
+
+export function getMissionRewardEffect(mission: {
+  rewardFulfillmentConfig?: Record<string, unknown> | null;
+}) {
+  const config =
+    mission.rewardFulfillmentConfig && typeof mission.rewardFulfillmentConfig === "object"
+      ? mission.rewardFulfillmentConfig
+      : null;
+  const effect = typeof config?.effect === "string" ? config.effect : null;
+  return effect === "xp_boost" ? "boost" : "standard";
+}
+
+export function getMissionBoostDetails(
+  mission: { rewardFulfillmentConfig?: Record<string, unknown> | null },
+  unitLabel = "XP",
+) {
+  const config =
+    mission.rewardFulfillmentConfig && typeof mission.rewardFulfillmentConfig === "object"
+      ? mission.rewardFulfillmentConfig
+      : null;
+  if (!config || config.effect !== "xp_boost") return null;
+
+  const multiplier = Number(config.multiplier ?? 0);
+  if (!Number.isFinite(multiplier) || multiplier <= 0) return null;
+
+  const durationHours = Number(config.durationHours ?? 0);
+  const durationLabel =
+    Number.isFinite(durationHours) && durationHours > 0
+      ? `${durationHours} ${durationHours === 1 ? "Hour" : "Hours"}`
+      : null;
+
+  return {
+    multiplier: new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(multiplier),
+    unitLabel,
+    durationLabel,
+  };
 }
 
 export function getMissionProofFieldLabel(field: MissionProofField) {

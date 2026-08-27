@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { CheckIcon, EyeIcon, EyeOffIcon } from "@/components/ui/Icons";
 import { buildConfirmedLoginPath } from "@/lib/auth-confirmation";
 import { defaultAuthNextPath, getSafeAuthNextPath } from "@/lib/auth-redirect";
 import {
@@ -664,8 +665,8 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
     return (
       <section className="mt-8">
         <div className="rounded-[26px] border border-[color:color-mix(in_srgb,var(--ve-green)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_68%,var(--ve-card))] p-6 text-center shadow-[0_18px_40px_rgba(var(--ve-shadow-rgb),0.12)]">
-          <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-2xl font-black text-white">
-            ✓
+          <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-white">
+            <CheckIcon className="size-8" />
           </div>
           <h2 className="mt-5 text-2xl font-black leading-8 text-[var(--ve-ink)]">Check your email</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
@@ -694,8 +695,8 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
     return (
       <section className="mt-8">
         <div className="rounded-[26px] border border-[color:color-mix(in_srgb,var(--ve-green)_28%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_68%,var(--ve-card))] p-6 text-center shadow-[0_18px_40px_rgba(var(--ve-shadow-rgb),0.12)]">
-          <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-2xl font-black text-white">
-            ✓
+          <div className="mx-auto grid size-16 place-items-center rounded-[22px] bg-[#008751] text-white">
+            <CheckIcon className="size-8" />
           </div>
           <h2 className="mt-5 text-2xl font-black leading-8 text-[var(--ve-ink)]">Email confirmed</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
@@ -754,7 +755,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
       />
       <div className="relative">
         <input
-          className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-7 pr-20 text-[15px] font-semibold outline-none placeholder:text-[var(--ve-muted-soft)] focus:border-[#008751]"
+          className="h-11 w-full rounded-[30px] border border-[var(--ve-line)] px-7 pr-12 text-[15px] font-semibold outline-none placeholder:text-[var(--ve-muted-soft)] focus:border-[#008751]"
           autoComplete={
             authMode === "signup" || isPasswordRecovery ? "new-password" : "current-password"
           }
@@ -767,12 +768,13 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
           value={password}
         />
         <button
-          className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-[#008751]"
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--ve-green)]"
           disabled={isLoading}
           onClick={() => setShowPassword((current) => !current)}
           type="button"
         >
-          {showPassword ? "Hide" : "Show"}
+          {showPassword ? <EyeOffIcon className="size-[18px]" /> : <EyeIcon className="size-[18px]" />}
         </button>
       </div>
 
@@ -788,7 +790,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
           Remember me
         </label>
         <button
-          className="text-[#0824f8]"
+          className="text-[var(--ve-green)]"
           disabled={isLoading}
           onClick={() => void handleForgotPassword()}
           type="button"
@@ -808,11 +810,11 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
           />
           <span>
             I agree to the{" "}
-            <Link className="font-black text-[#0824f8]" href="/terms">
+            <Link className="font-black text-[var(--ve-green)]" href="/terms">
               Terms
             </Link>
             {" "}and{" "}
-            <Link className="font-black text-[#0824f8]" href="/privacy">
+            <Link className="font-black text-[var(--ve-green)]" href="/privacy">
               Privacy Policy
             </Link>
             .
@@ -856,7 +858,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
         </p>
       ) : null}
 
-      <Button className="mt-6 w-full" disabled={isLoading} type="submit" variant="soft">
+      <Button className="mt-6 w-full" disabled={isLoading} type="submit">
         {showSubmitSpinner ? (
           <span
             aria-hidden="true"
@@ -873,7 +875,7 @@ export function LoginForm({ isDemoMode, nextPath, onViewChange }: LoginFormProps
             ? "Already have an account?"
             : "Don\u0027t have an account?"}{" "}
         <button
-          className="text-[#0824f8]"
+          className="text-[var(--ve-green)]"
           disabled={isLoading}
           onClick={() => {
             setAuthMode(isPasswordRecovery || authMode === "signup" ? "login" : "signup");

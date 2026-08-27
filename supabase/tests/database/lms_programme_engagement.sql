@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(21);
+select extensions.plan(24);
 
 set local role service_role;
 
@@ -473,6 +473,60 @@ select extensions.ok(
     where id = 'reward-lms-engagement-platform-private'
   ),
   'platform admin can explicitly share a platform reward with programmes'
+);
+
+select public.admin_set_reward_lms_ownership(
+  'reward-lms-engagement-platform-private',
+  'organization_owned',
+  :'engagement_alpha_org_id'::uuid,
+  null,
+  false
+) as transfer_platform_to_org_result
+\gset
+
+select extensions.is(
+  (
+    select reward.xp_account_id
+    from public.rewards reward
+    where reward.id = 'reward-lms-engagement-platform-private'
+  ),
+  (
+    select account.id
+    from public.xp_accounts account
+    where account.organization_id = :'engagement_alpha_org_id'::uuid
+      and account.scope = 'organization'
+      and account.is_default
+      and account.status = 'active'
+  ),
+  'reward ownership transfer to organisation resets reward XP account to the organisation default'
+);
+
+select public.admin_set_reward_lms_ownership(
+  'reward-lms-engagement-platform-private',
+  'platform_owned',
+  null,
+  null,
+  true
+) as transfer_org_to_platform_result
+\gset
+
+select extensions.is(
+  (
+    select reward.xp_account_id
+    from public.rewards reward
+    where reward.id = 'reward-lms-engagement-platform-private'
+  ),
+  '00000000-0000-4000-8000-00000000e001'::uuid,
+  'reward ownership transfer back to platform resets reward XP account to Project Ve XP'
+);
+
+select extensions.ok(
+  (
+    select reward.shared_with_programmes
+    from public.rewards reward
+    where reward.id = 'reward-lms-engagement-platform-private'
+  ),
+  'reward ownership transfer back to platform preserves requested programme sharing'
 );
 
 reset role;

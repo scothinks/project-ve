@@ -4,13 +4,15 @@ import { LessonMenu } from "@/components/lesson/LessonMenu";
 import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
 import { LessonPageProgressMarker } from "@/components/lesson/LessonPageProgressMarker";
 import { AppHeader } from "@/components/navigation/AppHeader";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { createLearningRepository } from "@/features/app/repositories/learning";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdContentValueTags, getAdDecision, getLearnerAdSegments } from "@/lib/ads";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
 
 type LessonDeliveryPageProps = {
   courseHref?: string;
@@ -39,9 +41,9 @@ export async function LessonDeliveryPage({
 }: LessonDeliveryPageProps) {
   const supabase = await createSupabaseServerClient();
   const learningRepository = createLearningRepository(supabase);
-  const [detail, userResult] = await Promise.all([
+  const [detail, { user, profile }] = await Promise.all([
     learningRepository.getLesson(lessonId),
-    supabase ? supabase.auth.getUser() : Promise.resolve({ data: { user: null } }),
+    getCurrentUserProfile(supabase),
   ]);
 
   if (!detail) {
@@ -68,9 +70,8 @@ export async function LessonDeliveryPage({
   const previousHref = makeLessonHref(currentPageNumber - 1);
   const nextHref = makeLessonHref(currentPageNumber + 1);
   const pageCover = page.coverImage ?? (isFirstPage ? lesson.coverImage : null);
-  const {
-    data: { user },
-  } = userResult;
+  const rawDisplayName = profile?.display_name ?? "";
+  const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
   const [contentValueTags, segmentKeys] = await Promise.all([
     withLoggedFallback({
       context: {
@@ -118,6 +119,8 @@ export async function LessonDeliveryPage({
     }),
   });
 
+  const progressPercent = Math.round((currentPageNumber / lesson.pages.length) * 100);
+
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
       {refCode ? <ReferralCodeCapture code={refCode} /> : null}
@@ -127,6 +130,16 @@ export async function LessonDeliveryPage({
         pageId={page.id}
         programmeId={programmeId}
       />
+      {!organizationId ? (
+        <div className="hidden lg:block">
+          <LearnerTopChrome
+            active="Lessons"
+            avatarUrl={profile?.avatar_url}
+            displayName={displayName}
+            email={user?.email}
+          />
+        </div>
+      ) : null}
       <AppHeader
         menu={
           <LessonMenu
@@ -143,31 +156,36 @@ export async function LessonDeliveryPage({
             <LessonPageLayout
               blocks={page.blocks}
               coverImage={pageCover}
+              pageNumber={currentPageNumber}
               pageType={page.type}
               subtitle={page.subtitle}
               title={page.title}
+              totalPages={lesson.pages.length}
             />
           </div>
         </Card>
 
-        <div className="mx-auto mt-7 flex max-w-3xl justify-center gap-1.5">
-          {lesson.pages.map((lessonPage) => (
-            <span
-              className={`size-2.5 rounded-full ${
-                lessonPage.id === page.id ? "bg-[#008751]" : "bg-[var(--ve-muted-soft)]"
-              }`}
-              key={lessonPage.id}
+        <div className="mx-auto mt-7 max-w-3xl">
+          <div className="flex items-center justify-between text-xs font-bold text-[var(--ve-muted-strong)]">
+            <span>Module Progress</span>
+            <span className="text-[var(--ve-green)]">{progressPercent}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
+            <div
+              className="h-full rounded-full bg-[var(--ve-green)] transition-all duration-500 ease-in-out"
+              style={{ width: `${progressPercent}%` }}
             />
-          ))}
+          </div>
         </div>
 
-        <div className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-3">
+        <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-3">
           {isFirstPage ? (
             <Button href={dashboardHref} variant="outline">
               Dashboard
             </Button>
           ) : (
-            <Button href={previousHref} variant="outline">
+            <Button className="gap-1.5" href={previousHref} variant="outline">
+              <ChevronLeftIcon className="size-4" />
               Prev
             </Button>
           )}
@@ -175,7 +193,10 @@ export async function LessonDeliveryPage({
           {isLastPage ? (
             <Button href={quizHref ?? `/quiz/${lesson.id}`}>Take Quiz</Button>
           ) : (
-            <Button href={nextHref}>Next</Button>
+            <Button className="gap-1.5" href={nextHref}>
+              Next
+              <ChevronRightIcon className="size-4" />
+            </Button>
           )}
         </div>
 

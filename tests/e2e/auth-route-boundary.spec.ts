@@ -41,6 +41,9 @@ async function signIn(page: Page, nextPath = "/courses") {
   await page.getByPlaceholder("Enter Email Address").fill(learnerEmail);
   await page.getByPlaceholder("Enter Password").fill(authCredential);
   await page.getByRole("button", { name: "Login" }).click();
+  await expect(page).toHaveURL(new RegExp(`${nextPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), {
+    timeout: 30_000,
+  });
 }
 
 async function expectLearnerBottomNavHidden(page: Page) {

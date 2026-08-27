@@ -83,14 +83,14 @@ function AdShell({
           <div className="mt-4">
             {ad.clickUrl?.startsWith("/") ? (
               <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black text-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
                 href={ad.clickUrl}
               >
                 {ad.ctaLabel}
               </Link>
             ) : (
               <a
-                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black text-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
                 href={ad.clickUrl ?? "#"}
               >
                 {ad.ctaLabel}

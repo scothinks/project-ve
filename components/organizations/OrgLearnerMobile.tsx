@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type React from "react";
 import { BottomNav } from "@/components/navigation/BottomNav";
+import { ArrowRightIcon, StarIcon } from "@/components/organizations/OrgIcons";
 import { ArrowLeftIcon } from "@/components/ui/Icons";
 import { cn } from "@/lib/utils";
 
@@ -178,23 +179,28 @@ export function OrgPointsPill({
 }) {
   return (
     <div className={cn("org-points-pill", className)}>
-      <strong>{prefix ?? ""}{new Intl.NumberFormat("en-US").format(balance)}</strong>
-      <span>{label}</span>
+      <StarIcon className="org-points-pill__icon" />
+      <div className="org-points-pill__text">
+        <strong>{prefix ?? ""}{new Intl.NumberFormat("en-US").format(balance)}</strong>
+        <span>{label}</span>
+      </div>
     </div>
   );
 }
 
 export function OrgProgressMeter({
+  flush = false,
   label,
   value,
 }: {
+  flush?: boolean;
   label?: string;
   value: number;
 }) {
   const boundedValue = Math.max(0, Math.min(100, value));
 
   return (
-    <div className="org-progress-meter">
+    <div className={cn("org-progress-meter", flush && "org-progress-meter--flush")}>
       {label ? (
         <div className="org-progress-meter__label">
           <span>{label}</span>
@@ -222,7 +228,7 @@ export function OrgActionLink({
   return (
     <Link aria-label={ariaLabel} className={cn("org-action-link", className)} href={href}>
       {children}
-      <span aria-hidden="true">-&gt;</span>
+      <ArrowRightIcon className="org-action-link__icon" />
     </Link>
   );
 }

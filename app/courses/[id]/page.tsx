@@ -4,6 +4,7 @@ import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { CourseDetailLessonList } from "@/components/course/CourseDetailLessonList";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { BottomNav } from "@/components/navigation/BottomNav";
+import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
@@ -31,7 +32,9 @@ export const dynamic = "force-dynamic";
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
-  const { user } = await getCurrentUserProfile(supabase);
+  const { user, profile } = await getCurrentUserProfile(supabase);
+  const rawDisplayName = profile?.display_name ?? "";
+  const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
   const learningRepository = createLearningRepository(supabase);
   const progressRepository = createProgressRepository(supabase);
   const course = await learningRepository.getCourse(id);
@@ -82,6 +85,14 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
   return (
     <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+      <div className="hidden lg:block">
+        <LearnerTopChrome
+          active="Lessons"
+          avatarUrl={profile?.avatar_url}
+          displayName={displayName}
+          email={user?.email}
+        />
+      </div>
       <AppHeader title={course.title} backHref="/courses" showMenu={false} />
       <section className="learner-page learner-page--spacious">
         <div className="learner-content-grid">

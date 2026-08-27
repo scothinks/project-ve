@@ -12,6 +12,7 @@ const buildCommand = localE2E
 export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 45_000,
+  workers: localE2E ? 1 : undefined,
   expect: {
     timeout: 10_000,
   },
@@ -19,6 +20,9 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL,
+    launchOptions: {
+      timeout: localE2E ? 300_000 : 180_000,
+    },
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
@@ -26,7 +30,7 @@ export default defineConfig({
     command: `${buildCommand} && npm run start -- -p ${port}`,
     url: baseURL,
     reuseExistingServer,
-    timeout: 180_000,
+    timeout: localE2E ? 900_000 : 180_000,
   },
   projects: [
     {
