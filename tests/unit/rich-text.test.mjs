@@ -27,3 +27,30 @@ test("rich text sanitization removes executable markup and unsafe links", () => 
   assert.equal(sanitized.includes("<script"), false);
   assert.equal(sanitized.includes("<iframe"), false);
 });
+
+test("rich text sanitization unwraps unsupported tags and keeps escaped text", () => {
+  const sanitized = sanitizeRichTextHtml(
+    '<p><span onclick="alert(1)">Use <em>care</em></span> & compare 2 < 3.</p>',
+  );
+
+  assert.equal(sanitized, "<p>Use <em>care</em> &amp; compare 2 &lt; 3.</p>");
+});
+
+test("rich text sanitization preserves safe anchor attributes only", () => {
+  const sanitized = sanitizeRichTextHtml(
+    '<a href="https://example.com/path?q=1&v=2" target="_blank" rel="noopener noreferrer bad" onclick="alert(1)">Source</a>',
+  );
+
+  assert.equal(
+    sanitized,
+    '<a href="https://example.com/path?q=1&amp;v=2" target="_blank" rel="noopener noreferrer">Source</a>',
+  );
+});
+
+test("rich text sanitization rejects obfuscated unsafe link protocols", () => {
+  const sanitized = sanitizeRichTextHtml(
+    '<a href="java&#115;cript:alert(1)">Bad</a><a href="/lessons/demo">Good</a>',
+  );
+
+  assert.equal(sanitized, '<a>Bad</a><a href="/lessons/demo">Good</a>');
+});

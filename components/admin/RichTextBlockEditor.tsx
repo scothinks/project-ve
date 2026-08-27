@@ -6,7 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-type RichTextBlockEditorProps = {
+export type RichTextBlockEditorProps = {
   disabled?: boolean;
   onChange: (value: string) => void;
   value: string;

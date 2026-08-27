@@ -16,11 +16,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { EmptyAdminState, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
 import { MediaPicker } from "@/components/admin/MediaPicker";
-import { RichTextBlockEditor } from "@/components/admin/RichTextBlockEditor";
+import type { RichTextBlockEditorProps } from "@/components/admin/RichTextBlockEditor";
 import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
 import { ArrowLeftIcon, MenuIcon } from "@/components/ui/Icons";
 import type {
@@ -37,6 +38,18 @@ import {
 } from "@/features/learning/admin/lesson-page-builder-domain";
 
 export type AutosaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+
+const RichTextBlockEditor = dynamic<RichTextBlockEditorProps>(
+  () => import("@/components/admin/RichTextBlockEditor").then((module) => module.RichTextBlockEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mt-2 min-h-44 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4 text-sm font-semibold text-[var(--ve-muted)]">
+        Loading editor...
+      </div>
+    ),
+  },
+);
 
 const blockToolbarItems = [
   { type: "text", label: "Text" },
