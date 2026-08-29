@@ -1,0 +1,18 @@
+{
+  "description": "Inject the canonical Project VE guardrails for Codex sessions and post-compaction continuations.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent/inject-project-guardrails.py\" SessionStart",
+            "statusMessage": "Loading Project VE guardrails...",
+            "additionalContextLimit": 16000
+          }
+        ]
+      }
+    ]
+  }
+}

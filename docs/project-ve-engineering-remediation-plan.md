@@ -2547,6 +2547,11 @@ Phase 2 remediation status:
   content-tag admin mutations, and loaded with one candidate-tag read instead of
   one query per content type. Unit and browser contracts prove core-before-
   secondary rendering without weakening existing RLS or repository boundaries.
+* The repository guardrail skill now makes those performance choices standing
+  policy. Shared Codex/Claude context hooks reload the canonical rules at session
+  start and after compaction, while `npm run test:guardrails` explicitly gates
+  the repaired auth-routing, focused projection, organisation-context, set-wise
+  mission-state and first-useful-HTML contracts in CI.
 
 Engineering remediation addendum status:
 

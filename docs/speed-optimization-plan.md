@@ -505,6 +505,7 @@ not use index work as a substitute for removing network dependency waves.
 
 ### Required Validation Per Batch
 
+- durable read-path changes must extend and pass `npm run test:guardrails`;
 - auth boundary: unit policy tests plus auth-route Playwright coverage;
 - DB/RPC read models: pgTAP RLS/RPC tests and live repository contracts;
 - dashboard/Org Mode behavior: focused Playwright journeys;
@@ -512,6 +513,18 @@ not use index work as a substitute for removing network dependency waves.
   `git diff --check`;
 - after each batch: repeat the authenticated timing commands and record cold and
   warm samples without replacing them with redirect timings.
+
+### Regression Prevention Policy
+
+The canonical Project VE guardrail skill now treats the repaired performance
+boundaries as standing architecture: focused summary projections, constant-size
+set-wise/batched reads, request-scoped identity, focused organisation context,
+read-only rendering, tenant-safe caching and a streamed first-useful-HTML
+boundary. Claude and Codex project hooks inject that single source at session
+start and after compaction. The fast `npm run test:guardrails` command exercises
+the current auth-routing, course-card projection, organisation-context,
+mission-state and dashboard-streaming contracts and runs explicitly in `npm run
+ci`; the full unit suite remains the broader application gate.
 
 ### Remaining Follow-Ups
 
