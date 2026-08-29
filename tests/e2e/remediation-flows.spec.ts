@@ -1037,7 +1037,7 @@ test.describe.serial("remediation browser flows", () => {
 
     for (let index = 1; index <= 5; index += 1) {
       await page.goto(`/admin/courses/${selfServiceCourseId}?tab=curriculum`);
-      await page.getByRole("button", { name: "Create lesson" }).click();
+      await page.getByRole("button", { name: "Add New Lesson" }).click();
       await expect(page).toHaveURL(/\/admin\/courses\/lessons\//);
       await expect(page.getByText("Lesson created.")).toBeVisible();
       if (!firstStarterLessonId) {
@@ -1139,7 +1139,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(deniedVideoBlockResponse.text()).resolves.toContain("Video and audio lessons are available on paid organisation plans.");
 
     await page.goto(`/admin/courses/${selfServiceCourseId}?tab=curriculum`);
-    await page.getByRole("button", { name: "Create lesson" }).click();
+    await page.getByRole("button", { name: "Add New Lesson" }).click();
     await expect(page.getByText("Starter organisations can create up to five lessons.")).toBeVisible();
 
     const lessonCountResult = await supabase
@@ -1210,11 +1210,11 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.goto("/admin/courses");
     await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Start blank" })).toBeVisible();
-    await expect(page.getByText("Duplicate an existing course")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Create with AI" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Select Manual/ })).toBeVisible();
+    await expect(page.getByText("Duplicate a Course")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Start with AI Guide/ })).toBeVisible();
 
-    await page.getByRole("link", { name: "Start blank" }).click();
+    await page.getByRole("link", { name: /Select Manual/ }).click();
     await expect(page.getByRole("heading", { name: "Add course" })).toBeVisible();
     await page.getByLabel("Title").fill(blankCourseTitle);
     await page.getByLabel("Description").fill("A browser-created CMS draft for regression coverage.");
@@ -1244,7 +1244,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(reloadedCourseIdentitySection.locator("textarea[name='learningOutcomes']")).toHaveValue(`${courseOutcomeOne}\n${courseOutcomeTwo}`);
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
-    await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add New Lesson" })).toBeVisible();
     await page.getByRole("tab", { name: "Media" }).click();
     await expect(page.getByRole("heading", { name: "Usage and quality" })).toBeVisible();
     await page.getByRole("tab", { name: "Review & Publish" }).click();
@@ -1252,14 +1252,15 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("Add at least one active lesson.")).toBeVisible();
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
-    await page.getByRole("button", { name: "Create lesson" }).click();
+    await page.getByRole("button", { name: "Add New Lesson" }).click();
     await expect(page).toHaveURL(/\/admin\/courses\/lessons\/[^/?]+(\?.*)?$/);
     await expect(page.getByRole("heading", { level: 1, name: /Untitled lesson/ })).toBeVisible();
     const authoredLessonId = page.url().split("/admin/courses/lessons/")[1]?.split("?")[0] ?? "";
     expect(authoredLessonId).toBeTruthy();
 
-    const lessonSetup = page.locator("details").filter({ hasText: "Lesson setup" }).first();
-    await lessonSetup.locator("summary").click();
+    await page.getByRole("tab", { name: "Index" }).click();
+    const lessonSetup = page.getByRole("tabpanel", { name: "Index" });
+    await expect(lessonSetup.getByRole("heading", { name: "Lesson setup" }).first()).toBeVisible();
     await lessonSetup.getByLabel("Title").fill(authoredLessonTitle);
     await lessonSetup.getByLabel("Learner summary").fill(authoredLessonSummary);
     await lessonSetup.getByLabel("Status").selectOption("published");
@@ -1268,6 +1269,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("Lesson saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: authoredLessonTitle })).toBeVisible();
 
+    await page.getByRole("tab", { name: "Workspace" }).click();
     await page.getByRole("button", { name: "+ Add page" }).click();
     const pageSettings = page.locator("aside").filter({ hasText: "Selected page" }).first();
     await pageSettings.getByLabel("Page title").fill(authoredPageOneTitle);
@@ -1303,6 +1305,7 @@ test.describe.serial("remediation browser flows", () => {
     await saveLessonBuilder(page);
     await page.reload();
     await expect(page.getByRole("heading", { level: 1, name: authoredLessonTitle })).toBeVisible();
+    await page.getByRole("tab", { name: "Workspace" }).click();
     await expect(page.getByRole("heading", { name: authoredPageOneTitle }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: authoredPageTwoTitle }).first()).toBeVisible();
     await expect(page.getByText(`Copy of ${authoredPageTwoTitle}`).first()).toBeVisible();
@@ -1311,6 +1314,7 @@ test.describe.serial("remediation browser flows", () => {
     await reloadedTextBlock.scrollIntoViewIfNeeded();
     await expect(reloadedTextBlock.locator(".ProseMirror")).toContainText(authoredTextBody);
 
+    await page.getByRole("tab", { name: "Review" }).click();
     await page.getByRole("heading", { name: "New assessment item" }).scrollIntoViewIfNeeded();
     const newQuestionCard = page.locator("div").filter({ hasText: "New assessment item" }).last();
     await newQuestionCard.getByLabel("Prompt").fill(authoredQuestionOne);
@@ -1323,6 +1327,7 @@ test.describe.serial("remediation browser flows", () => {
     await newQuestionCard.getByLabel("Explanation").fill("Publication follows readiness review.");
     await newQuestionCard.getByRole("button", { name: "Create question" }).click();
     await expect(page.getByText("Question saved.")).toBeVisible();
+    await page.getByRole("tab", { name: "Review" }).click();
     await page.getByRole("heading", { name: "New assessment item" }).scrollIntoViewIfNeeded();
     const secondQuestionCard = page.locator("div").filter({ hasText: "New assessment item" }).last();
     await secondQuestionCard.getByLabel("Prompt").fill(authoredQuestionTwo);
@@ -1330,31 +1335,36 @@ test.describe.serial("remediation browser flows", () => {
     await secondQuestionCard.getByLabel("Explanation").fill("The lifecycle blocks publishing until approval.");
     await secondQuestionCard.getByRole("button", { name: "Create question" }).click();
     await expect(page.getByText("Question saved.")).toBeVisible();
+    await page.getByRole("tab", { name: "Review" }).click();
     const savedQuestionCard = page.locator("article").filter({ hasText: authoredQuestionOne }).first();
     await savedQuestionCard.scrollIntoViewIfNeeded();
     await savedQuestionCard.getByRole("button", { name: "Duplicate" }).click();
     await expect(page.getByText("Question duplicated.")).toBeVisible();
+    await page.getByRole("tab", { name: "Review" }).click();
     const reorderedQuestionCard = page.locator("article").filter({ hasText: authoredQuestionOne }).first();
     await reorderedQuestionCard.scrollIntoViewIfNeeded();
     await reorderedQuestionCard.getByRole("button", { name: "Move question down" }).click();
     await expect(page.getByText("Question order saved.")).toBeVisible();
+    await page.getByRole("tab", { name: "Review" }).click();
     await page.getByLabel("Editorial status").selectOption("published");
     await page.getByRole("button", { name: "Save quiz" }).click();
     await expect(page.getByText("Quiz settings saved.")).toBeVisible();
 
     await page.goto(`/admin/courses/${authoredCourseId}?tab=curriculum`);
-    await expect(page.getByRole("heading", { name: "Lesson sequence" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add New Lesson" })).toBeVisible();
     const authoredLessonRow = page.locator("article").filter({ hasText: authoredLessonTitle }).first();
     await authoredLessonRow.getByRole("button", { name: "More" }).click();
     await page.getByRole("menuitem", { name: "Duplicate lesson" }).click();
     await expect(page.getByText("Lesson duplicated as a draft.")).toBeVisible();
     const duplicatedLessonId = page.url().split("/admin/courses/lessons/")[1]?.split("?")[0] ?? "";
     expect(duplicatedLessonId).toBeTruthy();
-    const duplicatedLessonSetup = page.locator("details").filter({ hasText: "Lesson setup" }).first();
-    await duplicatedLessonSetup.locator("summary").click();
+    await page.getByRole("tab", { name: "Index" }).click();
+    const duplicatedLessonSetup = page.getByRole("tabpanel", { name: "Index" });
+    await expect(duplicatedLessonSetup.getByRole("heading", { name: "Lesson setup" }).first()).toBeVisible();
     await duplicatedLessonSetup.getByLabel("Status").selectOption("published");
     await duplicatedLessonSetup.getByRole("button", { name: "Save lesson" }).click();
     await expect(page.getByText("Lesson saved.")).toBeVisible();
+    await page.getByRole("tab", { name: "Review" }).click();
     await page.getByLabel("Editorial status").selectOption("published");
     await page.getByRole("button", { name: "Save quiz" }).click();
     await expect(page.getByText("Quiz settings saved.")).toBeVisible();
@@ -2093,7 +2103,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByRole("heading", { name: institutionalNotificationTitle })).toBeVisible();
     await expect(page.getByRole("heading", { name: institutionalGlobalNotificationTitle })).toHaveCount(0);
     await page.goto(`/o/${institutionalOrgSlug}`);
-    await page.getByRole("link", { name: "Return to Project Ve" }).click();
+    await page.getByRole("link", { name: "Project Ve", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
     await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}?programmeId=${programme?.id}`);
@@ -2244,7 +2254,6 @@ test.describe.serial("remediation browser flows", () => {
     await page.context().clearCookies();
     await signIn(page, reportViewerEmail);
     await page.goto("/admin");
-    await page.getByRole("button", { name: /Learning/ }).click();
     await expect(page.getByRole("link", { name: "Reporting" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Programmes" })).toHaveCount(0);
     await page.goto("/admin/programmes");

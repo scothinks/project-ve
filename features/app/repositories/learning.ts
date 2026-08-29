@@ -7,17 +7,26 @@ import type { AppSupabaseClient } from "@/lib/supabase";
 import {
   getLearningCatalog,
   getLearningCourse,
-  getLearningCourseSummaries,
   getLearningLesson,
   getLearningQuiz,
 } from "@/lib/supabase-learning";
+import { getCachedPublishedLearningCourseCards } from "@/features/learning/data/course-card-data";
 import type { LearningRepository } from "@/features/app/repositories/contracts";
 import {
   DemoLearningRepository,
   SupabaseLearningRepository,
+  type SupabaseLearningLoaders,
 } from "@/features/app/repositories/learning-adapters";
 
-export function createLearningRepository(supabase: AppSupabaseClient | null): LearningRepository {
+type LearningRepositoryOverrides = Pick<
+  Partial<SupabaseLearningLoaders<AppSupabaseClient>>,
+  "getCourseCards"
+>;
+
+export function createLearningRepository(
+  supabase: AppSupabaseClient | null,
+  overrides: LearningRepositoryOverrides = {},
+): LearningRepository {
   if (isDemoMode) {
     return new DemoLearningRepository(seedCourses);
   }
@@ -31,7 +40,8 @@ export function createLearningRepository(supabase: AppSupabaseClient | null): Le
 
   return new SupabaseLearningRepository(supabase, {
     getCatalog: getLearningCatalog,
-    getCourseSummaries: getLearningCourseSummaries,
+    getCourseCards:
+      overrides.getCourseCards ?? getCachedPublishedLearningCourseCards,
     getCourse: getLearningCourse,
     getLesson: getLearningLesson,
     getQuiz: getLearningQuiz,

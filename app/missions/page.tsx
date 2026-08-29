@@ -5,11 +5,10 @@ import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { withLoggedFallback } from "@/lib/app-errors";
 import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
 import { getUnreadNotificationCount } from "@/lib/notifications";
-import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+import { getCurrentUserContext } from "@/lib/supabase-server";
 
 export default async function MissionsPage() {
-  const supabase = await createSupabaseServerClient();
-  const { user, profile } = await getCurrentUserProfile(supabase);
+  const { supabase, user, profile } = await getCurrentUserContext();
   const rawDisplayName = profile?.display_name ?? "";
   const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
   const segmentKeys = await withLoggedFallback({

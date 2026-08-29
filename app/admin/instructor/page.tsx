@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   AdminCard,
   AdminNoticeBanner,
@@ -14,6 +15,7 @@ import {
   getAdminOrganizations,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { formatRewardDate } from "@/lib/rewards";
 import {
   createInstructorIntervention,
@@ -73,6 +75,14 @@ export default async function AdminInstructorWorkspacePage({
   searchParams?: Promise<InstructorSearchParams>;
 }) {
   const { supabase, workspace } = await requireAdminWorkspaceRole(INSTRUCTOR_WORKSPACE_ROLES);
+
+  // The instructor workspace is built from a real organisation's cohorts and
+  // enrolments — there is nothing to show for the platform-catalog
+  // pseudo-workspace, which has neither.
+  if (workspace.id === PLATFORM_CATALOG_WORKSPACE_ID) {
+    redirect("/admin/courses");
+  }
+
   const params = (await searchParams) ?? {};
   const organizations = await getAdminOrganizations(supabase);
   const requestedOrganizationId = selectedOrEmpty(firstSearchValue(params.organizationId));

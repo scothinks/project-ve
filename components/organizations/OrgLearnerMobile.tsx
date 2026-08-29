@@ -151,17 +151,6 @@ export function OrgLearningTopBar({
         </Link>
         <h1>{title}</h1>
       </div>
-      <button aria-label="Search" className="org-icon-button" type="button">
-        <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
-          <path
-            d="m20 20-4.3-4.3m2.3-5.2a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-          />
-        </svg>
-      </button>
     </header>
   );
 }

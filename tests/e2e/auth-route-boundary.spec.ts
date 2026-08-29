@@ -50,10 +50,6 @@ async function expectLearnerBottomNavHidden(page: Page) {
   await expect(page.locator('nav a[href="/courses"]')).toHaveCount(0);
 }
 
-async function expectLearnerBottomNavVisible(page: Page) {
-  await expect(page.locator('nav a[href="/courses"]')).toBeVisible();
-}
-
 async function expectLearnerBottomNavHiddenOnDesktop(page: Page) {
   await expect(page.locator('nav a[href="/courses"]')).toBeHidden();
 }
@@ -106,7 +102,7 @@ test.describe("public shell and authenticated learner route boundary", () => {
       await page.context().clearCookies();
       await page.goto(route);
       await expect(page).toHaveURL(new RegExp(`${route}$`));
-      await expect(page.getByLabel("Go back")).toHaveAttribute("href", "/");
+      await expect(page.getByLabel("Go back")).toHaveAttribute("type", "button");
       await expectLearnerBottomNavHidden(page);
     }
   });
@@ -119,6 +115,17 @@ test.describe("public shell and authenticated learner route boundary", () => {
     await page.context().clearCookies();
     await page.goto("/lessons/hotfix-auth-lesson");
     await expectLoginRedirectTo(page, "/lessons/hotfix-auth-lesson");
+  });
+
+  test("a browser-supplied verified-auth marker cannot bypass middleware", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.setExtraHTTPHeaders({
+      "x-project-ve-auth-user-email": "spoofed@example.com",
+      "x-project-ve-auth-user-id": "00000000-0000-0000-0000-000000000000",
+      "x-project-ve-auth-verified": "1",
+    });
+    await page.goto("/courses");
+    await expectLoginRedirectTo(page, "/courses");
   });
 
   test("protected lesson redirects preserve referral parameters for auth return", async ({ page }) => {
@@ -134,12 +141,27 @@ test.describe("public shell and authenticated learner route boundary", () => {
     expect(url.searchParams.get("refKind")).toBe("public");
   });
 
-  test("next returns an authenticated learner to Courses", async ({ page }) => {
+  test("contextual referral-link actions require a real authenticated session", async ({ page }) => {
+    await page.context().clearCookies();
+    const response = await page.request.post(
+      "/api/missions/mission-referral-learner/referral-link",
+      { data: { programmeId: "40404040-4040-4040-8040-404040404020" } },
+    );
+
+    expect(response.status()).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Sign in to create a referral link." });
+  });
+
+  test("next returns an authenticated learner to protected learner routes", async ({ page }) => {
     await signIn(page, "/courses");
     await expect(page).toHaveURL(/\/courses$/);
     await expect(page.getByRole("heading", { name: "Course Library" })).toBeVisible();
     await expectLearnerTopNavigationVisible(page);
     await expectLearnerBottomNavHiddenOnDesktop(page);
+
+    await page.goto("/missions");
+    await expect(page).toHaveURL(/\/missions$/);
+    await expect(page.getByRole("heading", { name: "Missions", exact: true })).toBeVisible();
   });
 
   test("signed-in learner still receives learner navigation on public information pages", async ({ page }) => {
@@ -148,8 +170,9 @@ test.describe("public shell and authenticated learner route boundary", () => {
 
     await page.goto("/privacy");
     await expect(page).toHaveURL(/\/privacy$/);
-    await expect(page.getByLabel("Go back")).toHaveAttribute("href", "/profile");
-    await expectLearnerBottomNavVisible(page);
+    await expect(page.getByLabel("Go back")).toHaveAttribute("type", "button");
+    await expectLearnerTopNavigationVisible(page);
+    await expectLearnerBottomNavHiddenOnDesktop(page);
   });
 
   test("organisation discovery, invitations and auth callbacks remain public entry routes", async ({ page }) => {

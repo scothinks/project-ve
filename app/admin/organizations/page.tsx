@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   AdminCard,
   AdminNoticeBanner,
@@ -209,7 +210,7 @@ export default async function AdminOrganizationsPage({
           <AdminCard>
             <h2 className="text-base font-black">Organisations</h2>
             <div className="mt-4 overflow-x-auto">
-              <AdminTable columns={["Identity", "Plan", "Governance", "Support", "Memberships"]}>
+              <AdminTable columns={["Identity", "Plan", "Governance", "Support", "Memberships", "Oversight"]}>
                 {organizations.map((organization) => {
                   const assignment = assignmentsByOrganization.get(organization.id);
                   const override = overridesByOrganization.get(organization.id);
@@ -284,6 +285,18 @@ export default async function AdminOrganizationsPage({
                       </td>
                       <td className="px-4 py-3 font-black tabular-nums">
                         {memberships.filter((membership) => membership.organization_id === organization.id).length}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isPlatformWorkspace ? (
+                          <Link
+                            className="text-sm font-bold text-[var(--ve-green)] hover:underline"
+                            href={`/admin/organizations/${organization.id}`}
+                          >
+                            Open Oversight
+                          </Link>
+                        ) : (
+                          <span className="text-xs font-semibold text-[var(--ve-muted)]">—</span>
+                        )}
                       </td>
                     </tr>
                   );

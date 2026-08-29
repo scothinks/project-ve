@@ -7,7 +7,9 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminXpLedger, requireAdmin } from "@/lib/admin";
+import { getAdminXpLedger, requireAdminWorkspaceRole } from "@/lib/admin";
+
+const XP_LEDGER_ROLES = ["organisation_owner", "organisation_admin"];
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
@@ -45,8 +47,8 @@ function labelClasses() {
 export default async function AdminXpLedgerPage({
   searchParams,
 }: AdminXpLedgerPageProps) {
-  const [{ supabase }, resolvedParams] = await Promise.all([
-    requireAdmin(),
+  const [{ supabase, workspace }, resolvedParams] = await Promise.all([
+    requireAdminWorkspaceRole(XP_LEDGER_ROLES),
     (searchParams ?? Promise.resolve({})) as Promise<Record<string, string | string[] | undefined>>,
   ]);
   const userQuery = valueOf(resolvedParams.user);
@@ -55,19 +57,23 @@ export default async function AdminXpLedgerPage({
   const dateFrom = valueOf(resolvedParams.dateFrom);
   const dateTo = valueOf(resolvedParams.dateTo);
   const page = parsePageParam(valueOf(resolvedParams.page));
-  const transactions = await getAdminXpLedger(supabase, {
-    userQuery: userQuery || undefined,
-    direction: direction === "earn" || direction === "spend" ? direction : undefined,
-    sourceType:
-      source === "quiz_question" ||
-      source === "mission" ||
-      source === "reward_redemption" ||
-      source === "adjustment"
-        ? source
-        : undefined,
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
-  });
+  const transactions = await getAdminXpLedger(
+    supabase,
+    {
+      userQuery: userQuery || undefined,
+      direction: direction === "earn" || direction === "spend" ? direction : undefined,
+      sourceType:
+        source === "quiz_question" ||
+        source === "mission" ||
+        source === "reward_redemption" ||
+        source === "adjustment"
+          ? source
+          : undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    },
+    workspace.id,
+  );
   const hasFilters = Boolean(userQuery || direction || source || dateFrom || dateTo);
   const paginatedTransactions = paginateItems(transactions, page, 25);
 

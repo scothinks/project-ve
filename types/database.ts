@@ -4414,6 +4414,132 @@ export type Database = {
           },
         ]
       }
+      platform_catalog_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invited_by: string | null
+          invited_user_id: string | null
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status: Database["public"]["Enums"]["organization_invitation_status"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_user_id?: string | null
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_invitation_status"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_user_id?: string | null
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_invitation_status"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_catalog_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_catalog_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_catalog_invitations_invited_user_id_fkey"
+            columns: ["invited_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_catalog_invitations_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["role"]
+          },
+        ]
+      }
+      platform_catalog_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["organization_role_key"]
+          status?: Database["public"]["Enums"]["organization_membership_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_catalog_memberships_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_catalog_memberships_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["role"]
+          },
+          {
+            foreignKeyName: "platform_catalog_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -5435,6 +5561,7 @@ export type Database = {
           ends_at: string | null
           eyebrow: string | null
           id: string
+          organization_id: string | null
           placement: string
           slug: string
           sort_order: number
@@ -5449,6 +5576,7 @@ export type Database = {
           ends_at?: string | null
           eyebrow?: string | null
           id: string
+          organization_id?: string | null
           placement?: string
           slug: string
           sort_order?: number
@@ -5463,6 +5591,7 @@ export type Database = {
           ends_at?: string | null
           eyebrow?: string | null
           id?: string
+          organization_id?: string | null
           placement?: string
           slug?: string
           sort_order?: number
@@ -5472,7 +5601,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_sections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_attributions: {
         Row: {
@@ -7408,6 +7545,15 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_create_platform_catalog_invitation: {
+        Args: {
+          p_email: string
+          p_expires_at?: string
+          p_invited_user_id: string
+          p_role: Database["public"]["Enums"]["organization_role_key"]
+        }
+        Returns: Json
+      }
       admin_create_reward:
         | {
             Args: {
@@ -7577,6 +7723,28 @@ export type Database = {
         Returns: Json
       }
       admin_insert_ad_flight: { Args: { p_payload: Json }; Returns: Json }
+      admin_list_xp_account_transactions: {
+        Args: {
+          p_date_from?: string
+          p_date_to?: string
+          p_direction?: string
+          p_limit?: number
+          p_organization_id: string
+          p_source_type?: string
+          p_user_ids?: string[]
+        }
+        Returns: {
+          amount: number
+          award_scope: string
+          created_at: string
+          direction: Database["public"]["Enums"]["xp_direction"]
+          id: string
+          metadata: Json
+          source_id: string
+          source_type: Database["public"]["Enums"]["xp_source_type"]
+          user_id: string
+        }[]
+      }
       admin_manual_xp_grant_status: {
         Args: never
         Returns: {
@@ -7693,6 +7861,10 @@ export type Database = {
       }
       admin_revoke_organization_temporary_entitlement_grant: {
         Args: { p_grant_id: string; p_reason?: string }
+        Returns: Json
+      }
+      admin_revoke_platform_catalog_invitation: {
+        Args: { p_invitation_id: string }
         Returns: Json
       }
       admin_reward_assignment_counts: {
@@ -8310,6 +8482,14 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_upsert_platform_catalog_membership: {
+        Args: {
+          p_role: Database["public"]["Enums"]["organization_role_key"]
+          p_status?: Database["public"]["Enums"]["organization_membership_status"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       admin_upsert_programme: {
         Args: {
           p_assessment_version_ids: string[]
@@ -8356,6 +8536,7 @@ export type Database = {
         Args: {
           p_ends_at: string
           p_eyebrow: string
+          p_organization_id?: string
           p_section_id: string
           p_sort_order: number
           p_starts_at: string
@@ -8553,6 +8734,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      current_user_can_manage_platform_catalog: {
+        Args: never
+        Returns: boolean
+      }
       current_user_can_manage_programme: {
         Args: { p_programme_id: string }
         Returns: boolean
@@ -8585,6 +8770,10 @@ export type Database = {
         Args: { p_unit_id: string }
         Returns: boolean
       }
+      current_user_can_read_platform_catalog_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: boolean
+      }
       current_user_can_read_programme: {
         Args: { p_programme_id: string }
         Returns: boolean
@@ -8604,6 +8793,12 @@ export type Database = {
       current_user_has_organization_role: {
         Args: {
           p_organization_id: string
+          p_roles?: Database["public"]["Enums"]["organization_role_key"][]
+        }
+        Returns: boolean
+      }
+      current_user_has_platform_catalog_role: {
+        Args: {
           p_roles?: Database["public"]["Enums"]["organization_role_key"][]
         }
         Returns: boolean
@@ -8700,6 +8895,10 @@ export type Database = {
         Args: { p_session_key_hash: string }
         Returns: string[]
       }
+      get_dashboard_mission_state: {
+        Args: { p_deliveries?: Json }
+        Returns: Json
+      }
       get_lms_intervention_queue: {
         Args: {
           p_limit?: number
@@ -8730,6 +8929,10 @@ export type Database = {
           target_label: string
           target_type: Database["public"]["Enums"]["organization_invitation_target_type"]
         }[]
+      }
+      get_organization_learner_workspace_context: {
+        Args: { p_organization_slug: string }
+        Returns: Json
       }
       grant_mission_award: {
         Args: {
@@ -9075,6 +9278,10 @@ export type Database = {
       }
       resolve_referral_invite: { Args: { p_token: string }; Returns: Json }
       respond_organization_invitation: {
+        Args: { p_action: string; p_invitation_id: string }
+        Returns: Json
+      }
+      respond_platform_catalog_invitation: {
         Args: { p_action: string; p_invitation_id: string }
         Returns: Json
       }

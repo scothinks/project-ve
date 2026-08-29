@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon } from "@/components/ui/Icons";
+import { ArrowLeftIcon, CheckCircleIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { getPaginationWindow } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
@@ -197,6 +197,262 @@ export function AdminTable({
         </table>
       </div>
     </div>
+  );
+}
+
+export function AdminMetricCard({
+  label,
+  value,
+  icon,
+  trend,
+  helpText,
+  tone = "default",
+  progress,
+  href,
+}: {
+  label: string;
+  value: ReactNode;
+  icon?: ReactNode;
+  trend?: { direction: "up" | "down"; label: string };
+  helpText?: ReactNode;
+  tone?: "default" | "attention" | "warning";
+  progress?: number;
+  href?: string;
+}) {
+  const toneClasses = {
+    default: "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]",
+    attention:
+      "border-[color:color-mix(in_srgb,var(--admin-secondary)_20%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_18%,var(--admin-surface-milk))]",
+    warning:
+      "border-[color:color-mix(in_srgb,var(--admin-tertiary)_20%,var(--admin-border-warm))] bg-[var(--admin-surface-milk)]",
+  };
+  const valueTone = {
+    default: "text-[var(--admin-ink-charcoal)]",
+    attention: "text-[var(--admin-secondary)]",
+    warning: "text-[var(--admin-ink-charcoal)]",
+  };
+
+  const content = (
+    <>
+      <div className="mb-2 flex items-center gap-2 text-[var(--admin-on-surface-variant)]">
+        {icon}
+        <span className="text-[11px] font-black uppercase tracking-[0.14em]">{label}</span>
+      </div>
+      <div className="flex items-end gap-3">
+        <span className={cn("text-[28px] font-black leading-none tracking-[-0.02em]", valueTone[tone])}>
+          {value}
+        </span>
+        {trend ? (
+          <span
+            className={cn(
+              "mb-1 flex items-center text-sm font-bold",
+              trend.direction === "up" ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-secondary)]",
+            )}
+          >
+            {trend.direction === "up" ? "↑" : "↓"} {trend.label}
+          </span>
+        ) : null}
+        {helpText && !trend ? (
+          <span className="mb-1 text-sm text-[var(--admin-on-surface-variant)]">{helpText}</span>
+        ) : null}
+      </div>
+      {typeof progress === "number" ? (
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
+          <div
+            className="h-full rounded-full bg-[var(--admin-tertiary)]"
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          />
+        </div>
+      ) : null}
+    </>
+  );
+
+  const className = cn("flex flex-col gap-1 rounded-[18px] border p-4 shadow-sm", toneClasses[tone]);
+
+  if (href) {
+    return (
+      <Link className={cn(className, "transition hover:-translate-y-0.5 hover:shadow-md")} href={href}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
+}
+
+export function AdminAlertCard({
+  icon,
+  title,
+  detail,
+  actionLabel,
+  actionHref,
+  tone = "attention",
+}: {
+  icon?: ReactNode;
+  title: string;
+  detail: string;
+  actionLabel?: string;
+  actionHref?: string;
+  tone?: "attention" | "warning";
+}) {
+  const toneClasses = {
+    attention:
+      "bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_30%,var(--admin-surface-milk))] border-[color:color-mix(in_srgb,var(--admin-secondary)_20%,transparent)] text-[var(--admin-on-secondary-container)]",
+    warning:
+      "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_30%,var(--admin-surface-milk))] border-[color:color-mix(in_srgb,var(--admin-tertiary)_20%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]",
+  };
+  const linkTone = {
+    attention: "text-[var(--admin-secondary)]",
+    warning: "text-[var(--admin-tertiary)]",
+  };
+
+  return (
+    <div className={cn("flex items-start gap-3 rounded-[12px] border p-3", toneClasses[tone])}>
+      {icon ? <span className="mt-0.5 shrink-0">{icon}</span> : null}
+      <div className="min-w-0">
+        <p className="text-sm font-bold">{title}</p>
+        <p className="mt-0.5 text-sm opacity-80">{detail}</p>
+        {actionLabel && actionHref ? (
+          <Link
+            className={cn("mt-2 inline-block text-sm font-bold hover:underline", linkTone[tone])}
+            href={actionHref}
+          >
+            {actionLabel}
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function AdminChecklist({
+  items,
+  progressPercent,
+}: {
+  items: Array<{ id: string; label: string; complete: boolean; href?: string }>;
+  progressPercent: number;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
+        <div
+          className="h-full rounded-full bg-[var(--admin-primary-container)]"
+          style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+        />
+      </div>
+      <ul className="flex flex-1 flex-col gap-3">
+        {items.map((item) => (
+          <li className="flex items-center gap-3" key={item.id}>
+            <CheckCircleIcon
+              className={cn(
+                "h-5 w-5 shrink-0",
+                item.complete ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-outline)]",
+              )}
+            />
+            <span
+              className={cn(
+                "flex-1 text-sm text-[var(--admin-on-surface)]",
+                item.complete ? "text-[var(--admin-on-surface-variant)] line-through opacity-70" : "font-bold",
+              )}
+            >
+              {item.label}
+            </span>
+            {!item.complete && item.href ? (
+              <Link
+                className="text-xs font-bold text-[var(--admin-primary)] hover:underline"
+                href={item.href}
+              >
+                Fix →
+              </Link>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function AdminActivityList({
+  items,
+}: {
+  items: Array<{ id: string; icon?: ReactNode; title: string; detail: ReactNode; timeLabel: string }>;
+}) {
+  if (items.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+        No recent activity yet.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      {items.map((item) => (
+        <div className="flex items-start gap-4 rounded-lg p-3 transition hover:bg-[var(--admin-surface-container-low)]" key={item.id}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--admin-surface-container-low)] text-[var(--admin-on-surface-variant)]">
+            {item.icon}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="truncate text-sm font-bold text-[var(--admin-ink-charcoal)]">{item.title}</p>
+              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+                {item.timeLabel}
+              </span>
+            </div>
+            <p className="text-sm text-[var(--admin-on-surface-variant)]">{item.detail}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function AdminQuickActionButton({
+  href,
+  icon,
+  label,
+  emphasis = false,
+}: {
+  href: string;
+  icon?: ReactNode;
+  label: string;
+  emphasis?: boolean;
+}) {
+  return (
+    <Link
+      className={cn(
+        "group flex w-full items-center justify-between rounded-[12px] border p-3 transition",
+        emphasis
+          ? "border-[color:color-mix(in_srgb,var(--admin-primary-container)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_10%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--admin-primary-container)_18%,transparent)]"
+          : "border-[var(--admin-border-warm)] bg-[var(--admin-surface)] hover:bg-[var(--admin-surface-container-low)]",
+      )}
+      href={href}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className={cn(
+            "transition-transform group-hover:scale-110",
+            emphasis ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-on-surface-variant)]",
+          )}
+        >
+          {icon}
+        </span>
+        <span
+          className={cn(
+            "font-bold",
+            emphasis ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-on-surface)]",
+          )}
+        >
+          {label}
+        </span>
+      </div>
+      <ChevronRightIcon
+        className={cn(
+          "h-[18px] w-[18px]",
+          emphasis ? "text-[var(--admin-primary-container)]/60" : "text-[var(--admin-outline)]",
+        )}
+      />
+    </Link>
   );
 }
 

@@ -1,11 +1,12 @@
 import type { Course, Lesson, Quiz } from "../../../lib/lessons";
+import type { LearningCourseCard } from "../../learning/application/course-card-model";
 import type { UserMissionSummary } from "../../../lib/missions";
 import type { LessonProgressRecord } from "../../../lib/progress";
 import type { RewardStoreSnapshot } from "../../../lib/rewards";
 
 export interface LearningRepository {
   getCatalog(): Promise<Course[]>;
-  getCourseSummaries(): Promise<Course[]>;
+  getCourseCards(): Promise<LearningCourseCard[]>;
   getCourse(idOrSlug: string): Promise<Course | null>;
   getLesson(idOrSlug: string): Promise<{ lesson: Lesson; course: Course } | null>;
   getQuiz(idOrLessonId: string): Promise<{ lesson: Lesson; quiz: Quiz } | null>;
@@ -24,6 +25,5 @@ export interface MissionRepository {
     userId: string;
     referralCode: string | null;
     origin: string;
-    syncAwards?: boolean;
   }): Promise<UserMissionSummary[]>;
 }

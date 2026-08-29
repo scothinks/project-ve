@@ -1,19 +1,22 @@
 import "server-only";
 import { logAppError } from "@/lib/app-errors";
 import type { AppSupabaseClient } from "@/lib/supabase";
-import type { Course, Lesson } from "@/lib/lessons";
+import type {
+  LearningCourseCard,
+  LearningLessonCard,
+} from "@/features/learning/application/course-card-model";
 
 export type DashboardRecommendationItem =
   | {
       id: string;
       type: "course";
-      course: Course;
+      course: LearningCourseCard;
       sortOrder: number;
     }
   | {
       id: string;
       type: "lesson";
-      lesson: Lesson;
+      lesson: LearningLessonCard;
       sortOrder: number;
     };
 
@@ -26,9 +29,9 @@ export type DashboardRecommendationSection = {
   items: DashboardRecommendationItem[];
 };
 
-function indexCatalog(catalog: Course[]) {
-  const courseMap = new Map<string, Course>();
-  const lessonMap = new Map<string, Lesson>();
+function indexCatalog(catalog: LearningCourseCard[]) {
+  const courseMap = new Map<string, LearningCourseCard>();
+  const lessonMap = new Map<string, LearningLessonCard>();
 
   for (const course of catalog) {
     courseMap.set(course.id, course);
@@ -45,7 +48,7 @@ function indexCatalog(catalog: Course[]) {
 
 export async function getDashboardRecommendationSections(
   supabase: AppSupabaseClient | null,
-  catalog: Course[],
+  catalog: LearningCourseCard[],
 ): Promise<DashboardRecommendationSection[]> {
   if (!supabase || catalog.length === 0) {
     return [];

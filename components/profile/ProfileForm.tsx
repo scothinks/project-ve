@@ -15,7 +15,7 @@ import {
   EyeOffIcon,
   GavelIcon,
   GraduationCapIcon,
-  HelpCircleIcon,
+  InfoIcon,
   LockIcon,
   LogoutIcon,
   ShieldIcon,
@@ -759,7 +759,7 @@ export function ProfileForm({
 
       {activeSection === "help" ? (
         <div className="mt-6 space-y-3 lg:mt-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          <HelpLink href="/support" icon={<HelpCircleIcon className="h-5 w-5" />} label="Support" />
+          <HelpLink href="/contact" icon={<InfoIcon className="h-5 w-5" />} label="Contact" />
           <HelpLink href="/faq" icon={<ChatIcon className="h-5 w-5" />} label="FAQ" />
           <HelpLink compact href="/terms" icon={<GavelIcon className="h-5 w-5" />} label="Terms of Service" />
           <HelpLink compact href="/privacy" icon={<ShieldIcon className="h-5 w-5" />} label="Privacy Policy" />

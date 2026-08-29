@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import {
   getAdminCampaignsByIds,
   type AdminCampaignRow,
@@ -41,6 +42,7 @@ export type AdminRedemptionRow = {
   id: string;
   user_id: string;
   reward_id: string;
+  awarded_reward_id: string | null;
   status: string;
   claim_state: string;
   reward_title_snapshot: string | null;
@@ -66,6 +68,21 @@ export type AdminRedemptionFilters = {
   dateTo?: string;
 };
 
+async function getOrganizationScopedRewardIds(supabase: SupabaseClient, organizationId: string) {
+  let query = supabase.from("rewards").select("id");
+  query = organizationId === PLATFORM_CATALOG_WORKSPACE_ID
+    ? query.is("organization_id", null)
+    : query.eq("organization_id", organizationId);
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as Array<{ id: string }>).map((row) => row.id);
+}
+
 export async function getAdminRewards(
   supabase: SupabaseClient,
   filters: { campaignId?: string; distributionMode?: "direct" | "perk_bundle" } = {},
@@ -90,7 +107,11 @@ export async function getAdminRewards(
     query = query.eq("distribution_mode", filters.distributionMode);
   }
 
-  if (selectedWorkspaceId !== "platform") {
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    // The Platform Catalog pseudo-workspace has no programmes of its own —
+    // it only ever sees Project VE's own organization_id-null rewards.
+    query = query.is("organization_id", null);
+  } else if (selectedWorkspaceId !== "platform") {
     const { data: programmeRows, error: programmeError } = await supabase
       .from("programmes")
       .select("id")
@@ -135,13 +156,26 @@ export async function getAdminRedemptions(
   supabase: SupabaseClient,
   filters: AdminRedemptionFilters = {},
   limit = 100,
+  organizationId?: string | null,
 ) {
   let query = supabase
     .from("reward_redemptions")
     .select(
-      "id, user_id, reward_id, status, claim_state, reward_title_snapshot, xp_cost_at_redemption, fulfillment_type, claim_data, user_message, redemption_expires_at, refunded_at, fulfilled_at, admin_note, requested_at",
+      "id, user_id, reward_id, awarded_reward_id, status, claim_state, reward_title_snapshot, xp_cost_at_redemption, fulfillment_type, claim_data, user_message, redemption_expires_at, refunded_at, fulfilled_at, admin_note, requested_at",
     )
     .order("requested_at", { ascending: false });
+
+  if (organizationId) {
+    const orgRewardIds = await getOrganizationScopedRewardIds(supabase, organizationId);
+
+    if (orgRewardIds.length === 0) {
+      return [];
+    }
+
+    query = query.or(
+      [`reward_id.in.(${orgRewardIds.join(",")})`, `awarded_reward_id.in.(${orgRewardIds.join(",")})`].join(","),
+    );
+  }
 
   if (filters.claimState) {
     query = query.eq("claim_state", filters.claimState);

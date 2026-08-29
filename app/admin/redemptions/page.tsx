@@ -7,7 +7,9 @@ import {
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminRedemptions, getAdminRewards, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminRedemptions, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
+
+const REDEMPTION_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
@@ -66,11 +68,12 @@ function fieldClasses() {
 
 export default async function AdminRedemptionsPage({ searchParams }: AdminRedemptionsPageProps) {
   const params = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(REDEMPTION_ROLES);
+  const organizationId = workspace.type === "organization" ? workspace.id : null;
   const [redemptions, campaigns, rewards] = await Promise.all([
-    getAdminRedemptions(supabase, params),
+    getAdminRedemptions(supabase, params, 100, organizationId),
     getAdminCampaigns(supabase),
-    getAdminRewards(supabase),
+    getAdminRewards(supabase, {}, organizationId ?? undefined),
   ]);
   const exportHref = `/admin/redemptions/export?${new URLSearchParams(
     Object.entries(params).filter((entry): entry is [string, string] => Boolean(entry[1])),

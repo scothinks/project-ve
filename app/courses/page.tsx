@@ -14,13 +14,14 @@ import {
 } from "@/lib/supabase-server";
 import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { DEMO_USER_ID } from "@/lib/demo-progress-store";
+import { measureAsync } from "@/lib/performance";
 
 export default async function CoursesPage() {
   const supabase = await createSupabaseServerClient();
   const learningRepository = createLearningRepository(supabase);
   const progressRepository = createProgressRepository(supabase);
   const [catalog, hasAuthCookies] = await Promise.all([
-    learningRepository.getCourseSummaries(),
+    measureAsync("courses.learning_course_cards", () => learningRepository.getCourseCards()),
     hasSupabaseAuthCookies(),
   ]);
   let lessonProgress: LessonProgressRecord[] = [];

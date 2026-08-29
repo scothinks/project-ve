@@ -17,10 +17,17 @@ import {
   getAdminCourses,
   getAdminLessons,
   getAdminRecommendationSections,
-  requireAdmin,
+  requireAdminWorkspaceRole,
   type AdminRecommendationSection,
 } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
+
+const RECOMMENDATION_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "content_editor",
+];
 
 function fieldClasses() {
   return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
@@ -125,11 +132,11 @@ export default async function AdminRecommendationsPage({
 }: {
   searchParams?: Promise<{ sectionsPage?: string; notice?: string }>;
 }) {
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
   const { sectionsPage, notice } = (await searchParams) ?? {};
   const [sections, courses, lessons] = await Promise.all([
-    getAdminRecommendationSections(supabase),
-    getAdminCourses(supabase),
+    getAdminRecommendationSections(supabase, workspace.id),
+    getAdminCourses(supabase, workspace.id),
     getAdminLessons(supabase),
   ]);
   const selectableItems = [

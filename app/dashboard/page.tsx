@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { BottomNav } from "@/components/navigation/BottomNav";
-import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
+import {
+  LearnerNotificationControl,
+  LearnerTopChrome,
+} from "@/components/navigation/LearnerTopChrome";
 import { LearnerWorkspaceSwitcher } from "@/components/navigation/LearnerWorkspaceSwitcher";
 import { BoostIcon, FlagIcon, HubIcon, MedalIcon } from "@/components/missions/MissionIcons";
 import { FeaturedRewardCard } from "@/components/rewards/FeaturedRewardCard";
@@ -14,10 +16,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ChatIcon, ChevronRightIcon, GraduationCapIcon, SparkleIcon } from "@/components/ui/Icons";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { logAppError } from "@/lib/app-errors";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
-import type { Course, Lesson } from "@/lib/lessons";
-import { getCourseXP, getLessonXP } from "@/lib/lessons";
+import type {
+  LearningCourseCard,
+  LearningLessonCard,
+} from "@/features/learning/application/course-card-model";
 import {
   getMissionBoostDetails,
   getMissionRewardEffect,
@@ -33,24 +36,21 @@ import {
   type LessonProgressRecord,
 } from "@/lib/progress";
 import type { RewardStoreSnapshot } from "@/lib/rewards";
-import { getUnreadNotificationCount } from "@/lib/notifications";
 import { resolveDashboardXpBalance } from "@/lib/observability";
 import { measureAsync } from "@/lib/performance";
-import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
-import { getDashboardRecommendationSections } from "@/lib/supabase-recommendations";
-import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabase-server";
+import { getCurrentUserContext } from "@/lib/supabase-server";
 import { isDemoMode, isLiveMode } from "@/lib/app-mode";
 import { createLearningRepository } from "@/features/app/repositories/learning";
-import { createMissionRepository } from "@/features/app/repositories/missions";
 import { createProgressRepository } from "@/features/app/repositories/progress";
-import { createRewardRepository } from "@/features/app/repositories/rewards";
 import {
   getUserAssessmentCompletionStatus,
   learnerNeedsValuesAssessment,
 } from "@/lib/values-assessment";
 import { formatXpAmount, formatXpLabel } from "@/lib/xp-format";
-import { getAdDecision, getLearnerAdSegments } from "@/lib/ads";
-import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
+import {
+  startDashboardSecondaryData,
+  type DashboardSecondaryData,
+} from "@/features/dashboard/application/secondary-data";
 
 function ProgressBar({ value }: { value: number }) {
   return (
@@ -58,31 +58,6 @@ function ProgressBar({ value }: { value: number }) {
       <div className="learner-progress-fill" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
     </div>
   );
-}
-
-function buildRequestOrigin(headerMap: Headers) {
-  const proto = headerMap.get("x-forwarded-proto") ?? "https";
-  const host = headerMap.get("x-forwarded-host") ?? headerMap.get("host");
-  return host ? `${proto}://${host}` : "http://localhost:3000";
-}
-
-async function withLoggedDashboardFallback<T>({
-  fallback,
-  operation,
-  promise,
-  userId,
-}: {
-  fallback: T;
-  operation: string;
-  promise: Promise<T>;
-  userId?: string | null;
-}) {
-  try {
-    return await promise;
-  } catch (error) {
-    logAppError(error, { operation, userId });
-    return fallback;
-  }
 }
 
 function ContinueLearningCard({
@@ -130,7 +105,7 @@ function getDemoContinueLearningItem({
   catalog,
   lessonProgress,
 }: {
-  catalog: Course[];
+  catalog: LearningCourseCard[];
   lessonProgress: LessonProgressRecord[];
 }): ContinueLearningItem | null {
   const lessonById = new Map(
@@ -441,7 +416,7 @@ function DashboardCourseCard({
   href,
 }: {
   completedLessonIds: Set<string>;
-  course: Course;
+  course: LearningCourseCard;
   href?: string;
 }) {
   const { completedLessons, lessonCount, progressPercent } = getCourseProgress(
@@ -473,7 +448,7 @@ function DashboardCourseCard({
           <span>
             {completedLessons}/{lessonCount} modules
           </span>
-          <span>{formatXpLabel(getCourseXP(course))}</span>
+          <span>{formatXpLabel(course.xp)}</span>
         </div>
         <span className="dashboard-curated-card__cta">Start Course</span>
       </div>
@@ -486,7 +461,7 @@ function DashboardLessonCard({
   lesson,
 }: {
   completed: boolean;
-  lesson: Lesson;
+  lesson: LearningLessonCard;
 }) {
   return (
     <Link className="dashboard-curated-card" href={`/lessons/${lesson.id}`}>
@@ -509,7 +484,7 @@ function DashboardLessonCard({
         <p>{lesson.summary}</p>
         <div className="dashboard-curated-card__meta">
           <span>{completed ? "Completed" : `${lesson.estimatedMinutes} min`}</span>
-          <span>{formatXpLabel(getLessonXP(lesson))}</span>
+          <span>{formatXpLabel(lesson.xp)}</span>
         </div>
         <span className="dashboard-curated-card__cta">
           {completed ? "Review Lesson" : "Start Lesson"}
@@ -521,7 +496,7 @@ function DashboardLessonCard({
 
 function buildRecommendedMissionItems(params: {
   personalizedSection:
-    | Awaited<ReturnType<typeof getPersonalizedDashboardRecommendations>>["sections"][number]
+    | Awaited<DashboardSecondaryData["personalizedRecommendations"]>["sections"][number]
     | undefined;
   featuredMission: UserMissionSummary | null;
 }) {
@@ -573,9 +548,289 @@ function getMobileMissionItems(
     .slice(0, 1);
 }
 
+function SecondarySectionFallback({ label }: { label: string }) {
+  return (
+    <div
+      aria-label={`${label} loading`}
+      className="min-h-24 animate-pulse rounded-[18px] bg-[var(--learner-surface-soft)]"
+      data-dashboard-secondary-fallback={label}
+      role="status"
+    />
+  );
+}
+
+async function DashboardWorkspaceSwitcher({
+  organizations,
+}: {
+  organizations: DashboardSecondaryData["organizations"];
+}) {
+  const state = await organizations;
+  return <LearnerWorkspaceSwitcher organizations={state.organizations} />;
+}
+
+async function DashboardNotificationControl({
+  unreadNotifications,
+}: {
+  unreadNotifications: DashboardSecondaryData["unreadNotifications"];
+}) {
+  const count = await unreadNotifications;
+  return <LearnerNotificationControl unreadNotificationCount={count} />;
+}
+
+async function EditorialRecommendationSections({
+  catalog,
+  completedLessonIds,
+  recommendationSections,
+}: {
+  catalog: LearningCourseCard[];
+  completedLessonIds: Set<string>;
+  recommendationSections: DashboardSecondaryData["editorialRecommendations"];
+}) {
+  const sections = await recommendationSections;
+  const isLessonCompleted = (lessonId: string) => completedLessonIds.has(lessonId);
+  const isCourseCompleted = (course: LearningCourseCard) => {
+    const progress = getCourseProgress(course, completedLessonIds);
+    return progress.lessonCount > 0 && progress.completedLessons === progress.lessonCount;
+  };
+  const activeSections = sections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) =>
+        item.type === "course"
+          ? !isCourseCompleted(item.course)
+          : !isLessonCompleted(item.lesson.id),
+      ),
+    }))
+    .filter((section) => section.items.length > 0);
+  const starterLessons = (catalog[0]?.lessons ?? []).filter(
+    (lesson) => !isLessonCompleted(lesson.id),
+  );
+
+  if (activeSections.length > 0) {
+    return (
+      <section data-dashboard-secondary="editorial-recommendations">
+        <SectionHeader actionHref="/courses" actionLabel="View all" title="Curated for You" />
+        <div className={secondaryDashboardCardListClass}>
+          {activeSections.flatMap((section) =>
+            section.items.slice(0, 2).map((item) =>
+              item.type === "course" ? (
+                <DashboardCourseCard
+                  completedLessonIds={completedLessonIds}
+                  course={item.course}
+                  key={item.id}
+                />
+              ) : (
+                <DashboardLessonCard
+                  completed={isLessonCompleted(item.lesson.id)}
+                  key={item.id}
+                  lesson={item.lesson}
+                />
+              ),
+            ),
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (catalog.length > 0 && sections.length === 0) {
+    return (
+      <section data-dashboard-secondary="editorial-recommendations">
+        <SectionHeader actionHref="/courses" actionLabel="View all" title="Curated for You" />
+        {starterLessons.length ? (
+          <div className="mt-3" id="lessons">
+            <SectionHeader
+              eyebrow="Starter pack"
+              subtitle="Begin with practical choices and everyday values."
+            />
+            <div className={secondaryDashboardCardListClass}>
+              {starterLessons.map((lesson) => (
+                <DashboardLessonCard
+                  completed={isLessonCompleted(lesson.id)}
+                  key={lesson.id}
+                  lesson={lesson}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
+        <Card className="mt-3 p-5">
+          <h2 className="text-base font-black">Browse the course library</h2>
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            Focus area recommendations stay empty until a tutor curates them. You can still
+            browse all published courses any time.
+          </p>
+          <div className="mt-4">
+            <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
+              Browse courses
+            </Button>
+          </div>
+        </Card>
+      </section>
+    );
+  }
+
+  if (catalog.length > 0) {
+    return (
+      <Card className="p-5" data-dashboard-secondary="editorial-recommendations">
+        <h2 className="text-base font-black">You are caught up</h2>
+        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          You have finished the current recommendations. Browse the full library to replay
+          lessons or go deeper.
+        </p>
+        <div className="mt-4">
+          <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
+            Browse courses
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-5" data-dashboard-secondary="editorial-recommendations">
+      <h2 className="text-base font-black">No lessons yet</h2>
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        New values education courses will appear here when they are published.
+      </p>
+    </Card>
+  );
+}
+
+async function PersonalizedRecommendationSections({
+  completedLessonIds,
+  personalizedRecommendations,
+}: {
+  completedLessonIds: Set<string>;
+  personalizedRecommendations: DashboardSecondaryData["personalizedRecommendations"];
+}) {
+  const result = await personalizedRecommendations;
+  const sections = result.sections.filter((section) => section.id !== "mission");
+
+  if (sections.length === 0) return null;
+
+  return sections.map((section) => (
+    <section data-dashboard-secondary="personalized-recommendations" key={section.id}>
+      <SectionHeader subtitle={section.subtitle} title={section.title} />
+      <div className={secondaryDashboardCardListClass}>
+        {section.items.map((item) =>
+          item.lesson ? (
+            <DashboardLessonCard
+              completed={completedLessonIds.has(item.lesson.id)}
+              key={`${section.id}:${item.id}`}
+              lesson={item.lesson}
+            />
+          ) : item.course ? (
+            <DashboardCourseCard
+              completedLessonIds={completedLessonIds}
+              course={item.course}
+              href={item.href}
+              key={`${section.id}:${item.id}`}
+            />
+          ) : null,
+        )}
+      </div>
+    </section>
+  ));
+}
+
+async function DashboardMissionSection({
+  compact,
+  missions,
+  personalizedRecommendations,
+}: {
+  compact: boolean;
+  missions: DashboardSecondaryData["missions"];
+  personalizedRecommendations: DashboardSecondaryData["personalizedRecommendations"];
+}) {
+  const [missionItems, personalized] = await Promise.all([missions, personalizedRecommendations]);
+  const personalizedMissionSection = personalized.sections.find((section) => section.id === "mission");
+  const items = buildRecommendedMissionItems({
+    personalizedSection: personalizedMissionSection,
+    featuredMission: missionItems[0] ?? null,
+  });
+  const visibleItems = compact ? items.slice(0, 2) : getMobileMissionItems(items);
+
+  if (visibleItems.length === 0) return null;
+
+  if (compact) {
+    return (
+      <section className="dashboard-mission-section" data-dashboard-secondary="missions">
+        <Card className="dashboard-mission-surface" variant="quiet">
+          <SectionHeader actionHref="/missions" actionLabel="View all" title="Active Missions" tone="mission" />
+          <div className="mt-3 space-y-3">
+            {visibleItems.map((item) => (
+              <RecommendedMissionCard
+                compact
+                href={item.href}
+                key={`desktop-mission:${item.id}`}
+                mission={item.mission}
+              />
+            ))}
+          </div>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className="dashboard-mobile-section dashboard-mission-section"
+      data-dashboard-secondary="missions"
+    >
+      <div className="dashboard-mobile-mission-panel">
+        <SectionHeader title="Active Missions" />
+        <div className="mt-3 space-y-3">
+          {visibleItems.map((item) => (
+            <RecommendedMissionCard
+              compact
+              href={item.href}
+              key={`mobile-mission:${item.id}`}
+              mission={item.mission}
+              mobileTeaser
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function DashboardRewardsSection({
+  compact = false,
+  rewards,
+}: {
+  compact?: boolean;
+  rewards: DashboardSecondaryData["rewards"];
+}) {
+  const snapshot = await rewards;
+  return (
+    <div
+      className={compact ? undefined : "dashboard-mobile-section"}
+      data-dashboard-secondary="rewards"
+    >
+      <FeaturedRewardsSection compact={compact} rewards={(snapshot?.rewards ?? []).slice(0, 2)} />
+    </div>
+  );
+}
+
+async function DashboardAdSection({
+  className,
+  homeFeedAd,
+}: {
+  className?: string;
+  homeFeedAd: DashboardSecondaryData["homeFeedAd"];
+}) {
+  const ad = await homeFeedAd;
+  return (
+    <div className={className} data-dashboard-secondary="ads">
+      <DirectAdCard ad={ad} className="dashboard-sponsored-card" />
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
-  const supabase = await createSupabaseServerClient();
-  const { user, profile } = await getCurrentUserProfile(supabase);
+  const { supabase, user, profile } = await getCurrentUserContext();
 
   if (isLiveMode && !user) {
     redirect("/login");
@@ -596,16 +851,14 @@ export default async function DashboardPage() {
 
   const learningRepository = createLearningRepository(supabase);
   const progressRepository = createProgressRepository(supabase);
-  const rewardRepository = createRewardRepository(supabase);
-  const missionRepository = createMissionRepository(supabase);
   const repositoryUserId = user?.id ?? "demo-user";
 
-  const [catalog, requestHeaders] = await Promise.all([
-    measureAsync("dashboard.learning_catalog", () => learningRepository.getCatalog()),
-    headers(),
-  ]);
-  const origin = buildRequestOrigin(requestHeaders);
-  const currentCourse = catalog[0];
+  const [catalog, lessonProgress] = await measureAsync("dashboard.core.learning", () => Promise.all([
+    measureAsync("dashboard.learning_course_cards", () => learningRepository.getCourseCards()),
+    user || isDemoMode
+      ? progressRepository.getLessonProgress(repositoryUserId)
+      : Promise.resolve([]),
+  ]));
   const rawDisplayName = profile?.display_name ?? "";
   const hasRealName = Boolean(rawDisplayName && !rawDisplayName.includes("@"));
   const displayName = hasRealName ? rawDisplayName : "Learner";
@@ -616,95 +869,11 @@ export default async function DashboardPage() {
     profile,
     userId: user?.id,
   });
-  const [
-    lessonProgress,
-    recommendationSections,
-    rewardSnapshot,
-    unreadNotificationCount,
-    missionRecommendations,
-    dashboardAdSegments,
-    myOrgsState,
-  ] = await measureAsync("dashboard.primary_data_batch", () => Promise.all([
-    user || isDemoMode
-      ? progressRepository.getLessonProgress(repositoryUserId)
-      : Promise.resolve([]),
-    getDashboardRecommendationSections(supabase, catalog),
-    isLiveMode && user
-      ? withLoggedDashboardFallback({
-          fallback: null,
-          operation: "dashboard.reward_store.load",
-          promise: rewardRepository.getStoreSnapshot(user.id, xpBalance),
-          userId: user.id,
-        })
-      : isDemoMode
-        ? rewardRepository.getStoreSnapshot(repositoryUserId, xpBalance)
-        : Promise.resolve(null),
-    isLiveMode && user && supabase
-      ? withLoggedDashboardFallback({
-          fallback: 0,
-          operation: "dashboard.notifications.unread_count",
-          promise: getUnreadNotificationCount(supabase, user.id),
-          userId: user.id,
-        })
-      : Promise.resolve(0),
-    isLiveMode && user
-      ? withLoggedDashboardFallback({
-          fallback: [],
-          operation: "dashboard.missions.load",
-          promise: missionRepository.getSummaries({
-            userId: user.id,
-            referralCode: profile?.referral_code ?? null,
-            origin,
-          }),
-          userId: user.id,
-        })
-      : isDemoMode
-        ? missionRepository.getSummaries({
-            userId: repositoryUserId,
-            referralCode: null,
-            origin,
-          })
-        : Promise.resolve([]),
-    withLoggedDashboardFallback({
-      fallback: [],
-      operation: "dashboard.ads.segments",
-      promise: getLearnerAdSegments(supabase, user?.id),
-      userId: user?.id,
-    }),
-    supabase && user
-      ? withLoggedDashboardFallback({
-          fallback: { invitations: [], organizations: [] },
-          operation: "dashboard.organizations.load",
-          promise: getMyOrganizationState(supabase, user.id),
-          userId: user.id,
-        })
-      : Promise.resolve({ invitations: [], organizations: [] }),
-  ]));
   const completedLessonIds = getCompletedLessonIds(
     lessonProgress,
     catalog.flatMap((course) => course.lessons),
   );
-  const isLessonCompleted = (lessonId: string) => completedLessonIds.has(lessonId);
-  const isCourseCompleted = (course: (typeof catalog)[number]) => {
-    const progress = getCourseProgress(course, completedLessonIds);
-    return progress.lessonCount > 0 && progress.completedLessons === progress.lessonCount;
-  };
-  const hasPublishedRecommendationSections = recommendationSections.length > 0;
-  const activeRecommendationSections = recommendationSections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) =>
-        item.type === "course"
-          ? !isCourseCompleted(item.course)
-          : !isLessonCompleted(item.lesson.id),
-      ),
-    }))
-    .filter((section) => section.items.length > 0);
-  const starterLessons = (currentCourse?.lessons ?? []).filter(
-    (lesson) => !isLessonCompleted(lesson.id),
-  );
-  const featuredRewards = (rewardSnapshot?.rewards ?? []).slice(0, 2);
-  const [continueLearningItem, personalizedRecommendations, homeFeedAd] = await measureAsync("dashboard.secondary_data_batch", () => Promise.all([
+  const continueLearningItem = await measureAsync("dashboard.core.continue_learning", () =>
     isLiveMode && user && supabase
       ? getContinueLearningItem({
           supabase,
@@ -714,41 +883,17 @@ export default async function DashboardPage() {
         })
       : isDemoMode
         ? Promise.resolve(getDemoContinueLearningItem({ catalog, lessonProgress }))
-      : Promise.resolve(null),
-    isLiveMode && user && supabase
-      ? withLoggedDashboardFallback({
-          fallback: { sections: [], userProfile: null, userScores: [] },
-          operation: "dashboard.personalized_recommendations.load",
-          promise: getPersonalizedDashboardRecommendations({
-            supabase,
-            userId: user.id,
-            catalog,
-            lessonProgress,
-            missions: missionRecommendations,
-          }),
-          userId: user.id,
-        })
-      : Promise.resolve({ sections: [], userProfile: null, userScores: [] }),
-    getAdDecision(supabase, {
-      placementKey: "home_feed_card",
-      route: "/dashboard",
-      userId: user?.id,
-      contentValueTags: [],
-      segmentKeys: dashboardAdSegments,
-    }),
-  ]));
-  const featuredMission = missionRecommendations[0] ?? null;
-  const personalizedMissionSection = personalizedRecommendations.sections.find(
-    (section) => section.id === "mission",
+        : Promise.resolve(null),
   );
-  const nonMissionPersonalizedSections = personalizedRecommendations.sections.filter(
-    (section) => section.id !== "mission",
-  );
-  const recommendedMissionItems = buildRecommendedMissionItems({
-    personalizedSection: personalizedMissionSection,
-    featuredMission,
+  const secondary = startDashboardSecondaryData({
+    catalog,
+    lessonProgress,
+    referralCode: profile?.referral_code ?? null,
+    repositoryUserId,
+    supabase,
+    userId: user?.id ?? null,
+    xpBalance,
   });
-  const mobileMissionItems = getMobileMissionItems(recommendedMissionItems);
   return (
     <main className="learner-system dashboard-learner min-h-screen">
       <ReferralAttributionCapture />
@@ -757,8 +902,16 @@ export default async function DashboardPage() {
         avatarUrl={profile?.avatar_url}
         displayName={displayName}
         email={user?.email}
-        unreadNotificationCount={unreadNotificationCount}
-        workspaceSwitcher={<LearnerWorkspaceSwitcher organizations={myOrgsState.organizations} />}
+        notificationControl={(
+          <Suspense fallback={<LearnerNotificationControl />}>
+            <DashboardNotificationControl unreadNotifications={secondary.unreadNotifications} />
+          </Suspense>
+        )}
+        workspaceSwitcher={(
+          <Suspense fallback={<LearnerWorkspaceSwitcher organizations={[]} />}>
+            <DashboardWorkspaceSwitcher organizations={secondary.organizations} />
+          </Suspense>
+        )}
       />
 
       <section className="dashboard-welcome">
@@ -779,14 +932,14 @@ export default async function DashboardPage() {
       <section className="dashboard-canvas">
         <div className="dashboard-main-column">
           {continueLearningItem ? (
-            <section>
+            <section data-dashboard-core="continue-learning">
               <SectionHeader title="Continue Learning" />
               <div className="mt-3">
                 <ContinueLearningCard item={continueLearningItem} />
               </div>
             </section>
           ) : (
-            <section className="dashboard-empty-hero">
+            <section className="dashboard-empty-hero" data-dashboard-core="continue-learning">
               <div className="dashboard-empty-hero__icon">
                 <SparkleIcon className="h-8 w-8" />
               </div>
@@ -798,138 +951,39 @@ export default async function DashboardPage() {
             </section>
           )}
 
-          {recommendedMissionItems.length > 0 ? (
-            <section className="dashboard-mobile-section dashboard-mission-section">
-              <div className="dashboard-mobile-mission-panel">
-                <SectionHeader title="Active Missions" />
-                <div className="mt-3 space-y-3">
-                  {mobileMissionItems.map((item) => (
-                    <RecommendedMissionCard
-                      compact
-                      href={item.href}
-                      key={`mobile-mission:${item.id}`}
-                      mission={item.mission}
-                      mobileTeaser
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          ) : null}
+          <Suspense fallback={<SecondarySectionFallback label="missions" />}>
+            <DashboardMissionSection
+              compact={false}
+              missions={secondary.missions}
+              personalizedRecommendations={secondary.personalizedRecommendations}
+            />
+          </Suspense>
 
-          {activeRecommendationSections.length > 0 ? (
-            <section>
-              <SectionHeader actionHref="/courses" actionLabel="View all" title="Curated for You" />
-              <div className={secondaryDashboardCardListClass}>
-                {activeRecommendationSections.flatMap((section) =>
-                  section.items.slice(0, 2).map((item) =>
-                    item.type === "course" ? (
-                      <DashboardCourseCard
-                        completedLessonIds={completedLessonIds}
-                        course={item.course}
-                        key={item.id}
-                      />
-                    ) : (
-                      <DashboardLessonCard
-                        completed={isLessonCompleted(item.lesson.id)}
-                        key={item.id}
-                        lesson={item.lesson}
-                      />
-                    ),
-                  ),
-                )}
-              </div>
-            </section>
-          ) : catalog.length > 0 && !hasPublishedRecommendationSections ? (
-            <section>
-              <SectionHeader actionHref="/courses" actionLabel="View all" title="Curated for You" />
-              {starterLessons.length ? (
-                <div className="mt-3" id="lessons">
-                  <SectionHeader
-                    eyebrow="Starter pack"
-                    subtitle="Begin with practical choices and everyday values."
-                  />
-                  <div className={secondaryDashboardCardListClass}>
-                    {starterLessons.map((lesson) => (
-                      <DashboardLessonCard
-                        completed={isLessonCompleted(lesson.id)}
-                        key={lesson.id}
-                        lesson={lesson}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
+          <Suspense fallback={<SecondarySectionFallback label="editorial recommendations" />}>
+            <EditorialRecommendationSections
+              catalog={catalog}
+              completedLessonIds={completedLessonIds}
+              recommendationSections={secondary.editorialRecommendations}
+            />
+          </Suspense>
 
-              <Card className="mt-3 p-5">
-                <h2 className="text-base font-black">Browse the course library</h2>
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  Focus area recommendations stay empty until a tutor curates them. You can still
-                  browse all published courses any time.
-                </p>
-                <div className="mt-4">
-                  <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
-                    Browse courses
-                  </Button>
-                </div>
-              </Card>
-            </section>
-          ) : catalog.length > 0 ? (
-            <Card className="p-5">
-              <h2 className="text-base font-black">You are caught up</h2>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                You have finished the current recommendations. Browse the full library to replay
-                lessons or go deeper.
-              </p>
-              <div className="mt-4">
-                <Button href="/courses" className="h-10 px-4 text-xs" variant="soft">
-                  Browse courses
-                </Button>
-              </div>
-            </Card>
-          ) : (
-            <Card className="p-5">
-              <h2 className="text-base font-black">No lessons yet</h2>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                New values education courses will appear here when they are published.
-              </p>
-            </Card>
-          )}
+          <Suspense fallback={<SecondarySectionFallback label="personalized recommendations" />}>
+            <PersonalizedRecommendationSections
+              completedLessonIds={completedLessonIds}
+              personalizedRecommendations={secondary.personalizedRecommendations}
+            />
+          </Suspense>
 
-            {nonMissionPersonalizedSections.map((section) => (
-              <section key={section.id}>
-                <SectionHeader
-                  subtitle={section.subtitle}
-                  title={section.title}
-                />
-                <div className={secondaryDashboardCardListClass}>
-                  {section.items.map((item) => (
-                    item.lesson ? (
-                      <DashboardLessonCard
-                        completed={isLessonCompleted(item.lesson.id)}
-                        key={`${section.id}:${item.id}`}
-                        lesson={item.lesson}
-                      />
-                    ) : item.course ? (
-                      <DashboardCourseCard
-                        completedLessonIds={completedLessonIds}
-                        course={item.course}
-                        href={item.href}
-                        key={`${section.id}:${item.id}`}
-                      />
-                    ) : null
-                  ))}
-                </div>
-              </section>
-            ))}
+          <Suspense fallback={<SecondarySectionFallback label="advertisement" />}>
+            <DashboardAdSection
+              className="dashboard-mobile-section dashboard-mobile-ad-section"
+              homeFeedAd={secondary.homeFeedAd}
+            />
+          </Suspense>
 
-          <div className="dashboard-mobile-section dashboard-mobile-ad-section">
-            <DirectAdCard ad={homeFeedAd} className="dashboard-sponsored-card" />
-          </div>
-
-          <div className="dashboard-mobile-section">
-            <FeaturedRewardsSection rewards={featuredRewards} />
-          </div>
+          <Suspense fallback={<SecondarySectionFallback label="rewards" />}>
+            <DashboardRewardsSection rewards={secondary.rewards} />
+          </Suspense>
         </div>
 
         <aside className="dashboard-side-column">
@@ -937,26 +991,21 @@ export default async function DashboardPage() {
             xpBalance={xpBalance}
           />
 
-          {recommendedMissionItems.length > 0 ? (
-            <section className="dashboard-mission-section">
-              <Card className="dashboard-mission-surface" variant="quiet">
-                <SectionHeader actionHref="/missions" actionLabel="View all" title="Active Missions" tone="mission" />
-                <div className="mt-3 space-y-3">
-                  {recommendedMissionItems.slice(0, 2).map((item) => (
-                    <RecommendedMissionCard
-                      compact
-                      href={item.href}
-                      key={`desktop-mission:${item.id}`}
-                      mission={item.mission}
-                    />
-                  ))}
-                </div>
-              </Card>
-            </section>
-          ) : null}
+          <Suspense fallback={<SecondarySectionFallback label="missions" />}>
+            <DashboardMissionSection
+              compact
+              missions={secondary.missions}
+              personalizedRecommendations={secondary.personalizedRecommendations}
+            />
+          </Suspense>
 
-          <DirectAdCard ad={homeFeedAd} className="dashboard-sponsored-card" />
-          <FeaturedRewardsSection compact rewards={featuredRewards} />
+          <Suspense fallback={<SecondarySectionFallback label="advertisement" />}>
+            <DashboardAdSection homeFeedAd={secondary.homeFeedAd} />
+          </Suspense>
+
+          <Suspense fallback={<SecondarySectionFallback label="rewards" />}>
+            <DashboardRewardsSection compact rewards={secondary.rewards} />
+          </Suspense>
         </aside>
       </section>
 
@@ -966,7 +1015,7 @@ export default async function DashboardPage() {
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/support">Support</Link>
-          <Link href="/support">Contact</Link>
+          <Link href="/contact">Contact</Link>
         </nav>
       </footer>
 

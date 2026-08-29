@@ -26,7 +26,7 @@ import {
   archiveLessonFromCurriculum,
   reorderCourseLessons,
 } from "@/app/admin/courses/actions";
-import { AdminCard, AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
+import { AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
 import { cn } from "@/lib/utils";
 
 export type CurriculumLesson = {
@@ -51,19 +51,19 @@ function buttonClasses(tone: "primary" | "secondary" | "danger" = "secondary") {
   const base = "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60";
 
   if (tone === "primary") {
-    return cn(base, "bg-[var(--ve-green)] text-white hover:brightness-95");
+    return cn(base, "bg-[var(--admin-primary-container)] text-white hover:brightness-95");
   }
 
   if (tone === "danger") {
     return cn(
       base,
-      "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]",
+      "bg-[color:color-mix(in_srgb,var(--admin-error-container)_74%,var(--admin-surface-milk))] text-[var(--admin-error)]",
     );
   }
 
   return cn(
     base,
-    "border border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]",
+    "border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary-container)]",
   );
 }
 
@@ -166,8 +166,8 @@ function SortableLessonRow({
   return (
     <article
       className={cn(
-        "rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm transition",
-        isDragging && "border-[color:color-mix(in_srgb,var(--ve-green)_40%,var(--ve-line-soft))] opacity-80 shadow-lg",
+        "rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm transition",
+        isDragging && "border-[color:color-mix(in_srgb,var(--admin-primary-container)_40%,var(--admin-border-warm))] opacity-80 shadow-lg",
       )}
       ref={setNodeRef}
       style={style}
@@ -175,7 +175,7 @@ function SortableLessonRow({
       <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-start">
         <button
           aria-label={`Drag ${lesson.title}`}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] text-lg font-black text-[var(--ve-muted-strong)] touch-none"
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-lg font-black text-[var(--admin-on-surface-variant)] touch-none"
           type="button"
           {...attributes}
           {...listeners}
@@ -184,42 +184,42 @@ function SortableLessonRow({
         </button>
 
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[var(--ve-panel)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-              Lesson {index + 1}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--admin-primary-container)] text-xs font-black text-[var(--admin-on-primary)]">
+              {index + 1}
             </span>
+            <Link
+              className="text-lg font-black text-[var(--admin-ink-charcoal)] hover:text-[var(--admin-primary)]"
+              href={`/admin/courses/lessons/${lesson.id}`}
+            >
+              {lesson.title}
+            </Link>
             <AdminStatusBadge tone={statusTone(lesson.status)}>{lesson.status}</AdminStatusBadge>
             <AdminStatusBadge tone={readinessTone(lesson)}>{readinessLabel(lesson)}</AdminStatusBadge>
           </div>
-          <Link
-            className="mt-3 block text-lg font-black hover:text-[var(--ve-green)]"
-            href={`/admin/courses/lessons/${lesson.id}`}
-          >
-            {lesson.title}
-          </Link>
-          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
             {lesson.description || "No lesson description yet."}
           </p>
-          <div className="mt-4 grid gap-3 text-sm font-semibold text-[var(--ve-muted)] sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[14px] bg-[var(--ve-panel)] px-4 py-3">
+          <div className="mt-4 grid gap-3 text-sm font-semibold text-[var(--admin-on-surface-variant)] sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
               <p className="text-[11px] font-black uppercase tracking-[0.14em]">Pages</p>
-              <p className="mt-2 font-black text-[var(--foreground)]">{lesson.pageCount}</p>
+              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">{lesson.pageCount}</p>
             </div>
-            <div className="rounded-[14px] bg-[var(--ve-panel)] px-4 py-3">
+            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
               <p className="text-[11px] font-black uppercase tracking-[0.14em]">Quiz</p>
-              <p className="mt-2 font-black text-[var(--foreground)]">
+              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">
                 {lesson.hasQuiz ? `${lesson.questionCount} questions` : "Missing"}
               </p>
             </div>
-            <div className="rounded-[14px] bg-[var(--ve-panel)] px-4 py-3">
+            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
               <p className="text-[11px] font-black uppercase tracking-[0.14em]">Media</p>
-              <p className="mt-2 font-black text-[var(--foreground)]">
+              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">
                 {lesson.failedMediaCount > 0 ? `${lesson.failedMediaCount} failed` : `${lesson.mediaPendingCount} pending`}
               </p>
             </div>
-            <div className="rounded-[14px] bg-[var(--ve-panel)] px-4 py-3">
+            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
               <p className="text-[11px] font-black uppercase tracking-[0.14em]">Duration</p>
-              <p className="mt-2 font-black text-[var(--foreground)]">{lesson.estimatedMinutes} min</p>
+              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">{lesson.estimatedMinutes} min</p>
             </div>
           </div>
           {issues.length > 0 ? (
@@ -270,12 +270,12 @@ function SortableLessonRow({
             <DropdownMenu.Portal>
               <DropdownMenu.Content
                 align="end"
-                className="z-50 min-w-56 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-2 shadow-xl"
+                className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
                 sideOffset={6}
               >
                 <DropdownMenu.Item asChild>
                   <Link
-                    className="block rounded-[10px] px-3 py-2 text-sm font-bold outline-none hover:bg-[var(--ve-panel)]"
+                    className="block rounded-[10px] px-3 py-2 text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
                     href={`/admin/courses/lessons/${lesson.id}`}
                   >
                     Edit lesson
@@ -283,7 +283,7 @@ function SortableLessonRow({
                 </DropdownMenu.Item>
                 <DropdownMenu.Item asChild>
                   <button
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--ve-panel)]"
+                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
                     disabled={isPending}
                     onClick={() => onDuplicateLesson(lesson)}
                     type="button"
@@ -291,10 +291,10 @@ function SortableLessonRow({
                     Duplicate lesson
                   </button>
                 </DropdownMenu.Item>
-                <DropdownMenu.Separator className="my-1 h-px bg-[var(--ve-line-soft)]" />
+                <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
                 <DropdownMenu.Item asChild>
                   <button
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--ve-danger)] outline-none hover:bg-[var(--ve-panel)]"
+                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)]"
                     disabled={lesson.status === "archived"}
                     onClick={() => requestArchive(lesson)}
                     type="button"
@@ -436,25 +436,18 @@ export function CurriculumOutlineEditor({
 
   const totalIssues = orderedLessons.reduce((count, lesson) => count + lessonIssues(lesson).length, 0);
   const publishedLessons = orderedLessons.filter((lesson) => lesson.status === "published").length;
+  const totalDurationMinutes = orderedLessons.reduce((total, lesson) => total + lesson.estimatedMinutes, 0);
+  const completionPercent = orderedLessons.length > 0
+    ? Math.round((publishedLessons / orderedLessons.length) * 100)
+    : 0;
 
   return (
-    <section className="space-y-5">
-      <AdminCard>
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
+      <section className="space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-              Curriculum outline
-            </p>
-            <h2 className="mt-2 text-lg font-black">Lesson sequence</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <AdminStatusBadge tone="neutral">{orderedLessons.length} lessons</AdminStatusBadge>
-              <AdminStatusBadge tone="good">{publishedLessons} published</AdminStatusBadge>
-              <AdminStatusBadge tone={totalIssues > 0 ? "warning" : "good"}>
-                {totalIssues} readiness issue{totalIssues === 1 ? "" : "s"}
-              </AdminStatusBadge>
-            </div>
             {message ? (
-              <p className="mt-3 text-sm font-black text-[var(--ve-muted-strong)]">{message}</p>
+              <p className="text-sm font-black text-[var(--admin-on-surface-variant)]">{message}</p>
             ) : null}
           </div>
           <button
@@ -463,47 +456,80 @@ export function CurriculumOutlineEditor({
             onClick={createLesson}
             type="button"
           >
-            {isCreatingLesson ? "Creating..." : "Create lesson"}
+            {isCreatingLesson ? "Creating..." : "Add New Lesson"}
           </button>
         </div>
-      </AdminCard>
 
-      {orderedLessons.length === 0 ? (
-        <EmptyAdminState>No lessons yet.</EmptyAdminState>
-      ) : (
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          sensors={sensors}
-        >
-          <SortableContext
-            items={orderedLessons.map((lesson) => lesson.id)}
-            strategy={verticalListSortingStrategy}
+        {orderedLessons.length === 0 ? (
+          <EmptyAdminState>No lessons yet.</EmptyAdminState>
+        ) : (
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
           >
-            <div className="space-y-3">
-              {orderedLessons.map((lesson, index) => (
-                <SortableLessonRow
-                  index={index}
-                  isPending={isPending || duplicatingLessonId === lesson.id}
-                  key={lesson.id}
-                  lesson={lesson}
-                  lessonCount={orderedLessons.length}
-                  moveLesson={moveLesson}
-                  onDuplicateLesson={duplicateLesson}
-                  requestArchive={setArchiveTarget}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      )}
+            <SortableContext
+              items={orderedLessons.map((lesson) => lesson.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {orderedLessons.map((lesson, index) => (
+                  <SortableLessonRow
+                    index={index}
+                    isPending={isPending || duplicatingLessonId === lesson.id}
+                    key={lesson.id}
+                    lesson={lesson}
+                    lessonCount={orderedLessons.length}
+                    moveLesson={moveLesson}
+                    onDuplicateLesson={duplicateLesson}
+                    requestArchive={setArchiveTarget}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </section>
 
-      <AlertDialog.Root open={archiveTarget !== null} onOpenChange={(open) => !open && setArchiveTarget(null)}>
+      <aside className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
+        <h3 className="text-sm font-black text-[var(--admin-on-surface)]">Course Stats</h3>
+        <div className="mt-4 flex flex-col gap-2">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+            Total Duration
+          </p>
+          <p className="text-lg font-black text-[var(--admin-ink-charcoal)]">{totalDurationMinutes} mins</p>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+              Completion
+            </p>
+            <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">
+              {publishedLessons} of {orderedLessons.length} Lessons
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
+            <div
+              className="h-full rounded-full bg-[var(--admin-primary-container)]"
+              style={{ width: `${completionPercent}%` }}
+            />
+          </div>
+        </div>
+        {totalIssues > 0 ? (
+          <p className="mt-4 text-xs font-bold text-[var(--admin-secondary)]">
+            {totalIssues} readiness issue{totalIssues === 1 ? "" : "s"} across this curriculum.
+          </p>
+        ) : (
+          <p className="mt-4 text-xs font-bold text-[var(--admin-primary)]">All lessons are ready.</p>
+        )}
+      </aside>
+
+      <AlertDialog.Root onOpenChange={(open) => !open && setArchiveTarget(null)} open={archiveTarget !== null}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Archive lesson?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
               {archiveTarget ? `${archiveTarget.title} will be removed from the active curriculum sequence for learners.` : null}
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
@@ -523,6 +549,6 @@ export function CurriculumOutlineEditor({
           </AlertDialog.Content>
         </AlertDialog.Portal>
       </AlertDialog.Root>
-    </section>
+    </div>
   );
 }

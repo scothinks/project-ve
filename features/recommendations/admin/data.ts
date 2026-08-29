@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { resolveOrganizationScopeFilter } from "@/features/admin/application/context";
 import { getAdminCourses, getAdminLessons } from "@/features/learning/admin/data";
 
 export type AdminRecommendationSectionRow = {
@@ -14,6 +15,7 @@ export type AdminRecommendationSectionRow = {
   sort_order: number;
   starts_at: string | null;
   ends_at: string | null;
+  organization_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -38,18 +40,30 @@ export type AdminRecommendationSection = AdminRecommendationSectionRow & {
 
 export async function getAdminRecommendationSections(
   supabase: SupabaseClient,
+  workspaceId?: string,
 ): Promise<AdminRecommendationSection[]> {
+  const scope = resolveOrganizationScopeFilter(workspaceId ?? "platform");
+  let sectionsQuery = supabase
+    .from("recommendation_sections")
+    .select(
+      "id, slug, placement, eyebrow, title, subtitle, status, sort_order, starts_at, ends_at, organization_id, created_at, updated_at",
+    )
+    .eq("placement", "dashboard")
+    .order("sort_order", { ascending: true });
+
+  if (scope.mode === "unowned") {
+    sectionsQuery = sectionsQuery.is("organization_id", null);
+  } else if (scope.mode === "organization") {
+    sectionsQuery = sectionsQuery.eq("organization_id", scope.organizationId);
+  }
+
   const [sectionsResult, itemsResult, courses, lessons] = await Promise.all([
-    supabase
-      .from("recommendation_sections")
-      .select("id, slug, placement, eyebrow, title, subtitle, status, sort_order, starts_at, ends_at, created_at, updated_at")
-      .eq("placement", "dashboard")
-      .order("sort_order", { ascending: true }),
+    sectionsQuery,
     supabase
       .from("recommendation_items")
       .select("id, section_id, item_type, item_id, sort_order, created_at")
       .order("sort_order", { ascending: true }),
-    getAdminCourses(supabase),
+    getAdminCourses(supabase, workspaceId),
     getAdminLessons(supabase),
   ]);
 

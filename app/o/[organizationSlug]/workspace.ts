@@ -7,18 +7,19 @@ import {
 } from "@/features/organizations/application/learner-workspace";
 import { createLoginHref } from "@/lib/auth-redirect";
 import { isLiveMode } from "@/lib/app-mode";
+import { measureAsync } from "@/lib/performance";
 import {
-  createSupabaseServerClient,
-  getCurrentUserProfile,
+  getCurrentUserContext,
+  type CurrentUser,
   type UserProfile,
 } from "@/lib/supabase-server";
 import type { Database } from "@/types/database";
-import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type OrgLearnerRouteContext = {
   profile: UserProfile;
   supabase: SupabaseClient<Database>;
-  user: User;
+  user: CurrentUser;
   workspace: OrganizationLearnerWorkspaceContext;
 };
 
@@ -26,8 +27,9 @@ export type OrgRouteParams = Promise<{ organizationSlug: string }>;
 
 export async function requireOrgLearnerRoute(params: OrgRouteParams): Promise<OrgLearnerRouteContext> {
   const { organizationSlug } = await params;
-  const supabase = await createSupabaseServerClient();
-  const { user, profile } = await getCurrentUserProfile(supabase);
+  const { supabase, user, profile } = await measureAsync("org.route.auth_profile", () =>
+    getCurrentUserContext(),
+  );
   const returnPath = `/o/${encodeURIComponent(organizationSlug)}`;
 
   if (isLiveMode && (!supabase || !user || !profile)) {
@@ -38,11 +40,11 @@ export async function requireOrgLearnerRoute(params: OrgRouteParams): Promise<Or
     notFound();
   }
 
-  const workspace = await resolveOrganizationLearnerWorkspace(
-    supabase,
-    user.id,
-    profile,
-    organizationSlug,
+  const workspace = await measureAsync("org.route.workspace", () =>
+    resolveOrganizationLearnerWorkspace(
+      supabase,
+      organizationSlug,
+    ),
   );
 
   if (!workspace) {

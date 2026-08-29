@@ -5,7 +5,6 @@ type MissionSummaryParams = {
   userId: string;
   referralCode: string | null;
   origin: string;
-  syncAwards?: boolean;
 };
 
 export type DemoMissionSummaryLoader = (params: MissionSummaryParams) => UserMissionSummary[] | Promise<UserMissionSummary[]>;

@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "npm run test:unit && npm run test:db",
     "test:unit": "node --experimental-strip-types --test \"tests/unit/**/*.test.mjs\"",
+    "test:guardrails": "node scripts/test-performance-guardrails.mjs",
     "test:db": "node scripts/supabase-cli.mjs test db supabase/tests/database",
     "test:db:linked": "node scripts/supabase-cli.mjs test db --linked supabase/tests/database",
     "test:repositories:local": "node scripts/test-repository-contracts-local.mjs",
@@ -25,7 +26,7 @@
     "db:types:local": "node scripts/supabase-cli.mjs gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public > types/database.ts",
     "db:types:local:check": "node scripts/supabase-cli.mjs gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public | node scripts/check-database-types.mjs",
     "db:verify:local": "npm run db:reset && npm run db:types:local:check && npm run test:db",
-    "ci": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "ci": "npm run typecheck && npm run lint && npm run test:guardrails && npm run test:unit && npm run build",
     "test:p0": "npm run typecheck && npm run lint && npm run build && npm run test:db:linked",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"

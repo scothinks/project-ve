@@ -471,59 +471,80 @@ export function CourseIndexWorkspace({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Start blank</p>
-          <h2 className="mt-2 text-lg font-black">Create a course setup</h2>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-            Begin with title, promise, category, thumbnail, lessons, pages and assessment.
-          </p>
-          <Link className={adminButtonClasses("primary", "mt-4 px-3 text-xs")} href="/admin/courses/new">
-            Start blank
-          </Link>
-        </div>
+      <div>
+        <p className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          How would you like to build?
+        </p>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))]">
+            <h2 className="text-lg font-black text-[var(--admin-ink-charcoal)]">Create Manually</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+              Start with a blank canvas. Build your curriculum, modules, and lessons step-by-step for complete
+              authorial control.
+            </p>
+            <Link
+              className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[var(--admin-primary)] hover:underline"
+              href="/admin/courses/new"
+            >
+              Select Manual →
+            </Link>
+          </div>
 
-        <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Use a template</p>
-          <h2 className="mt-2 text-lg font-black">Duplicate an existing course</h2>
-          <form action={duplicateCourseShell} className="mt-4 space-y-3">
-            <label className="block">
-              <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Source course</span>
-              <select className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-bold" name="courseId" required>
-                <option value="">Choose source</option>
-                {templateCourses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">New title</span>
-              <input
-                className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-bold"
-                name="templateTitle"
-                placeholder="Copy of source title"
+          <div className="rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))]">
+            <h2 className="text-lg font-black text-[var(--admin-ink-charcoal)]">Duplicate a Course</h2>
+            <form action={duplicateCourseShell} className="mt-4 space-y-3">
+              <label className="block">
+                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                  Source course
+                </span>
+                <select
+                  className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 text-sm font-bold outline-none focus:border-[var(--admin-primary-container)]"
+                  name="courseId"
+                  required
+                >
+                  <option value="">Choose source</option>
+                  {templateCourses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                  New title
+                </span>
+                <input
+                  className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 text-sm font-bold outline-none focus:border-[var(--admin-primary-container)]"
+                  name="templateTitle"
+                  placeholder="Copy of source title"
+                />
+              </label>
+              <PendingSubmitButton
+                className="rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-xs font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"
+                label="Use template"
+                pendingLabel="Duplicating..."
+                type="submit"
               />
-            </label>
-            <PendingSubmitButton
-              className={adminButtonClasses("secondary", "px-3 text-xs")}
-              label="Use template"
-              pendingLabel="Duplicating..."
-              type="submit"
-            />
-          </form>
-        </div>
+            </form>
+          </div>
 
-        <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">Create with AI</p>
-          <h2 className="mt-2 text-lg font-black">Plan before generating</h2>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-            Capture the need, audience and outcomes, review the proposed curriculum, then create the course.
-          </p>
-          <Link className={adminButtonClasses("success", "mt-4 px-3 text-xs")} href="/admin/courses/ai/planner">
-            Create with AI
-          </Link>
+          <div className="rounded-[20px] border border-[color:color-mix(in_srgb,var(--admin-primary-container)_18%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_6%,var(--admin-surface-milk))] p-5 shadow-sm">
+            <span className="rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-2 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--admin-primary)]">
+              AI-Assisted
+            </span>
+            <h2 className="mt-2 text-lg font-black text-[var(--admin-ink-charcoal)]">Create with AI</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+              Collaborate with an intelligent assistant to outline your syllabus, generate learning objectives,
+              and draft initial content.
+            </p>
+            <Link
+              className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[var(--admin-primary)] hover:underline"
+              href="/admin/courses/ai/planner"
+            >
+              Start with AI Guide →
+            </Link>
+          </div>
         </div>
       </div>
 

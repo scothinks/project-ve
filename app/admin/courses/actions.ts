@@ -18,10 +18,12 @@ import {
 } from "@/lib/admin-course-validation";
 import { getAssessmentIssues } from "@/features/learning/admin/assessment-builder-domain";
 import { assertAdminCoursePublishReady } from "@/features/learning/admin/course-readiness-data";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { ValidationError } from "@/lib/app-errors";
 import type { ValidationResult } from "@/lib/request-validation";
+import { revalidatePublishedLearningCourseCards } from "@/app/admin/courses/learning-cache";
 
 type AiPublishGuardRow = {
   ai_generated: boolean;
@@ -273,7 +275,7 @@ export async function saveCourse(formData: FormData) {
     existingCourseData?.thumbnail ?? null,
   );
 
-  if (!courseId && workspace.type === "organization") {
+  if (!courseId && workspace.type === "organization" && workspace.id !== PLATFORM_CATALOG_WORKSPACE_ID) {
     const { data, error } = await supabase.rpc("admin_create_organization_private_course", {
       p_organization_id: workspace.id,
       p_title: input.title,
@@ -316,6 +318,7 @@ export async function saveCourse(formData: FormData) {
   if (error) throw error;
 
   const result = data as { courseId?: string } | null;
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   redirect(
     appendAdminNotice(
@@ -365,6 +368,7 @@ export async function saveLesson(formData: FormData) {
 
   await syncLessonQuizStatus(supabase, result?.lessonId ?? lessonId, syncedLessonStatus);
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");
@@ -412,6 +416,7 @@ export async function createCurriculumLesson(formData: FormData) {
 
   await syncLessonQuizStatus(supabase, lessonId, "draft");
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");
@@ -437,6 +442,7 @@ export async function setCourseStatus(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");
@@ -500,6 +506,7 @@ export async function setLessonStatus(formData: FormData) {
 
   await syncLessonQuizStatus(supabase, lessonId, status);
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   if (courseId) revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
@@ -572,6 +579,7 @@ export async function archiveLessonFromCurriculum(formData: FormData) {
 
   await syncLessonQuizStatus(supabase, lesson.id, "archived");
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
@@ -617,6 +625,7 @@ export async function reorderCourseLessons(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");
@@ -881,6 +890,7 @@ export async function saveLessonPage(formData: FormData) {
   const result = data as { pageId?: string } | null;
   const pageId = result?.pageId;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   redirect(
     appendAdminNotice(
@@ -950,6 +960,7 @@ export async function reorderLessonPage(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   redirect(
     appendAdminNotice(`/admin/courses/lessons/${lessonId}?page=${pageId}`, "Page reordered."),
@@ -994,6 +1005,7 @@ export async function saveQuizSettings(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Quiz settings saved."));
 }
@@ -1052,6 +1064,7 @@ export async function deleteQuizQuestion(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   revalidatePath(`/quiz/${lessonId}`);
   redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question deleted."));
@@ -1132,6 +1145,7 @@ export async function duplicateQuizQuestion(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   revalidatePath(`/quiz/${lessonId}`);
   redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question duplicated."));
@@ -1155,6 +1169,7 @@ export async function saveQuizQuestion(formData: FormData) {
 
   if (error) throw error;
 
+  revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
   redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question saved."));
 }

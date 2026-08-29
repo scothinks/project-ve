@@ -306,7 +306,7 @@ export function XPStore({
 
           <div className="store-catalogue-heading mt-5">
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-muted)]">
-              Standard Issue Catalogue
+              Reward Catalogue
             </p>
           </div>
           <div className="store-catalogue-grid grid grid-cols-2 gap-3 lg:grid-cols-3">

@@ -7,11 +7,13 @@ import {
   parseReallocateInventoryForm,
   parseSetInventoryQuantityForm,
 } from "@/lib/admin-inventory-validation";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { ValidationError } from "@/lib/app-errors";
 import { formatValidationIssues } from "@/lib/form-data-validation";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import type { ValidationResult } from "@/lib/request-validation";
+
+const INVENTORY_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 export type InventoryBatchDryRunState = {
   ok: boolean;
@@ -115,7 +117,7 @@ function parseInventoryValues(raw: string, itemType: string) {
 }
 
 async function findExistingValues(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: Awaited<ReturnType<typeof requireAdminWorkspaceRole>>["supabase"],
   rewardId: string,
   itemType: string,
   values: string[],
@@ -167,7 +169,7 @@ async function validateInventoryBatch(formData: FormData): Promise<InventoryBatc
   }
 
   const input = formValidation.data;
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
   const {
     availableFrom,
     batchLabel,
@@ -302,7 +304,7 @@ export async function dryRunInventoryBatch(
 
 export async function setInventoryQuantity(formData: FormData) {
   const input = requireValidForm(parseSetInventoryQuantityForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
 
   const { error } = await supabase.rpc("admin_set_reward_quantity", {
     p_reward_id: input.rewardId,
@@ -328,7 +330,7 @@ export async function setInventoryQuantity(formData: FormData) {
 
 export async function reallocateInventory(formData: FormData) {
   const input = requireValidForm(parseReallocateInventoryForm(formData));
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
   const { error } = await supabase.rpc("admin_reallocate_reward_inventory", {
     p_reward_id: input.rewardId,
     p_from_campaign_id: input.fromCampaignId,
@@ -358,7 +360,7 @@ export async function uploadInventoryBatch(formData: FormData) {
     throw new Error("Batch has validation errors. Run dry run and fix the issues before importing.");
   }
 
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
   const batchResult = await supabase.rpc("admin_create_reward_inventory_batch", {
     p_reward_id: validation.rewardId,
     p_campaign_id: validation.campaignId,

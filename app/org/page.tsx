@@ -71,13 +71,9 @@ export default async function OrgModePage() {
                   alt=""
                   className="orgs-landing__photo"
                   height={360}
-                  src="/images/org-landing-stitch-photo.jpg"
+                  src="/images/org-landing-team-photo.jpg"
                   width={480}
                 />
-                <div className="orgs-landing__photo-caption">
-                  <span>Acme Corp</span>
-                  <strong>Design Team Retreat</strong>
-                </div>
               </div>
               <div className="orgs-landing__mini-card orgs-landing__mini-card--first">
                 <span className="orgs-landing__mini-icon">
@@ -85,7 +81,7 @@ export default async function OrgModePage() {
                 </span>
                 <span>
                   <small className="orgs-landing__mini-pill">Required Lesson</small>
-                  <strong>Volunteer Induction</strong>
+                  <strong>Getting Started</strong>
                   <i className="orgs-landing__mini-progress" />
                 </span>
               </div>

@@ -4,8 +4,10 @@ import {
   AdminStatusBadge,
 } from "@/components/admin/AdminPrimitives";
 import { InventoryBatchUploadForm } from "@/components/admin/InventoryBatchUploadForm";
-import { getAdminCampaigns, getAdminRewards, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
 import { setInventoryQuantity } from "../actions";
+
+const INVENTORY_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 function fieldClasses() {
   return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
@@ -38,10 +40,10 @@ function getSavedMessage(saved?: string, count?: string) {
 
 export default async function NewInventoryPage({ searchParams }: NewInventoryPageProps) {
   const params = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
   const [campaigns, rewards] = await Promise.all([
     getAdminCampaigns(supabase),
-    getAdminRewards(supabase),
+    getAdminRewards(supabase, {}, workspace.type === "organization" ? workspace.id : undefined),
   ]);
   const activeCampaignId = campaigns.find((campaign) => campaign.status === "active")?.id ?? "";
   const quantityRewards = rewards.filter(

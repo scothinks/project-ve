@@ -1,6 +1,10 @@
 import "server-only";
 
-import type { Course, Lesson } from "@/lib/lessons";
+import { unstable_cache } from "next/cache";
+import type {
+  LearningCourseCard,
+  LearningLessonCard,
+} from "@/features/learning/application/course-card-model";
 import type { UserMissionSummary } from "@/lib/missions";
 import type { AppSupabaseClient } from "@/lib/supabase";
 import {
@@ -20,6 +24,7 @@ import {
   scoreRecommendationCandidate,
   type RecommendationScoreComponents,
 } from "@/features/recommendations/domain/scoring";
+import { PERSONALIZED_RECOMMENDATION_EDITORIAL_CACHE_TAG } from "@/features/recommendations/data/editorial-cache";
 
 type ContentTagRow = {
   id: string;
@@ -77,8 +82,8 @@ export type RecommendationProfileContext =
     };
 
 type RecommendationHrefBuilder = {
-  courseHref?: (course: Course) => string;
-  lessonHref?: (lesson: Lesson) => string;
+  courseHref?: (course: LearningCourseCard) => string;
+  lessonHref?: (lesson: LearningLessonCard) => string;
   missionHref?: () => string;
 };
 
@@ -94,8 +99,8 @@ export type PersonalizedRecommendationItem = {
   score: number;
   score_policy_version: typeof recommendationScoringPolicyVersion;
   score_components: RecommendationScoreComponents;
-  course?: Course;
-  lesson?: Lesson;
+  course?: LearningCourseCard;
+  lesson?: LearningLessonCard;
   mission?: UserMissionSummary;
 };
 
@@ -228,23 +233,10 @@ async function loadProfileData(
     scoreQuery.is("organization_id", null);
   }
 
-  const [{ data: profile }, { data: scores }, { data: dimensions }] = await Promise.all([
+  const [{ data: profile }, { data: scores }] = await Promise.all([
     profileQuery.maybeSingle(),
     scoreQuery,
-    supabase
-      .from("value_dimensions")
-      .select("id, label, description, sort_order, status")
-      .eq("status", "active")
-      .order("sort_order", { ascending: true }),
   ]);
-
-  const valueDimensions: ValueDimension[] = ((dimensions ?? []) as ValueDimensionRow[]).map((dimension) => ({
-    id: dimension.id,
-    label: dimension.label,
-    description: dimension.description,
-    sortOrder: dimension.sort_order,
-    status: dimension.status,
-  }));
 
   const typedProfile = profile as UserValueProfileRow | null;
   const userProfile: UserValueProfile | null = typedProfile
@@ -273,10 +265,10 @@ async function loadProfileData(
     updatedAt: score.updated_at,
   }));
 
-  return { userProfile, userScores, valueDimensions };
+  return { userProfile, userScores };
 }
 
-async function loadRelevantTags(
+async function loadEditorialRecommendationData(
   supabase: AppSupabaseClient,
   candidateIds: {
     courseIds: string[];
@@ -284,50 +276,63 @@ async function loadRelevantTags(
   missionIds: string[];
   },
 ) {
-  if (
-    candidateIds.courseIds.length === 0
-    && candidateIds.lessonIds.length === 0
-    && candidateIds.missionIds.length === 0
-  ) {
-    return [];
-  }
-
-  const [courseTagsResult, lessonTagsResult, missionTagsResult] = await Promise.all([
-    candidateIds.courseIds.length > 0
-      ? supabase
-          .from("content_value_tags")
-          .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
-          .eq("content_type", "course")
-          .in("content_id", candidateIds.courseIds)
-          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
-      : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
-    candidateIds.lessonIds.length > 0
-      ? supabase
-          .from("content_value_tags")
-          .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
-          .eq("content_type", "lesson")
-          .in("content_id", candidateIds.lessonIds)
-          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
-      : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
-    candidateIds.missionIds.length > 0
-      ? supabase
-          .from("content_value_tags")
-          .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
-          .eq("content_type", "mission")
-          .in("content_id", candidateIds.missionIds)
-          .then((result) => ({ ...result, data: result.data as ContentTagRow[] | null }))
-      : Promise.resolve({ data: [] as ContentTagRow[], error: null }),
+  const courseIds = Array.from(new Set(candidateIds.courseIds)).sort();
+  const lessonIds = Array.from(new Set(candidateIds.lessonIds)).sort();
+  const missionIds = Array.from(new Set(candidateIds.missionIds)).sort();
+  const contentIds = Array.from(new Set([...courseIds, ...lessonIds, ...missionIds]));
+  const allowedKeys = new Set([
+    ...courseIds.map((id) => `course:${id}`),
+    ...lessonIds.map((id) => `lesson:${id}`),
+    ...missionIds.map((id) => `mission:${id}`),
   ]);
 
-  const rows: ContentTagRow[] = [];
+  // Only published content tags and active dimensions are cacheable editorial
+  // configuration. The authenticated user's profile and scores are loaded by
+  // loadProfileData and never enter this cross-user cache.
+  return unstable_cache(
+    async () => {
+      const [tagsResult, dimensionsResult] = await Promise.all([
+        contentIds.length > 0
+          ? supabase
+              .from("content_value_tags")
+              .select("id, content_type, content_id, dimension_id, weight, recommended_level, outcome_type, created_at, updated_at")
+              .in("content_id", contentIds)
+          : Promise.resolve({ data: [], error: null }),
+        supabase
+          .from("value_dimensions")
+          .select("id, label, description, sort_order, status")
+          .eq("status", "active")
+          .order("sort_order", { ascending: true }),
+      ]);
 
-  for (const result of [courseTagsResult, lessonTagsResult, missionTagsResult]) {
-    if (!result.error && result.data) {
-      rows.push(...result.data);
-    }
-  }
+      if (tagsResult.error) throw tagsResult.error;
+      if (dimensionsResult.error) throw dimensionsResult.error;
 
-  return rows.map(mapTag);
+      const tags = ((tagsResult.data ?? []) as ContentTagRow[])
+        .filter((row) => allowedKeys.has(`${row.content_type}:${row.content_id}`))
+        .map(mapTag);
+      const valueDimensions: ValueDimension[] = ((dimensionsResult.data ?? []) as ValueDimensionRow[])
+        .map((dimension) => ({
+          id: dimension.id,
+          label: dimension.label,
+          description: dimension.description,
+          sortOrder: dimension.sort_order,
+          status: dimension.status,
+        }));
+
+      return { tags, valueDimensions };
+    },
+    [
+      PERSONALIZED_RECOMMENDATION_EDITORIAL_CACHE_TAG,
+      `courses:${courseIds.join(",")}`,
+      `lessons:${lessonIds.join(",")}`,
+      `missions:${missionIds.join(",")}`,
+    ],
+    {
+      revalidate: 300,
+      tags: [PERSONALIZED_RECOMMENDATION_EDITORIAL_CACHE_TAG],
+    },
+  )();
 }
 
 function buildDimensionLabelMap(dimensions: ValueDimension[]) {
@@ -390,7 +395,7 @@ export async function getPersonalizedDashboardRecommendations({
 }: {
   supabase: AppSupabaseClient | null;
   userId: string;
-  catalog: Course[];
+  catalog: LearningCourseCard[];
   lessonProgress: LessonProgressRecord[];
   missions: UserMissionSummary[];
   profileContext?: RecommendationProfileContext;
@@ -404,12 +409,19 @@ export async function getPersonalizedDashboardRecommendations({
     };
   }
 
-  const { userProfile, userScores, valueDimensions } = await loadProfileData(supabase, userId, profileContext);
-  const courseHref = hrefBuilder?.courseHref ?? ((course: Course) => `/courses/${course.id}`);
-  const lessonHref = hrefBuilder?.lessonHref ?? ((lesson: Lesson) => `/lessons/${lesson.id}`);
+  const allLessons = catalog.flatMap((course) => course.lessons);
+  const [{ userProfile, userScores }, { tags, valueDimensions }] = await Promise.all([
+    loadProfileData(supabase, userId, profileContext),
+    loadEditorialRecommendationData(supabase, {
+      courseIds: catalog.map((course) => course.id),
+      lessonIds: allLessons.map((lesson) => lesson.id),
+      missionIds: missions.map((mission) => mission.id),
+    }),
+  ]);
+  const courseHref = hrefBuilder?.courseHref ?? ((course: LearningCourseCard) => `/courses/${course.id}`);
+  const lessonHref = hrefBuilder?.lessonHref ?? ((lesson: LearningLessonCard) => `/lessons/${lesson.id}`);
   const missionHref = hrefBuilder?.missionHref ?? (() => "/missions");
   const dimensionLabels = buildDimensionLabelMap(valueDimensions);
-  const allLessons = catalog.flatMap((course) => course.lessons);
   const completedLessonIds = getCompletedLessonIds(lessonProgress, allLessons);
   const completedCourseIds = new Set(
     catalog
@@ -419,12 +431,6 @@ export async function getPersonalizedDashboardRecommendations({
       })
       .map((course) => course.id),
   );
-
-  const tags = await loadRelevantTags(supabase, {
-    courseIds: catalog.map((course) => course.id),
-    lessonIds: allLessons.map((lesson) => lesson.id),
-    missionIds: missions.map((mission) => mission.id),
-  });
 
   const tagsByKey = new Map<string, ContentValueTag[]>();
   for (const tag of tags) {
@@ -439,12 +445,12 @@ export async function getPersonalizedDashboardRecommendations({
   const courseById = new Map(catalog.map((course) => [course.id, course]));
   const progressByLessonId = new Map(lessonProgress.map((progress) => [progress.lesson_id, progress]));
 
-  function lessonHasExposure(lesson: Lesson) {
+  function lessonHasExposure(lesson: LearningLessonCard) {
     const progress = progressByLessonId.get(lesson.id);
     return Boolean(progress && ((progress.completed_pages?.length ?? 0) > 0 || progress.completed_at));
   }
 
-  function lessonIsProgressionRelevant(lesson: Lesson) {
+  function lessonIsProgressionRelevant(lesson: LearningLessonCard) {
     if (lessonHasExposure(lesson)) {
       return true;
     }
@@ -464,11 +470,11 @@ export async function getPersonalizedDashboardRecommendations({
       .some((previousLesson) => completedLessonIds.has(previousLesson.id));
   }
 
-  function courseHasExposure(course: Course) {
+  function courseHasExposure(course: LearningCourseCard) {
     return course.lessons.some((lesson) => lessonHasExposure(lesson) || completedLessonIds.has(lesson.id));
   }
 
-  function courseIsProgressionRelevant(course: Course) {
+  function courseIsProgressionRelevant(course: LearningCourseCard) {
     return course.lessons.length > 0 && !completedCourseIds.has(course.id);
   }
 

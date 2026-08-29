@@ -47,6 +47,10 @@ const publicPrefixes = [
   "/invite/",
 ];
 
+export const VERIFIED_AUTH_REQUEST_HEADER = "x-project-ve-auth-verified";
+export const VERIFIED_AUTH_USER_ID_HEADER = "x-project-ve-auth-user-id";
+export const VERIFIED_AUTH_USER_EMAIL_HEADER = "x-project-ve-auth-user-email";
+
 export function isPublicRoutePath(pathname: string) {
   if (publicExactPaths.has(pathname)) {
     return true;
@@ -65,4 +69,12 @@ export function isProtectedLearnerRoutePath(pathname: string) {
   }
 
   return learnerProtectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+}
+
+export function shouldRefreshAuthInMiddleware(pathname: string) {
+  return (
+    isProtectedLearnerRoutePath(pathname)
+    || pathname === "/admin"
+    || pathname.startsWith("/admin/")
+  );
 }

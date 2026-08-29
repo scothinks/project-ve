@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import type { AdminContext } from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 
 export const ORGANIZATION_AI_AUTHORING_NOTICE =
@@ -23,7 +24,10 @@ async function organizationHasAiAuthoring(
 export async function getAdminWorkspaceAiAuthoringNotice(
   context: AdminContext,
 ) {
-  if (context.workspace.type === "platform") {
+  // The platform-catalog pseudo-workspace has no backing organisation row —
+  // Project VE's own catalogue is authored at full privilege, not capped by
+  // a tenant plan.
+  if (context.workspace.type === "platform" || context.workspace.id === PLATFORM_CATALOG_WORKSPACE_ID) {
     return null;
   }
 

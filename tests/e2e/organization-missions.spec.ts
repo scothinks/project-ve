@@ -473,6 +473,11 @@ test.describe.serial("organization mission browser acceptance", () => {
     await expect(page.getByText(`Programme override mission copy ${runId}`)).toHaveCount(0);
     await expect(page.getByText(`E2E Catalogue-only Mission ${runId}`)).toHaveCount(0);
 
+    await page.goto(`/o/${orgSlug}`);
+    await expect(page).toHaveURL(new RegExp(`/o/${orgSlug}$`));
+    await expect(page.getByLabel("Organisation context")).toBeVisible();
+    await page.goto(`/o/${orgSlug}/missions`);
+
     await clearBrowserState(page);
     await signIn(page, managerEmail, `/admin/missions/${orgWideMissionId}`);
     await expect(page.getByRole("heading", { level: 1, name: `E2E Organisation-wide Mission ${runId}` })).toBeVisible();

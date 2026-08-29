@@ -6,10 +6,27 @@ import {
   getAdminCourses,
   getAdminLessons,
   getAdminRecommendationSections,
-  requireAdmin,
+  requireAdminWorkspaceRole,
+  type AdminWorkspace,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+
+const RECOMMENDATION_ROLES = [
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "content_editor",
+];
+
+function organizationIdForWorkspace(workspace: AdminWorkspace) {
+  if (workspace.type !== "organization" || workspace.id === PLATFORM_CATALOG_WORKSPACE_ID) {
+    return null;
+  }
+
+  return workspace.id;
+}
 
 function parseInteger(value: FormDataEntryValue | null, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
@@ -30,7 +47,7 @@ function revalidateRecommendationPaths() {
 }
 
 async function upsertSection(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: Awaited<ReturnType<typeof requireAdminWorkspaceRole>>["supabase"],
   input: {
     sectionId: string;
     title: string;
@@ -38,6 +55,7 @@ async function upsertSection(
     eyebrow: string;
     status: "draft" | "published";
     sortOrder: number;
+    organizationId: string | null;
   },
 ) {
   const { error } = await supabase.rpc("admin_upsert_recommendation_section", {
@@ -49,6 +67,7 @@ async function upsertSection(
     p_sort_order: input.sortOrder,
     p_starts_at: null,
     p_ends_at: null,
+    p_organization_id: input.organizationId,
   });
 
   if (error) {
@@ -57,7 +76,7 @@ async function upsertSection(
 }
 
 async function addSectionItem(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: Awaited<ReturnType<typeof requireAdminWorkspaceRole>>["supabase"],
   input: {
     sectionId: string;
     itemType: "course" | "lesson";
@@ -78,7 +97,7 @@ async function addSectionItem(
 }
 
 async function deleteSectionItem(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  supabase: Awaited<ReturnType<typeof requireAdminWorkspaceRole>>["supabase"],
   itemId: string,
 ) {
   const { error } = await supabase.rpc("admin_delete_recommendation_item", {
@@ -92,7 +111,7 @@ async function deleteSectionItem(
 
 export async function saveRecommendationSection(formData: FormData) {
   const sectionId = sanitizePlainTextInput(String(formData.get("sectionId") ?? ""), 120);
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
   const { error } = await supabase.rpc("admin_upsert_recommendation_section", {
     p_section_id: sectionId,
     p_title: sanitizePlainTextInput(String(formData.get("title") ?? ""), 180),
@@ -102,6 +121,7 @@ export async function saveRecommendationSection(formData: FormData) {
     p_sort_order: parseInteger(formData.get("sortOrder")),
     p_starts_at: parseOptionalDate(formData.get("startsAt")),
     p_ends_at: parseOptionalDate(formData.get("endsAt")),
+    p_organization_id: organizationIdForWorkspace(workspace),
   });
 
   if (error) throw error;
@@ -118,7 +138,7 @@ export async function saveRecommendationSection(formData: FormData) {
 export async function setRecommendationSectionStatus(formData: FormData) {
   const sectionId = sanitizePlainTextInput(String(formData.get("sectionId") ?? ""), 120);
   const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
   const { error } = await supabase.rpc("admin_set_recommendation_section_status", {
     p_section_id: sectionId,
     p_status: status,
@@ -140,7 +160,7 @@ export async function addRecommendationItem(formData: FormData) {
   const itemRef = sanitizePlainTextInput(String(formData.get("itemRef") ?? ""), 240);
   const [itemType, ...itemIdParts] = itemRef.split(":");
   const itemId = itemIdParts.join(":");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
   const { error } = await supabase.rpc("admin_add_recommendation_item", {
     p_section_id: sectionId,
     p_item_type: itemType,
@@ -156,7 +176,7 @@ export async function addRecommendationItem(formData: FormData) {
 
 export async function deleteRecommendationItem(formData: FormData) {
   const itemId = sanitizePlainTextInput(String(formData.get("itemId") ?? ""), 80);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
   const { error } = await supabase.rpc("admin_delete_recommendation_item", {
     p_item_id: itemId,
   });
@@ -168,33 +188,42 @@ export async function deleteRecommendationItem(formData: FormData) {
 }
 
 export async function createDefaultRecommendationSections() {
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(RECOMMENDATION_ROLES);
+  const organizationId = organizationIdForWorkspace(workspace);
+  // id is globally unique, so per-workspace defaults need their own ids —
+  // otherwise every workspace's "reset defaults" would fight over the same
+  // two rows.
+  const scopeSuffix = organizationId ? `-${organizationId}` : "";
+  const starterPackId = `rec-starter-pack${scopeSuffix}`;
+  const focusAreaId = `rec-focus-area${scopeSuffix}`;
   const [courses, lessons, sections] = await Promise.all([
-    getAdminCourses(supabase),
+    getAdminCourses(supabase, workspace.id),
     getAdminLessons(supabase),
-    getAdminRecommendationSections(supabase),
+    getAdminRecommendationSections(supabase, workspace.id),
   ]);
   const firstCourse = courses[0];
 
   await upsertSection(supabase, {
-    sectionId: "rec-starter-pack",
+    sectionId: starterPackId,
     title: "Start Learning",
     subtitle: "Begin with practical values lessons learners can use right away.",
     eyebrow: "Starter Pack",
     status: "published",
     sortOrder: 10,
+    organizationId,
   });
 
   await upsertSection(supabase, {
-    sectionId: "rec-focus-area",
+    sectionId: focusAreaId,
     title: "Browse Courses",
     subtitle: "Tutor-curated courses can be added here when you want a focused set.",
     eyebrow: "Focus Area",
     status: "published",
     sortOrder: 20,
+    organizationId,
   });
 
-  const defaultSectionIds = new Set(["rec-starter-pack", "rec-focus-area"]);
+  const defaultSectionIds = new Set([starterPackId, focusAreaId]);
   const existingDefaultItems = sections
     .filter((section) => defaultSectionIds.has(section.id))
     .flatMap((section) => section.items);
@@ -210,7 +239,7 @@ export async function createDefaultRecommendationSections() {
 
     for (const [index, lesson] of starterLessons.entries()) {
       await addSectionItem(supabase, {
-        sectionId: "rec-starter-pack",
+        sectionId: starterPackId,
         itemType: "lesson",
         itemId: lesson.id,
         sortOrder: index + 1,

@@ -40,6 +40,38 @@ export async function getAdminProfilesByIds(
   return new Map(((data ?? []) as AdminProfileRow[]).map((profile) => [profile.id, profile]));
 }
 
+export async function searchAdminUsers(
+  supabase: SupabaseClient,
+  query: string,
+  limit = 8,
+) {
+  const trimmed = query.trim().replace(/[,%()]/g, " ");
+
+  if (!trimmed) {
+    return [];
+  }
+
+  // Note: `id` is a native uuid column — ilike has no uuid operator (fails
+  // with Postgres error 42883) — so this only matches by name/referral code,
+  // not by id substring.
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(ADMIN_PROFILE_SELECT)
+    .or(
+      [
+        `display_name.ilike.%${trimmed}%`,
+        `referral_code.ilike.%${trimmed}%`,
+      ].join(","),
+    )
+    .limit(limit);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as AdminProfileRow[];
+}
+
 export async function getAdminUsers(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("profiles")

@@ -1,20 +1,17 @@
 import type { Course, Lesson, Quiz } from "../../../lib/lessons";
+import {
+  toLearningCourseCards,
+  type LearningCourseCard,
+} from "../../learning/application/course-card-model";
 import type { LearningRepository } from "./contracts";
 
 export type SupabaseLearningLoaders<TSupabase> = {
   getCatalog(supabase: TSupabase): Promise<Course[]>;
-  getCourseSummaries(supabase: TSupabase): Promise<Course[]>;
+  getCourseCards(supabase: TSupabase): Promise<LearningCourseCard[]>;
   getCourse(supabase: TSupabase, idOrSlug: string): Promise<Course | null>;
   getLesson(supabase: TSupabase, idOrSlug: string): Promise<{ lesson: Lesson; course: Course } | null>;
   getQuiz(supabase: TSupabase, idOrLessonId: string): Promise<{ lesson: Lesson; quiz: Quiz } | null>;
 };
-
-function stripCoursePages(courses: Course[]) {
-  return courses.map((course) => ({
-    ...course,
-    lessons: course.lessons.map((lesson) => ({ ...lesson, pages: [] })),
-  }));
-}
 
 function findCourse(courses: Course[], idOrSlug: string) {
   return courses.find((course) => course.id === idOrSlug || course.slug === idOrSlug) ?? null;
@@ -54,8 +51,8 @@ export class DemoLearningRepository implements LearningRepository {
     return this.courses;
   }
 
-  async getCourseSummaries() {
-    return stripCoursePages(this.courses);
+  async getCourseCards() {
+    return toLearningCourseCards(this.courses);
   }
 
   async getCourse(idOrSlug: string) {
@@ -87,8 +84,8 @@ export class SupabaseLearningRepository<TSupabase> implements LearningRepository
     return this.loaders.getCatalog(this.supabase);
   }
 
-  getCourseSummaries() {
-    return this.loaders.getCourseSummaries(this.supabase);
+  getCourseCards() {
+    return this.loaders.getCourseCards(this.supabase);
   }
 
   getCourse(idOrSlug: string) {

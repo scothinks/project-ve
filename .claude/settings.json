@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/inject-guardrails.py SessionStart",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent/inject-project-guardrails.py\" SessionStart",
             "statusMessage": "Loading Project VE guardrails..."
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/inject-guardrails.py PostCompact",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent/inject-project-guardrails.py\" PostCompact",
             "statusMessage": "Reloading Project VE guardrails..."
           }
         ]
