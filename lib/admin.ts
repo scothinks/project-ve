@@ -6,9 +6,51 @@ export {
   requireAdmin,
   requireAdminWorkspaceRole,
   requirePlatformAdmin,
+  resolveOrganizationScopeFilter,
+  workspaceHasAnyRole,
+  PLATFORM_CATALOG_WORKSPACE_ID,
   type AdminContext,
   type AdminWorkspace,
+  type OrganizationScopeFilter,
 } from "@/features/admin/application/context";
+
+export {
+  getAdminOrganizationOverview,
+  type AdminOrganizationOverview,
+  type AdminOrganizationOverviewOnboarding,
+} from "@/features/admin/application/organization-overview";
+
+export {
+  getAdminCatalogOverview,
+  type AdminCatalogOverview,
+} from "@/features/admin/application/catalog-overview";
+
+export {
+  getAdminPeopleWorkspace,
+  ORGANIZATION_ROLE_DESCRIPTIONS,
+  ORGANIZATION_ROLE_LABELS,
+  type AdminPeopleMember,
+  type AdminPeopleTargetOption,
+  type AdminPeopleWorkspace,
+} from "@/features/admin/application/people-workspace";
+
+export {
+  getAdminCatalogPeopleWorkspace,
+  type AdminCatalogPeopleWorkspace,
+  type AdminCatalogStaffInvitation,
+  type AdminCatalogStaffMember,
+} from "@/features/admin/application/catalog-people-workspace";
+
+export {
+  getAdminOrganizationOversight,
+  type AdminOrganizationOversight,
+  type AdminOversightEntitlementRow,
+} from "@/features/admin/application/organization-oversight";
+
+export {
+  getAdminPlatformOverview,
+  type AdminPlatformOverview,
+} from "@/features/admin/application/platform-overview";
 
 export {
   getAdminAssessmentVersions,
@@ -77,6 +119,7 @@ export {
 export {
   getAdminOrganizationLearners,
   getAdminUsers,
+  searchAdminUsers,
   type AdminProfileRow,
 } from "@/features/users/admin/data";
 

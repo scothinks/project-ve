@@ -88,7 +88,6 @@ export function LearnerWorkspaceSwitcher({
             <WorkspaceLogo />
             <span className="min-w-0">
               <span className="workspace-switcher__name">Project Ve</span>
-              <span className="workspace-switcher__meta">Global Community</span>
             </span>
             {isProjectVeActive ? (
               <span className="workspace-switcher__check">
@@ -113,7 +112,6 @@ export function LearnerWorkspaceSwitcher({
                   <WorkspaceLogo organization={item.organization} />
                   <span className="min-w-0">
                     <span className="workspace-switcher__name">{name}</span>
-                    <span className="workspace-switcher__meta">Open Workspace</span>
                   </span>
                   {isActive ? (
                     <span className="workspace-switcher__check">

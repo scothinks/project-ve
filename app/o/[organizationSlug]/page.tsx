@@ -22,17 +22,18 @@ import { orgHref, requireOrgLearnerRoute, type OrgRouteParams } from "@/app/o/[o
 import {
   appendOrganizationDeliverySearchParam,
   getOrganizationDeliveryLessonProgress,
-  getOrganizationWorkspaceCourses,
+  getOrganizationWorkspaceCourseCards,
   type OrganizationCourseDeliveryOption,
 } from "@/features/organizations/application/learner-workspace";
+import type { LearningCourseCard } from "@/features/learning/application/course-card-model";
 import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
-import type { Course } from "@/lib/lessons";
 import {
   getCompletedLessonIds,
   getCourseProgress,
   getCourseResumeTarget,
   type LessonProgressRecord,
 } from "@/lib/progress";
+import { measureAsync } from "@/lib/performance";
 
 function displayName(profileName: string | null | undefined) {
   return profileName && !profileName.includes("@") ? profileName : "Learner";
@@ -40,7 +41,7 @@ function displayName(profileName: string | null | undefined) {
 
 type HomeLearningItem = {
   completedLessons: number;
-  course: Course;
+  course: LearningCourseCard;
   deliveryContext: OrganizationCourseDeliveryOption | null;
   href: string;
   progressPercent: number;
@@ -64,7 +65,7 @@ async function buildHomeLearningItems({
   userId,
   workspace,
 }: {
-  courses: Course[];
+  courses: LearningCourseCard[];
   fallbackProgress: LessonProgressRecord[];
   supabase: Awaited<ReturnType<typeof requireOrgLearnerRoute>>["supabase"];
   userId: string;
@@ -132,7 +133,9 @@ export default async function OrganizationLearnerHomePage({
 }) {
   const { profile, supabase, user, workspace } = await requireOrgLearnerRoute(params);
   const [courses, lessonProgress, assessmentCheckpoints, myOrgsState] = await Promise.all([
-    getOrganizationWorkspaceCourses(supabase, workspace),
+    measureAsync("org.home.learning_course_cards", () =>
+      getOrganizationWorkspaceCourseCards(supabase, workspace),
+    ),
     createProgressRepository(supabase).getLessonProgress(user.id),
     getOrganizationLearnerAssessmentCheckpoints({
       hrefBuilder: ({ assessmentVersionId, programmeId }) =>
@@ -194,7 +197,7 @@ export default async function OrganizationLearnerHomePage({
                 You&apos;re up to date
               </h1>
               <p className="mx-auto mt-2 max-w-[17rem] text-[0.76rem] font-medium leading-5 text-[var(--learner-text-muted)]">
-                All required induction modules are complete. Enjoy the downtime or explore further.
+                All required lessons are complete. Enjoy the downtime or explore further.
               </p>
             </div>
             {programmeProgress !== null ? (
@@ -237,13 +240,13 @@ export default async function OrganizationLearnerHomePage({
                       <CompassIcon className="size-4" />
                     </span>
                     <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Browse Missions</span>
-                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Field exercises</p>
+                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Complete tasks and earn rewards</p>
                   </Link>
                   <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/rewards")}>
                     <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_14%,transparent)] text-[var(--learner-green-deep)]">
                       <ShopIcon className="size-4" />
                     </span>
-                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Academy Store</span>
+                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Store</span>
                     <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Spend {workspace.xpAccount.label}</p>
                   </Link>
                 </div>
@@ -265,11 +268,6 @@ export default async function OrganizationLearnerHomePage({
                 <strong>Notifications</strong>
                 <span>Review messages for this organisation.</span>
               </Link>
-              <Link className="org-mobile-card org-home-context-card block" href="/dashboard">
-                <p>Project Ve</p>
-                <strong>Return to Project Ve</strong>
-                <span>Leave this organisation workspace.</span>
-              </Link>
             </aside>
           </div>
         ) : (
@@ -279,7 +277,7 @@ export default async function OrganizationLearnerHomePage({
                 Welcome back, {name}.
               </h1>
               <p className="mt-1 text-[0.76rem] font-medium leading-5 text-[var(--learner-text-muted)]">
-                Continue your induction and prepare for upcoming field assessments.
+                Continue your required lessons and prepare for upcoming assessments.
               </p>
             </div>
             {activeLearningItem ? (
@@ -339,11 +337,6 @@ export default async function OrganizationLearnerHomePage({
                 <p>Workspace updates</p>
                 <strong>Notifications</strong>
                 <span>Review messages for this organisation.</span>
-              </Link>
-              <Link className="org-mobile-card org-home-context-card block" href="/dashboard">
-                <p>Project Ve</p>
-                <strong>Return to Project Ve</strong>
-                <span>Leave this organisation workspace.</span>
               </Link>
             </aside>
           </div>

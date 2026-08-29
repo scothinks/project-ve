@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+import { PERSONALIZED_RECOMMENDATION_EDITORIAL_CACHE_TAG } from "@/features/recommendations/data/editorial-cache";
 
 type ContentType = "course" | "lesson" | "mission";
 type RecommendedLevel = "beginner" | "intermediate" | "advanced" | null;
@@ -109,6 +110,7 @@ async function assertContentExists(
 }
 
 function revalidateContentPaths(contentType: ContentType, contentId: string) {
+  revalidateTag(PERSONALIZED_RECOMMENDATION_EDITORIAL_CACHE_TAG);
   revalidatePath("/dashboard");
 
   if (contentType === "course") {

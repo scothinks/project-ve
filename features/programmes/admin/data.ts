@@ -1,7 +1,10 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import {
+  getSelectedAdminWorkspaceId,
+  resolveOrganizationScopeFilter,
+} from "@/features/admin/application/context";
 import type { Database } from "@/types/database";
 
 export type AdminProgrammeOrganizationRow = {
@@ -153,8 +156,11 @@ export async function getAdminProgrammes(
     `)
     .order("updated_at", { ascending: false });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const scope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (scope.mode === "organization") {
+    query = query.eq("organization_id", scope.organizationId);
+  } else if (scope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;

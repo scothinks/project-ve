@@ -396,6 +396,7 @@ export function MissionPanel({
   const [loading, setLoading] = useState(!initialMissions);
   const [message, setMessage] = useState<string | null>(null);
   const [copiedMissionId, setCopiedMissionId] = useState<string | null>(null);
+  const [creatingReferralLinkId, setCreatingReferralLinkId] = useState<string | null>(null);
   const [activeProofMissionId, setActiveProofMissionId] = useState<string | null>(null);
   const [proofDrafts, setProofDrafts] = useState<ProofDrafts>({});
   const [proofInputMode, setProofInputMode] = useState<ProofInputMode>({});
@@ -548,7 +549,51 @@ export function MissionPanel({
     await submitProofField(mission, field, uploadedUrl);
   }
 
-  async function copyReferralLink(missionId: string, url: string) {
+  async function ensureReferralLink(mission: UserMissionSummary) {
+    if (mission.referral?.shareUrl) return mission.referral.shareUrl;
+
+    const programmeId = mission.programmeContext?.programmeId;
+    if (!programmeId) {
+      setMessage("A referral link is not available for this mission.");
+      return null;
+    }
+
+    setCreatingReferralLinkId(mission.id);
+    try {
+      const missionId = mission.baseMissionId ?? mission.id;
+      const response = await fetch(`/api/missions/${encodeURIComponent(missionId)}/referral-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ programmeId }),
+      });
+      const data = await response.json() as { code?: unknown; error?: unknown; shareUrl?: unknown };
+      if (!response.ok || typeof data.shareUrl !== "string" || !data.shareUrl) {
+        setMessage(typeof data.error === "string" ? data.error : "Could not create the referral link.");
+        return null;
+      }
+
+      setMissions((current) => current.map((item) =>
+        item.id === mission.id && item.referral
+          ? {
+              ...item,
+              referral: {
+                ...item.referral,
+                code: typeof data.code === "string" ? data.code : null,
+                shareUrl: data.shareUrl as string,
+              },
+            }
+          : item,
+      ));
+      return data.shareUrl;
+    } finally {
+      setCreatingReferralLinkId(null);
+    }
+  }
+
+  async function copyReferralLink(mission: UserMissionSummary) {
+    const url = await ensureReferralLink(mission);
+    if (!url) return;
+
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
@@ -564,7 +609,7 @@ export function MissionPanel({
         document.body.removeChild(textArea);
       }
 
-      setCopiedMissionId(missionId);
+      setCopiedMissionId(mission.id);
       setMessage("Referral link copied.");
       window.setTimeout(() => setCopiedMissionId(null), 2200);
     } catch {
@@ -572,7 +617,10 @@ export function MissionPanel({
     }
   }
 
-  async function shareReferralLink(missionId: string, url: string) {
+  async function shareReferralLink(mission: UserMissionSummary) {
+    const url = await ensureReferralLink(mission);
+    if (!url) return;
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -580,7 +628,7 @@ export function MissionPanel({
           text: "Start a short Project VE lesson and earn XP as you learn.",
           url,
         });
-        setCopiedMissionId(missionId);
+        setCopiedMissionId(mission.id);
         setMessage("Referral link shared.");
         window.setTimeout(() => setCopiedMissionId(null), 2200);
         return;
@@ -589,7 +637,10 @@ export function MissionPanel({
       }
     }
 
-    await copyReferralLink(missionId, url);
+    await copyReferralLink({
+      ...mission,
+      referral: mission.referral ? { ...mission.referral, shareUrl: url } : undefined,
+    });
   }
 
   const paginatedMissions = useMemo(
@@ -732,20 +783,22 @@ export function MissionPanel({
             <h4 className="pl-1 text-[0.78rem] font-bold text-[var(--foreground)]">Share your link</h4>
             <div className="mt-2 flex items-center gap-1 rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-1">
               <div className="flex-1 truncate px-2.5 text-[0.8rem] font-medium text-[var(--ve-muted-strong)]">
-                {referral.shareUrl}
+                {referral.shareUrl ?? "Created only when you choose to share"}
               </div>
               <MissionActionButton
                 className="shrink-0 gap-1.5 px-3"
-                onClick={() => void copyReferralLink(mission.id, referral.shareUrl)}
+                disabled={creatingReferralLinkId === mission.id}
+                onClick={() => void copyReferralLink(mission)}
                 style={primaryActionStyle}
               >
                 <CopyIcon className="size-3.5" />
-                {copied ? "Copied" : "Copy link"}
+                {copied ? "Copied" : creatingReferralLinkId === mission.id ? "Creating…" : "Copy link"}
               </MissionActionButton>
             </div>
             <button
               className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--ve-card-muted)] py-3 text-[0.82rem] font-bold text-[var(--foreground)]"
-              onClick={() => void shareReferralLink(mission.id, referral.shareUrl)}
+              disabled={creatingReferralLinkId === mission.id}
+              onClick={() => void shareReferralLink(mission)}
               type="button"
             >
               <ShareIcon className="size-4" />

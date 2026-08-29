@@ -1,15 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { LearningCourseCard } from "@/features/learning/application/course-card-model";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
-import type { Course } from "@/lib/lessons";
-import { getCourseXP } from "@/lib/lessons";
 import { getCourseProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { XPBadge } from "@/components/ui/XPBadge";
 
 type CourseCardProps = {
-  course: Course;
+  course: LearningCourseCard;
   href?: string;
   completedLessonIds?: Set<string> | string[];
   desktopLayout?: "stacked" | "horizontal";
@@ -83,7 +82,7 @@ export function CourseCard({
               </h3>
             </div>
             <XPBadge
-              xp={getCourseXP(course)}
+              xp={course.xp}
               unitLabel={unitLabel}
               className="shrink-0 bg-[var(--ve-card)] text-[#008751]"
             />
@@ -104,7 +103,7 @@ export function CourseCard({
                   </h3>
                 </div>
                 <XPBadge
-                  xp={getCourseXP(course)}
+                  xp={course.xp}
                   unitLabel={unitLabel}
                   className="shrink-0 bg-[#dff2e9] text-[#008751]"
                 />

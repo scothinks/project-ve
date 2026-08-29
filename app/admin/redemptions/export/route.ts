@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminRedemptions, requireAdmin, type AdminRedemptionFilters } from "@/lib/admin";
+import { getAdminRedemptions, requireAdminWorkspaceRole, type AdminRedemptionFilters } from "@/lib/admin";
+
+const REDEMPTION_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 function csvCell(value: unknown) {
   const raw = value === null || value === undefined ? "" : String(value);
@@ -18,7 +20,8 @@ function flattenClaimData(claimData: Record<string, unknown> | null) {
 }
 
 export async function GET(request: NextRequest) {
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(REDEMPTION_ROLES);
+  const organizationId = workspace.type === "organization" ? workspace.id : null;
   const params = request.nextUrl.searchParams;
   const filters: AdminRedemptionFilters = {
     claimState: params.get("claimState") || undefined,
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
     dateFrom: params.get("dateFrom") || undefined,
     dateTo: params.get("dateTo") || undefined,
   };
-  const redemptions = await getAdminRedemptions(supabase, filters, 5000);
+  const redemptions = await getAdminRedemptions(supabase, filters, 5000, organizationId);
   const header = [
     "redemption_id",
     "reward_id",

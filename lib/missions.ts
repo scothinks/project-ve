@@ -121,8 +121,8 @@ export type UserMissionSummary = {
     organizationId: string;
   };
   referral?: {
-    code: string;
-    shareUrl: string;
+    code: string | null;
+    shareUrl: string | null;
     requiredFriendLessonCount: number;
     invitedCount: number;
     qualifiedCount: number;

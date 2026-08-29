@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  createSupabaseServerClient,
-  getCurrentUserProfile,
+  getCurrentUserContext,
   type UserProfile,
 } from "@/lib/supabase-server";
 import { isLiveMode } from "@/lib/app-mode";
 import { organizationAllowsLearnerEntry } from "@/features/organizations/identity";
+import { PLATFORM_CATALOG_WORKSPACE_ID, workspaceHasAnyRole } from "@/features/admin/shared/workspace";
+
+export { PLATFORM_CATALOG_WORKSPACE_ID, workspaceHasAnyRole };
 
 type CountableTable =
   | "profiles"
@@ -34,6 +36,30 @@ export type AdminWorkspace = {
   type: "platform" | "organization";
   roles: string[];
 };
+
+export type OrganizationScopeFilter =
+  | { mode: "all" }
+  | { mode: "unowned" }
+  | { mode: "organization"; organizationId: string };
+
+/**
+ * Interprets the ambient `project-ve-admin-workspace` cookie value for data
+ * getters that scope rows by `organization_id`. Three states: "platform"
+ * means no filter (oversight of everything), the platform-catalog sentinel
+ * means `organization_id IS NULL` (Project VE's own catalog), and anything
+ * else is a specific organisation id to filter on exactly.
+ */
+export function resolveOrganizationScopeFilter(selectedWorkspaceId: string): OrganizationScopeFilter {
+  if (selectedWorkspaceId === "platform") {
+    return { mode: "all" };
+  }
+
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    return { mode: "unowned" };
+  }
+
+  return { mode: "organization", organizationId: selectedWorkspaceId };
+}
 
 export type AdminWorkspaceOrganizationIdentity = {
   accentToken: string;
@@ -68,6 +94,37 @@ const STAFF_ORGANIZATION_ROLES = [
 
 export async function getSelectedAdminWorkspaceId() {
   return (await cookies()).get(ADMIN_WORKSPACE_COOKIE)?.value ?? "platform";
+}
+
+async function getPlatformCatalogStaffRoles(supabase: SupabaseClient, userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("platform_catalog_memberships")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("status", "active");
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as Array<{ role: string }>).map((row) => row.role);
+}
+
+function platformCatalogWorkspace(roles: string[]): AdminWorkspace {
+  return {
+    id: PLATFORM_CATALOG_WORKSPACE_ID,
+    organizationIdentity: {
+      accentToken: "green",
+      lifecycleStatus: "active",
+      logoUrl: null,
+      name: "Project VE Platform Catalog",
+      shortName: "Project VE",
+      slug: PLATFORM_CATALOG_WORKSPACE_ID,
+      verificationStatus: "verified",
+    },
+    roles,
+    type: "organization",
+  };
 }
 
 async function getOrganizationStaffMemberships(supabase: SupabaseClient, userId: string) {
@@ -130,13 +187,11 @@ async function getOrganizationIdentityById(supabase: SupabaseClient, organizatio
 }
 
 export async function requireAdmin(): Promise<AdminContext> {
-  const supabase = await createSupabaseServerClient();
+  const { profile, supabase, user } = await getCurrentUserContext();
 
   if (!isLiveMode || !supabase) {
     redirect("/login");
   }
-
-  const { user, profile } = await getCurrentUserProfile(supabase);
 
   if (!user) {
     redirect("/login");
@@ -148,26 +203,75 @@ export async function requireAdmin(): Promise<AdminContext> {
 
   if (profile.role === "admin") {
     const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
-    const organizationIdentity = selectedWorkspaceId === "platform"
-      ? undefined
-      : await getOrganizationIdentityById(supabase, selectedWorkspaceId);
+
+    if (selectedWorkspaceId === "platform") {
+      return {
+        profile,
+        supabase,
+        workspace: { id: "platform", roles: ["platform_admin"], type: "platform" },
+      };
+    }
+
+    if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+      return {
+        profile,
+        supabase,
+        workspace: {
+          id: PLATFORM_CATALOG_WORKSPACE_ID,
+          organizationIdentity: {
+            accentToken: "green",
+            lifecycleStatus: "active",
+            logoUrl: null,
+            name: "Project VE Platform Catalog",
+            shortName: "Project VE",
+            slug: PLATFORM_CATALOG_WORKSPACE_ID,
+            verificationStatus: "verified",
+          },
+          roles: ["platform_admin"],
+          type: "organization",
+        },
+      };
+    }
+
+    const organizationIdentity = await getOrganizationIdentityById(supabase, selectedWorkspaceId);
 
     return {
       profile,
       supabase,
-      workspace: selectedWorkspaceId === "platform"
-        ? { id: "platform", roles: ["platform_admin"], type: "platform" }
-        : { id: selectedWorkspaceId, organizationIdentity, roles: ["platform_admin"], type: "organization" },
+      workspace: { id: selectedWorkspaceId, organizationIdentity, roles: ["platform_admin"], type: "organization" },
     };
   }
 
-  const memberships = await getOrganizationStaffMemberships(supabase, profile.id);
+  const [memberships, catalogStaffRoles] = await Promise.all([
+    getOrganizationStaffMemberships(supabase, profile.id),
+    getPlatformCatalogStaffRoles(supabase, profile.id),
+  ]);
 
-  if (memberships.length === 0) {
+  if (memberships.length === 0 && catalogStaffRoles.length === 0) {
     redirect("/dashboard");
   }
 
   const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID && catalogStaffRoles.length > 0) {
+    return {
+      profile,
+      supabase,
+      workspace: platformCatalogWorkspace(catalogStaffRoles),
+    };
+  }
+
+  if (memberships.length === 0) {
+    // The user has no real organisation memberships at all — their only
+    // access is the platform catalog, regardless of what the ambient cookie
+    // says (e.g. a stale "platform" default from before they had any role).
+    return {
+      profile,
+      supabase,
+      workspace: platformCatalogWorkspace(catalogStaffRoles),
+    };
+  }
+
   const selectedMembership =
     memberships.find((membership) => membership.organization_id === selectedWorkspaceId)
     ?? memberships[0];
@@ -207,10 +311,7 @@ export async function requirePlatformAdmin(): Promise<AdminContext> {
 export async function requireAdminWorkspaceRole(roles: string[]): Promise<AdminContext> {
   const context = await requireAdmin();
 
-  if (
-    context.workspace.type === "platform" ||
-    roles.some((role) => context.workspace.roles.includes(role))
-  ) {
+  if (workspaceHasAnyRole(context.workspace, roles)) {
     return context;
   }
 

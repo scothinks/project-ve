@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeftIcon, GraduationCapIcon, SparkleIcon, TrophyIcon } from "@/components/ui/Icons";
+import { GraduationCapIcon, SparkleIcon, TrophyIcon } from "@/components/ui/Icons";
 import { LoginForm } from "./LoginForm";
 
 const defaultView = {
@@ -39,14 +38,6 @@ export function LoginPageClient({ isDemoMode, nextPath }: LoginPageClientProps) 
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--ve-shell)] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(440px,560px)]">
       <section className="hidden min-h-screen flex-col justify-between bg-[radial-gradient(circle_at_20%_12%,rgba(var(--ve-green-rgb),0.14),transparent_30rem),linear-gradient(135deg,var(--ve-shell),var(--background))] px-12 py-10 lg:flex">
-        <Link
-          aria-label="Back to welcome"
-          className="grid size-11 place-items-center rounded-full border border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--foreground)] shadow-[0_14px_34px_rgba(var(--ve-shadow-rgb),0.08)]"
-          href="/"
-        >
-          <ArrowLeftIcon className="h-6 w-6" />
-        </Link>
-
         <div className="max-w-xl">
           <div className="grid size-16 place-items-center rounded-[24px] bg-[#087f5b] text-[1.35rem] font-black tracking-[-0.04em] text-white shadow-[0_24px_60px_rgba(18,60,53,0.22)]">
             VE
@@ -79,14 +70,6 @@ export function LoginPageClient({ isDemoMode, nextPath }: LoginPageClientProps) 
 
       <section className="flex min-h-screen flex-col bg-[var(--ve-card)] px-7 py-10 sm:px-9 lg:px-14 lg:py-10 lg:shadow-[-28px_0_80px_rgba(var(--ve-shadow-rgb),0.08)]">
         <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col">
-          <Link
-            aria-label="Back to welcome"
-            className="inline-flex text-[var(--foreground)] lg:hidden"
-            href="/"
-          >
-            <ArrowLeftIcon className="h-7 w-7" />
-          </Link>
-
           <div className="mt-12 lg:my-auto lg:mt-0">
             <h1 className="text-[30px] font-bold leading-none tracking-[-0.04em] lg:text-[2.35rem]">
               {view.title}

@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import {
   buildCourseReadiness,
   getCourseReadinessIssueLabels,
@@ -225,7 +226,9 @@ export async function getAdminCourses(supabase: SupabaseClient, workspaceId?: st
     .select("id, slug, title, description, intended_audience, learning_outcomes, category, level, thumbnail, status, sort_order, estimated_minutes, catalog_scope, organization_id, source_course_id, source_catalog_version, copied_at, local_changes, upstream_update_available, catalog_version, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
     .order("sort_order", { ascending: true });
 
-  if (selectedWorkspaceId !== "platform") {
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    query = query.eq("catalog_scope", "platform");
+  } else if (selectedWorkspaceId !== "platform") {
     query = query.or(`organization_id.eq.${selectedWorkspaceId},catalog_scope.eq.platform`);
   }
 
@@ -394,7 +397,9 @@ export async function getAdminCourseCategories(supabase: SupabaseClient) {
     .from("courses")
     .select("category");
 
-  if (selectedWorkspaceId !== "platform") {
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    query = query.eq("catalog_scope", "platform");
+  } else if (selectedWorkspaceId !== "platform") {
     query = query.or(`organization_id.eq.${selectedWorkspaceId},catalog_scope.eq.platform`);
   }
 

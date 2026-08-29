@@ -31,8 +31,6 @@ export async function GET(
   const { organizationSlug } = await params;
   const workspace = await resolveOrganizationLearnerWorkspace(
     supabase,
-    profile.id,
-    profile,
     organizationSlug,
   );
 

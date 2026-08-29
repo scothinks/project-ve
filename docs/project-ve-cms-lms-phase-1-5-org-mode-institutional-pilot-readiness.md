@@ -17,7 +17,14 @@ The following phases remain closed:
 ```text
 CMS P0: CLOSED
 Hybrid LMS P1: CLOSED
+Phase 1.5: IMPLEMENTED AND LOCALLY VALIDATED
 ```
+
+Closure record, 2026-08-30: P1.5A through P1.5F are implemented and the final
+aggregate local release gate passes. P0/P1 architecture is closed. P2 remains
+blocked until hosted query statistics and plans provide the evidence required by
+the performance plan; local Docker timings are not a substitute for that hosted
+evidence.
 
 This addendum inserts a new phase:
 
@@ -1821,13 +1828,51 @@ Implemented:
 * public course catalogue and public reward store queries explicitly request platform-scope/platform-owned records instead of relying on RLS visibility;
 * organisation course queries derive allowed course ids from active membership, enrolled programmes and direct course enrolments;
 * programme-only learners see only courses, missions and rewards connected to their active programme ids;
-* organisation rewards use organisation-owned and programme-sponsored reward filters, with redemption disabled until isolated organisation point accounts land;
+* organisation rewards use organisation-owned and programme-sponsored reward filters, with account-aware redemption handled by the later focused XP/reward workflows;
 * organisation transcript view filters the canonical transcript response to the active organisation workspace;
 * shared learner components accept scoped initial snapshots so org views do not hydrate back into public data.
 
+2026-08-29 P0.3 performance and boundary hardening:
+
+* organisation learner route context now resolves through one focused
+  `get_organization_learner_workspace_context` database operation rather than
+  reconstructing the same context through up to eleven reads and five waves;
+* the RPC derives the learner only from `auth.uid()`, requires the existing
+  organisation-entry policy, has explicit authenticated/service-role grants and
+  classification, denies anonymous execution, and returns no context to a
+  service role without a user subject;
+* the context remains limited to branding, roles, programme/course delivery
+  identifiers and the active organisation points account. Course, mission,
+  assessment and reward screen data remain in focused repositories;
+* pgTAP now covers member, externally enrolled learner, outsider, platform
+  admin and no-subject service-role boundaries, while the application validates
+  the returned delivery identifiers before establishing route state.
+
+2026-08-29 P1.1 mission-state performance and boundary hardening:
+
+* learner mission lists now evaluate public, organisation-wide and programme
+  delivery state through the read-only, self-scoped
+  `get_dashboard_mission_state` RPC instead of issuing per-mission award,
+  progress, proof and referral reads;
+* the operation revalidates trusted organisation/programme attachment and
+  current caller access, preserves programme mission attribution, and returns
+  only the authenticated caller's award/proof/referral state;
+* referral qualification is evaluated relationally in the same database
+  operation, including all attributed learners, while existing contextual
+  tokens may be read without exposing or invoking token mutation helpers;
+* contextual token creation moved to an explicit authenticated POST action, so
+  mission rendering is read-only and mission awards remain in explicit
+  proof/claim/domain action flows;
+* boundary validation includes a dedicated 23-assertion pgTAP suite, the full
+  35-file/755-test database gate, live repository operation-shape coverage, and
+  the Org Mode mission browser journey.
+
 Scope notes:
 
-* Isolated organisation point balances and organisation reward redemption mutations remain for the later XP/reward tickets; this ticket exposes the workspace account label and read-scoped store only.
+* The original P15-ORG-005 delivery preceded isolated organisation balances. The
+  later P1.5C XP/reward tickets now own account-aware earning and redemption;
+  route context reads the active account identity/balance but does not absorb
+  those mutation workflows.
 * Organisation-specific notification filtering needs notification metadata exposed through the notification helper before it can be implemented without brittle CTA string matching.
 * Organisation recommendation rendering is not shown in org routes yet; org assessment/recommendation authoring remains in the later assessment tickets, and org routes do not display public recommendations.
 
@@ -4664,9 +4709,11 @@ Then stop for review.
 
 ## Pre-P1.5F hotfix
 
-`HOTFIX-P15C-CURRENCY-001` is a high-priority P1.5C product-model correction and must be merged before P1.5F implementation begins.
+`HOTFIX-P15C-CURRENCY-001` was the high-priority P1.5C product-model correction
+required before P1.5F implementation.
 
-Status: implemented on 2026-08-18 and ready for review.
+Status: implemented on 2026-08-18 and verified in the final Phase 1 local release
+gate on 2026-08-30.
 
 Scope:
 
@@ -4716,9 +4763,11 @@ Result: migration replay passed; focused issuance controls pgTAP passed 34/34; f
 
 ## Batch P1.5F
 
-Do not begin this batch until `HOTFIX-P15C-CURRENCY-001` has been reviewed, merged and verified.
+Status: **implemented and locally closed on 2026-08-30**.
 
-Implement:
+`HOTFIX-P15C-CURRENCY-001` is included in the validated Phase 1 state.
+
+Completed:
 
 ```text
 P15-UI-001
@@ -4729,7 +4778,51 @@ P15-TEST-002
 P15-TEST-003
 ```
 
-Then stop for final Phase 1 review.
+Closure scope:
+
+* the shared admin shell and primitives now provide the Phase 1 visual system,
+  responsive navigation, workspace tabs, dialogs, drawers, filters, tables,
+  status treatments and task-oriented empty/error states;
+* organisation administration now has a dedicated detail workspace with an
+  operational Overview and focused People membership, invitation and unit
+  workflows, with role-specific section visibility;
+* the platform product catalogue is represented as a distinct pseudo-workspace
+  with its own Overview and Catalog Staff workflows, rather than leaking
+  organisation membership concepts into platform content operations;
+* catalogue staffing and content authorization use explicit RLS/RPC boundaries.
+  Invitation reads use the narrowly authorized
+  `current_user_can_read_platform_catalog_invitation(...)` helper rather than
+  exposing private authentication helpers;
+* learner, public, course, lesson, mission, reward, advertising, support and
+  policy surfaces received the final responsive visual cleanup without replacing
+  the accepted CMS/LMS domain architecture;
+* organisation reward visibility/actions, XP ledger transactions and contextual
+  recommendation sections are covered by focused migrations and repository
+  paths; and
+* the accepted P0.3, P1.1 and P1.2 performance work is integrated: one-operation
+  organisation route context, set-wise mission state, focused course-card read
+  models and a first-useful-HTML dashboard boundary.
+
+Final local validation on 2026-08-30:
+
+* `npm run test:remediation:local` passed from a clean migration replay;
+* pgTAP passed 35 files / 755 tests;
+* demo/live repository contracts, quiz-XP concurrency, organisation-AI
+  concurrency and economic-integrity gates passed;
+* the production Playwright suite passed 21/21, including three focused browser
+  checks for the design system/platform dashboard, organisation Overview/People
+  boundaries and Platform Catalog Overview/Catalog Staff boundaries;
+* `npm run ci` passed typecheck, lint, 158 unit tests and the production build;
+  and
+* generated database-type parity and `git diff --check` passed.
+
+The release gate also found and closed two boundary defects before this record
+was written: catalog invitation RLS no longer depends on a revoked private
+helper, and report viewers no longer invoke owner/admin-only activity reads while
+loading the overview.
+
+Stop after Phase 1. Do not begin P2 until hosted query evidence has been captured
+and reviewed.
 
 ---
 
@@ -4825,8 +4918,8 @@ P1 Hybrid LMS foundation
 → CLOSED
 
 P1.5 Org Mode and institutional pilot readiness
-→ P1.5E CLOSED; HOTFIX-P15C-CURRENCY-001 THEN P1.5F REMAIN
+→ P1.5A–P1.5F IMPLEMENTED; FINAL LOCAL RELEASE GATE PASSED
 
 P2 Enterprise and institutional expansion
-→ BLOCKED UNTIL P1.5F FINAL REVIEW CLOSES
+→ BLOCKED UNTIL HOSTED QUERY EVIDENCE IS CAPTURED AND REVIEWED
 ```

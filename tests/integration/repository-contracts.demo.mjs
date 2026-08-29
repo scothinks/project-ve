@@ -27,10 +27,10 @@ test("demo repositories work without a Supabase client", async () => {
 
   markLessonPageCompleted(lesson.id, page.id, DEMO_USER_ID);
 
-  const [catalog, summaries, course, lessonDetail, quizDetail, progress, rewards, missions] =
+  const [catalog, courseCards, course, lessonDetail, quizDetail, progress, rewards, missions] =
     await Promise.all([
       learningRepository.getCatalog(),
-      learningRepository.getCourseSummaries(),
+      learningRepository.getCourseCards(),
       learningRepository.getCourse(courses[0].id),
       learningRepository.getLesson(lesson.id),
       learningRepository.getQuiz(lesson.quiz.id),
@@ -44,7 +44,12 @@ test("demo repositories work without a Supabase client", async () => {
     ]);
 
   assert.equal(catalog.length, courses.length);
-  assert.equal(summaries[0].lessons[0].pages.length, 0);
+  assert.deepEqual(
+    courseCards[0].lessons[0].pages,
+    courses[0].lessons[0].pages.map((item) => ({ id: item.id, order: item.order })),
+  );
+  assert.equal("blocks" in courseCards[0].lessons[0].pages[0], false);
+  assert.equal("options" in courseCards[0].lessons[0].quiz, false);
   assert.equal(course?.id, courses[0].id);
   assert.equal(lessonDetail?.lesson.id, lesson.id);
   assert.equal(quizDetail?.quiz.id, lesson.quiz.id);

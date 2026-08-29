@@ -2,14 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+
+const REDEMPTION_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 export async function refundRedemption(formData: FormData) {
   const redemptionId = String(formData.get("redemptionId") ?? "");
   const reason = sanitizePlainTextInput(String(formData.get("reason") ?? ""), 500);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(REDEMPTION_ROLES);
 
   if (!redemptionId) {
     throw new Error("Redemption is required.");
@@ -33,7 +35,7 @@ export async function refundRedemption(formData: FormData) {
 export async function fulfillRedemption(formData: FormData) {
   const redemptionId = String(formData.get("redemptionId") ?? "");
   const note = sanitizePlainTextInput(String(formData.get("note") ?? ""), 500);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(REDEMPTION_ROLES);
 
   if (!redemptionId) {
     throw new Error("Redemption is required.");

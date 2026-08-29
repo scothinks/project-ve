@@ -70,7 +70,7 @@ export function CourseWorkspaceTabs({
 
   return (
     <Tabs.Root className="space-y-6" value={activeTab} onValueChange={selectTab}>
-      <div className="sticky top-[73px] z-10 -mx-5 border-y border-[var(--ve-line-soft)] bg-[var(--ve-shell)]/95 px-5 py-3 backdrop-blur md:top-0 md:-mx-8 md:px-8">
+      <div className="sticky top-20 z-10 -mx-5 border-y border-[var(--ve-line-soft)] bg-[var(--ve-shell)]/95 px-5 py-3 backdrop-blur md:-mx-8 md:px-8">
         <Tabs.List
           aria-label="Course workspace sections"
           className="hide-scrollbar flex gap-2 overflow-x-auto"

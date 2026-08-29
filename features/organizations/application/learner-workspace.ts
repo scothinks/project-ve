@@ -2,7 +2,18 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserProfile } from "@/lib/supabase-server";
+import { measureAsync } from "@/lib/performance";
+import {
+  parseOrganizationLearnerWorkspaceContext,
+  type OrganizationLearningDeliveryContext,
+  type OrganizationLearnerWorkspaceContext,
+  type PublicLearnerWorkspaceContext,
+} from "@/features/organizations/application/learner-workspace-context";
 import { getLearningCoursesByIds } from "@/lib/supabase-learning";
+import {
+  getLearningCourseCardsByIds,
+} from "@/features/learning/data/course-card-data";
+import type { LearningCourseCard } from "@/features/learning/application/course-card-model";
 import {
   getSupabaseMissionSummaries,
   type MissionDeliveryRequest,
@@ -16,14 +27,14 @@ import type { LessonProgressRecord } from "@/lib/progress";
 import type { RewardStoreSnapshot } from "@/lib/rewards";
 import type { Database } from "@/types/database";
 
-type MembershipRow = {
-  role: Database["public"]["Enums"]["organization_role_key"];
-};
-
-type EnrolmentRow = {
-  course_id: string | null;
-  programme_id: string | null;
-};
+export type {
+  LearnerWorkspaceAccessSource,
+  LearnerWorkspaceContext,
+  OrganizationCourseDeliveryOption,
+  OrganizationLearningDeliveryContext,
+  OrganizationLearnerWorkspaceContext,
+  PublicLearnerWorkspaceContext,
+} from "@/features/organizations/application/learner-workspace-context";
 
 type ProgrammeLessonPageCompletionRow = {
   completed_at: string;
@@ -31,106 +42,13 @@ type ProgrammeLessonPageCompletionRow = {
   page_id: string;
 };
 
-export type OrganizationCourseDeliveryOption = {
-  courseId: string;
-  label: string;
-  organizationId: string;
-  programmeId: string | null;
-  scope: "organization" | "programme";
-};
-
-export type OrganizationLearningDeliveryContext = OrganizationCourseDeliveryOption;
-
-export type LearnerWorkspaceAccessSource =
-  | "course_enrolment"
-  | "membership"
-  | "owner"
-  | "programme_enrolment";
-
-export type PublicLearnerWorkspaceContext = {
-  accessSource: "public";
-  branding: {
-    accentToken: "green";
-    logoUrl: null;
-    name: "Project Ve";
-    shortName: "Project Ve";
-  };
-  membershipRoles: [];
-  organizationId: null;
-  organizationSlug: null;
-  programmeIds: [];
-  type: "public";
-  xpAccount: {
-    balance: number;
-    label: "Project Ve XP";
-    type: "project_ve";
-  };
-};
-
-export type OrganizationLearnerWorkspaceContext = {
-  accessSource: LearnerWorkspaceAccessSource;
-  branding: {
-    accentToken: Database["public"]["Enums"]["organization_accent_token"];
-    logoUrl: string | null;
-    name: string;
-    shortName: string | null;
-  };
-  courseIds: string[];
-  courseDeliveryOptions: Record<string, OrganizationCourseDeliveryOption[]>;
-  membershipRoles: Database["public"]["Enums"]["organization_role_key"][];
-  missionIds: string[];
-  organizationId: string;
-  organizationSlug: string;
-  programmeIds: string[];
-  type: "organization";
-  xpAccount: {
-    balance: number;
+type OrganizationProgressCourse = {
+  id: string;
+  lessons: ReadonlyArray<{
     id: string;
-    label: string;
-    type: "organization";
-  };
+    pages: ReadonlyArray<{ id: string }>;
+  }>;
 };
-
-export type LearnerWorkspaceContext =
-  | OrganizationLearnerWorkspaceContext
-  | PublicLearnerWorkspaceContext;
-
-const OWNER_ROLE = "organisation_owner";
-
-function unique(values: Array<string | null | undefined>) {
-  return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
-}
-
-function getAccessSource({
-  programmeIds,
-  roles,
-}: {
-  programmeIds: string[];
-  roles: Database["public"]["Enums"]["organization_role_key"][];
-}): LearnerWorkspaceAccessSource {
-  if (roles.includes(OWNER_ROLE)) return "owner";
-  if (roles.length > 0) return "membership";
-  if (programmeIds.length > 0) return "programme_enrolment";
-  return "course_enrolment";
-}
-
-async function getProgrammeCourseLinks(
-  supabase: SupabaseClient<Database>,
-  programmeIds: string[],
-) {
-  if (programmeIds.length === 0) return [];
-
-  const { data, error } = await supabase
-    .from("programme_courses")
-    .select("course_id, programme_id")
-    .in("programme_id", programmeIds);
-
-  if (error) throw error;
-  return (data ?? []).map((row) => ({
-    courseId: row.course_id,
-    programmeId: row.programme_id,
-  }));
-}
 
 async function getProgrammeMissionDeliveryRequests(
   supabase: SupabaseClient<Database>,
@@ -234,20 +152,6 @@ async function getOrganizationMissionDeliveryRequests(
   }));
 }
 
-async function getOrganizationCourseIds(
-  supabase: SupabaseClient<Database>,
-  organizationId: string,
-) {
-  const { data, error } = await supabase
-    .from("courses")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .eq("status", "published");
-
-  if (error) throw error;
-  return unique((data ?? []).map((row) => row.id));
-}
-
 export function getPublicLearnerWorkspace(profile: UserProfile | null): PublicLearnerWorkspaceContext {
   return {
     accessSource: "public",
@@ -272,149 +176,23 @@ export function getPublicLearnerWorkspace(profile: UserProfile | null): PublicLe
 
 export async function resolveOrganizationLearnerWorkspace(
   supabase: SupabaseClient<Database>,
-  userId: string,
-  profile: UserProfile | null,
   organizationSlug: string,
 ): Promise<OrganizationLearnerWorkspaceContext | null> {
-  const { data: organization, error: organizationError } = await supabase
-    .from("organizations")
-    .select("id, name, short_name, slug, logo_url, accent_token, lifecycle_status, verification_status")
-    .eq("slug", organizationSlug)
-    .maybeSingle();
-
-  if (organizationError) throw organizationError;
-  if (!organization) return null;
-
-  const { data: canEnter, error: canEnterError } = await supabase.rpc(
-    "current_user_can_enter_organization",
-    { p_organization_id: organization.id },
-  );
-
-  if (canEnterError) throw canEnterError;
-  if (!canEnter) return null;
-
-  const [membershipsResult, enrolmentsResult, xpAccountResult] = await Promise.all([
-    supabase
-      .from("organization_memberships")
-      .select("role")
-      .eq("organization_id", organization.id)
-      .eq("user_id", userId)
-      .eq("status", "active"),
-    supabase
-      .from("enrolments")
-      .select("course_id, programme_id")
-      .eq("organization_id", organization.id)
-      .eq("user_id", userId)
-      .in("status", ["active", "completed"]),
-    supabase
-      .from("xp_accounts")
-      .select("id, display_name_plural, short_label, display_format")
-      .eq("organization_id", organization.id)
-      .eq("scope", "organization")
-      .eq("is_default", true)
-      .eq("status", "active")
-      .maybeSingle(),
-  ]);
-
-  if (membershipsResult.error) throw membershipsResult.error;
-  if (enrolmentsResult.error) throw enrolmentsResult.error;
-  if (xpAccountResult.error) throw xpAccountResult.error;
-  if (!xpAccountResult.data) return null;
-
-  const { data: xpBalance, error: xpBalanceError } = await supabase
-    .from("user_xp_balances")
-    .select("balance_cached")
-    .eq("user_id", userId)
-    .eq("xp_account_id", xpAccountResult.data.id)
-    .maybeSingle();
-
-  if (xpBalanceError) throw xpBalanceError;
-
-  const roles = unique(
-    ((membershipsResult.data ?? []) as MembershipRow[]).map((membership) => membership.role),
-  ) as Database["public"]["Enums"]["organization_role_key"][];
-  const enrolments = (enrolmentsResult.data ?? []) as EnrolmentRow[];
-  const programmeIds = unique(enrolments.map((enrolment) => enrolment.programme_id));
-  const directCourseIds = unique(enrolments.map((enrolment) => enrolment.course_id));
-  const [programmeCourseLinks, programmeTitlesResult, organizationCourseIds, programmeMissionDeliveries, organizationMissionDeliveries] = await Promise.all([
-    getProgrammeCourseLinks(supabase, programmeIds),
-    programmeIds.length > 0
-      ? supabase.from("programmes").select("id, title").in("id", programmeIds)
-      : Promise.resolve({ data: [], error: null }),
-    roles.length > 0 ? getOrganizationCourseIds(supabase, organization.id) : Promise.resolve([]),
-    getProgrammeMissionDeliveryRequests(supabase, organization.id, organization.slug, programmeIds),
-    getOrganizationMissionDeliveryRequests(supabase, organization.id, organization.slug, roles),
-  ]);
-  if (programmeTitlesResult.error) throw programmeTitlesResult.error;
-  const missionDeliveries = [...organizationMissionDeliveries, ...programmeMissionDeliveries];
-  const programmeTitles = new Map(
-    (programmeTitlesResult.data ?? []).map((programme) => [programme.id, programme.title]),
-  );
-  const programmeCourseIds = programmeCourseLinks.map((link) => link.courseId);
-  const directOrganizationCourseIds = enrolments
-    .filter((enrolment) => enrolment.programme_id === null)
-    .map((enrolment) => enrolment.course_id);
-  const courseIds = unique([...directCourseIds, ...programmeCourseIds, ...organizationCourseIds]);
-  const organizationCourseSet = new Set([...organizationCourseIds, ...directOrganizationCourseIds]);
-  const courseDeliveryOptions = Object.fromEntries(
-    courseIds.map((courseId) => {
-      const programmeOptions = programmeCourseLinks
-        .filter((link) => link.courseId === courseId)
-        .map((link) => ({
-          courseId,
-          label: programmeTitles.get(link.programmeId) ?? "Programme learning",
-          organizationId: organization.id,
-          programmeId: link.programmeId,
-          scope: "programme" as const,
-        }));
-      const options = programmeOptions.length > 0
-        ? programmeOptions
-        : organizationCourseSet.has(courseId)
-          ? [{
-              courseId,
-              label: "Organisation learning",
-              organizationId: organization.id,
-              programmeId: null,
-              scope: "organization" as const,
-            }]
-          : [];
-
-      return [courseId, options];
+  const { data, error } = await measureAsync("org.workspace.context_rpc", () =>
+    supabase.rpc("get_organization_learner_workspace_context", {
+      p_organization_slug: organizationSlug,
     }),
-  ) as Record<string, OrganizationCourseDeliveryOption[]>;
+  );
 
-  return {
-    accessSource: getAccessSource({ programmeIds, roles }),
-    branding: {
-      accentToken: organization.accent_token,
-      logoUrl: organization.logo_url,
-      name: organization.name,
-      shortName: organization.short_name,
-    },
-    courseIds,
-    courseDeliveryOptions,
-    membershipRoles: roles,
-    missionIds: unique(missionDeliveries.map((delivery) => delivery.missionId)),
-    organizationId: organization.id,
-    organizationSlug: organization.slug,
-    programmeIds,
-    type: "organization",
-    xpAccount: {
-      balance: xpBalance?.balance_cached ?? 0,
-      id: xpAccountResult.data.id,
-      label: xpAccountResult.data.display_format === "amount_short_label"
-        ? xpAccountResult.data.short_label
-        : xpAccountResult.data.display_name_plural,
-      type: "organization",
-    },
-  };
+  if (error) throw error;
+  return parseOrganizationLearnerWorkspaceContext(data);
 }
 
-export async function getOrganizationWorkspaceCourses(
+export async function getOrganizationWorkspaceCourseCards(
   supabase: SupabaseClient<Database>,
   workspace: OrganizationLearnerWorkspaceContext,
-): Promise<Course[]> {
-  return getLearningCoursesByIds(supabase, workspace.courseIds);
+): Promise<LearningCourseCard[]> {
+  return getLearningCourseCardsByIds(supabase, workspace.courseIds);
 }
 
 export async function getOrganizationWorkspaceCourse(
@@ -486,7 +264,7 @@ async function getContextualProgrammeLessonProgress({
   supabase,
   userId,
 }: {
-  course: Course;
+  course: OrganizationProgressCourse;
   deliveryContext: OrganizationLearningDeliveryContext;
   supabase: SupabaseClient<Database>;
   userId: string;
@@ -549,7 +327,7 @@ export async function getOrganizationDeliveryLessonProgress({
   supabase,
   userId,
 }: {
-  course: Course;
+  course: OrganizationProgressCourse;
   deliveryContext: OrganizationLearningDeliveryContext;
   fallbackProgress: LessonProgressRecord[];
   supabase: SupabaseClient<Database>;
@@ -586,26 +364,33 @@ export async function getOrganizationWorkspaceMissions({
 }): Promise<UserMissionSummary[]> {
   if (!profile) return [];
 
-  const missionDeliveries = await getProgrammeMissionDeliveryRequests(
-    supabase,
-    workspace.organizationId,
-    workspace.organizationSlug,
-    workspace.programmeIds,
-  );
-  const organizationMissionDeliveries = await getOrganizationMissionDeliveryRequests(
-    supabase,
-    workspace.organizationId,
-    workspace.organizationSlug,
-    workspace.membershipRoles,
+  const [missionDeliveries, organizationMissionDeliveries] = await measureAsync(
+    "org.missions.delivery_context_batch",
+    () => Promise.all([
+      getProgrammeMissionDeliveryRequests(
+        supabase,
+        workspace.organizationId,
+        workspace.organizationSlug,
+        workspace.programmeIds,
+      ),
+      getOrganizationMissionDeliveryRequests(
+        supabase,
+        workspace.organizationId,
+        workspace.organizationSlug,
+        workspace.membershipRoles,
+      ),
+    ]),
   );
 
-  return getSupabaseMissionSummaries({
-    missionDeliveries: [...organizationMissionDeliveries, ...missionDeliveries],
-    origin,
-    referralCode: profile.referral_code ?? null,
-    supabase,
-    userId: profile.id,
-  });
+  return measureAsync("org.missions.summaries", () =>
+    getSupabaseMissionSummaries({
+      missionDeliveries: [...organizationMissionDeliveries, ...missionDeliveries],
+      origin,
+      referralCode: profile.referral_code ?? null,
+      supabase,
+      userId: profile.id,
+    }),
+  );
 }
 
 export async function getOrganizationWorkspaceRewardSnapshot({

@@ -168,15 +168,15 @@ select extensions.throws_ok(
 select extensions.throws_ok(
   $$ select * from public.find_existing_reward_inventory_values('reward', 'voucher_code', '[]'::jsonb) $$,
   'P0001',
-  'Admin access required.',
-  'authenticated non-admin cannot execute find_existing_reward_inventory_values'
+  'Admin or organisation manager access required.',
+  'authenticated non-admin non-org-staff cannot execute find_existing_reward_inventory_values'
 );
 
 select extensions.throws_ok(
   $$ select public.refund_reward_redemption('00000000-0000-0000-0000-000000000999'::uuid, 'test') $$,
   'P0001',
-  'Only an admin can refund reward redemptions.',
-  'authenticated non-admin cannot execute refund_reward_redemption'
+  'We could not find this reward redemption.',
+  'authenticated non-admin without an existing redemption is rejected by refund_reward_redemption'
 );
 
 select extensions.throws_ok(

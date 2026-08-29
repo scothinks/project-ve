@@ -386,10 +386,10 @@ export function QuizOptions({
               Quiz {unitLabel} unlocks at {formatResetAt(dailyLimitModal.nextResetAt)}.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button href={`/results/${lessonId}`} variant="outline">
+              <Button href={resultHref ?? `/results/${lessonId}`} variant="outline">
                 Review
               </Button>
-              <Button href="/courses">Keep Learning</Button>
+              <Button href={keepLearningHref}>Keep Learning</Button>
             </div>
           </Card>
         </div>

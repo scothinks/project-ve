@@ -31,7 +31,6 @@ export function createMissionRepository(supabase: AppSupabaseClient | null): Mis
       userId: params.userId,
       referralCode: params.referralCode,
       origin: params.origin,
-      syncAwards: params.syncAwards,
     }),
   );
 }

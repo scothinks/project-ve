@@ -1,15 +1,27 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import {
+  ADMIN_WORKSPACE_COOKIE,
   requireAdminWorkspaceRole,
   requirePlatformAdmin,
   type AdminContext,
 } from "@/features/admin/application/context";
 import { ORGANIZATION_ENTITLEMENT_KEYS } from "@/features/organizations/entitlements";
 import { normalizeOrganizationAccentToken } from "@/features/organizations/identity";
+import {
+  createOrganizationInvitation,
+  normalizeOrganizationMembershipStatus,
+  normalizeOrganizationRole,
+  parseOrganizationInvitationExpiry,
+  parseOrganizationInvitationTarget,
+  upsertOrganizationMembership,
+  upsertOrganizationUnit,
+  replaceOrganizationUnitMembers,
+} from "@/features/organizations/admin/membership-commands";
 import { normalizeEmailInput, sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
 import type { Database } from "@/types/database";
 
@@ -17,22 +29,8 @@ type ContentStatus = Database["public"]["Enums"]["content_status"];
 type OrganizationAccentToken = Database["public"]["Enums"]["organization_accent_token"];
 type OrganizationBillingStatus = Database["public"]["Enums"]["organization_billing_status"];
 type OrganizationEntitlementKey = typeof ORGANIZATION_ENTITLEMENT_KEYS[number];
-type OrganizationInvitationTargetType = Database["public"]["Enums"]["organization_invitation_target_type"];
 type OrganizationLifecycleStatus = Database["public"]["Enums"]["organization_lifecycle_status"];
-type OrganizationMembershipStatus = Database["public"]["Enums"]["organization_membership_status"];
-type OrganizationRoleKey = Database["public"]["Enums"]["organization_role_key"];
 type OrganizationVerificationStatus = Database["public"]["Enums"]["organization_verification_status"];
-
-const ORGANIZATION_ROLES: OrganizationRoleKey[] = [
-  "organisation_owner",
-  "organisation_admin",
-  "programme_manager",
-  "content_editor",
-  "reviewer",
-  "instructor",
-  "report_viewer",
-  "learner",
-];
 
 const BILLING_STATUSES: OrganizationBillingStatus[] = [
   "free",
@@ -101,15 +99,6 @@ function normalizeContentStatus(value: FormDataEntryValue | null): ContentStatus
   return status === "published" || status === "archived" ? status : "draft";
 }
 
-function normalizeMembershipStatus(value: FormDataEntryValue | null): OrganizationMembershipStatus {
-  const status = String(value ?? "active");
-  if (status === "invited" || status === "suspended" || status === "removed") {
-    return status;
-  }
-
-  return "active";
-}
-
 function normalizeBillingStatus(value: FormDataEntryValue | null): OrganizationBillingStatus {
   const status = String(value ?? "free");
   return BILLING_STATUSES.includes(status as OrganizationBillingStatus)
@@ -136,40 +125,6 @@ function normalizeVerificationStatus(value: FormDataEntryValue | null): Organiza
   return VERIFICATION_STATUSES.includes(status as OrganizationVerificationStatus)
     ? status as OrganizationVerificationStatus
     : "unverified";
-}
-
-function normalizeRole(value: FormDataEntryValue | null): OrganizationRoleKey {
-  const role = String(value ?? "learner");
-  return ORGANIZATION_ROLES.includes(role as OrganizationRoleKey)
-    ? role as OrganizationRoleKey
-    : "learner";
-}
-
-function parseInvitationTarget(value: FormDataEntryValue | null): {
-  targetId: string | null;
-  targetType: OrganizationInvitationTargetType;
-} {
-  const target = sanitizePlainTextInput(String(value ?? "organization"), 120);
-  const [rawType, rawId] = target.split(":");
-
-  if (rawType === "programme" || rawType === "cohort") {
-    return {
-      targetId: sanitizePlainTextInput(rawId ?? "", 80) || null,
-      targetType: rawType,
-    };
-  }
-
-  return {
-    targetId: null,
-    targetType: "organization",
-  };
-}
-
-function parseExpiry(value: FormDataEntryValue | null) {
-  const rawValue = sanitizePlainTextInput(String(value ?? "14"), 8);
-  const days = Number(rawValue);
-  const safeDays = Number.isInteger(days) && days >= 1 && days <= 90 ? days : 14;
-  return new Date(Date.now() + safeDays * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function parseIntegerOverride(formData: FormData, key: OrganizationEntitlementKey) {
@@ -244,6 +199,36 @@ async function requireOrganizationManagerFor(organizationId: string): Promise<Ad
   return context;
 }
 
+export async function enterOrganizationWorkspace(formData: FormData) {
+  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+
+  if (!organizationId) {
+    throw new Error("An organisation is required to enter its workspace.");
+  }
+
+  const { supabase } = await requirePlatformAdmin();
+  const { data: organization, error } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!organization) {
+    throw new Error("Organisation not found.");
+  }
+
+  (await cookies()).set(ADMIN_WORKSPACE_COOKIE, organizationId, {
+    path: "/",
+    sameSite: "lax",
+  });
+
+  redirect("/admin");
+}
+
 export async function saveOrganization(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const name = sanitizePlainTextInput(String(formData.get("name") ?? ""), 160);
@@ -269,20 +254,11 @@ export async function saveOrganization(formData: FormData) {
 export async function saveOrganizationMembership(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const userId = sanitizePlainTextInput(String(formData.get("userId") ?? ""), 80);
-  const role = normalizeRole(formData.get("role"));
-  const status = normalizeMembershipStatus(formData.get("status"));
+  const role = normalizeOrganizationRole(formData.get("role"));
+  const status = normalizeOrganizationMembershipStatus(formData.get("status"));
   const { supabase } = await requireOrganizationManagerFor(organizationId);
 
-  const { error } = await supabase.rpc("admin_upsert_organization_membership", {
-    p_organization_id: organizationId,
-    p_role: role,
-    p_status: status,
-    p_user_id: userId,
-  });
-
-  if (error) {
-    throw error;
-  }
+  await upsertOrganizationMembership(supabase, { organizationId, role, status, userId });
 
   revalidatePath("/admin/organizations");
   redirect(appendAdminNotice("/admin/organizations", "Membership saved."));
@@ -297,18 +273,14 @@ export async function saveOrganizationUnit(formData: FormData) {
   const status = normalizeContentStatus(formData.get("status"));
   const { supabase } = await requireOrganizationManagerFor(organizationId);
 
-  const { error } = await supabase.rpc("admin_upsert_organization_unit", {
-    p_name: name,
-    p_organization_id: organizationId,
-    p_parent_unit_id: parentUnitId || null,
-    p_status: status,
-    p_unit_id: unitId || null,
-    p_unit_type: unitType,
+  await upsertOrganizationUnit(supabase, {
+    name,
+    organizationId,
+    parentUnitId: parentUnitId || null,
+    status,
+    unitId: unitId || null,
+    unitType,
   });
-
-  if (error) {
-    throw error;
-  }
 
   revalidatePath("/admin/organizations");
   revalidatePath("/admin/cohorts");
@@ -326,16 +298,9 @@ export async function saveOrganizationUnitMembers(formData: FormData) {
       const [userId, role] = sanitizePlainTextInput(String(value ?? ""), 240).split(":");
       return userId && role ? { role, userId } : null;
     })
-    .filter(Boolean);
+    .filter((member): member is { role: string; userId: string } => member !== null);
 
-  const { error } = await supabase.rpc("admin_replace_organization_unit_members", {
-    p_members: members,
-    p_unit_id: unitId,
-  });
-
-  if (error) {
-    throw error;
-  }
+  await replaceOrganizationUnitMembers(supabase, { members, unitId });
 
   revalidatePath("/admin/organizations");
   revalidatePath("/admin/reporting");
@@ -346,24 +311,20 @@ export async function saveOrganizationInvitation(formData: FormData) {
   const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
   const invitedUserId = sanitizePlainTextInput(String(formData.get("invitedUserId") ?? ""), 80);
   const email = normalizeEmailInput(String(formData.get("email") ?? ""));
-  const role = normalizeRole(formData.get("role"));
-  const { targetId, targetType } = parseInvitationTarget(formData.get("target"));
-  const expiresAt = parseExpiry(formData.get("expiresInDays"));
+  const role = normalizeOrganizationRole(formData.get("role"));
+  const { targetId, targetType } = parseOrganizationInvitationTarget(formData.get("target"));
+  const expiresAt = parseOrganizationInvitationExpiry(formData.get("expiresInDays"));
   const { supabase } = await requireOrganizationManagerFor(organizationId);
 
-  const { error } = await supabase.rpc("admin_create_organization_invitation", {
-    p_email: email || null,
-    p_expires_at: expiresAt,
-    p_invited_user_id: invitedUserId || null,
-    p_organization_id: organizationId,
-    p_role: role,
-    p_target_id: targetId,
-    p_target_type: targetType,
+  await createOrganizationInvitation(supabase, {
+    email: email || null,
+    expiresAt,
+    invitedUserId: invitedUserId || null,
+    organizationId,
+    role,
+    targetId,
+    targetType,
   });
-
-  if (error) {
-    throw error;
-  }
 
   revalidatePath("/admin/organizations");
   revalidatePath("/org/my");

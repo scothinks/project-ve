@@ -13,6 +13,7 @@ import { requireAdmin } from "@/lib/admin";
 import { ValidationError } from "@/lib/app-errors";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import type { Json } from "@/types/database";
+import { revalidatePublishedLearningCourseCards } from "@/app/admin/courses/learning-cache";
 
 function getCourseId(formData: FormData) {
   const courseId = sanitizePlainTextInput(String(formData.get("courseId") ?? ""), 120);
@@ -77,6 +78,7 @@ function appendReviewHistory(
 }
 
 function revalidateCourseReviewPaths(courseId: string) {
+  revalidatePublishedLearningCourseCards();
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/courses");

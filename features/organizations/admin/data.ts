@@ -1,7 +1,11 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import {
+  getSelectedAdminWorkspaceId,
+  resolveOrganizationScopeFilter,
+} from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { organizationAllowsLearnerEntry } from "@/features/organizations/identity";
 import type { UserProfile } from "@/lib/supabase-server";
 import type { Database } from "@/types/database";
@@ -149,6 +153,7 @@ export type AdminOrganizationMembershipRow = {
     id: string;
     display_name: string | null;
     role: string;
+    avatar_url?: string | null;
   } | null;
   roleDefinition?: {
     label: string;
@@ -234,10 +239,12 @@ type MembershipSelectRow = AdminOrganizationMembershipRow & {
     id: string;
     display_name: string | null;
     role: string;
+    avatar_url?: string | null;
   } | Array<{
     id: string;
     display_name: string | null;
     role: string;
+    avatar_url?: string | null;
   }> | null;
 };
 
@@ -351,7 +358,31 @@ export async function getAdminOrganizationContexts(
     }));
 
   if (profile?.role !== "admin") {
-    return organizationContexts;
+    const { data: catalogMemberships, error: catalogError } = await supabase
+      .from("platform_catalog_memberships")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("role", { ascending: true });
+
+    if (catalogError) {
+      throw catalogError;
+    }
+
+    const catalogContexts = ((catalogMemberships ?? []) as Array<{ role: string }>).map((membership) => ({
+      accentToken: "green" as const,
+      id: PLATFORM_CATALOG_WORKSPACE_ID,
+      label: "Project VE Platform Catalog",
+      logoUrl: null,
+      role: membership.role,
+      roleLabel: roleToLabel(membership.role),
+      shortName: "Project VE",
+      slug: PLATFORM_CATALOG_WORKSPACE_ID,
+      type: "organization" as const,
+      verificationStatus: "verified" as const,
+    }));
+
+    return [...catalogContexts, ...organizationContexts];
   }
 
   return [
@@ -367,6 +398,18 @@ export async function getAdminOrganizationContexts(
       type: "platform",
       verificationStatus: "verified",
     },
+    {
+      id: PLATFORM_CATALOG_WORKSPACE_ID,
+      accentToken: "green",
+      label: "Project VE Platform Catalog",
+      logoUrl: null,
+      role: "platform_admin",
+      roleLabel: "Platform admin",
+      shortName: "Project VE",
+      slug: PLATFORM_CATALOG_WORKSPACE_ID,
+      type: "organization",
+      verificationStatus: "verified",
+    },
     ...organizationContexts,
   ];
 }
@@ -375,14 +418,22 @@ export async function getAdminOrganizations(
   supabase: SupabaseClient<Database>,
 ): Promise<AdminOrganizationRow[]> {
   const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  const scope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+
+  if (scope.mode === "unowned") {
+    // The Project VE Platform Catalog pseudo-workspace has no backing
+    // organizations row to select.
+    return [];
+  }
+
   let query = supabase
     .from("organizations")
     .select("id, slug, name, short_name, description, logo_url, accent_token, support_email, support_phone, status, creation_source, verification_status, lifecycle_status, created_at, updated_at")
     .order("updated_at", { ascending: false })
     .order("name", { ascending: true });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("id", selectedWorkspaceId);
+  if (scope.mode === "organization") {
+    query = query.eq("id", scope.organizationId);
   }
 
   const { data, error } = await query;
@@ -413,8 +464,11 @@ export async function getAdminOrganizationUnits(
     `)
     .order("name", { ascending: true });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const unitsScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (unitsScope.mode === "organization") {
+    query = query.eq("organization_id", unitsScope.organizationId);
+  } else if (unitsScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -473,8 +527,11 @@ export async function getAdminOrganizationUnitMembers(
     `)
     .order("updated_at", { ascending: false });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const unitMembersScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (unitMembersScope.mode === "organization") {
+    query = query.eq("organization_id", unitMembersScope.organizationId);
+  } else if (unitMembersScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -519,8 +576,11 @@ export async function getAdminOrganizationPlanAssignments(
     .is("ended_at", null)
     .order("starts_at", { ascending: false });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const planAssignmentsScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (planAssignmentsScope.mode === "organization") {
+    query = query.eq("organization_id", planAssignmentsScope.organizationId);
+  } else if (planAssignmentsScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -555,8 +615,11 @@ export async function getAdminOrganizationEntitlementOverrides(
     .is("ended_at", null)
     .order("starts_at", { ascending: false });
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const overridesScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (overridesScope.mode === "organization") {
+    query = query.eq("organization_id", overridesScope.organizationId);
+  } else if (overridesScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -591,8 +654,11 @@ export async function getAdminOrganizationTemporaryEntitlementGrants(
     .order("created_at", { ascending: false })
     .limit(250);
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const grantsScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (grantsScope.mode === "organization") {
+    query = query.eq("organization_id", grantsScope.organizationId);
+  } else if (grantsScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -654,13 +720,16 @@ export async function getAdminOrganizationMemberships(
       updated_at,
       organizations!inner(id, name, slug),
       organization_roles!inner(label),
-      profile:profiles!organization_memberships_user_id_fkey(id, display_name, role)
+      profile:profiles!organization_memberships_user_id_fkey(id, display_name, role, avatar_url)
     `)
     .order("updated_at", { ascending: false })
     .limit(250);
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const membershipsScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (membershipsScope.mode === "organization") {
+    query = query.eq("organization_id", membershipsScope.organizationId);
+  } else if (membershipsScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;
@@ -774,8 +843,11 @@ export async function getAdminOrganizationInvitations(
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (selectedWorkspaceId !== "platform") {
-    query = query.eq("organization_id", selectedWorkspaceId);
+  const invitationsScope = resolveOrganizationScopeFilter(selectedWorkspaceId);
+  if (invitationsScope.mode === "organization") {
+    query = query.eq("organization_id", invitationsScope.organizationId);
+  } else if (invitationsScope.mode === "unowned") {
+    query = query.is("organization_id", null);
   }
 
   const { data, error } = await query;

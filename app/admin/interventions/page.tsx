@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import {
   AdminCard,
   AdminNoticeBanner,
@@ -12,10 +13,13 @@ import {
   getAdminLmsInterventions,
   getAdminOrganizations,
   getAdminProgrammes,
-  requireAdmin,
+  requireAdminWorkspaceRole,
   type AdminLmsInterventionStatus,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { formatRewardDate } from "@/lib/rewards";
+
+const INTERVENTION_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 type InterventionSearchParams = {
   notice?: string | string[];
@@ -69,9 +73,20 @@ export default async function AdminLmsInterventionsPage({
 }: {
   searchParams?: Promise<InterventionSearchParams>;
 }) {
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(INTERVENTION_ROLES);
+
+  // Interventions are generated from a real organisation's cohorts and
+  // programme enrolments — there is nothing to show for the platform-catalog
+  // pseudo-workspace, which has neither.
+  if (workspace.id === PLATFORM_CATALOG_WORKSPACE_ID) {
+    redirect("/admin/courses");
+  }
+
   const params = (await searchParams) ?? {};
-  const selectedOrganizationId = selectedOrEmpty(firstSearchValue(params.organizationId));
+  const isOrgWorkspace = workspace.type === "organization";
+  const selectedOrganizationId = isOrgWorkspace
+    ? workspace.id
+    : selectedOrEmpty(firstSearchValue(params.organizationId));
   const selectedProgrammeId = selectedOrEmpty(firstSearchValue(params.programmeId));
   const status = selectedStatus(firstSearchValue(params.status));
   const notice = firstSearchValue(params.notice);
@@ -114,9 +129,10 @@ export default async function AdminLmsInterventionsPage({
               Organisation
             </span>
             <select
-              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)] disabled:opacity-60"
               defaultValue={selectedOrganizationId || "all"}
-              name="organizationId"
+              disabled={isOrgWorkspace}
+              name={isOrgWorkspace ? undefined : "organizationId"}
             >
               <option value="all">All organisations</option>
               {organizations.map((organization) => (
@@ -125,6 +141,9 @@ export default async function AdminLmsInterventionsPage({
                 </option>
               ))}
             </select>
+            {isOrgWorkspace ? (
+              <input name="organizationId" type="hidden" value={selectedOrganizationId} />
+            ) : null}
           </label>
           <label>
             <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">

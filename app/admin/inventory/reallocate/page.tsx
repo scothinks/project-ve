@@ -3,8 +3,10 @@ import {
   AdminPageHeader,
   AdminStatusBadge,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, getAdminRewards, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
 import { reallocateInventory } from "../actions";
+
+const INVENTORY_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 function fieldClasses() {
   return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
@@ -20,10 +22,10 @@ type ReallocateInventoryPageProps = {
 
 export default async function ReallocateInventoryPage({ searchParams }: ReallocateInventoryPageProps) {
   const params = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(INVENTORY_ROLES);
   const [campaigns, rewards] = await Promise.all([
     getAdminCampaigns(supabase),
-    getAdminRewards(supabase),
+    getAdminRewards(supabase, {}, workspace.type === "organization" ? workspace.id : undefined),
   ]);
 
   return (

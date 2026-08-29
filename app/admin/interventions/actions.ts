@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminWorkspaceRole } from "@/lib/admin";
+
+const INTERVENTION_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value : "";
@@ -26,7 +28,7 @@ function safeRedirect(value: string) {
 }
 
 export async function updateLmsInterventionStatus(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdminWorkspaceRole(INTERVENTION_ROLES);
   const interventionId = firstFormValue(formData.get("interventionId"));
   const status = interventionStatus(firstFormValue(formData.get("status")));
   const note = firstFormValue(formData.get("note")).trim();

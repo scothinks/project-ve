@@ -35,7 +35,6 @@ export default async function OrganizationLessonPage({
   return (
     <LessonDeliveryPage
       courseHref={courseHref}
-      dashboardHref={courseHref}
       lessonHref={(pageNumber) => appendOrganizationDeliverySearchParam(`${lessonBaseHref}?page=${pageNumber}`, deliveryContext)}
       lessonId={lessonId}
       organizationId={deliveryContext.organizationId}

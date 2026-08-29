@@ -10,6 +10,7 @@ import { AssessmentBuilder } from "@/components/admin/AssessmentBuilder";
 import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
 import { LessonForm } from "@/components/admin/LearningForms";
 import { LessonPageBuilder } from "@/components/admin/LessonPageBuilder";
+import { LessonWorkspaceTabs } from "@/components/admin/LessonWorkspaceTabs";
 import {
   approveLessonMedia,
   approveLessonManualMedia,
@@ -33,12 +34,12 @@ import { resolveOrganizationEntitlements } from "@/features/organizations/applic
 
 type LessonDetailPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; notice?: string }>;
+  searchParams: Promise<{ page?: string; notice?: string; tab?: string }>;
 };
 
 export default async function LessonDetailPage({ params, searchParams }: LessonDetailPageProps) {
   const { id } = await params;
-  const { page: selectedPageId, notice } = await searchParams;
+  const { page: selectedPageId, notice, tab } = await searchParams;
   const { supabase } = await requireAdmin();
   const data = await getAdminLessonDetailPageData(supabase, id);
 
@@ -84,16 +85,8 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
     courseId: lesson.course_id,
   });
 
-  return (
+  const indexPanel = (
     <>
-      <AdminPageHeader
-        backHref={`/admin/courses/${lesson.course_id}`}
-        backLabel="Course"
-        eyebrow="Learning"
-        title={lesson.title}
-        subtitle="Shape the lesson experience from reading flow to scored quiz questions."
-      />
-      {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <ContentValueTagEditor
         contentId={lesson.id}
         contentType="lesson"
@@ -115,6 +108,34 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         </AdminCard>
       </section>
 
+      <AdminCard>
+        <h2 className="text-lg font-black">Lesson setup</h2>
+        <div className="mt-5">
+          <LessonForm
+            aiGenerationAvailable={aiGenerationAvailable}
+            courseId={lesson.course_id}
+            lesson={lesson}
+            mediaLibraryAssets={mediaLibraryAssets}
+          />
+        </div>
+      </AdminCard>
+    </>
+  );
+
+  const workspacePanel = (
+    <LessonPageBuilder
+      aiGenerationAvailable={aiGenerationAvailable}
+      allowedBlockTypes={allowedBlockTypes}
+      blocks={blocks}
+      initialPageId={selectedPageId}
+      lesson={lesson}
+      mediaLibraryAssets={mediaLibraryAssets}
+      pages={pages}
+    />
+  );
+
+  const reviewPanel = (
+    <>
       {aiGenerationAvailable ? (
         <div className="mb-6">
           <AiActivityPanel activity={aiActivity} courseId={lesson.course_id} />
@@ -149,29 +170,30 @@ export default async function LessonDetailPage({ params, searchParams }: LessonD
         />
       ) : null}
 
-      <details className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-        <summary className="cursor-pointer text-lg font-black">Lesson setup</summary>
-        <div className="mt-5">
-          <LessonForm
-            aiGenerationAvailable={aiGenerationAvailable}
-            courseId={lesson.course_id}
-            lesson={lesson}
-            mediaLibraryAssets={mediaLibraryAssets}
-          />
-        </div>
-      </details>
+      {quiz ? (
+        <AssessmentBuilder lesson={lesson} questions={questions} quiz={quiz} />
+      ) : (
+        <AdminCard>
+          <p className="text-sm font-semibold text-[var(--ve-muted-strong)]">
+            This lesson does not have a quiz yet.
+          </p>
+        </AdminCard>
+      )}
+    </>
+  );
 
-      <LessonPageBuilder
-        aiGenerationAvailable={aiGenerationAvailable}
-        allowedBlockTypes={allowedBlockTypes}
-        blocks={blocks}
-        initialPageId={selectedPageId}
-        lesson={lesson}
-        mediaLibraryAssets={mediaLibraryAssets}
-        pages={pages}
+  return (
+    <>
+      <AdminPageHeader
+        backHref={`/admin/courses/${lesson.course_id}`}
+        backLabel="Course"
+        eyebrow="Learning"
+        title={lesson.title}
+        subtitle="Shape the lesson experience from reading flow to scored quiz questions."
       />
+      {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
 
-      {quiz ? <AssessmentBuilder lesson={lesson} questions={questions} quiz={quiz} /> : null}
+      <LessonWorkspaceTabs defaultTab={tab} index={indexPanel} review={reviewPanel} workspace={workspacePanel} />
     </>
   );
 }

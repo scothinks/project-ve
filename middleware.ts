@@ -1,7 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { isDemoMode } from "@/lib/app-mode";
-import { isProtectedLearnerRoutePath } from "@/lib/route-auth-policy";
+import {
+  isProtectedLearnerRoutePath,
+  shouldRefreshAuthInMiddleware,
+  VERIFIED_AUTH_REQUEST_HEADER,
+  VERIFIED_AUTH_USER_EMAIL_HEADER,
+  VERIFIED_AUTH_USER_ID_HEADER,
+} from "@/lib/route-auth-policy";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase";
 
 function ensureDeviceCookie(request: NextRequest, response: NextResponse) {
@@ -19,13 +25,27 @@ function ensureDeviceCookie(request: NextRequest, response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete(VERIFIED_AUTH_REQUEST_HEADER);
+  requestHeaders.delete(VERIFIED_AUTH_USER_ID_HEADER);
+  requestHeaders.delete(VERIFIED_AUTH_USER_EMAIL_HEADER);
+  const createNextResponse = () => NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
   if (isDemoMode || !supabaseUrl || !supabasePublishableKey) {
-    const response = NextResponse.next({ request });
+    const response = createNextResponse();
     ensureDeviceCookie(request, response);
     return response;
   }
 
-  let response = NextResponse.next({ request });
+  if (!shouldRefreshAuthInMiddleware(request.nextUrl.pathname)) {
+    const response = createNextResponse();
+    ensureDeviceCookie(request, response);
+    return response;
+  }
+
+  let response = createNextResponse();
 
   const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
     cookies: {
@@ -34,7 +54,8 @@ export async function middleware(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
+        requestHeaders.set("cookie", request.cookies.toString());
+        response = createNextResponse();
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -42,9 +63,27 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const authStartedAt = performance.now();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (process.env.PERF_LOGS === "1") {
+    console.info(`[perf] middleware.auth_current_user ${Math.round(performance.now() - authStartedAt)}ms`);
+  }
+
+  const refreshedResponse = (() => {
+    requestHeaders.set(VERIFIED_AUTH_REQUEST_HEADER, user ? "1" : "0");
+    if (user) {
+      requestHeaders.set(VERIFIED_AUTH_USER_ID_HEADER, user.id);
+      if (user.email) {
+        requestHeaders.set(VERIFIED_AUTH_USER_EMAIL_HEADER, user.email);
+      }
+    }
+    return createNextResponse();
+  })();
+  response.cookies.getAll().forEach((cookie) => refreshedResponse.cookies.set(cookie));
+  response = refreshedResponse;
+
   ensureDeviceCookie(request, response);
 
   if (!user && isProtectedLearnerRoutePath(request.nextUrl.pathname)) {

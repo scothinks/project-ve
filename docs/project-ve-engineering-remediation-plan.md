@@ -2530,6 +2530,23 @@ Phase 2 remediation status:
   links are repository-relative.
 * Phase 2 cleanup is complete for `VE-DEMO-001`, `VE-REC-001`, and
   `VE-HARD-001`.
+* Speed remediation `P1.1` preserves the mission/XP security boundary while
+  removing mission-list N+1 reads. `get_dashboard_mission_state(jsonb)` is a
+  stable, self-scoped read model that revalidates public, organisation and
+  programme delivery context and returns current-caller progress, award, proof
+  and referral state in one operation. Rendering cannot award XP or create
+  contextual referral tokens; those mutations remain explicit authenticated
+  domain actions with pgTAP, repository and browser coverage.
+* Speed remediation `P1.2` establishes an explicit first-useful-HTML boundary
+  on the learner dashboard. Identity/profile, XP, learning catalogue/progress,
+  continue-learning state, and basic navigation remain in the awaited core;
+  missions, rewards, ads, recommendations, organisation switcher organisations,
+  and notification decoration stream through logged fail-soft Suspense loaders.
+  Personalized recommendation profile/scores remain request-scoped while active
+  dimensions and published-content tags are cached separately, invalidated by
+  content-tag admin mutations, and loaded with one candidate-tag read instead of
+  one query per content type. Unit and browser contracts prove core-before-
+  secondary rendering without weakening existing RLS or repository boundaries.
 
 Engineering remediation addendum status:
 

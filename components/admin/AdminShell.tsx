@@ -6,7 +6,29 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon, MenuIcon } from "@/components/ui/Icons";
+import { ChevronLeftIcon, ChevronRightIcon, HelpCircleIcon, MenuIcon } from "@/components/ui/Icons";
+import {
+  AdminActivityIcon,
+  AdminAddBoxIcon,
+  AdminAssessmentsIcon,
+  AdminCohortsIcon,
+  AdminCoursesIcon,
+  AdminFlagIcon,
+  AdminInterventionsIcon,
+  AdminMissionsIcon,
+  AdminMonitoringIcon,
+  AdminOverviewIcon,
+  AdminPeopleIcon,
+  AdminPointsIcon,
+  AdminProgrammesIcon,
+  AdminRecommendationsIcon,
+  AdminReportingIcon,
+  AdminRewardsIcon,
+  AdminRuleIcon,
+  AdminSettingsIcon,
+  AdminSupportAgentIcon,
+} from "@/components/admin/AdminIcons";
+import { PLATFORM_CATALOG_WORKSPACE_ID, workspaceHasAnyRole } from "@/features/admin/shared/workspace";
 import type { AdminOrganizationContext, AdminWorkspace as ResolvedAdminWorkspace } from "@/lib/admin";
 import type { UserProfile } from "@/lib/supabase-server";
 import { cn } from "@/lib/utils";
@@ -198,6 +220,19 @@ type AdminLink = {
   href: string;
   label: string;
   icon: (props: IconProps) => ReactNode;
+  roles?: string[];
+  /**
+   * Hidden in the Project VE Platform Catalog pseudo-workspace — for links
+   * that only make sense for a real organisation (people, cohorts, XP
+   * ledger, activity, reporting), not for platform-owned content.
+   */
+  hiddenForCatalog?: boolean;
+  /**
+   * Shown ONLY in the Project VE Platform Catalog pseudo-workspace — the
+   * inverse of hiddenForCatalog, for links that only make sense there (e.g.
+   * staffing the catalog itself), never for a real organisation.
+   */
+  catalogOnly?: boolean;
 };
 
 type AdminLinkGroup = {
@@ -250,25 +285,26 @@ const adminLinkGroups: AdminLinkGroup[] = [
     links: [
       { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
       { href: "/admin/proofs", label: "Proof reviews", icon: ProofsIcon },
-      { href: "/admin/organizations", label: "Organisations", icon: UsersIcon },
-      { href: "/admin/activity", label: "Activity history", icon: XpLedgerIcon },
-      { href: "/admin/users", label: "Users", icon: UsersIcon },
       { href: "/admin/xp-ledger", label: "XP activity", icon: XpLedgerIcon },
     ],
   },
   {
+    id: "governance",
+    label: "Governance",
+    summary: "Organisation oversight and audit",
+    links: [
+      { href: "/admin/organizations", label: "Organisations", icon: UsersIcon },
+      { href: "/admin/users", label: "Users", icon: UsersIcon },
+      { href: "/admin/activity", label: "Activity history", icon: XpLedgerIcon },
+    ],
+  },
+  {
     id: "settings",
-    label: "Settings",
+    label: "Platform Settings",
     summary: "Platform configuration",
     links: [{ href: "/admin/xp-settings", label: "XP settings", icon: XpSettingsIcon }],
   },
 ];
-
-function hasAnyRole(workspace: ResolvedAdminWorkspace, roles: string[]) {
-  return workspace.type === "platform"
-    || workspace.roles.includes("platform_admin")
-    || roles.some((role) => workspace.roles.includes(role));
-}
 
 function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
   if (workspace.type === "platform") {
@@ -277,7 +313,7 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
 
   if (link.href === "/admin") return true;
   if (link.href.startsWith("/admin/courses")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
@@ -286,10 +322,10 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     ]);
   }
   if (link.href.startsWith("/admin/programmes")) {
-    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
   }
   if (link.href.startsWith("/admin/assessments")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
@@ -297,14 +333,14 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     ]);
   }
   if (link.href.startsWith("/admin/cohorts")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
     ]);
   }
   if (link.href.startsWith("/admin/instructor")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
@@ -314,7 +350,7 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     ]);
   }
   if (link.href.startsWith("/admin/reporting")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
@@ -322,17 +358,17 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     ]);
   }
   if (link.href.startsWith("/admin/interventions")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
     ]);
   }
   if (link.href.startsWith("/admin/rewards")) {
-    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
+    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
   }
   if (link.href.startsWith("/admin/missions")) {
-    return hasAnyRole(workspace, [
+    return workspaceHasAnyRole(workspace, [
       "organisation_owner",
       "organisation_admin",
       "programme_manager",
@@ -340,7 +376,7 @@ function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
     ]);
   }
   if (link.href.startsWith("/admin/activity")) {
-    return hasAnyRole(workspace, ["organisation_owner", "organisation_admin"]);
+    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin"]);
   }
 
   return false;
@@ -597,7 +633,7 @@ function WorkspaceSwitcher({
 
   function handleChange(value: string) {
     setSelectedId(value);
-    document.cookie = `project-ve-admin-workspace=${encodeURIComponent(value)}; path=/admin; SameSite=Lax`;
+    document.cookie = `project-ve-admin-workspace=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
     router.refresh();
   }
 
@@ -653,6 +689,349 @@ function WorkspaceSwitcher({
   );
 }
 
+const orgPrimaryLinks: AdminLink[] = [
+  { href: "/admin", label: "Overview", icon: AdminOverviewIcon },
+  {
+    href: "/admin/people",
+    label: "People",
+    icon: AdminPeopleIcon,
+    roles: ["organisation_owner", "organisation_admin"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/catalog-people",
+    label: "Catalog Staff",
+    icon: AdminPeopleIcon,
+    roles: ["organisation_owner", "organisation_admin"],
+    catalogOnly: true,
+  },
+  {
+    href: "/admin/programmes",
+    label: "Programmes",
+    icon: AdminProgrammesIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/cohorts",
+    label: "Cohorts",
+    icon: AdminCohortsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/instructor",
+    label: "Instructor workspace",
+    icon: AdminSupportAgentIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "reviewer", "instructor", "report_viewer"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/courses",
+    label: "Courses",
+    icon: AdminCoursesIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor", "reviewer"],
+  },
+  {
+    href: "/admin/missions",
+    label: "Missions",
+    icon: AdminMissionsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
+  },
+  {
+    href: "/admin/proofs",
+    label: "Proof reviews",
+    icon: AdminMonitoringIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "reviewer", "instructor"],
+  },
+  {
+    href: "/admin/interventions",
+    label: "Interventions",
+    icon: AdminInterventionsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/xp-ledger",
+    label: "Points",
+    icon: AdminPointsIcon,
+    roles: ["organisation_owner", "organisation_admin"],
+  },
+  {
+    href: "/admin/rewards",
+    label: "Rewards",
+    icon: AdminRewardsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
+    href: "/admin/rewards/perks",
+    label: "Perks",
+    icon: AdminFlagIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
+    href: "/admin/inventory/new",
+    label: "Inventory",
+    icon: AdminAddBoxIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
+    href: "/admin/redemptions",
+    label: "Redemptions",
+    icon: AdminRuleIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
+    href: "/admin/assessments",
+    label: "Assessments",
+    icon: AdminAssessmentsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
+  },
+  {
+    href: "/admin/recommendations",
+    label: "Recommendations",
+    icon: AdminRecommendationsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
+  },
+  {
+    href: "/admin/reporting",
+    label: "Reporting",
+    icon: AdminReportingIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "report_viewer"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/activity",
+    label: "Activity",
+    icon: AdminActivityIcon,
+    roles: ["organisation_owner", "organisation_admin"],
+    hiddenForCatalog: true,
+  },
+];
+
+const orgSettingsLink: AdminLink = { href: "/admin/xp-settings", label: "Settings", icon: AdminSettingsIcon };
+
+function visibleOrgLinks(workspace: ResolvedAdminWorkspace) {
+  const isCatalogWorkspace = workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
+
+  return orgPrimaryLinks.filter((link) => {
+    if (isCatalogWorkspace && link.hiddenForCatalog) {
+      return false;
+    }
+
+    if (!isCatalogWorkspace && link.catalogOnly) {
+      return false;
+    }
+
+    return !link.roles || workspaceHasAnyRole(workspace, link.roles);
+  });
+}
+
+function OrgWorkspaceIdentity({
+  collapsed = false,
+  contexts,
+  currentWorkspace,
+}: {
+  collapsed?: boolean;
+  contexts: AdminOrganizationContext[];
+  currentWorkspace: ResolvedAdminWorkspace;
+}) {
+  const router = useRouter();
+  const orgContexts = useMemo(
+    () => contexts.filter((context) => context.type === "organization"),
+    [contexts],
+  );
+  // Only present for platform admins — lets them step back out of any
+  // organisation (or the platform-catalog pseudo-workspace) they entered,
+  // since org contexts alone offer no way back to platform-wide oversight.
+  const platformContext = contexts.find((context) => context.type === "platform");
+  const selected = orgContexts.find((context) => context.id === currentWorkspace.id);
+  const identity = currentWorkspace.organizationIdentity;
+  const displayName = identity?.shortName ?? identity?.name ?? selected?.label ?? "Organisation";
+  const initials = displayName.slice(0, 2).toUpperCase();
+
+  function handleChange(value: string) {
+    document.cookie = `project-ve-admin-workspace=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
+    router.refresh();
+  }
+
+  if (collapsed) {
+    return (
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--admin-primary-container)] font-black text-[var(--admin-on-primary)]">
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <Select.Root value={currentWorkspace.id} onValueChange={handleChange}>
+      <Select.Trigger className="flex items-center gap-2 rounded-lg px-1 py-1 text-left outline-none transition hover:bg-[var(--admin-surface-container-low)]">
+        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)]">
+          {identity?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt={displayName} className="h-full w-full object-cover" src={identity.logoUrl} />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-xs font-black text-[var(--admin-on-surface-variant)]">
+              {initials}
+            </span>
+          )}
+        </div>
+        <span className="flex flex-col leading-tight">
+          <span className="text-sm font-black text-[var(--admin-on-surface)]">{displayName}</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+              {selected?.roleLabel ?? "Admin"}
+            </span>
+            {identity ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--admin-primary)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--admin-primary-container)]" />
+                {identity.lifecycleStatus}
+              </span>
+            ) : null}
+          </span>
+        </span>
+        {orgContexts.length > 1 || platformContext ? (
+          <Select.Icon className="ml-1 text-[var(--admin-on-surface-variant)]">
+            <ChevronRightIcon className="h-3.5 w-3.5 rotate-90" />
+          </Select.Icon>
+        ) : null}
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content
+          align="start"
+          className="z-50 min-w-[16rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          position="popper"
+        >
+          <Select.Viewport>
+            {platformContext ? (
+              <>
+                <Select.Item
+                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                  value={platformContext.id}
+                >
+                  <Select.ItemText>{platformContext.label}</Select.ItemText>
+                </Select.Item>
+                <div className="my-1 h-px bg-[var(--admin-border-warm)]" role="separator" />
+              </>
+            ) : null}
+            {orgContexts.map((context) => (
+              <Select.Item
+                className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                key={context.id}
+                value={context.id}
+              >
+                <Select.ItemText>{context.label}</Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
+function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: ResolvedAdminWorkspace }) {
+  return (
+    <nav className="fixed left-0 top-0 hidden h-screen w-20 flex-col items-center border-r border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] py-6 md:flex xl:hidden">
+      <Link
+        className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--admin-primary-container)] text-sm font-black text-[var(--admin-on-primary)]"
+        href="/admin"
+      >
+        Ve
+      </Link>
+      <ul className="flex flex-1 flex-col items-center gap-2">
+        {visibleOrgLinks(workspace).map((link) => {
+          const Icon = link.icon;
+          const active = isActivePath(pathname, link.href);
+          return (
+            <li key={link.href}>
+              <Link
+                aria-current={active ? "page" : undefined}
+                aria-label={link.label}
+                className={cn(
+                  "flex h-11 w-11 items-center justify-center rounded-lg text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-high)] hover:text-[var(--admin-primary)]",
+                  active && "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_14%,transparent)] text-[var(--admin-primary)]",
+                )}
+                href={link.href}
+                title={link.label}
+              >
+                <Icon />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      {workspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
+        <Link
+          aria-label={orgSettingsLink.label}
+          className={cn(
+            "mt-4 flex h-11 w-11 items-center justify-center rounded-lg text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-high)] hover:text-[var(--admin-primary)]",
+            isActivePath(pathname, orgSettingsLink.href) &&
+              "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_14%,transparent)] text-[var(--admin-primary)]",
+          )}
+          href={orgSettingsLink.href}
+          title={orgSettingsLink.label}
+        >
+          <orgSettingsLink.icon />
+        </Link>
+      )}
+    </nav>
+  );
+}
+
+function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspace: ResolvedAdminWorkspace }) {
+  return (
+    <nav className="fixed left-0 top-0 hidden h-screen w-72 flex-col overflow-y-auto border-r border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4 xl:flex">
+      <div className="mb-6 flex items-center gap-3 px-1">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] font-black text-[var(--admin-primary)]">
+          Ve
+        </div>
+        <div>
+          <p className="font-black leading-tight text-[var(--admin-brand-hero)]">Project Ve</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--admin-on-surface-variant)]">
+            Admin workspace
+          </p>
+        </div>
+      </div>
+      <ul className="flex flex-1 flex-col gap-1">
+        {visibleOrgLinks(workspace).map((link) => (
+          <li key={link.href}>
+            <AdminNavLink link={link} pathname={pathname} />
+          </li>
+        ))}
+      </ul>
+      {workspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
+        <div className="mt-auto border-t border-[var(--admin-border-warm)] pt-3">
+          <AdminNavLink link={orgSettingsLink} pathname={pathname} />
+        </div>
+      )}
+    </nav>
+  );
+}
+
+function OrgTopBar({
+  currentWorkspace,
+  organizationContexts,
+}: {
+  currentWorkspace: ResolvedAdminWorkspace;
+  organizationContexts: AdminOrganizationContext[];
+}) {
+  return (
+    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6">
+      <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
+      <div className="flex items-center gap-3">
+        <Link
+          aria-label="Help and support"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+          href="/support"
+        >
+          <HelpCircleIcon className="h-5 w-5" />
+        </Link>
+      </div>
+    </header>
+  );
+}
+
 export function AdminShell({
   children,
   currentWorkspace,
@@ -672,6 +1051,51 @@ export function AdminShell({
     [currentWorkspace],
   );
   const activeGroupId = getActiveGroupId(pathname);
+
+  if (currentWorkspace.type === "organization") {
+    return (
+      <main className="min-h-screen bg-[var(--admin-surface)] text-[var(--admin-on-surface)]">
+        <OrgSideNav pathname={pathname} workspace={currentWorkspace} />
+        <OrgSideNavExpanded pathname={pathname} workspace={currentWorkspace} />
+        <div className="flex min-h-screen flex-col md:pl-20 xl:pl-72">
+          <OrgTopBar currentWorkspace={currentWorkspace} organizationContexts={organizationContexts} />
+          <header className="sticky top-0 z-20 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]/95 px-5 py-4 backdrop-blur md:hidden">
+            <div className="flex items-center justify-between">
+              <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
+              <Link className="text-sm font-black text-[var(--admin-primary)]" href="/dashboard">
+                App
+              </Link>
+            </div>
+            <Collapsible.Root className="mt-4" onOpenChange={setMobileNavOpen} open={mobileNavOpen}>
+              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3 text-sm font-black text-[var(--admin-on-surface)]">
+                <span className="inline-flex items-center gap-2">
+                  <MenuIcon className="h-4 w-4" />
+                  Admin navigation
+                </span>
+                <ChevronRightIcon className={cn("h-4 w-4 transition", mobileNavOpen && "rotate-90")} />
+              </Collapsible.Trigger>
+              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3 shadow-lg">
+                <nav className="grid gap-1">
+                  {visibleOrgLinks(currentWorkspace).map((link) => (
+                    <AdminNavLink key={link.href} link={link} pathname={pathname} />
+                  ))}
+                  {currentWorkspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
+                    <div className="mt-2 border-t border-[var(--admin-border-warm)] pt-2">
+                      <AdminNavLink link={orgSettingsLink} pathname={pathname} />
+                    </div>
+                  )}
+                </nav>
+              </Collapsible.Content>
+            </Collapsible.Root>
+          </header>
+          <div className="flex-1 px-5 py-6 md:px-8 md:py-8">
+            <AdminBreadcrumbs pathname={pathname} />
+            {children}
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[var(--ve-panel)] text-[var(--foreground)]">

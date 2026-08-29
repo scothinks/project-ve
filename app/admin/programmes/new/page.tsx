@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { AdminNoticeBanner, AdminPageHeader } from "@/components/admin/AdminPrimitives";
 import { ProgrammeEditorForm } from "@/components/admin/ProgrammeEditorForm";
 import {
@@ -8,6 +9,7 @@ import {
   getAdminRewards,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 
 function firstSearchValue(value: string | string[] | undefined) {
@@ -24,6 +26,13 @@ export default async function NewProgrammePage({
     "organisation_admin",
     "programme_manager",
   ]);
+
+  // Programmes sequence a real organisation's operations — there is no
+  // sensible "programme" for the platform-catalog pseudo-workspace.
+  if (workspace.id === PLATFORM_CATALOG_WORKSPACE_ID) {
+    redirect("/admin/courses");
+  }
+
   const entitlementResult = workspace.type === "organization"
     ? await resolveOrganizationEntitlements(supabase, workspace.id)
     : null;

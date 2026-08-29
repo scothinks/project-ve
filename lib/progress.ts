@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Course, Lesson } from "@/lib/lessons";
+import type { Lesson } from "@/lib/lessons";
+import type {
+  LearningCourseCard,
+  LearningLessonCard,
+} from "@/features/learning/application/course-card-model";
 import { xpTimezone } from "@/lib/xp-constants";
 
 export type LessonProgressRecord = {
@@ -12,8 +16,8 @@ export type LessonProgressRecord = {
 };
 
 export type ContinueLearningItem = {
-  course: Course;
-  lesson: Lesson;
+  course: LearningCourseCard;
+  lesson: LearningLessonCard;
   href: string;
   ctaLabel: string;
   statusLabel: string;
@@ -146,7 +150,31 @@ export async function upsertLessonProgress(
   }
 }
 
-export function getCompletedLessonIds(progress: LessonProgressRecord[], lessons?: Lesson[]) {
+type LessonCompletionShape = {
+  id: string;
+  pages: ReadonlyArray<{ id: string }>;
+};
+
+type CourseProgressShape = {
+  lessons: ReadonlyArray<{
+    id: string;
+    status: string;
+  }>;
+};
+
+type CourseResumeShape = {
+  lessons: ReadonlyArray<{
+    id: string;
+    pages: ReadonlyArray<{ id: string; order?: number }>;
+    quiz: { id: string };
+    status: string;
+  }>;
+};
+
+export function getCompletedLessonIds(
+  progress: LessonProgressRecord[],
+  lessons?: ReadonlyArray<LessonCompletionShape>,
+) {
   const lessonPageMap = new Map<string, string[]>();
 
   for (const lesson of lessons ?? []) {
@@ -175,7 +203,10 @@ export function getCompletedLessonIds(progress: LessonProgressRecord[], lessons?
   );
 }
 
-export function getCourseProgress(course: Course, completedLessonIds?: Set<string> | string[]) {
+export function getCourseProgress(
+  course: CourseProgressShape,
+  completedLessonIds?: Set<string> | string[],
+) {
   const completedIdSet =
     completedLessonIds instanceof Set ? completedLessonIds : new Set(completedLessonIds ?? []);
   const completedLessons = course.lessons.filter((lesson) =>
@@ -191,7 +222,7 @@ export function getCourseProgress(course: Course, completedLessonIds?: Set<strin
 }
 
 export function getCourseResumeTarget(
-  course: Course,
+  course: CourseResumeShape,
   lessonProgress: LessonProgressRecord[],
   completedLessonIds?: Set<string> | string[],
   hrefs: {
@@ -311,7 +342,7 @@ export async function getContinueLearningItem({
 }: {
   supabase: SupabaseClient;
   userId: string;
-  catalog: Course[];
+  catalog: LearningCourseCard[];
   lessonProgress: LessonProgressRecord[];
 }): Promise<ContinueLearningItem | null> {
   const lessonById = new Map(
@@ -368,17 +399,19 @@ export async function getContinueLearningItem({
   }
 
   const allQuestionIds = catalog.flatMap((course) =>
-    course.lessons.flatMap((lesson) => lesson.quiz.questions.map((question) => question.id)),
+    course.lessons.flatMap((lesson) => lesson.quiz.questionIds),
   );
   const [{ data: awardedRows, error: awardedError }, { data: attemptRows, error: attemptError }] =
     await Promise.all([
-      supabase
-        .from("xp_transactions")
-        .select("source_id")
-        .eq("user_id", userId)
-        .eq("direction", "earn")
-        .eq("source_type", "quiz_question")
-        .in("source_id", allQuestionIds),
+      allQuestionIds.length > 0
+        ? supabase
+            .from("xp_transactions")
+            .select("source_id")
+            .eq("user_id", userId)
+            .eq("direction", "earn")
+            .eq("source_type", "quiz_question")
+            .in("source_id", allQuestionIds)
+        : Promise.resolve({ data: [], error: null }),
       supabase
         .from("quiz_attempts")
         .select("lesson_id, status, ended_at, started_at")
@@ -414,17 +447,17 @@ export async function getContinueLearningItem({
   const quizCandidate = startedLessons
     .filter((item) => item.completedPageCount === item.totalPages)
     .map((item) => {
-      const unearnedQuestions = item.lesson.quiz.questions.filter(
-        (question) => !awardedQuestionIds.has(question.id),
+      const unearnedQuestionIds = item.lesson.quiz.questionIds.filter(
+        (questionId) => !awardedQuestionIds.has(questionId),
       );
-      if (unearnedQuestions.length === 0) {
+      if (unearnedQuestionIds.length === 0) {
         return null;
       }
 
       const latestAttempt = latestAttemptByLessonId.get(item.lesson.id);
       return {
         ...item,
-        unearnedQuestions,
+        unearnedQuestionIds,
         latestAttempt,
       };
     })
@@ -467,7 +500,7 @@ export async function getContinueLearningItem({
       href: `/lessons/${quizCandidate.lesson.id}?page=1`,
       ctaLabel: "Review",
       statusLabel: "Reread before retry",
-      helperText: `${quizCandidate.unearnedQuestions.length} quiz question${quizCandidate.unearnedQuestions.length === 1 ? "" : "s"} still earnable`,
+        helperText: `${quizCandidate.unearnedQuestionIds.length} quiz question${quizCandidate.unearnedQuestionIds.length === 1 ? "" : "s"} still earnable`,
       progressPercent: 100,
     };
   }
@@ -492,7 +525,7 @@ export async function getContinueLearningItem({
       quizCandidate.latestAttempt?.status === "in_progress" ? "Continue quiz" : "Take quiz",
     statusLabel:
       quizCandidate.latestAttempt?.status === "in_progress" ? "Quiz in progress" : "Quiz ready",
-    helperText: `${quizCandidate.unearnedQuestions.length} quiz question${quizCandidate.unearnedQuestions.length === 1 ? "" : "s"} still earnable`,
+    helperText: `${quizCandidate.unearnedQuestionIds.length} quiz question${quizCandidate.unearnedQuestionIds.length === 1 ? "" : "s"} still earnable`,
     progressPercent: 100,
   };
 }

@@ -11,6 +11,7 @@ import type {
   UserMissionSummary,
 } from "@/lib/missions";
 import { getMissionRewardLabel } from "@/lib/missions";
+import { measureAsync } from "@/lib/performance";
 import type { RewardFulfillmentType } from "@/lib/rewards";
 import { getCompletedLessonIds, getLessonProgress } from "@/lib/progress";
 
@@ -167,6 +168,81 @@ type MissionProgressResult = {
     qualifiedIds: string[];
   };
 };
+
+type DashboardMissionState = {
+  awardedCount: number;
+  deliveryId: string;
+  hasCurrentAward: boolean;
+  progressCount: number;
+  proofFieldStatuses?: Partial<Record<MissionProofField, "pending" | "submitted" | "approved" | "rejected">>;
+  proofRequiredFields?: MissionProofField[];
+  proofRequirementMode?: MissionProofRequirementMode;
+  referralInvitedCount: number;
+  referralQualifiedCount: number;
+  referralToken: string | null;
+  reviewStatus?: "submitted" | "approved" | "rejected";
+  targetCount: number;
+  valid: boolean;
+};
+
+function normalizeDashboardMissionState(value: unknown): DashboardMissionState | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  const row = value as Record<string, unknown>;
+  if (
+    typeof row.deliveryId !== "string"
+    || typeof row.awardedCount !== "number"
+    || typeof row.hasCurrentAward !== "boolean"
+    || typeof row.progressCount !== "number"
+    || typeof row.targetCount !== "number"
+    || typeof row.valid !== "boolean"
+    || typeof row.referralInvitedCount !== "number"
+    || typeof row.referralQualifiedCount !== "number"
+  ) {
+    return null;
+  }
+
+  const proofRequiredFields = Array.isArray(row.proofRequiredFields)
+    ? normalizeProofFieldList(row.proofRequiredFields)
+    : undefined;
+  const proofFieldStatuses = row.proofFieldStatuses
+    && typeof row.proofFieldStatuses === "object"
+    && !Array.isArray(row.proofFieldStatuses)
+      ? Object.fromEntries(
+          Object.entries(row.proofFieldStatuses).filter(
+            (entry): entry is [string, "pending" | "submitted" | "approved" | "rejected"] =>
+              entry[1] === "pending"
+              || entry[1] === "submitted"
+              || entry[1] === "approved"
+              || entry[1] === "rejected",
+          ),
+        ) as DashboardMissionState["proofFieldStatuses"]
+      : undefined;
+
+  return {
+    awardedCount: Math.max(0, Math.floor(row.awardedCount)),
+    deliveryId: row.deliveryId,
+    hasCurrentAward: row.hasCurrentAward,
+    progressCount: Math.max(0, Math.floor(row.progressCount)),
+    proofFieldStatuses,
+    proofRequiredFields,
+    proofRequirementMode:
+      row.proofRequirementMode === "any" || row.proofRequirementMode === "all"
+        ? row.proofRequirementMode
+        : undefined,
+    referralInvitedCount: Math.max(0, Math.floor(row.referralInvitedCount)),
+    referralQualifiedCount: Math.max(0, Math.floor(row.referralQualifiedCount)),
+    referralToken: typeof row.referralToken === "string" && row.referralToken.trim()
+      ? row.referralToken.trim()
+      : null,
+    reviewStatus:
+      row.reviewStatus === "submitted" || row.reviewStatus === "approved" || row.reviewStatus === "rejected"
+        ? row.reviewStatus
+        : undefined,
+    targetCount: Math.max(1, Math.floor(row.targetCount)),
+    valid: row.valid,
+  };
+}
 
 const xpTimezone = "Africa/Lagos";
 
@@ -811,77 +887,41 @@ async function syncMissionAwards(
   }
 }
 
-async function getAwardedCount(
-  supabase: SupabaseClient,
-  userId: string,
-  missionId: string,
-  executionContext?: MissionExecutionContext,
-) {
-  let query = supabase
-    .from("mission_awards")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("mission_id", missionId);
-
-  if (executionContext?.programmeId) {
-    query = query
-      .eq("organization_id", executionContext.organizationId)
-      .eq("programme_id", executionContext.programmeId)
-      .eq("programme_mission_id", executionContext.programmeMissionId);
-  } else if (executionContext) {
-    query = query
-      .eq("organization_id", executionContext.organizationId)
-      .is("programme_id", null)
-      .is("programme_mission_id", null);
-  } else {
-    query = query
-      .is("organization_id", null)
-      .is("programme_id", null)
-      .is("programme_mission_id", null);
-  }
-
-  const { count, error } = await query;
-
-  if (error) {
-    throw error;
-  }
-
-  return count ?? 0;
-}
-
 function getReferralShareUrl(origin: string, referralCode: string) {
   return `${origin.replace(/\/$/, "")}/invite/${encodeURIComponent(referralCode)}`;
 }
 
-function normalizeContextualReferralTokenResult(value: unknown) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const result = value as { token?: unknown };
-  return typeof result.token === "string" && result.token.trim()
-    ? result.token.trim()
-    : null;
-}
-
-async function getContextualReferralToken(
-  supabase: SupabaseClient,
-  executionContext?: MissionExecutionContext,
-) {
-  if (!executionContext?.programmeId || !executionContext.programmeMissionId) {
-    return null;
-  }
-
+export async function createContextualReferralShareLink({
+  missionId,
+  origin,
+  programmeId,
+  supabase,
+}: {
+  missionId: string;
+  origin: string;
+  programmeId: string;
+  supabase: SupabaseClient;
+}) {
   const { data, error } = await supabase.rpc("ensure_contextual_referral_token", {
-    p_programme_id: executionContext.programmeId,
-    p_programme_mission_id: executionContext.programmeMissionId,
+    p_programme_id: programmeId,
+    p_programme_mission_id: missionId,
   });
 
-  if (error) {
-    throw error;
+  if (error) throw error;
+
+  const token = data && typeof data === "object" && !Array.isArray(data)
+    && typeof (data as { token?: unknown }).token === "string"
+      ? (data as { token: string }).token.trim()
+      : "";
+
+  if (!token) {
+    throw new Error("Referral link could not be created.");
   }
 
-  return normalizeContextualReferralTokenResult(data);
+  return {
+    code: token,
+    shareUrl: getReferralShareUrl(origin, token),
+  };
 }
 
 function normalizeProgrammeRelation(value: unknown): { organization_id: string; status: string } | null {
@@ -1028,13 +1068,11 @@ export async function getSupabaseMissionSummaries({
   missionIds,
   missionExecutionContexts,
   missionPresentationOverrides,
-  syncAwards = false,
   supabase,
   userId,
   referralCode,
   origin,
 }: {
-  syncAwards?: boolean;
   supabase: SupabaseClient;
   userId: string;
   referralCode: string | null;
@@ -1044,6 +1082,7 @@ export async function getSupabaseMissionSummaries({
   missionPresentationOverrides?: MissionPresentationOverrides;
   origin: string;
 }): Promise<UserMissionSummary[]> {
+  void userId;
   const deliveryInputs = missionDeliveries?.length
     ? missionDeliveries.filter((delivery) => Boolean(delivery.missionId))
     : null;
@@ -1068,7 +1107,9 @@ export async function getSupabaseMissionSummaries({
     query = query.in("id", uniqueMissionIds);
   }
 
-  const { data: missions, error } = await query.order("sort_order", { ascending: true });
+  const { data: missions, error } = await measureAsync("missions.catalog", () =>
+    query.order("sort_order", { ascending: true }),
+  );
 
   if (error) {
     throw error;
@@ -1096,7 +1137,34 @@ export async function getSupabaseMissionSummaries({
         mission,
       }));
 
-  return Promise.all(summaryInputs.map(async ({ delivery, mission }): Promise<UserMissionSummary> => {
+  const { data: missionStateData, error: missionStateError } = await measureAsync(
+    "missions.state_rpc",
+    () => supabase.rpc("get_dashboard_mission_state", {
+      p_deliveries: summaryInputs.map(({ delivery }) => ({
+        deliveryId: delivery.deliveryId,
+        missionId: delivery.missionId,
+        organizationId: delivery.executionContext?.organizationId ?? null,
+        programmeId: delivery.executionContext?.programmeId ?? null,
+        programmeMissionId: delivery.executionContext?.programmeMissionId ?? null,
+      })),
+    }),
+  );
+
+  if (missionStateError) {
+    throw missionStateError;
+  }
+
+  const missionStates = Array.isArray(missionStateData)
+    ? missionStateData
+        .map(normalizeDashboardMissionState)
+        .filter((state): state is DashboardMissionState => Boolean(state))
+    : [];
+  const stateByDeliveryId = new Map(missionStates.map((state) => [state.deliveryId, state]));
+
+  return measureAsync("missions.summary_batch", () => Promise.resolve(summaryInputs.flatMap(({ delivery, mission }): UserMissionSummary[] => {
+    const missionState = stateByDeliveryId.get(delivery.deliveryId);
+    if (!missionState) return [];
+
     const missionExecutionContext = delivery.executionContext;
     const missionOverride = delivery.presentationOverride;
     const title =
@@ -1122,20 +1190,19 @@ export async function getSupabaseMissionSummaries({
       successMessage: resolvePresentationText(missionOverride, mission.presentation_config, "successMessage"),
       terms: resolvePresentationText(missionOverride, mission.presentation_config, "terms"),
     };
-    const [progressResult, awardedCount] = await Promise.all([
-      getMissionProgress(supabase, userId, mission, missionExecutionContext),
-      getAwardedCount(supabase, userId, mission.id, missionExecutionContext),
-    ]);
-
-    if (syncAwards) {
-      await syncMissionAwards(supabase, userId, mission, progressResult, missionExecutionContext);
-    }
-
-    const awardScope = getMissionAwardScope(mission, missionExecutionContext);
-    const hasCurrentAward =
-      mission.repeatability === "per_referral"
-        ? awardedCount > 0
-        : await hasMissionAward(supabase, userId, mission.id, awardScope);
+    const progressResult: MissionProgressResult = {
+      progress: {
+        progressCount: missionState.progressCount,
+        targetCount: missionState.targetCount,
+        valid: missionState.valid,
+      },
+      reviewStatus: missionState.reviewStatus,
+      proofRequiredFields: missionState.proofRequiredFields,
+      proofRequirementMode: missionState.proofRequirementMode,
+      proofFieldStatuses: missionState.proofFieldStatuses,
+    };
+    const awardedCount = missionState.awardedCount;
+    const hasCurrentAward = missionState.hasCurrentAward;
     const progress = normalizeProgress(progressResult.progress, hasCurrentAward);
     const isProof = mission.validation_type === "proof_upload" || mission.validation_type === "manual_review";
     let status: UserMissionStatus =
@@ -1156,23 +1223,22 @@ export async function getSupabaseMissionSummaries({
     const referralInviteCode =
       mission.validation_type === "referral_friend_completed_lessons"
         ? missionExecutionContext
-          ? await getContextualReferralToken(supabase, missionExecutionContext)
+          ? missionState.referralToken
           : referralCode
         : null;
     const referralWithShareUrl =
       mission.validation_type === "referral_friend_completed_lessons"
-        && referralInviteCode
         ? {
             code: referralInviteCode,
-            shareUrl: getReferralShareUrl(origin, referralInviteCode),
+            shareUrl: referralInviteCode ? getReferralShareUrl(origin, referralInviteCode) : null,
             requiredFriendLessonCount,
-            invitedCount: progressResult.referralProgress?.invitedCount ?? 0,
-            qualifiedCount: progressResult.referralProgress?.qualifiedIds.length ?? 0,
+            invitedCount: missionState.referralInvitedCount,
+            qualifiedCount: missionState.referralQualifiedCount,
             awardedCount,
           }
         : undefined;
 
-    return {
+    return [{
       id: delivery.deliveryId,
       baseMissionId: delivery.deliveryId === mission.id ? undefined : mission.id,
       title,
@@ -1218,8 +1284,8 @@ export async function getSupabaseMissionSummaries({
             }
           : undefined,
       referral: referralWithShareUrl,
-    };
-  }));
+    }];
+  })));
 }
 
 export async function submitSupabaseMissionProof({

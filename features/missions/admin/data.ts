@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 
 export type AdminMissionRewardRow = {
   id: string;
@@ -140,7 +141,9 @@ export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: s
     )
     .order("sort_order", { ascending: true });
 
-  if (selectedWorkspaceId !== "platform") {
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    query = query.eq("catalog_scope", "platform");
+  } else if (selectedWorkspaceId !== "platform") {
     query = query.or(`catalog_scope.eq.platform,organization_id.eq.${selectedWorkspaceId}`);
   }
 
@@ -208,7 +211,9 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient, workspa
     .order("created_at", { ascending: false })
     .limit(200);
 
-  if (selectedWorkspaceId !== "platform") {
+  if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
+    query = query.is("organization_id", null);
+  } else if (selectedWorkspaceId !== "platform") {
     query = query.eq("organization_id", selectedWorkspaceId);
   }
 

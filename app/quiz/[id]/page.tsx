@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/navigation/AppHeader";
+import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { QuizOptions } from "@/components/quiz/QuizOptions";
 import { createLearningRepository } from "@/features/app/repositories/learning";
@@ -54,6 +55,10 @@ export default async function QuizPage({ params }: QuizPageProps) {
           <QuizOptions lessonId={lesson.id} quizId={quiz.id} questions={quiz.questions} />
         </div>
       </section>
+
+      <div className="lg:hidden">
+        <BottomNav active="Lessons" />
+      </div>
     </main>
   );
 }

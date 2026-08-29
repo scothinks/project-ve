@@ -16,7 +16,6 @@ import { createSupabaseServerClient, getCurrentUserProfile } from "@/lib/supabas
 
 type LessonDeliveryPageProps = {
   courseHref?: string;
-  dashboardHref?: string;
   lessonHref?: (pageNumber: number) => string;
   lessonId: string;
   quizHref?: string;
@@ -29,7 +28,6 @@ type LessonDeliveryPageProps = {
 
 export async function LessonDeliveryPage({
   courseHref,
-  dashboardHref = "/dashboard",
   lessonHref,
   lessonId,
   pageParam,
@@ -66,6 +64,7 @@ export async function LessonDeliveryPage({
 
   const isFirstPage = currentPageNumber === 1;
   const isLastPage = currentPageNumber === lesson.pages.length;
+  const resolvedCourseHref = courseHref ?? `/courses/${course.id}`;
   const makeLessonHref = lessonHref ?? ((pageNumber: number) => `/lessons/${lesson.id}?page=${pageNumber}`);
   const previousHref = makeLessonHref(currentPageNumber - 1);
   const nextHref = makeLessonHref(currentPageNumber + 1);
@@ -143,7 +142,7 @@ export async function LessonDeliveryPage({
       <AppHeader
         menu={
           <LessonMenu
-            courseHref={courseHref ?? `/courses/${course.id}`}
+            courseHref={resolvedCourseHref}
             currentPageNumber={currentPageNumber}
             lesson={lesson}
           />
@@ -180,8 +179,8 @@ export async function LessonDeliveryPage({
 
         <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-3">
           {isFirstPage ? (
-            <Button href={dashboardHref} variant="outline">
-              Dashboard
+            <Button href={resolvedCourseHref} variant="outline">
+              Course
             </Button>
           ) : (
             <Button className="gap-1.5" href={previousHref} variant="outline">

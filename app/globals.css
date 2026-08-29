@@ -49,6 +49,39 @@
   --ve-intro-shadow-alpha: 0.14;
   --ve-intro-shadow-rgb: 17, 17, 17;
   color-scheme: light;
+
+  /* Admin/CMS design system (locked Stitch tokens) — a distinct operational
+     surface from the learner "Warm Editorial" system. Tokens that match the
+     learner system exactly alias to the shared --ve-* primitives; the rest
+     are Admin-specific accents (alert/attention rust, readiness amber). */
+  --admin-primary: #006446;
+  --admin-primary-container: var(--ve-green);
+  --admin-on-primary: #ffffff;
+  --admin-on-primary-container: #cfffe5;
+  --admin-secondary: #a7391e;
+  --admin-secondary-container: #fd7958;
+  --admin-secondary-fixed: #ffdad2;
+  --admin-on-secondary-fixed: #3c0700;
+  --admin-on-secondary-container: #6e1500;
+  --admin-tertiary: #705300;
+  --admin-tertiary-container: #8f6a00;
+  --admin-tertiary-fixed: #ffdf9f;
+  --admin-on-tertiary-fixed-variant: #5b4300;
+  --admin-surface: #fcf9f3;
+  --admin-surface-milk: var(--ve-shell);
+  --admin-surface-container-low: #f6f3ed;
+  --admin-surface-container: #f0eee8;
+  --admin-surface-container-high: #ebe8e2;
+  --admin-surface-container-highest: #e5e2dc;
+  --admin-border-warm: var(--ve-line-soft);
+  --admin-ink-charcoal: var(--foreground);
+  --admin-on-surface: #1c1c18;
+  --admin-on-surface-variant: #3e4943;
+  --admin-outline: #6e7a73;
+  --admin-brand-hero: #123c35;
+  --admin-error: #ba1a1a;
+  --admin-error-container: #ffdad6;
+  --admin-on-error-container: #93000a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -101,6 +134,35 @@
     --ve-intro-shadow-alpha: 0.34;
     --ve-intro-shadow-rgb: 0, 0, 0;
     color-scheme: dark;
+
+    --admin-primary: #78d9af;
+    --admin-primary-container: var(--ve-green);
+    --admin-on-primary: #0c241a;
+    --admin-on-primary-container: #cfffe5;
+    --admin-secondary: #ffb4a2;
+    --admin-secondary-container: #fd7958;
+    --admin-secondary-fixed: #4a2018;
+    --admin-on-secondary-fixed: #ffdad2;
+    --admin-on-secondary-container: #ffb4a2;
+    --admin-tertiary: #f1bf4f;
+    --admin-tertiary-container: #5b4300;
+    --admin-tertiary-fixed: #3d2f00;
+    --admin-on-tertiary-fixed-variant: #ffdf9f;
+    --admin-surface: var(--ve-panel);
+    --admin-surface-milk: var(--ve-shell);
+    --admin-surface-container-low: var(--ve-panel-soft);
+    --admin-surface-container: var(--ve-card-muted);
+    --admin-surface-container-high: var(--ve-card-subtle);
+    --admin-surface-container-highest: var(--ve-line-soft);
+    --admin-border-warm: var(--ve-line-soft);
+    --admin-ink-charcoal: var(--foreground);
+    --admin-on-surface: #f2f1eb;
+    --admin-on-surface-variant: #aab1ac;
+    --admin-outline: #8d9891;
+    --admin-brand-hero: #78d9af;
+    --admin-error: #f08a8a;
+    --admin-error-container: #3a2020;
+    --admin-on-error-container: #ffdad6;
   }
 }
 
@@ -401,22 +463,22 @@ select {
 
 .learner-system.dashboard-learner {
   background:
-    radial-gradient(circle at -5rem 14rem, rgba(255, 232, 221, 0.5), transparent 18rem),
-    radial-gradient(circle at 105% 35rem, rgba(234, 226, 178, 0.35), transparent 18rem),
+    radial-gradient(circle at -5rem 14rem, rgba(255, 232, 221, 0.2), transparent 18rem),
+    radial-gradient(circle at 105% 35rem, rgba(234, 226, 178, 0.14), transparent 18rem),
     linear-gradient(180deg, #fffdf8 0%, #f7fcf3 46%, #f4faf0 100%);
 }
 
 .learner-system.missions-learner {
   background:
-    radial-gradient(circle at -4rem 16rem, rgba(255, 229, 215, 0.42), transparent 18rem),
-    radial-gradient(circle at 105% 34rem, rgba(246, 196, 83, 0.2), transparent 18rem),
+    radial-gradient(circle at -4rem 16rem, rgba(255, 229, 215, 0.18), transparent 18rem),
+    radial-gradient(circle at 105% 34rem, rgba(246, 196, 83, 0.1), transparent 18rem),
     linear-gradient(180deg, #fcf9f3 0%, #f7f4ee 100%);
 }
 
 .learner-system.store-learner {
   background:
-    radial-gradient(circle at 88% 18rem, rgba(246, 196, 83, 0.22), transparent 19rem),
-    radial-gradient(circle at -4rem 42rem, rgba(8, 127, 91, 0.08), transparent 20rem),
+    radial-gradient(circle at 88% 18rem, rgba(246, 196, 83, 0.14), transparent 19rem),
+    radial-gradient(circle at -4rem 42rem, rgba(8, 127, 91, 0.06), transparent 20rem),
     linear-gradient(180deg, #fcf9f3 0%, #f7f4ee 100%);
 }
 
@@ -425,8 +487,8 @@ select {
 .learner-system.transcript-learner,
 .learner-system.orgs-learner {
   background:
-    radial-gradient(circle at -4rem 16rem, rgba(255, 229, 215, 0.36), transparent 18rem),
-    radial-gradient(circle at 92% 30rem, rgba(246, 196, 83, 0.16), transparent 20rem),
+    radial-gradient(circle at -4rem 16rem, rgba(255, 229, 215, 0.16), transparent 18rem),
+    radial-gradient(circle at 92% 30rem, rgba(246, 196, 83, 0.08), transparent 20rem),
     linear-gradient(180deg, #fffaf4 0%, #f7f4ed 100%);
 }
 
@@ -1160,31 +1222,6 @@ select {
   object-fit: cover;
 }
 
-.orgs-landing__photo-caption {
-  position: absolute;
-  inset: auto 0.7rem 0.65rem 0.7rem;
-  z-index: 2;
-  color: #fffdfa;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-}
-
-.orgs-landing__photo-caption span,
-.orgs-landing__photo-caption strong {
-  display: block;
-}
-
-.orgs-landing__photo-caption span {
-  font-size: 0.52rem;
-  font-weight: 800;
-}
-
-.orgs-landing__photo-caption strong {
-  margin-top: 0.1rem;
-  font-size: 0.98rem;
-  font-weight: 950;
-  letter-spacing: 0;
-}
-
 .orgs-landing__mini-card {
   position: absolute;
   z-index: 2;
@@ -1637,26 +1674,15 @@ select {
   background: #dceee2;
 }
 
-.workspace-switcher__name,
-.workspace-switcher__meta {
+.workspace-switcher__name {
   display: block;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workspace-switcher__name {
   color: var(--learner-text);
   font-size: 0.98rem;
   font-weight: 900;
   letter-spacing: -0.02em;
-}
-
-.workspace-switcher__meta {
-  margin-top: 0.15rem;
-  color: var(--learner-text-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .workspace-switcher__check {
@@ -1716,9 +1742,9 @@ select {
   .learner-system.notifications-learner,
   .learner-system.transcript-learner {
     background:
-      radial-gradient(circle at 14% 10rem, rgba(255, 231, 218, 0.48), transparent 24rem),
-      radial-gradient(circle at 86% 24rem, rgba(246, 196, 83, 0.22), transparent 26rem),
-      linear-gradient(180deg, #fffaf4 0%, #fbf4ec 42%, #f7f0e8 100%);
+      radial-gradient(circle at 14% 10rem, rgba(255, 231, 218, 0.2), transparent 24rem),
+      radial-gradient(circle at 86% 24rem, rgba(246, 196, 83, 0.12), transparent 26rem),
+      linear-gradient(180deg, #fffaf4 0%, #fcf9f3 45%, #f9f5ee 100%);
   }
 
   .learner-system.missions-learner .learner-topbar,
@@ -1798,7 +1824,7 @@ select {
   }
 
   .mission-panel__group--active .mission-card {
-    border-left: 3px solid #ff7a59;
+    border-left: 3px solid #8b6b1c;
   }
 
   .mission-panel__group--available .mission-card {
@@ -2441,7 +2467,7 @@ select {
 .dashboard-mission-card {
   border-color: color-mix(in srgb, var(--learner-border) 58%, transparent) !important;
   border-left: 3px solid color-mix(in srgb, var(--learner-mission) 76%, var(--learner-border)) !important;
-  background: var(--learner-surface-soft) !important;
+  background: color-mix(in srgb, var(--learner-surface-soft) 45%, white) !important;
   box-shadow: none !important;
 }
 
@@ -3350,10 +3376,10 @@ select {
         var(--learner-background-cream) 3.95rem,
         transparent 3.95rem
       ),
-      radial-gradient(ellipse 34rem 25rem at -3rem 17rem, rgba(255, 224, 211, 0.62), transparent 72%),
-      radial-gradient(ellipse 38rem 30rem at 87% 34rem, rgba(232, 219, 167, 0.62), transparent 72%),
+      radial-gradient(ellipse 34rem 25rem at -3rem 17rem, rgba(255, 224, 211, 0.24), transparent 72%),
+      radial-gradient(ellipse 38rem 30rem at 87% 34rem, rgba(232, 219, 167, 0.2), transparent 72%),
       radial-gradient(ellipse 46rem 20rem at 50% 8rem, rgba(255, 253, 248, 0.9), transparent 74%),
-      linear-gradient(180deg, #fffdf8 0%, #f8f2e9 36%, #f3ecdd 100%);
+      linear-gradient(180deg, #fffdf8 0%, #fbf7f0 36%, #f8f4ec 100%);
   }
 
   .learner-system.courses-learner {
@@ -3676,7 +3702,7 @@ select {
   }
 
   .dashboard-mission-card {
-    background: var(--learner-surface-soft) !important;
+    background: color-mix(in srgb, var(--learner-surface-soft) 45%, white) !important;
     box-shadow: none;
   }
 
@@ -4681,31 +4707,6 @@ select {
     box-shadow: none;
   }
 
-  .orgs-landing__photo-caption {
-    position: absolute;
-    inset: auto 1rem 1.05rem 1rem;
-    z-index: 2;
-    color: #fffdfa;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-  }
-
-  .orgs-landing__photo-caption span,
-  .orgs-landing__photo-caption strong {
-    display: block;
-  }
-
-  .orgs-landing__photo-caption span {
-    font-size: 0.68rem;
-    font-weight: 800;
-  }
-
-  .orgs-landing__photo-caption strong {
-    margin-top: 0.12rem;
-    font-size: 1.25rem;
-    font-weight: 950;
-    letter-spacing: -0.03em;
-  }
-
   .orgs-landing__mini-card {
     position: absolute;
     z-index: 2;
@@ -4957,4 +4958,10 @@ select {
   .workspace-switcher__row {
     min-height: 3.95rem;
   }
+}
+
+.support-widget-mount button {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }

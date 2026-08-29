@@ -60,7 +60,7 @@ export default async function OrganizationMissionsPage({
             </span>
           </div>
           <p className="max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ve-muted)]">
-            Complete field exercises to earn {workspace.xpAccount.label} and reinforce your organisation learning.
+            Complete missions to earn {workspace.xpAccount.label} and reinforce your organisation learning.
           </p>
         </div>
         {missions.length > 0 ? (

@@ -17,12 +17,13 @@ import {
   appendOrganizationDeliverySearchParam,
   getOrganizationDeliveryKey,
   getOrganizationDeliveryLessonProgress,
-  getOrganizationWorkspaceCourses,
+  getOrganizationWorkspaceCourseCards,
 } from "@/features/organizations/application/learner-workspace";
 import { getMyOrganizationState } from "@/features/organizations/application/my-orgs";
 import { createProgressRepository } from "@/features/app/repositories/progress";
 import { getPersonalizedDashboardRecommendations } from "@/lib/personalized-recommendations";
 import { getCompletedLessonIds } from "@/lib/progress";
+import { measureAsync } from "@/lib/performance";
 import { orgHref, requireOrgLearnerRoute, type OrgRouteParams } from "@/app/o/[organizationSlug]/workspace";
 
 export default async function OrganizationLearnPage({
@@ -55,7 +56,9 @@ export default async function OrganizationLearnPage({
       userId: user.id,
       workspace,
     }),
-    getOrganizationWorkspaceCourses(supabase, workspace),
+    measureAsync("org.learn.learning_course_cards", () =>
+      getOrganizationWorkspaceCourseCards(supabase, workspace),
+    ),
     createProgressRepository(supabase).getLessonProgress(user.id),
     getMyOrganizationState(supabase, user.id),
   ]);
@@ -236,7 +239,7 @@ export default async function OrganizationLearnPage({
                   Required Assessment
                 </span>
                 <span className="inline-flex items-center gap-1 text-[0.72rem] font-[650] text-[var(--learner-green-deep)]">
-                  {requiredCheckpoint.xpAward} Points
+                  {requiredCheckpoint.xpAward} {workspace.xpAccount.label}
                 </span>
               </div>
               <p className="mt-3 text-[0.78rem] font-[650] leading-5 text-[var(--learner-text)]">
@@ -249,7 +252,8 @@ export default async function OrganizationLearnPage({
             <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
               <p className="text-[0.74rem] font-[650] text-[var(--learner-text)]">Before you begin</p>
               <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
-                Ensure you are in a quiet environment with a stable connection before you begin.
+                Choose the response that best reflects what you would do in each scenario. Complete
+                all questions to finish the assessment.
               </p>
             </div>
             <OrgActionLink ariaLabel="Start" className="mt-4 w-full" href={requiredCheckpoint.href}>
@@ -268,7 +272,7 @@ export default async function OrganizationLearnPage({
             </p>
             <div className="mt-4 grid gap-3">
               {recommendationItems.map((item) => {
-                const image = item.course?.thumbnail ?? item.course?.coverImage;
+                const image = item.course?.thumbnail;
                 const durationMinutes = item.course?.estimatedMinutes ?? item.lesson?.estimatedMinutes ?? null;
 
                 return (

@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { CheckCircleIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import type { OrganizationCourseDeliveryOption } from "@/features/organizations/application/learner-workspace";
+import type {
+  LearningCourseCard,
+  LearningLessonCard,
+} from "@/features/learning/application/course-card-model";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
-import type { Course, Lesson } from "@/lib/lessons";
-import { getCourseXP } from "@/lib/lessons";
 import { paginateItems } from "@/lib/pagination";
 import {
   getCourseProgress,
@@ -21,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { formatXpLabel } from "@/lib/xp-format";
 
 type CourseLibraryProps = {
-  courses: Course[];
+  courses: LearningCourseCard[];
   courseHrefPrefix?: string;
   completedLessonIds?: string[];
   completedLessonIdsByDeliveryKey?: Record<string, string[]>;
@@ -36,7 +38,7 @@ type CourseLibraryProps = {
 type CourseLibraryItem = {
   completedAt: string | null;
   completedLessons: number;
-  course: Course;
+  course: LearningCourseCard;
   href: string;
   isCompleted: boolean;
   isInProgress: boolean;
@@ -45,7 +47,7 @@ type CourseLibraryItem = {
   option: OrganizationCourseDeliveryOption | null;
   progressPercent: number;
   resumeTarget: { href: string; label: string } | null;
-  startedLesson: Lesson | null;
+  startedLesson: LearningLessonCard | null;
 };
 
 function getDeliveryKey(courseId: string, option: OrganizationCourseDeliveryOption | null) {
@@ -151,7 +153,7 @@ function formatCompletedAt(value: string | null) {
 }
 
 function getCoursePageProgress(
-  course: Course,
+  course: LearningCourseCard,
   completedLessonIds: Set<string>,
   lessonProgress: LessonProgressRecord[],
 ) {
@@ -180,7 +182,10 @@ function getCoursePageProgress(
   return Math.round((completedPages / totalPages) * 100);
 }
 
-function getLatestCourseProgressRecord(course: Course, lessonProgress: LessonProgressRecord[]) {
+function getLatestCourseProgressRecord(
+  course: LearningCourseCard,
+  lessonProgress: LessonProgressRecord[],
+) {
   const lessonIds = new Set(course.lessons.map((lesson) => lesson.id));
 
   return (
@@ -194,7 +199,10 @@ function getLatestCourseProgressRecord(course: Course, lessonProgress: LessonPro
   );
 }
 
-function getStartedLesson(course: Course, latestRecord: LessonProgressRecord | null) {
+function getStartedLesson(
+  course: LearningCourseCard,
+  latestRecord: LessonProgressRecord | null,
+) {
   if (!latestRecord) {
     return null;
   }
@@ -202,7 +210,7 @@ function getStartedLesson(course: Course, latestRecord: LessonProgressRecord | n
   return course.lessons.find((lesson) => lesson.id === latestRecord.lesson_id) ?? null;
 }
 
-function getCompletedAt(course: Course, lessonProgress: LessonProgressRecord[]) {
+function getCompletedAt(course: LearningCourseCard, lessonProgress: LessonProgressRecord[]) {
   const lessonIds = new Set(course.lessons.map((lesson) => lesson.id));
   const completedTimes = lessonProgress
     .filter((record) => lessonIds.has(record.lesson_id) && record.completed_at)
@@ -517,7 +525,7 @@ export function CourseLibrary({
             <div className="course-library-meta-row">
               <span>{featuredItem.lessonCount} lessons</span>
               <span>{formatDuration(featuredItem.course.estimatedMinutes)}</span>
-              <span>{formatXpLabel(getCourseXP(featuredItem.course), unitLabel)}</span>
+              <span>{formatXpLabel(featuredItem.course.xp, unitLabel)}</span>
             </div>
             {featuredItem.progressPercent > 0 ? (
               <div className="course-library-progress">
