@@ -12,6 +12,7 @@ import {
   getAdminValueDimensions,
   requireAdminWorkspaceRole,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 
 const MISSION_MANAGER_ROLES = [
   "platform_admin",
@@ -55,6 +56,7 @@ export default async function AdminMissionDetailPage({
 
   if (
     workspace.type === "organization"
+    && workspace.id !== PLATFORM_CATALOG_WORKSPACE_ID
     && mission.catalog_scope !== "platform"
     && mission.organization_id !== workspace.id
   ) {
@@ -62,7 +64,9 @@ export default async function AdminMissionDetailPage({
   }
 
   const canEditPlatformMission =
-    workspace.type === "platform" || workspace.roles.includes("platform_admin");
+    workspace.type === "platform"
+    || workspace.roles.includes("platform_admin")
+    || workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
 
   if (mission.catalog_scope === "platform" && !canEditPlatformMission) {
     return (

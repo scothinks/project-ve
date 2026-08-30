@@ -616,7 +616,7 @@ set local role authenticated;
 
 select extensions.throws_ok(
   $$ select public.admin_duplicate_course_template('course-cms-template-source', 'Learner Copy') $$,
-  'Only an admin can duplicate course templates.',
+  'Platform Catalog course editor access required.',
   'learners cannot duplicate course templates'
 );
 

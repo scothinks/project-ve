@@ -2,19 +2,21 @@ import { RewardEditorForm } from "@/components/admin/RewardEditorForm";
 import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminOrganizations, getAdminProgrammes, requireAdminWorkspaceRole } from "@/lib/admin";
 import { createReward } from "../[id]/actions";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 
 export default async function NewAdminRewardPage() {
-  const { supabase } = await requireAdminWorkspaceRole([
+  const { supabase, workspace } = await requireAdminWorkspaceRole([
     "organisation_owner",
     "organisation_admin",
     "programme_manager",
   ]);
+  const isCatalogWorkspace = workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
   const [campaigns, organizations, programmes] = await Promise.all([
     getAdminCampaigns(supabase),
-    getAdminOrganizations(supabase),
-    getAdminProgrammes(supabase),
+    isCatalogWorkspace ? Promise.resolve([]) : getAdminOrganizations(supabase),
+    isCatalogWorkspace ? Promise.resolve([]) : getAdminProgrammes(supabase),
   ]);
-  const isOrganizationWorkspace = organizations.length === 1;
+  const isOrganizationWorkspace = workspace.type === "organization" && !isCatalogWorkspace;
 
   return (
     <>

@@ -253,9 +253,11 @@ export {
 
 export {
   getAdminManualXpGrantStatus,
+  getAdminPlatformXpAccount,
   getAdminXpLedger,
   getAdminXpSettings,
   type AdminManualXpGrantStatusRow,
+  type AdminPlatformXpAccountRow,
   type AdminXpLedgerFilters,
   type AdminXpSettingsRow,
   type AdminXpTransactionRow,

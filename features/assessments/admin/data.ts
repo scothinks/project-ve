@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSelectedAdminWorkspaceId } from "@/features/admin/application/context";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
 import type { OrganizationAssessmentCapability } from "@/features/organizations/entitlements";
 import type { Database } from "@/types/database";
@@ -111,10 +112,14 @@ export async function getAdminAssessmentVersions(
 ): Promise<{
   assessmentCapability: OrganizationAssessmentCapability;
   assessments: AdminAssessmentVersionSummary[];
+  isPlatformCatalog: boolean;
   selectedOrganizationId: string | null;
 }> {
   const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
-  const selectedOrganizationId = selectedWorkspaceId === "platform" ? null : selectedWorkspaceId;
+  const isPlatformCatalog = selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID;
+  const selectedOrganizationId = selectedWorkspaceId === "platform" || isPlatformCatalog
+    ? null
+    : selectedWorkspaceId;
   const assessmentCapability = await getWorkspaceAssessmentCapability(supabase, selectedOrganizationId);
 
   let query = supabase
@@ -122,7 +127,9 @@ export async function getAdminAssessmentVersions(
     .select("id, slug, title, description, xp_award, status, created_at, published_at, owner_scope, organization_id, source_assessment_version_id, version_number, introduction_copy, completion_copy, scoring_config")
     .order("created_at", { ascending: false });
 
-  if (selectedOrganizationId) {
+  if (isPlatformCatalog) {
+    query = query.eq("owner_scope", "platform");
+  } else if (selectedOrganizationId) {
     query = query.or(`owner_scope.eq.platform,organization_id.eq.${selectedOrganizationId}`);
   }
 
@@ -136,7 +143,7 @@ export async function getAdminAssessmentVersions(
   const assessmentIds = assessments.map((assessment) => assessment.id);
 
   if (assessmentIds.length === 0) {
-    return { assessmentCapability, assessments: [], selectedOrganizationId };
+    return { assessmentCapability, assessments: [], isPlatformCatalog, selectedOrganizationId };
   }
 
   const [questionsResult, usageResult] = await Promise.all([
@@ -170,6 +177,7 @@ export async function getAdminAssessmentVersions(
       question_count: questionCounts.get(assessment.id) ?? 0,
       usage_count: usageCounts.get(assessment.id) ?? 0,
     })),
+    isPlatformCatalog,
     selectedOrganizationId,
   };
 }
@@ -193,9 +201,13 @@ export async function getAdminAssessmentWorkspace(
   }
 
   const assessment = normalizeAssessment(data as AdminAssessmentVersionRow);
+  const selectedWorkspaceId = await getSelectedAdminWorkspaceId();
+  const isPlatformCatalog = selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID;
   const assessmentCapability = await getWorkspaceAssessmentCapability(supabase, assessment.organization_id);
-  const canAdapt = Boolean(assessment.organization_id) && canAdaptAssessment(assessmentCapability);
-  const canEditDraft = canAdapt && assessment.owner_scope === "organization" && assessment.status === "draft";
+  const canAdapt = assessment.owner_scope === "platform"
+    ? isPlatformCatalog
+    : Boolean(assessment.organization_id) && canAdaptAssessment(assessmentCapability);
+  const canEditDraft = canAdapt && assessment.status === "draft";
 
   const [questionsResult, optionsResult, weightsResult, usageResult, dimensionsResult, sourceResult, historyResult] = await Promise.all([
     supabase

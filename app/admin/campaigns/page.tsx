@@ -7,7 +7,8 @@ import {
   AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
-import { getAdminCampaigns, requireAdmin } from "@/lib/admin";
+import { getAdminCampaigns } from "@/lib/admin";
+import { requirePlatformRewardCampaignManager } from "@/features/campaigns/admin/access";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { setCampaignEnabled } from "./actions";
@@ -48,7 +49,7 @@ export default async function AdminCampaignsPage({
 }: {
   searchParams?: Promise<{ page?: string; notice?: string }>;
 }) {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requirePlatformRewardCampaignManager();
   const campaigns = await getAdminCampaigns(supabase);
   const { page, notice } = (await searchParams) ?? {};
   const paginatedCampaigns = paginateItems(campaigns, parsePageParam(page), 20);

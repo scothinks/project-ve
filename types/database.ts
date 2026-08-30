@@ -7348,6 +7348,16 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_adjust_platform_xp_account: {
+        Args: {
+          p_amount: number
+          p_direction: Database["public"]["Enums"]["xp_direction"]
+          p_reason?: string
+          p_target_user_id: string
+          p_xp_account_id: string
+        }
+        Returns: Json
+      }
       admin_adjust_reward_quantity: {
         Args: { p_delta: number; p_reason: string; p_reward_id: string }
         Returns: Json
@@ -7710,6 +7720,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_get_workspace_xp_settings: {
+        Args: { p_organization_id?: string }
+        Returns: Json
+      }
       admin_get_xp_account_overview: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -7876,6 +7890,14 @@ export type Database = {
           total_available: number
         }[]
       }
+      admin_save_workspace_xp_settings: {
+        Args: {
+          p_admin_manual_grant_daily_limit: number
+          p_default_daily_quiz_xp_limit: number
+          p_organization_id: string
+        }
+        Returns: Json
+      }
       admin_send_instructor_scoped_notification: {
         Args: {
           p_body?: string
@@ -7933,6 +7955,10 @@ export type Database = {
           p_section_id: string
           p_status: Database["public"]["Enums"]["content_status"]
         }
+        Returns: Json
+      }
+      admin_set_reward_campaign_enabled: {
+        Args: { p_campaign_id: string; p_is_enabled: boolean }
         Returns: Json
       }
       admin_set_reward_enabled: {
@@ -8075,6 +8101,92 @@ export type Database = {
           p_verification_status: Database["public"]["Enums"]["organization_verification_status"]
         }
         Returns: Json
+      }
+      admin_update_platform_xp_account_controls: {
+        Args: {
+          p_accounting_currency: string
+          p_accounting_value_per_unit: number
+          p_exposure_hard_threshold?: number
+          p_exposure_warning_threshold?: number
+          p_funded_reward_budget?: number
+          p_issuance_cap_per_period: number
+          p_issuance_cap_per_user: number
+          p_issuance_period_days: number
+          p_xp_account_id: string
+        }
+        Returns: {
+          accounting_currency: string | null
+          accounting_value_per_unit: number
+          created_at: string
+          display_format: string
+          display_name: string
+          display_name_plural: string
+          exposure_hard_threshold: number | null
+          exposure_warning_threshold: number | null
+          funded_reward_budget: number | null
+          icon: string
+          icon_url: string | null
+          id: string
+          is_default: boolean
+          issuance_cap_per_period: number
+          issuance_cap_per_user: number
+          issuance_period_days: number
+          name: string
+          organization_id: string | null
+          plural_name: string
+          scope: Database["public"]["Enums"]["xp_account_scope"]
+          short_label: string
+          status: Database["public"]["Enums"]["xp_account_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "xp_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_platform_xp_account_presentation: {
+        Args: {
+          p_display_format: string
+          p_display_name: string
+          p_display_name_plural: string
+          p_icon: string
+          p_short_label: string
+          p_status: Database["public"]["Enums"]["xp_account_status"]
+          p_xp_account_id: string
+        }
+        Returns: {
+          accounting_currency: string | null
+          accounting_value_per_unit: number
+          created_at: string
+          display_format: string
+          display_name: string
+          display_name_plural: string
+          exposure_hard_threshold: number | null
+          exposure_warning_threshold: number | null
+          funded_reward_budget: number | null
+          icon: string
+          icon_url: string | null
+          id: string
+          is_default: boolean
+          issuance_cap_per_period: number
+          issuance_cap_per_user: number
+          issuance_period_days: number
+          name: string
+          organization_id: string | null
+          plural_name: string
+          scope: Database["public"]["Enums"]["xp_account_scope"]
+          short_label: string
+          status: Database["public"]["Enums"]["xp_account_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "xp_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_update_programme_assessment_delivery: {
         Args: { p_assessment_delivery_configs: Json; p_programme_id: string }

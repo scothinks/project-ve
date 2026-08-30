@@ -17,6 +17,44 @@ The objective is to:
 
 The current application contains substantial working functionality. Refactoring must therefore be incremental and migration-safe.
 
+## Narrow XP settings extension, 2026-08-30
+
+`HOTFIX-P15C-XP-SETTINGS-001` closes the silent organisation XP-settings write
+failure without weakening the global `xp_settings` RLS boundary. Real
+organisations now store the two supported values as validated
+`organization_entitlement_overrides`; the Platform Catalog owns the existing
+global singleton as the fallback for catalog content and organisations without
+an override. Scoped read/save RPCs enforce owner/admin authorization, other
+workspace staff receive read-only effective values, and rejected writes are
+surfaced by the server-rendered settings page.
+
+Quiz attempt creation, quiz-answer issuance and organisation manual XP grants
+resolve limits from trusted XP-account/organisation context. Focused pgTAP
+covers tenant isolation, catalog fallback, role-dependent access, effective
+quiz caps and manual-grant caps. Final validation passed a clean migration
+replay, 36 files / 785 pgTAP assertions, the 30-assertion focused suite,
+quiz-XP concurrency, economic integrity, 13 guardrail tests, 158 unit tests,
+typecheck, lint and the production build.
+
+## Narrow Platform Catalog boundary closure, 2026-08-30
+
+`HOTFIX-P15F-CATALOG-BOUNDARY-001` removes remaining global-admin-only checks
+from platform-owned CMS/LMS operations while preserving the existing tenant
+boundary. Platform Catalog roles are accepted only when the target reward,
+course tree, mission/proof, assessment, value tag, campaign reward, or XP
+account is platform-owned. Organisation mutations still require the owning
+organisation role; Platform Admin retains cross-scope oversight.
+
+The implementation adds resource-scoped security-definer predicates, focused
+RLS policies, an audited platform Points control surface, a scoped mission
+publish notification primitive, and one set-wise campaign status operation.
+The latter deliberately updates only `organization_id is null` rewards for a
+Catalog caller, avoiding both a query loop and cross-tenant writes. Final local
+validation passed a clean migration replay, the 31-assertion focused suite, all
+37 database files / 816 assertions, 158 unit tests, 13 guardrail tests, the
+focused 3-test browser suite, database-type parity, quiz-XP concurrency,
+economic integrity, typecheck, lint and the production build.
+
 ---
 
 # 0. CODEX EXECUTION RULES

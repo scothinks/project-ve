@@ -5,11 +5,25 @@ import {
   getAdminCourses,
   getAdminLessons,
   getAdminMissionRewardCandidates,
-  requirePlatformAdmin,
+  requireAdminWorkspaceRole,
 } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
+import { redirect } from "next/navigation";
+
+const PLATFORM_MISSION_MANAGER_ROLES = [
+  "platform_admin",
+  "organisation_owner",
+  "organisation_admin",
+  "programme_manager",
+  "content_editor",
+];
 
 export default async function AdminNewMissionPage() {
-  const { supabase } = await requirePlatformAdmin();
+  const { supabase, workspace } = await requireAdminWorkspaceRole(PLATFORM_MISSION_MANAGER_ROLES);
+
+  if (workspace.type !== "platform" && workspace.id !== PLATFORM_CATALOG_WORKSPACE_ID) {
+    redirect("/admin/missions");
+  }
   const [courses, lessons, rewardCandidates] = await Promise.all([
     getAdminCourses(supabase),
     getAdminLessons(supabase),

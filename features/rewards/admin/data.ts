@@ -166,7 +166,9 @@ export async function getAdminRedemptions(
     .order("requested_at", { ascending: false });
 
   if (organizationId) {
-    const orgRewardIds = await getOrganizationScopedRewardIds(supabase, organizationId);
+    const orgRewardIds = organizationId === PLATFORM_CATALOG_WORKSPACE_ID
+      ? (await getAdminRewards(supabase, {}, PLATFORM_CATALOG_WORKSPACE_ID)).map((reward) => reward.id)
+      : await getOrganizationScopedRewardIds(supabase, organizationId);
 
     if (orgRewardIds.length === 0) {
       return [];

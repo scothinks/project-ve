@@ -21,6 +21,7 @@ import { getRewardThumbnailEditorState } from "@/lib/reward-icons";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
 import { updateReward } from "./actions";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 
 type AdminRewardDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -61,16 +62,17 @@ function getInventoryValue(payload: Record<string, unknown>, itemType: string) {
 export default async function AdminRewardDetailPage({ params, searchParams }: AdminRewardDetailPageProps) {
   const { id } = await params;
   const { inventoryPage, adjustmentsPage } = (await searchParams) ?? {};
-  const { supabase } = await requireAdminWorkspaceRole([
+  const { supabase, workspace } = await requireAdminWorkspaceRole([
     "organisation_owner",
     "organisation_admin",
     "programme_manager",
   ]);
+  const isCatalogWorkspace = workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
   const [detail, campaigns, organizations, programmes] = await Promise.all([
     getAdminRewardDetail(supabase, id),
     getAdminCampaigns(supabase),
-    getAdminOrganizations(supabase),
-    getAdminProgrammes(supabase),
+    isCatalogWorkspace ? Promise.resolve([]) : getAdminOrganizations(supabase),
+    isCatalogWorkspace ? Promise.resolve([]) : getAdminProgrammes(supabase),
   ]);
 
   if (!detail) {

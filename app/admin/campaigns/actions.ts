@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin";
+import { requirePlatformRewardCampaignManager } from "@/features/campaigns/admin/access";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 
@@ -17,35 +17,9 @@ function parseOptionalDate(value: FormDataEntryValue | null) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-async function setLinkedRewardsEnabled(
-  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
-  campaignId: string,
-  isEnabled: boolean,
-) {
-  const { data: rewards, error } = await supabase
-    .from("rewards")
-    .select("id")
-    .eq("campaign_id", campaignId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  for (const reward of rewards ?? []) {
-    const { error: rewardError } = await supabase.rpc("admin_set_reward_enabled", {
-      p_reward_id: reward.id,
-      p_is_enabled: isEnabled,
-    });
-
-    if (rewardError) {
-      throw new Error(rewardError.message);
-    }
-  }
-}
-
 export async function saveCampaign(formData: FormData) {
   const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requirePlatformRewardCampaignManager();
 
   const { data, error } = await supabase.rpc("admin_upsert_campaign", {
     p_campaign_id: campaignId,
@@ -77,9 +51,9 @@ export async function setCampaignEnabled(formData: FormData) {
   const campaignId = sanitizePlainTextInput(String(formData.get("campaignId") ?? ""), 120);
   const isEnabled = String(formData.get("isEnabled") ?? "") === "true";
   const redirectTo = sanitizePlainTextInput(String(formData.get("redirectTo") ?? "/admin/campaigns"), 400);
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requirePlatformRewardCampaignManager();
 
-  const { error } = await supabase.rpc("admin_set_campaign_enabled", {
+  const { error } = await supabase.rpc("admin_set_reward_campaign_enabled", {
     p_campaign_id: campaignId,
     p_is_enabled: isEnabled,
   });
@@ -87,8 +61,6 @@ export async function setCampaignEnabled(formData: FormData) {
   if (error) {
     throw new Error(error.message);
   }
-
-  await setLinkedRewardsEnabled(supabase, campaignId, isEnabled);
 
   revalidatePath("/admin/campaigns");
   revalidatePath("/admin/rewards");

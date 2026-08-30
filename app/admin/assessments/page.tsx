@@ -17,7 +17,7 @@ export default async function AdminAssessmentsPage({
     "programme_manager",
     "content_editor",
   ]);
-  const [{ assessmentCapability, assessments, selectedOrganizationId }, resolvedSearchParams] = await Promise.all([
+  const [{ assessmentCapability, assessments, isPlatformCatalog, selectedOrganizationId }, resolvedSearchParams] = await Promise.all([
     getAdminAssessmentVersions(supabase),
     searchParams,
   ]);
@@ -34,6 +34,7 @@ export default async function AdminAssessmentsPage({
       <AssessmentIndex
         assessmentCapability={assessmentCapability}
         assessments={assessments}
+        isPlatformCatalog={isPlatformCatalog}
         selectedOrganizationId={selectedOrganizationId}
       />
     </>

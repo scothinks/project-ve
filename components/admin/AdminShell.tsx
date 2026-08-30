@@ -764,6 +764,13 @@ const orgPrimaryLinks: AdminLink[] = [
     roles: ["organisation_owner", "organisation_admin", "programme_manager"],
   },
   {
+    href: "/admin/campaigns",
+    label: "Reward Campaigns",
+    icon: AdminFlagIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    catalogOnly: true,
+  },
+  {
     href: "/admin/rewards/perks",
     label: "Perks",
     icon: AdminFlagIcon,
@@ -961,8 +968,7 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
           );
         })}
       </ul>
-      {workspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
-        <Link
+      <Link
           aria-label={orgSettingsLink.label}
           className={cn(
             "mt-4 flex h-11 w-11 items-center justify-center rounded-lg text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-high)] hover:text-[var(--admin-primary)]",
@@ -974,7 +980,6 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
         >
           <orgSettingsLink.icon />
         </Link>
-      )}
     </nav>
   );
 }
@@ -1000,11 +1005,9 @@ function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspa
           </li>
         ))}
       </ul>
-      {workspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
-        <div className="mt-auto border-t border-[var(--admin-border-warm)] pt-3">
-          <AdminNavLink link={orgSettingsLink} pathname={pathname} />
-        </div>
-      )}
+      <div className="mt-auto border-t border-[var(--admin-border-warm)] pt-3">
+        <AdminNavLink link={orgSettingsLink} pathname={pathname} />
+      </div>
     </nav>
   );
 }
@@ -1079,11 +1082,9 @@ export function AdminShell({
                   {visibleOrgLinks(currentWorkspace).map((link) => (
                     <AdminNavLink key={link.href} link={link} pathname={pathname} />
                   ))}
-                  {currentWorkspace.id === PLATFORM_CATALOG_WORKSPACE_ID ? null : (
-                    <div className="mt-2 border-t border-[var(--admin-border-warm)] pt-2">
-                      <AdminNavLink link={orgSettingsLink} pathname={pathname} />
-                    </div>
-                  )}
+                  <div className="mt-2 border-t border-[var(--admin-border-warm)] pt-2">
+                    <AdminNavLink link={orgSettingsLink} pathname={pathname} />
+                  </div>
                 </nav>
               </Collapsible.Content>
             </Collapsible.Root>

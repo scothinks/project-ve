@@ -67,7 +67,7 @@ function parseQuestionOptions(formData: FormData) {
 }
 
 export async function createAssessmentRevision(formData: FormData) {
-  const organizationId = sanitizePlainTextInput(String(formData.get("organizationId") ?? ""), 80);
+  const organizationId = parseOptionalUuid(formData.get("organizationId"));
   const sourceAssessmentVersionId = sanitizePlainTextInput(String(formData.get("sourceAssessmentVersionId") ?? ""), 80);
   const title = sanitizePlainTextInput(String(formData.get("title") ?? ""), 180);
   const slug = sanitizePlainTextInput(String(formData.get("slug") ?? ""), 120);

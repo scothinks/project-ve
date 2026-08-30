@@ -8,7 +8,8 @@ import {
   AdminTable,
 } from "@/components/admin/AdminPrimitives";
 import { CampaignForm } from "@/components/admin/CampaignForm";
-import { getAdminCampaign, getAdminCampaignAnalytics, requireAdmin } from "@/lib/admin";
+import { getAdminCampaign, getAdminCampaignAnalytics } from "@/lib/admin";
+import { requirePlatformRewardCampaignManager } from "@/features/campaigns/admin/access";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatXpLabel } from "@/lib/xp-format";
 
@@ -20,7 +21,7 @@ type CampaignDetailPageProps = {
 export default async function CampaignDetailPage({ params, searchParams }: CampaignDetailPageProps) {
   const { id } = await params;
   const { rewardsPage, notice } = (await searchParams) ?? {};
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requirePlatformRewardCampaignManager();
   const [campaign, analytics] = await Promise.all([
     getAdminCampaign(supabase, id),
     getAdminCampaignAnalytics(supabase, id),

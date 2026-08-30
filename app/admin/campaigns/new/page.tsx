@@ -1,9 +1,9 @@
 import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
 import { CampaignForm } from "@/components/admin/CampaignForm";
-import { requireAdmin } from "@/lib/admin";
+import { requirePlatformRewardCampaignManager } from "@/features/campaigns/admin/access";
 
 export default async function NewCampaignPage() {
-  await requireAdmin();
+  await requirePlatformRewardCampaignManager();
 
   return (
     <>

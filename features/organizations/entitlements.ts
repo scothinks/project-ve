@@ -23,6 +23,8 @@ export const ORGANIZATION_ENTITLEMENT_KEYS = [
   "ai_organization_concurrency_limit",
   "allowed_ai_operation_types",
   "allowed_ai_roles",
+  "daily_quiz_xp_limit",
+  "admin_manual_grant_daily_limit",
 ] as const;
 
 export type OrganizationEntitlementKey = typeof ORGANIZATION_ENTITLEMENT_KEYS[number];
@@ -64,6 +66,8 @@ export type OrganizationEntitlements = {
   aiOrganizationConcurrencyLimit: number;
   allowedAiOperationTypes: string[];
   allowedAiRoles: string[];
+  dailyQuizXpLimit: number | null;
+  adminManualGrantDailyLimit: number | null;
 };
 
 export const STARTER_ORGANIZATION_ENTITLEMENTS: OrganizationEntitlements = {
@@ -91,6 +95,8 @@ export const STARTER_ORGANIZATION_ENTITLEMENTS: OrganizationEntitlements = {
   aiOrganizationConcurrencyLimit: 0,
   allowedAiOperationTypes: [],
   allowedAiRoles: [],
+  dailyQuizXpLimit: null,
+  adminManualGrantDailyLimit: null,
 };
 
 type EntitlementJson = Record<string, unknown>;
@@ -104,6 +110,12 @@ function toFiniteLimit(value: unknown, fallback: number) {
 function toStringList(value: unknown, fallback: string[]) {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string" && item.length > 0)
+    : fallback;
+}
+
+function toOptionalFiniteLimit(value: unknown, fallback: number | null) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? Math.floor(value)
     : fallback;
 }
 
@@ -171,6 +183,11 @@ export function parseOrganizationEntitlements(
     ),
     allowedAiOperationTypes: toStringList(source.allowed_ai_operation_types, fallback.allowedAiOperationTypes),
     allowedAiRoles: toStringList(source.allowed_ai_roles, fallback.allowedAiRoles),
+    dailyQuizXpLimit: toOptionalFiniteLimit(source.daily_quiz_xp_limit, fallback.dailyQuizXpLimit),
+    adminManualGrantDailyLimit: toOptionalFiniteLimit(
+      source.admin_manual_grant_daily_limit,
+      fallback.adminManualGrantDailyLimit,
+    ),
   };
 }
 

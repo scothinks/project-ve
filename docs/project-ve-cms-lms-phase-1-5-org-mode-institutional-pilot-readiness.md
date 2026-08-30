@@ -26,6 +26,32 @@ blocked until hosted query statistics and plans provide the evidence required by
 the performance plan; local Docker timings are not a substitute for that hosted
 evidence.
 
+Narrow extension record, 2026-08-30: `HOTFIX-P15C-XP-SETTINGS-001` extends the
+accepted P1.5C XP and P1.5 entitlement boundaries without restructuring them.
+The existing settings page now reads one server-rendered effective workspace
+model and saves through scoped RPCs. Real organisations persist only the two XP
+keys in `organization_entitlement_overrides`; the Platform Catalog updates the
+existing global `xp_settings` fallback. Quiz attempt selection, answer issuance
+and organisation manual grants resolve the effective limit from trusted account
+context. Focused pgTAP passed 30/30 and the aggregate database suite passed 36
+files / 785 tests; quiz-XP concurrency, economic integrity, guardrails,
+typecheck, lint, unit tests and the production build also passed. P2 remains
+blocked.
+
+Narrow boundary-closure record, 2026-08-30:
+`HOTFIX-P15F-CATALOG-BOUNDARY-001` moves platform-owned content operations out
+of the global Platform Admin role and into the staffed Platform Catalog
+workspace. Scoped Catalog roles can now manage platform rewards and campaigns,
+courses and their AI/media tree, missions and public-proof review, platform
+assessment revisions, value tags, and the platform Points account. Every path
+checks the owning resource is platform-scoped; organisation records remain
+tenant-scoped, and campaign reward toggles are set-wise without crossing into
+organisation rewards. Validation passed the 31-assertion focused boundary
+suite, all 37 database files / 816 assertions, 158 unit tests, 13 guardrail
+tests, the focused 3-test browser suite, typecheck, lint, database-type parity,
+quiz-XP concurrency, economic integrity and the production build. This does
+not reopen P1.5 architecture or authorise P2.
+
 This addendum inserts a new phase:
 
 ```text
