@@ -9,6 +9,7 @@ import {
   adminButtonClasses,
 } from "@/components/admin/AdminPrimitives";
 import { setMissionStatus } from "@/app/admin/missions/actions";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { getAdminMissions, requireAdminWorkspaceRole } from "@/lib/admin";
 import { getMissionRewardLabel } from "@/lib/missions";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
@@ -55,9 +56,12 @@ export default async function AdminMissionsPage({
   const missions = await getAdminMissions(supabase);
   const { page, notice } = (await searchParams) ?? {};
   const paginatedMissions = paginateItems(missions, parsePageParam(page), 20);
-  const isOrganizationWorkspace = workspace.type === "organization";
+  const isCatalogWorkspace = workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
+  const isOrganizationWorkspace = workspace.type === "organization" && !isCatalogWorkspace;
   const canManagePlatformMissions =
-    workspace.type === "platform" || workspace.roles.includes("platform_admin");
+    workspace.type === "platform"
+    || workspace.roles.includes("platform_admin")
+    || isCatalogWorkspace;
 
   return (
     <>

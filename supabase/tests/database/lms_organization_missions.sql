@@ -1050,7 +1050,7 @@ select extensions.ok(
 select extensions.throws_ok(
   $$ select public.admin_set_mission_status('mission-p15b-platform-course', 'draft') $$,
   'P0001',
-  'Only a platform admin can update platform mission status.',
+  'Platform Catalog mission manager access required.',
   'organisation mission managers cannot change platform mission status'
 );
 

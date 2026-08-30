@@ -154,14 +154,14 @@ select extensions.throws_ok(
 select extensions.throws_ok(
   $$ select public.admin_reset_ai_course_tree('missing-course', 'draft') $$,
   'P0001',
-  'Admin access required.',
+  'Course editor access required.',
   'authenticated non-admin cannot execute admin_reset_ai_course_tree'
 );
 
 select extensions.throws_ok(
   $$ select public.admin_reset_ai_course_media('missing-course', null, 'draft') $$,
   'P0001',
-  'Admin access required.',
+  'Course editor access required.',
   'authenticated non-admin cannot execute admin_reset_ai_course_media'
 );
 

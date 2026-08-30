@@ -282,14 +282,18 @@ function QuestionForm({
 export function AssessmentIndex({
   assessmentCapability,
   assessments,
+  isPlatformCatalog,
   selectedOrganizationId,
 }: {
   assessmentCapability: OrganizationAssessmentCapability;
   assessments: AdminAssessmentVersionSummary[];
+  isPlatformCatalog: boolean;
   selectedOrganizationId: string | null;
 }) {
-  const canAdapt = Boolean(selectedOrganizationId)
-    && (assessmentCapability === "template_adaptation" || assessmentCapability === "custom");
+  const canAdapt = isPlatformCatalog || (
+    Boolean(selectedOrganizationId)
+    && (assessmentCapability === "template_adaptation" || assessmentCapability === "custom")
+  );
 
   return (
     <div className="space-y-5">
@@ -298,7 +302,9 @@ export function AssessmentIndex({
           <div>
             <h2 className="text-base font-black">Assessment capability</h2>
             <p className={helperTextClasses()}>
-              {capabilityLabel(assessmentCapability)} workspace policy is resolved from organisation entitlements.
+              {isPlatformCatalog
+                ? "Platform Catalog staff can maintain Project Ve assessment templates."
+                : `${capabilityLabel(assessmentCapability)} workspace policy is resolved from organisation entitlements.`}
             </p>
           </div>
           <AdminStatusBadge tone={canAdapt ? "good" : assessmentCapability === "template_use" ? "warning" : "neutral"}>
@@ -340,7 +346,7 @@ export function AssessmentIndex({
                     <input name="introductionCopy" type="hidden" value={assessment.introduction_copy} />
                     <input name="completionCopy" type="hidden" value={assessment.completion_copy} />
                     <button className={adminButtonClasses("primary", "px-3 text-xs")} type="submit">
-                      Adapt
+                      {isPlatformCatalog ? "Create revision" : "Adapt"}
                     </button>
                   </form>
                 ) : null}
@@ -565,9 +571,9 @@ export function AssessmentWorkspace({
                     : "Publishing is only available on Professional or Enterprise assessment capability."}
               </p>
             )}
-            {assessment.status === "published" && canAdapt && assessment.organization_id ? (
+            {assessment.status === "published" && canAdapt ? (
               <form action={createAssessmentRevision} className="mt-3">
-                <input name="organizationId" type="hidden" value={assessment.organization_id} />
+                <input name="organizationId" type="hidden" value={assessment.organization_id ?? ""} />
                 <input name="sourceAssessmentVersionId" type="hidden" value={assessment.id} />
                 <input name="title" type="hidden" value={`${assessment.title} v${assessment.version_number + 1}`} />
                 <input name="slug" type="hidden" value={`${assessment.slug}-v${assessment.version_number + 1}`} />

@@ -41,6 +41,23 @@ P0/P1 architecture is closed. Do not begin P2 work until hosted query statistics
 and plans have been captured and reviewed as required by the performance plan;
 local Docker timings do not satisfy that evidence gate.
 
+Narrow post-closure extension `HOTFIX-P15C-XP-SETTINGS-001` is implemented and
+locally validated. Organisation owners/admins can save workspace-specific daily
+quiz and manual-grant limits through the existing entitlement override model;
+other staff see read-only effective values. The Platform Catalog settings view
+manages the existing global default, which remains the fallback for catalog
+content and organisations without an override. This does not reopen P1.5
+architecture or authorise any P2 scope.
+
+Narrow post-closure extension `HOTFIX-P15F-CATALOG-BOUNDARY-001` is implemented
+and locally validated. Platform Catalog staff now own platform-scoped reward
+campaigns, rewards, course authoring and AI/media operations, missions and
+public-proof review, assessments, value tags, and platform Points controls.
+Platform Admin retains superuser oversight, while scoped RPC/RLS checks prevent
+Catalog roles from mutating any organisation-owned record. The set-wise
+campaign operation explicitly leaves linked organisation rewards unchanged.
+This is a P1.5 ownership correction, not P2 work.
+
 ---
 
 # 0. EXECUTION INSTRUCTION

@@ -32,6 +32,8 @@ test("organization entitlement parser maps database keys into the typed contract
     ai_organization_concurrency_limit: 3,
     allowed_ai_operation_types: ["course_outline"],
     allowed_ai_roles: ["organisation_admin"],
+    daily_quiz_xp_limit: 75,
+    admin_manual_grant_daily_limit: 600,
   });
 
   assert.equal(entitlements.maxCourses, 3);
@@ -47,6 +49,8 @@ test("organization entitlement parser maps database keys into the typed contract
   assert.equal(entitlements.aiHardLimit, 1300);
   assert.deepEqual(entitlements.allowedAiOperationTypes, ["course_outline"]);
   assert.deepEqual(entitlements.allowedAiRoles, ["organisation_admin"]);
+  assert.equal(entitlements.dailyQuizXpLimit, 75);
+  assert.equal(entitlements.adminManualGrantDailyLimit, 600);
 });
 
 test("organization entitlement parser falls back to Starter values for invalid shapes", () => {
@@ -57,6 +61,8 @@ test("organization entitlement parser falls back to Starter values for invalid s
     ai_authoring_enabled: "yes",
     assessment_capability: "unsupported",
     reporting_level: "unsupported",
+    daily_quiz_xp_limit: -1,
+    admin_manual_grant_daily_limit: "many",
   });
 
   assert.equal(entitlements.maxCourses, STARTER_ORGANIZATION_ENTITLEMENTS.maxCourses);
@@ -65,6 +71,8 @@ test("organization entitlement parser falls back to Starter values for invalid s
   assert.equal(entitlements.aiAuthoringEnabled, STARTER_ORGANIZATION_ENTITLEMENTS.aiAuthoringEnabled);
   assert.equal(entitlements.assessmentCapability, STARTER_ORGANIZATION_ENTITLEMENTS.assessmentCapability);
   assert.equal(entitlements.reportingLevel, STARTER_ORGANIZATION_ENTITLEMENTS.reportingLevel);
+  assert.equal(entitlements.dailyQuizXpLimit, null);
+  assert.equal(entitlements.adminManualGrantDailyLimit, null);
 });
 
 test("integer entitlement checks compare requested usage against resolved limits", () => {

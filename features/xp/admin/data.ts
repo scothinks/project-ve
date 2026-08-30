@@ -32,10 +32,14 @@ export type AdminXpLedgerFilters = {
 };
 
 export type AdminXpSettingsRow = {
-  id: number;
-  default_daily_quiz_xp_limit: number;
-  admin_manual_grant_daily_limit: number;
-  updated_at: string;
+  adminManualGrantDailyLimit: number;
+  canManage: boolean;
+  dailyQuizSource: "platform_default" | "workspace_override";
+  defaultDailyQuizXpLimit: number;
+  manualGrantSource: "platform_default" | "workspace_override";
+  organizationId: string | null;
+  scope: "organization" | "platform_catalog";
+  updatedAt: string | null;
 };
 
 export type AdminManualXpGrantStatusRow = {
@@ -45,18 +49,52 @@ export type AdminManualXpGrantStatusRow = {
   remaining_today: number;
 };
 
-export async function getAdminXpSettings(supabase: SupabaseClient) {
-  const { data, error } = await supabase
-    .from("xp_settings")
-    .select("id, default_daily_quiz_xp_limit, admin_manual_grant_daily_limit, updated_at")
-    .eq("id", 1)
-    .maybeSingle();
+export type AdminPlatformXpAccountRow = {
+  accounting_currency: string | null;
+  accounting_value_per_unit: number;
+  display_format: "amount_name" | "amount_short_label";
+  exposure_hard_threshold: number | null;
+  exposure_warning_threshold: number | null;
+  funded_reward_budget: number | null;
+  icon: string | null;
+  id: string;
+  issuance_cap_per_period: number;
+  issuance_cap_per_user: number;
+  issuance_period_days: number;
+  name: string;
+  plural_name: string;
+  short_label: string;
+  status: "active" | "paused" | "archived";
+};
+
+export async function getAdminXpSettings(
+  supabase: SupabaseClient,
+  organizationId: string | null,
+) {
+  const { data, error } = await supabase.rpc("admin_get_workspace_xp_settings", {
+    p_organization_id: organizationId,
+  });
 
   if (error) {
     throw error;
   }
 
-  return data as AdminXpSettingsRow | null;
+  return data as AdminXpSettingsRow;
+}
+
+export async function getAdminPlatformXpAccount(supabase: SupabaseClient) {
+  const { data, error } = await supabase
+    .from("xp_accounts")
+    .select(
+      "id, name, plural_name, short_label, icon, display_format, status, accounting_currency, accounting_value_per_unit, issuance_period_days, issuance_cap_per_period, issuance_cap_per_user, funded_reward_budget, exposure_warning_threshold, exposure_hard_threshold",
+    )
+    .eq("scope", "platform")
+    .is("organization_id", null)
+    .eq("is_default", true)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data ?? null) as AdminPlatformXpAccountRow | null;
 }
 
 export async function getAdminManualXpGrantStatus(supabase: SupabaseClient) {

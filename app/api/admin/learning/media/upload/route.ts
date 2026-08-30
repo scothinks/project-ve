@@ -30,18 +30,26 @@ function storageLimitMessage(maxStorageBytes: number) {
 }
 
 async function authorizeMediaWrite({
+  courseId,
   organizationId,
-  profileRole,
   supabase,
 }: {
+  courseId: string;
   organizationId: string | null;
-  profileRole: string | null | undefined;
   supabase: SupabaseClient<Database>;
 }) {
   if (!organizationId) {
-    return profileRole === "admin"
+    const { data, error } = await supabase.rpc("current_user_can_edit_course", {
+      p_course_id: courseId,
+    });
+
+    if (error) {
+      return jsonError("Could not validate Platform Catalog media permissions.", 500);
+    }
+
+    return data
       ? null
-      : jsonError("Only platform admins can manage platform CMS media.", 403);
+      : jsonError("Platform Catalog content editor access is required for this media.", 403);
   }
 
   const { data, error } = await supabase.rpc("current_user_can_edit_organization_content", {
@@ -129,7 +137,7 @@ export async function POST(request: Request) {
     return jsonError("Supabase is not configured.", 503);
   }
 
-  const { user, profile } = await getCurrentUserProfile(supabase);
+  const { user } = await getCurrentUserProfile(supabase);
   if (!user) {
     return jsonError("Sign in before uploading media.", 401);
   }
@@ -188,8 +196,8 @@ export async function POST(request: Request) {
   courseId = courseContext.id;
 
   const authorizationError = await authorizeMediaWrite({
+    courseId: courseContext.id,
     organizationId: courseContext.organization_id,
-    profileRole: profile?.role,
     supabase,
   });
   if (authorizationError) {
@@ -288,7 +296,7 @@ export async function DELETE(request: Request) {
     return jsonError("Supabase is not configured.", 503);
   }
 
-  const { user, profile } = await getCurrentUserProfile(supabase);
+  const { user } = await getCurrentUserProfile(supabase);
   if (!user) {
     return jsonError("Sign in before deleting media.", 401);
   }
@@ -336,8 +344,8 @@ export async function DELETE(request: Request) {
   }
 
   const authorizationError = await authorizeMediaWrite({
+    courseId: resolvedContext.courseContext.id,
     organizationId: resolvedContext.courseContext.organization_id,
-    profileRole: profile?.role,
     supabase,
   });
   if (authorizationError) {

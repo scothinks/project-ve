@@ -196,6 +196,14 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
     await expect(page.getByText(/Project VE’s own platform catalogue/)).toBeVisible();
     await expect(page.getByRole("link", { name: "Catalog Staff" })).toBeVisible();
     await expect(page.getByRole("link", { name: "People" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Reward Campaigns" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Settings" }).click();
+    await expect(page).toHaveURL(/\/admin\/xp-settings$/);
+    await expect(page.getByRole("heading", { level: 1, name: "XP settings" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Platform Points presentation" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Issuance and exposure controls" })).toBeVisible();
 
     await page.getByRole("link", { name: "Catalog Staff" }).click();
     await expect(page).toHaveURL(/\/admin\/catalog-people$/);

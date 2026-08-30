@@ -17,6 +17,7 @@ import {
   type RewardMutationPayload,
 } from "@/lib/admin-reward-validation";
 import { requireAdminWorkspaceRole } from "@/lib/admin";
+import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { ValidationError } from "@/lib/app-errors";
 import { formatValidationIssues } from "@/lib/form-data-validation";
 import { isRewardIconName } from "@/lib/reward-icons";
@@ -40,6 +41,16 @@ const REWARD_MANAGER_ROLES = [
 
 async function requireRewardManager() {
   return requireAdminWorkspaceRole(REWARD_MANAGER_ROLES);
+}
+
+function isCatalogWorkspace(workspace: Awaited<ReturnType<typeof requireRewardManager>>["workspace"]) {
+  return workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
+}
+
+function catalogScopeError(payload: RewardMutationPayload) {
+  return payload.ownerScope === "platform_owned"
+    ? null
+    : "Platform Catalog staff can only manage platform-owned rewards.";
 }
 
 function requireValidForm<T>(validation: ValidationResult<T>) {
@@ -177,14 +188,19 @@ export async function updateReward(
 ): Promise<RewardActionState> {
   void previousState;
   const payload = requireValidForm(parseRewardPayloadForm(formData));
-  const { supabase } = await requireRewardManager();
+  const context = await requireRewardManager();
+  const { supabase } = context;
+  const scopeError = isCatalogWorkspace(context.workspace) ? catalogScopeError(payload) : null;
+  if (scopeError) return { ok: false, message: scopeError };
   const { error } = await callRewardMutationRpc(supabase, "admin_update_reward", payload);
 
   if (error) {
     return { ok: false, message: error.message };
   }
 
-  const { error: ownershipError } = await callRewardOwnershipRpc(supabase, payload.rewardId, payload);
+  const { error: ownershipError } = isCatalogWorkspace(context.workspace)
+    ? { error: null }
+    : await callRewardOwnershipRpc(supabase, payload.rewardId, payload);
 
   if (ownershipError) {
     return { ok: false, message: ownershipError.message };
@@ -206,7 +222,10 @@ export async function createReward(
 ): Promise<RewardActionState> {
   void previousState;
   const payload = requireValidForm(parseRewardPayloadForm(formData));
-  const { supabase } = await requireRewardManager();
+  const context = await requireRewardManager();
+  const { supabase } = context;
+  const scopeError = isCatalogWorkspace(context.workspace) ? catalogScopeError(payload) : null;
+  if (scopeError) return { ok: false, message: scopeError };
   const rewardId = await getUniqueRewardId(supabase, payload.title);
   const { data, error } = await callRewardMutationRpc(
     supabase,
@@ -221,7 +240,9 @@ export async function createReward(
 
   const result = data as { rewardId?: string } | null;
   const createdRewardId = result?.rewardId ?? rewardId;
-  const { error: ownershipError } = await callRewardOwnershipRpc(supabase, createdRewardId, payload);
+  const { error: ownershipError } = isCatalogWorkspace(context.workspace)
+    ? { error: null }
+    : await callRewardOwnershipRpc(supabase, createdRewardId, payload);
 
   if (ownershipError) {
     return { ok: false, message: ownershipError.message };
