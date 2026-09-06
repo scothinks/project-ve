@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       app_url:
-        description: Exact protected staging or production URL to qualify
+        description: Protected Preview alias; probes resolve its exact immutable deployment
         required: true
         default: https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app
         type: string
@@ -19,6 +19,11 @@ on:
         type: string
       evidence_path:
         description: Repository path to completed hosted measurement evidence
+        required: false
+        default: ""
+        type: string
+      evidence_json:
+        description: Non-secret completed evidence JSON supplied at dispatch (avoids changing the deployed SHA)
         required: false
         default: ""
         type: string
@@ -42,6 +47,7 @@ jobs:
       HOSTED_GIT_REF: ${{ inputs.git_ref }}
       HOSTED_EXPECTED_SHA: ${{ inputs.expected_sha }}
       HOSTED_EVIDENCE_PATH: ${{ inputs.evidence_path }}
+      HOSTED_EVIDENCE_JSON: ${{ inputs.evidence_json }}
       GITHUB_TOKEN: ${{ github.token }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.HOSTED_SUPABASE_URL }}
@@ -58,10 +64,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check deployable release contracts
+        if: always()
         run: npm run test:release-readiness
       - name: Inspect hosted migration ledger and recovery boundary
+        if: always()
         run: npm run test:release:migration:hosted -- --out artifacts/ai-authoring-hosted-migration.json
       - name: Qualify hosted identity, protection, worker boundary, and evidence
+        if: always()
         run: |
           arguments=(
             --app-url "$HOSTED_APP_URL"
@@ -70,20 +79,25 @@ jobs:
             --expected-sha "$HOSTED_EXPECTED_SHA"
             --out artifacts/ai-authoring-hosted-qualification.json
           )
-          if [[ -n "$HOSTED_EVIDENCE_PATH" ]]; then
+          if [[ -n "$HOSTED_EVIDENCE_JSON" ]]; then
+            evidence_file="$RUNNER_TEMP/ai-authoring-hosted-evidence.json"
+            printf '%s\n' "$HOSTED_EVIDENCE_JSON" > "$evidence_file"
+            arguments+=(--evidence "$evidence_file")
+          elif [[ -n "$HOSTED_EVIDENCE_PATH" ]]; then
             arguments+=(--evidence "$HOSTED_EVIDENCE_PATH")
           fi
           node scripts/qualify-ai-authoring-hosted.mjs "${arguments[@]}"
-      - name: Run tenant-safe media smoke
+      - name: Run read-only media cutover smoke
         if: ${{ always() && inputs.run_media_smoke }}
         run: |
           if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_REF" ] || [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" ]; then
-            echo "::warning::Skipping tenant-safe media smoke: hosted Supabase auth inputs are incomplete."
-            echo "Set HOSTED_SUPABASE_URL, HOSTED_SUPABASE_PUBLISHABLE_KEY, SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF to run this step."
-            exit 0
+            echo "::error::Media cutover smoke is blocked: hosted Supabase inputs are incomplete."
+            node -e 'require("node:fs").writeFileSync("artifacts/media-cutover-verify.json", JSON.stringify({status:"blocked",reason:"Set HOSTED_SUPABASE_URL, HOSTED_SUPABASE_PUBLISHABLE_KEY, SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF."}, null, 2) + "\n")'
+            exit 1
           fi
           node scripts/media-cutover-verify.mjs \
             --app-url "$HOSTED_APP_URL" \
+            --qualification-report artifacts/ai-authoring-hosted-qualification.json \
             --out artifacts/media-cutover-verify.json
       - name: Upload qualification evidence
         if: always()

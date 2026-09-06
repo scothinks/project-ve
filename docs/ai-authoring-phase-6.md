@@ -1,8 +1,9 @@
 # AI authoring Phase 6: release hardening
 
-Status, 2026-09-06: commit `f3319ff414f9cdb69079669358abe928f434297e`
-is deployed to the named staging branch and its immutable Vercel deployment. The
-full release gate remains open for protected hosted qualification, maintenance
+Status, 2026-09-06: pull request #83 is merged to `main`. Follow-up qualification
+fixes use the repository's Supabase access token through read-only Management API
+queries and preflight the hosted recovery matcher against the checked-in function.
+The full release gate remains open for the next exact-revision hosted run, maintenance
 cadence, measured operation timings, tenant/media and reconciliation smoke,
 rollback, and capped provider-output review. This is AI Authoring Phase 6, not
 authorization for engineering P2. Tracking: [AI Authoring #71](https://github.com/scothinks/project-ve/issues/71).
@@ -28,24 +29,31 @@ probe and all authenticated hosted measurements remain blocked until the staging
 Preview environment exposes its automation bypass secret to the manual qualification
 workflow. See the [post-deploy qualification evidence](evidence/ai-authoring-phase-6/hosted-qualification-2026-09-06.json).
 
-The manual workflow is part of pull request
-[#83](https://github.com/scothinks/project-ve/pull/83). GitHub only dispatches a
-manual workflow after that workflow exists on the default branch, so the same
-qualifier was run locally against the protected deployment for the evidence above.
-The workflow now targets the repository's existing `Preview` environment, uses
-Node 24-based action releases, and includes a read-only Supabase Management API
-audit for migration-ledger parity, the recovery function body and its execute ACL.
+The manual workflow reached the default branch in
+[#83](https://github.com/scothinks/project-ve/pull/83). Follow-up runs established
+that the hosted migration ledger is in parity, the recovery migration is present,
+and the function ACL remains service-role-only. A source matcher initially rejected
+the hosted function's valid bounded-limit expression. The matcher is now shared
+with the local release gate, which applies it to the checked-in migration before a
+hosted run can be dispatched.
 
-The ordinary CI workflow now runs `npm run test:release-readiness`. This
-secret-free merge gate checks the coordinated migration files, `after()` dispatch,
-private SSE contract, worker authentication/order/duration, rollback switch,
-maintenance declaration, media smoke tool, current branch trigger and hosted
-workflow wiring. The manual
-`Hosted AI Authoring Qualification` workflow checks out the exact expected SHA,
-matches it to GitHub's Preview deployment record, probes the protected app and
-worker denial boundary, validates the completed evidence document, and optionally
-runs the read-only media cutover smoke. It uploads the resulting JSON even when a
-release requirement is blocked.
+The ordinary CI workflow runs `npm run test:release-readiness`. This secret-free
+merge gate checks the coordinated migration files, the same recovery-function
+markers used by the hosted audit, all seven current operation kinds, `after()`
+dispatch, the private SSE contract, worker authentication/order/duration, rollback
+switch, maintenance declaration, media smoke tool, current branch trigger and
+hosted workflow wiring. The manual `Hosted AI Authoring Qualification` workflow
+checks out the exact expected SHA, resolves that SHA's successful Preview deployment
+and uses its immutable URL for runtime and media probes. Independent diagnostics run
+even when an earlier gate fails, emit specific failed assertions, and upload all JSON
+artifacts. Completed non-secret evidence can be supplied directly at dispatch, so
+recording evidence does not change the SHA being qualified.
+
+The read-only media smoke now distinguishes missing fixtures from failed assertions.
+It checks unresolved migration inventory, public bucket state, reference-to-registry
+and active-registry-to-object reconciliation, non-empty objects, anonymous delivery,
+and direct public-URL denial. Tenant role denial remains a separate authenticated
+fixture check and is not claimed by the anonymous media probe.
 
 The hosted workflow intentionally does not create paid AI work. Real provider
 requests remain behind the separately approved spending cap and must be recorded
@@ -54,12 +62,12 @@ in a completed copy of
 
 Remaining fixes before activation:
 
-1. Merge #83 so GitHub can dispatch the manual workflow, then add
-   `VERCEL_AUTOMATION_BYPASS_SECRET` to the GitHub `Preview` environment so CI
-   can reach the protected Preview without weakening Deployment Protection.
-2. Provide read-only migration-ledger access and capture forward replay against a
-   target snapshot. RPC presence alone does not establish ledger parity or function
-   body compatibility.
+1. Merge the qualification follow-up to `main`, confirm
+   `VERCEL_AUTOMATION_BYPASS_SECRET` remains available to the GitHub `Preview`
+   environment, and rerun the workflow for the exact deployed revision.
+2. Retain the working read-only migration-ledger audit and capture forward replay
+   against a target snapshot. The latest audit establishes current ledger/function
+   parity; it does not prove replay compatibility for pre-migration target data.
 3. Replace the daily 08:30 UTC worker fallback with an observed maintenance path
    no slower than every five minutes. Vercel Hobby accepts only daily cron; use a
    Pro/Enterprise cron or an authenticated external scheduler if the project stays
@@ -190,8 +198,8 @@ concurrency evidence and the current application and browser gates.
 
 Record the deployed revision, compatible migration list, runtime support for
 `after()`/streaming and the worker's 300-second execution window. The checked-in
-fallback cron currently runs daily at 08:30 UTC; it does not establish a five-second
-outage recovery guarantee. Qualify the deployment's actual worker wake-up and
+fallback cron currently runs daily at 08:30 UTC; it does not establish a five-minute
+maintenance guarantee. Qualify the deployment's actual worker wake-up and
 maintenance schedule before activation.
 
 Measure authenticated HTTP acknowledgement and persisted worker-stage visibility
