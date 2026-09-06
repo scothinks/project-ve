@@ -86,9 +86,21 @@ try {
   const row = Array.isArray(rows) ? rows[0] : null;
   if (!row?.definition) throw new Error("The hosted recovery function definition was not returned.");
   const definition = String(row.definition).toLowerCase().replace(/\s+/g, " ");
+  const boundedLimitPatterns = [
+    /limit\s+greatest\s*\(\s*1\s*,\s*least\s*\(\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*,\s*20\s*\)\s*\)/,
+    /limit\s+greatest\s*\(\s*1\s*,\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*\)/,
+    /limit\s+least\s*\(\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*,\s*20\s*\)/,
+  ];
   const markers = {
     serviceIdentityCheck: definition.includes("private.current_request_is_service_role()"),
-    boundedLimit: definition.includes("least(coalesce(p_limit, 20), 20)"),
+    boundedLimit:
+      boundedLimitPatterns.some((pattern) => pattern.test(definition))
+      || (
+        definition.includes("limit") &&
+        /coalesce\s*\([^,)]*\s*,\s*20\s*\)/.test(definition) &&
+        /least\s*\([^,)]*\s*,\s*20\s*\)/.test(definition) &&
+        /greatest\s*\([^,)]*,\s*/.test(definition)
+      ),
     expiredLeaseBoundary: definition.includes("interval '30 minutes'"),
     skipLocked: definition.includes("for update of jobs skip locked"),
     imageCheckpoint: definition.includes("service_ai_image_checkpoint"),
