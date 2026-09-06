@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { validateHostedEvidence } from "./ai-authoring-release-contract.mjs";
+import { deploymentRefMatches, validateHostedEvidence } from "./ai-authoring-release-contract.mjs";
 
 function option(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -59,7 +59,7 @@ async function checkDeploymentIdentity() {
     const deployments = await readJson(
       `https://api.github.com/repos/${repository}/deployments?environment=Preview&per_page=100`,
     );
-    const deployment = deployments.find((entry) => entry.sha === expectedSha && entry.ref === ref)
+    const deployment = deployments.find((entry) => entry.sha === expectedSha && deploymentRefMatches(entry.ref, ref, expectedSha))
       ?? deployments.find((entry) => entry.sha === expectedSha);
     if (!deployment) {
       record("deployment.identity", "blocked", `No Preview deployment is recorded for ${repository}@${expectedSha}.`);
@@ -73,13 +73,15 @@ async function checkDeploymentIdentity() {
       const deployedUrl = new URL(deployedUrlValue);
       if (deployedUrl.protocol === "https:") qualifiedAppUrl = deployedUrl;
     }
-    const matched = deployment.sha === expectedSha && deployment.ref === ref && Boolean(success);
+    const matched = deployment.sha === expectedSha
+      && deploymentRefMatches(deployment.ref, ref, expectedSha)
+      && Boolean(success);
     record(
       "deployment.identity",
       matched ? "pass" : "fail",
       matched
         ? `GitHub Preview deployment ${deployment.id} matches ${ref}@${expectedSha}; runtime probes will use its immutable URL.`
-        : `Deployment ${deployment.id} records ref ${deployment.ref ?? "unknown"}, SHA ${deployment.sha}, and status ${currentStatus?.state ?? "missing"}; expected a successful ${ref}@${expectedSha} deployment.`,
+        : `Deployment ${deployment.id} records ref ${deployment.ref ?? "unknown"}, SHA ${deployment.sha}, and status ${currentStatus?.state ?? "missing"}; expected a successful ${ref} or exact-SHA reference at ${expectedSha}.`,
       {
         deploymentId: deployment.id,
         deployedRef: deployment.ref,

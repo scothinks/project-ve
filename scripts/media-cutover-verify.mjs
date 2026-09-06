@@ -49,7 +49,13 @@ async function managementRequest(path, init = {}) {
     },
   });
   if (!response.ok) {
-    throw new Error(`Supabase Management API returned HTTP ${response.status} for ${path}.`);
+    const body = await response.text();
+    let detail = body;
+    try {
+      const parsed = JSON.parse(body);
+      detail = parsed.message ?? parsed.error ?? body;
+    } catch {}
+    throw new Error(`Supabase Management API returned HTTP ${response.status} for ${path}: ${String(detail).slice(0, 500)}`);
   }
   return response.json();
 }
@@ -68,7 +74,13 @@ async function managementQuery(query) {
   return rows;
 }
 
-const inventoryRows = await managementQuery('select public.service_media_inventory() as inventory');
+try {
+const inventoryRows = await managementQuery(`select jsonb_build_object(
+  'issues',(select coalesce(jsonb_agg(to_jsonb(i)),'[]') from private.media_migration_issues i),
+  'publicBuckets',(select coalesce(jsonb_agg(b.id),'[]') from storage.buckets b where b.public and (b.id='learning-media' or exists(select 1 from private.media_versions v where v.bucket=b.id))),
+  'unverifiedVersions',(select count(*) from private.media_versions where rights_profile='unverified'),
+  'versions',(select count(*) from private.media_versions)
+) as inventory`);
 const inventory = inventoryRows?.[0]?.inventory;
 if (!inventory) {
   throw new Error('The hosted service_media_inventory query did not return an expected row.');
@@ -214,3 +226,16 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (report.status !== 'pass') process.exitCode = 1;
+} catch (error) {
+  const report = {
+    capturedAt: new Date().toISOString(),
+    status: 'blocked',
+    target: new URL(apiUrl).host,
+    appUrl: app,
+    error: error instanceof Error ? error.message : String(error),
+  };
+  mkdirSync(path.dirname(out), { recursive: true });
+  writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+  console.error(report.error);
+  process.exitCode = 1;
+}

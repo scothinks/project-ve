@@ -215,12 +215,13 @@ record(
 record(
   "media.smoke",
   includesAll(read("scripts/media-cutover-verify.mjs"), [
-    "service_media_inventory",
+    "media_migration_issues",
+    "private.media_versions",
     "media_delivery",
     "learning_media_assets",
     "learning-media",
   ]),
-  "The hosted media smoke checks the inventory RPC, private delivery route, object presence, and public denial.",
+  "The hosted media smoke uses read-only Management queries for inventory/reconciliation and checks the private delivery route and public denial.",
 );
 
 const failed = checks.filter((check) => check.status === "fail");

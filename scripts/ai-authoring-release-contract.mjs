@@ -24,6 +24,10 @@ export const hostedThresholds = {
   workerMaxDurationSeconds: 300,
 };
 
+export function deploymentRefMatches(deploymentRef, requestedRef, expectedSha) {
+  return deploymentRef === requestedRef || deploymentRef === expectedSha;
+}
+
 function finiteNonNegative(value) {
   return Number.isFinite(value) && value >= 0;
 }

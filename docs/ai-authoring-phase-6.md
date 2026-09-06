@@ -50,7 +50,8 @@ artifacts. Completed non-secret evidence can be supplied directly at dispatch, s
 recording evidence does not change the SHA being qualified.
 
 The read-only media smoke now distinguishes missing fixtures from failed assertions.
-It checks unresolved migration inventory, public bucket state, reference-to-registry
+It uses access-token Management queries, rather than invoking the service-only
+inventory RPC, to check unresolved migration inventory, public bucket state, reference-to-registry
 and active-registry-to-object reconciliation, non-empty objects, anonymous delivery,
 and direct public-URL denial. Tenant role denial remains a separate authenticated
 fixture check and is not claimed by the anonymous media probe.
