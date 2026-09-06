@@ -11,6 +11,7 @@
     "test:guardrails": "node scripts/test-performance-guardrails.mjs",
     "test:release-readiness": "node scripts/check-ai-authoring-release-readiness.mjs",
     "test:release:hosted": "node scripts/qualify-ai-authoring-hosted.mjs",
+    "test:release:migration:hosted": "node scripts/inspect-ai-authoring-hosted-migration.mjs",
     "test:db": "node scripts/supabase-cli.mjs test db supabase/tests/database",
     "test:db:linked": "node scripts/supabase-cli.mjs test db --linked supabase/tests/database",
     "test:repositories:local": "node scripts/test-repository-contracts-local.mjs",

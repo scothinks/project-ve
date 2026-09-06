@@ -1,6 +1,6 @@
 # AI authoring Phase 6: release hardening
 
-Status, 2026-09-06: commit `369d3723807b715f2e49c27e02d23759b0b7411c`
+Status, 2026-09-06: commit `f3319ff414f9cdb69079669358abe928f434297e`
 is deployed to the named staging branch and its immutable Vercel deployment. The
 full release gate remains open for protected hosted qualification, maintenance
 cadence, measured operation timings, tenant/media and reconciliation smoke,
@@ -19,14 +19,22 @@ the Phase 1–6 work was absent from that deployment.
 The machine-readable result is retained in
 [pre-deploy qualification evidence](evidence/ai-authoring-phase-6/predeploy-qualification-2026-09-06.json).
 
-After deployment, GitHub deployment `6296015634` identifies immutable URL
-`https://project-c5oquntf3-oby-douglas-projects.vercel.app` and exactly matches
-commit `369d3723807b715f2e49c27e02d23759b0b7411c`. The branch alias loads the
+The latest read-only qualification run identifies GitHub deployment `6297357982`,
+immutable URL `https://project-e2o2zst2g-oby-douglas-projects.vercel.app`, and
+exactly matches commit `f3319ff414f9cdb69079669358abe928f434297e`. The branch alias loads the
 Project VE application through an authenticated Vercel browser session. Automated
 HTTP probes still receive the expected Vercel SSO redirect, so the worker denial
 probe and all authenticated hosted measurements remain blocked until the staging
-environment exposes its automation bypass secret to the manual qualification
+Preview environment exposes its automation bypass secret to the manual qualification
 workflow. See the [post-deploy qualification evidence](evidence/ai-authoring-phase-6/hosted-qualification-2026-09-06.json).
+
+The manual workflow is part of pull request
+[#83](https://github.com/scothinks/project-ve/pull/83). GitHub only dispatches a
+manual workflow after that workflow exists on the default branch, so the same
+qualifier was run locally against the protected deployment for the evidence above.
+The workflow now targets the repository's existing `Preview` environment, uses
+Node 24-based action releases, and includes a read-only Supabase Management API
+audit for migration-ledger parity, the recovery function body and its execute ACL.
 
 The ordinary CI workflow now runs `npm run test:release-readiness`. This
 secret-free merge gate checks the coordinated migration files, `after()` dispatch,
@@ -46,7 +54,8 @@ in a completed copy of
 
 Remaining fixes before activation:
 
-1. Add `VERCEL_AUTOMATION_BYPASS_SECRET` to the GitHub `staging` environment so CI
+1. Merge #83 so GitHub can dispatch the manual workflow, then add
+   `VERCEL_AUTOMATION_BYPASS_SECRET` to the GitHub `Preview` environment so CI
    can reach the protected Preview without weakening Deployment Protection.
 2. Provide read-only migration-ledger access and capture forward replay against a
    target snapshot. RPC presence alone does not establish ledger parity or function
@@ -150,6 +159,7 @@ application revision was deployed separately before this post-deploy audit.
 | `npm run test:release-readiness` | 9/9 deployable source and workflow contracts passed |
 | `PROJECT_VE_E2E_KEEP_BUILD_CACHE=1 npm run test:e2e` | 39/39 browser scenarios passed in 3.8 minutes after aligning the CMS and institutional fixtures with the current routed UI, media-placement flow and immutable published lesson snapshots |
 | `npm run ci` | Passed: typecheck, lint, 35 guardrail tests, 9/9 release-readiness checks, 231 unit tests and production build |
+| GitHub CI run `34056654615` at `f3319ff414f9cdb69079669358abe928f434297e` | Passed: app, database type drift and full remediation-local jobs |
 | Updated CI memory boundary | Repeated full-tree checks exhausted Node's default heap in build and typecheck; both commands now use a bounded 4 GB heap, and the production build completed successfully |
 | Production Playwright release matrix | 14/15 passed initially; after the reproduced layout fix, all 7 affected course/page/recovery/picker cases passed. Sixteen distinct browser scenarios have passing evidence across the initial run and affected reruns. |
 
@@ -204,9 +214,13 @@ The user reports the migration was pushed. A subsequent read-only check of the
 hosted REST schema confirms `service_recover_ai_authoring_jobs` is present for
 the configured service identity; it was not invoked. See the timestamped
 [API schema evidence](evidence/ai-authoring-phase-6/hosted-schema-presence.json).
-The migration ledger and function body could not be independently verified:
-the CLI has no platform access token and the configured direct database password
-was rejected. An anonymous schema read returned HTTP 401, so it does not establish
-the function's individual ACL. Local ACL tests remain the existing evidence.
-This confirms hosted API presence, not application deployment, hosted workflow
-validation or completed provider-output qualification.
+The migration ledger and function body could not be independently verified from
+the local shell: the configured direct database password was rejected. An
+anonymous schema read returned HTTP 401, so it does not establish the function's
+individual ACL. The repository does hold Actions secrets for a Supabase access
+token and project reference. The hosted workflow now uses those secrets only for
+read-only Management API calls that compare the hosted and repository ledgers,
+hash and check the recovery function body, and verify that only `service_role`
+has execute access. That audit can run after #83 reaches the default branch. Local
+ACL tests remain the existing evidence. The current schema check confirms hosted
+API presence, not completed hosted workflow or provider-output qualification.

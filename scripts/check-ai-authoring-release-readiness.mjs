@@ -161,7 +161,10 @@ record(
   "hosted.qualification",
   includesAll(read(".github/workflows/hosted-ai-authoring-qualification.yml"), [
     "workflow_dispatch:",
+    "environment: Preview",
     "VERCEL_AUTOMATION_BYPASS_SECRET",
+    "SUPABASE_ACCESS_TOKEN",
+    "test:release:migration:hosted",
     "qualify-ai-authoring-hosted.mjs",
   ])
     && migrationFiles.has("20260907020000_ai_authoring_outage_recovery.sql")
@@ -171,7 +174,7 @@ record(
       "security.worker",
       "evidence.measurements",
     ]),
-  "A manual, secret-scoped staging gate records deployment identity, probes the protected runtime, and validates measured evidence.",
+  "A manual, secret-scoped Preview gate audits the hosted migration boundary, records deployment identity, probes the protected runtime, and validates measured evidence.",
 );
 
 record(

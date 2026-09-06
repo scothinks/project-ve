@@ -36,7 +36,7 @@ jobs:
   qualify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: staging
+    environment: Preview
     env:
       HOSTED_APP_URL: ${{ inputs.app_url }}
       HOSTED_GIT_REF: ${{ inputs.git_ref }}
@@ -47,17 +47,21 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.HOSTED_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.HOSTED_SUPABASE_PUBLISHABLE_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.HOSTED_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.expected_sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - name: Check deployable release contracts
         run: npm run test:release-readiness
+      - name: Inspect hosted migration ledger and recovery boundary
+        run: npm run test:release:migration:hosted -- --out artifacts/ai-authoring-hosted-migration.json
       - name: Qualify hosted identity, protection, worker boundary, and evidence
         run: |
           arguments=(
@@ -79,7 +83,7 @@ jobs:
             --out artifacts/media-cutover-verify.json
       - name: Upload qualification evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ai-authoring-hosted-qualification-${{ inputs.expected_sha }}
           path: artifacts/
