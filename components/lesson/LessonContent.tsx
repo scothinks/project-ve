@@ -1,4 +1,5 @@
-import Image from "next/image";
+import { MediaAudio, MediaVideo } from "@/components/media/MediaPlayback";
+import Image from "@/components/media/MediaImage";
 import type { LessonContentBlock, LessonPageType } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { containsRichTextHtml, sanitizeRichTextHtml } from "@/lib/rich-text";
@@ -6,6 +7,7 @@ import { containsRichTextHtml, sanitizeRichTextHtml } from "@/lib/rich-text";
 type LessonContentProps = {
   blocks: LessonContentBlock[];
   variant?: LessonPageType | string;
+  isPreview?: boolean;
 };
 
 function RichTextBody({
@@ -27,7 +29,7 @@ function RichTextBody({
   );
 }
 
-export function LessonContent({ blocks, variant = "concept" }: LessonContentProps) {
+export function LessonContent({ blocks, variant = "concept", isPreview = false }: LessonContentProps) {
   const isReflection = variant === "reflection";
   const isSummary = variant === "summary";
   const isExample = variant === "example";
@@ -77,6 +79,14 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
   return (
     <div className={`${stackClasses} text-left`}>
       {blocks.map((block) => {
+        if (block.type === "media_placeholder") return isPreview ? (
+          <aside key={block.id} className="rounded-2xl border border-dashed border-[var(--ve-line-soft)] p-5">
+            <p className="text-sm font-bold capitalize">{block.kind} placeholder · Optional</p>
+            <p className="mt-2 text-sm leading-6">{block.purpose}</p>
+            <p className="mt-2 text-xs">Choose media in the editor. Empty placeholders aren’t shown to learners.</p>
+          </aside>
+        ) : null;
+        if ((block.type === "image" || block.type === "video" || block.type === "audio") && !block.src.trim()) return null;
         if (block.type === "text") {
           return (
             <section key={block.id}>
@@ -104,7 +114,7 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
               {block.title ? (
                 <h3 className={calloutTitleClasses}>{block.title}</h3>
               ) : null}
-              <p className={calloutBodyClasses}>{block.body}</p>
+              <RichTextBody body={block.body} className={calloutBodyClasses} />
             </section>
           );
         }
@@ -135,7 +145,7 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
           return (
             <figure key={block.id}>
               {isPlaceholder ? (
-                <div className="grid min-h-36 place-items-center rounded-[18px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-card-subtle)] px-5 text-center">
+                <div className="grid aspect-video w-full place-items-center rounded-[18px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-card-subtle)] px-5 text-center">
                   <div>
                     {block.title ? <p className="text-sm font-bold">{block.title}</p> : null}
                     <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">
@@ -144,7 +154,7 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
                   </div>
                 </div>
               ) : (
-                <video
+                <MediaVideo
                   className="w-full rounded-[18px]"
                   controls
                   poster={block.poster}
@@ -172,7 +182,7 @@ export function LessonContent({ blocks, variant = "concept" }: LessonContentProp
                   Audio media placeholder
                 </div>
               ) : (
-                <audio className="w-full" controls preload="metadata" src={block.src} />
+                <MediaAudio className="w-full" controls preload="metadata" src={block.src} />
               )}
               {block.transcript ? (
                 <p className="mt-3 text-[14px] leading-6 text-[var(--ve-muted-strong)]">{block.transcript}</p>

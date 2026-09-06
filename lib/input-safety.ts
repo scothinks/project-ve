@@ -1,3 +1,5 @@
+import { mediaVersionId } from "../features/media/domain/media-reference.ts";
+
 const dangerousAngleChars = /[<>]/g;
 const unsafeControlChars = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
@@ -23,6 +25,8 @@ export function sanitizeUrlInput(value: string, maxLength = 1000) {
   if (!cleaned) {
     return "";
   }
+
+  if (mediaVersionId(cleaned)) return cleaned;
 
   try {
     const url = new URL(cleaned);

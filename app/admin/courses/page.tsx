@@ -1,14 +1,14 @@
+import Link from "next/link";
+import { AiPageAuthoring } from "@/components/admin/ai/AiPageAuthoring";
+import { AdminNoticeBanner } from "@/components/admin/AdminPrimitives";
 import {
-  AdminNoticeBanner,
-  AdminPageHeader,
-} from "@/components/admin/AdminPrimitives";
-import {
+  CourseCreateButton,
+  CourseSearchAndFilters,
   CourseIndexWorkspace,
   type CourseIndexCourse,
 } from "@/components/admin/CourseIndexWorkspace";
-import { AiActivityPanel } from "@/features/learning/admin/ai-activity-panel";
-import { getAdminAiActivity } from "@/features/learning/admin/ai-activity";
-import { getAdminAiCoursePlans, getAdminCourses, requireAdmin } from "@/lib/admin";
+import { SparkleIcon } from "@/components/ui/Icons";
+import { getAdminCourses, requireAdmin } from "@/lib/admin";
 import { paginateItems, parsePageParam } from "@/lib/pagination";
 
 type CourseSort = "title_asc" | "title_desc" | "updated_asc" | "updated_desc";
@@ -117,14 +117,8 @@ export default async function AdminCoursesPage({
 }) {
   const { supabase } = await requireAdmin();
   const params = (await searchParams) ?? {};
-  const [courses, newCoursePlans, expansionPlans] = await Promise.all([
-    getAdminCourses(supabase) as Promise<CourseIndexCourse[]>,
-    getAdminAiCoursePlans(supabase, { mode: "new_course", limit: 6 }),
-    getAdminAiCoursePlans(supabase, { mode: "expand_course", limit: 6 }),
-  ]);
-  const aiActivity = await getAdminAiActivity(supabase, {
-    plans: [...newCoursePlans, ...expansionPlans],
-  });
+  const courses = await getAdminCourses(supabase) as CourseIndexCourse[];
+  const pendingActionsCount = courses.reduce((total, course) => total + (course.readiness_issues?.length ?? 0), 0);
   const filters = {
     category: normalizeFilter(params.category),
     level: normalizeFilter(params.level),
@@ -152,25 +146,55 @@ export default async function AdminCoursesPage({
   );
   const paginatedCourses = paginateItems(filteredCourses, parsePageParam(page), pageSize);
 
+  const pendingActionsPillClasses = pendingActionsCount > 0
+    ? "border-[color:color-mix(in_srgb,var(--admin-secondary)_32%,var(--admin-border-warm))] text-[var(--admin-secondary)]"
+    : "border-[var(--admin-border-warm)] text-[var(--admin-on-surface-variant)]";
+
   return (
-    <>
-      <AdminPageHeader
-        backHref="/admin"
-        backLabel="Admin overview"
-        eyebrow="Learning"
-        title="Courses"
-        subtitle="Find, review, duplicate, and open course workspaces from one content index."
-      />
+    <div className="-mx-5 -my-6 md:-mx-8 md:-my-8">
+    <div className="mx-auto max-w-[1280px] px-5 py-8 md:px-16 md:py-14">
+      <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-2.5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--admin-primary)]">Your workspace</p>
+          <h1 className="text-[40px] font-black leading-[1.05] tracking-[-0.02em] text-[var(--admin-brand-hero)]">
+            Courses
+          </h1>
+          <p className="max-w-[520px] text-[15px] font-medium leading-6 text-[var(--admin-on-surface-variant)]">
+            Everything you&apos;re teaching, in one place. Pick one up where you left off, or start something new.
+          </p>
+        </div>
+        <div className="flex items-stretch gap-2.5">
+          <AiPageAuthoring />
+          <Link
+            className={`inline-flex items-center gap-1.5 rounded-full border bg-[var(--admin-surface-milk)] px-4 py-[9px] text-xs font-extrabold ${pendingActionsPillClasses}`}
+            href="/admin/courses/pending-actions"
+          >
+            <svg aria-hidden="true" className="h-[15px] w-[15px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
+              <path d="M12 9v4M12 17h.01" />
+              <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+            </svg>
+            {pendingActionsCount === 0
+              ? "All caught up"
+              : `${pendingActionsCount} action${pendingActionsCount === 1 ? "" : "s"} needed`}
+          </Link>
+          <Link
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-[9px] text-xs font-extrabold text-[var(--admin-on-surface-variant)]"
+            href="/admin/courses/ai-credits"
+          >
+            <SparkleIcon className="h-[15px] w-[15px]" />
+            AI credits
+          </Link>
+          <CourseCreateButton />
+        </div>
+      </div>
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-6">
-        <AiActivityPanel activity={aiActivity} />
+        <CourseSearchAndFilters categories={categories} filters={filters} levels={levels} />
       </div>
       <CourseIndexWorkspace
-        categories={categories}
         courses={paginatedCourses.items}
         currentHref={buildCurrentHref({ ...filters, page })}
         filters={filters}
-        levels={levels}
         pagination={{
           currentPage: paginatedCourses.currentPage,
           endItem: paginatedCourses.endItem,
@@ -178,9 +202,8 @@ export default async function AdminCoursesPage({
           totalItems: paginatedCourses.totalItems,
           totalPages: paginatedCourses.totalPages,
         }}
-        templateCourses={courses}
-        totalCourseCount={courses.length}
       />
-    </>
+    </div>
+    </div>
   );
 }

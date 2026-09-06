@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { cn } from "@/lib/utils";
 
 type AvatarProps = {

@@ -1,14 +1,20 @@
 "use client";
 
+import { mediaGenerationBrief, type MediaBriefContext } from "./media-generation-brief";
+import { isEmptyMediaPlaceholder, mediaIntent } from "@/lib/media-intent";
+
+import { MediaAudio, MediaVideo } from "@/components/media/MediaPlayback";
 import {
   closestCenter,
   DndContext,
   KeyboardSensor,
   PointerSensor,
   type DragEndEvent,
+  type DraggableAttributes,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import type { DraggableSyntheticListeners } from "@dnd-kit/core";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -16,22 +22,23 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useState } from "react";
-import { EmptyAdminState, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import Image from "@/components/media/MediaImage";
+import { useEffect, useState } from "react";
+import { AdminDragHandle } from "@/components/admin/AdminDragHandle";
+import { AdminDesignIcon } from "@/components/admin/AdminIcons";
+import { AdminSelect } from "@/components/admin/AdminSelect";
+import { useMediaPicker } from "@/components/admin/MediaPickerProvider";
 import type { RichTextBlockEditorProps } from "@/components/admin/RichTextBlockEditor";
-import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
-import { ArrowLeftIcon, MenuIcon } from "@/components/ui/Icons";
+import { RichTextEditorLoading } from "@/components/admin/RichTextEditorLoading";
+import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
+import { cn } from "@/lib/utils";
 import type {
-  AdminLessonPageRow,
-  AdminLessonRow,
   AdminLearningMediaAssetRow,
+  AdminLessonPageRow,
 } from "@/lib/admin";
-import type { ImageAsset, LessonContentBlock } from "@/lib/lessons";
 import {
-  blockSummary,
   getImageValue,
   type DraftBlock,
   type ReorderDirection,
@@ -43,11 +50,7 @@ const RichTextBlockEditor = dynamic<RichTextBlockEditorProps>(
   () => import("@/components/admin/RichTextBlockEditor").then((module) => module.RichTextBlockEditor),
   {
     ssr: false,
-    loading: () => (
-      <div className="mt-2 min-h-44 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4 text-sm font-semibold text-[var(--ve-muted)]">
-        Loading editor...
-      </div>
-    ),
+    loading: RichTextEditorLoading,
   },
 );
 
@@ -55,10 +58,19 @@ const blockToolbarItems = [
   { type: "text", label: "Text" },
   { type: "callout", label: "Callout" },
   { type: "image", label: "Image" },
+  { type: "gif", label: "GIF" },
   { type: "video", label: "Video" },
   { type: "audio", label: "Audio" },
   { type: "table", label: "Table" },
 ];
+
+function blockKindLabel(block: DraftBlock) {
+  if (block.block_type === "image" && block.payload?.mediaKind === "gif") {
+    return "GIF";
+  }
+
+  return block.block_type.replaceAll("_", " ");
+}
 
 function ArrowUpIcon() {
   return (
@@ -105,70 +117,18 @@ function TrashIcon() {
 function actionButtonClasses(tone: "neutral" | "danger" = "neutral") {
   const toneClasses =
     tone === "danger"
-      ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_82%,var(--ve-card))] text-[var(--ve-danger)] hover:bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_92%,var(--ve-card))]"
-      : "bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]";
+      ? "bg-[color:color-mix(in_srgb,var(--admin-error-container)_82%,var(--admin-surface-milk))] text-[var(--admin-error)] hover:bg-[color:color-mix(in_srgb,var(--admin-error-container)_92%,var(--admin-surface-milk))]"
+      : "bg-[var(--admin-surface-container-low)] text-[var(--admin-on-surface)] hover:bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_76%,var(--admin-surface-container-low))] hover:text-[var(--admin-primary)]";
 
   return `inline-flex h-8 w-8 items-center justify-center rounded-full ${toneClasses} transition disabled:cursor-not-allowed disabled:opacity-35`;
 }
 
-function secondaryButtonClasses() {
-  return "inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-xs font-black text-[var(--ve-muted-strong)] transition hover:border-[var(--ve-green)] hover:text-[var(--ve-green)] disabled:cursor-not-allowed disabled:opacity-60";
-}
-
 function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
-}
-
-function ReorderPageButtons({
-  pageId,
-  isFirst,
-  isLast,
-  onReorder,
-  onDuplicatePage,
-}: {
-  pageId: string;
-  isFirst: boolean;
-  isLast: boolean;
-  onReorder: (pageId: string, direction: ReorderDirection) => void;
-  onDuplicatePage: (pageId: string) => void;
-}) {
-  return (
-    <div className="flex gap-1">
-      <button
-        aria-label="Move page earlier"
-        className={actionButtonClasses()}
-        disabled={isFirst}
-        onClick={() => onReorder(pageId, "up")}
-        title="Move earlier"
-        type="button"
-      >
-        <ArrowUpIcon />
-      </button>
-      <button
-        aria-label="Move page later"
-        className={actionButtonClasses()}
-        disabled={isLast}
-        onClick={() => onReorder(pageId, "down")}
-        title="Move later"
-        type="button"
-      >
-        <ArrowDownIcon />
-      </button>
-      <button
-        aria-label="Duplicate page"
-        className={actionButtonClasses()}
-        onClick={() => onDuplicatePage(pageId)}
-        title="Duplicate page"
-        type="button"
-      >
-        +
-      </button>
-    </div>
-  );
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
 }
 
 function BlockActionButtons({
@@ -189,7 +149,7 @@ function BlockActionButtons({
   if (block.isDraft) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-[var(--ve-muted)]">Unsaved</span>
+        <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Unsaved</span>
         <button
           aria-label="Duplicate draft block"
           className={actionButtonClasses()}
@@ -256,43 +216,61 @@ function BlockActionButtons({
   );
 }
 
-function AddPageButton({ onAddPage }: { onAddPage: () => void }) {
-  return (
-    <button
-      className="inline-flex w-full items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white transition hover:brightness-95"
-      onClick={onAddPage}
-      type="button"
-    >
-      + Add page
-    </button>
-  );
-}
-
 function PageSettingsEditor({
   aiGenerationAvailable = true,
   mediaLibraryAssets,
   page,
   onChange,
-  onSaveNow,
-  isSaving,
 }: {
   aiGenerationAvailable?: boolean;
   mediaLibraryAssets: AdminLearningMediaAssetRow[];
   page: AdminLessonPageRow;
   onChange: (page: AdminLessonPageRow) => void;
-  onSaveNow: () => void;
-  isSaving: boolean;
 }) {
   const coverImage = page.cover_image ?? {};
+  const coverUrl = getImageValue(coverImage, "src");
+  const coverAlt = getImageValue(coverImage, "alt");
+  const { requestMedia } = useMediaPicker();
+
+  async function pickCover() {
+    const picked = await requestMedia({
+      aiGenerationAvailable,
+      assetTypeFilter: ["cover", "image", "infographic", "thumbnail"],
+      caption: String(coverImage.caption ?? ""),
+      initialAltText: coverAlt,
+      initialFit: String(coverImage.fit ?? "cover"),
+      initialPositionX: Number(coverImage.positionX ?? 50),
+      initialPositionY: Number(coverImage.positionY ?? 50),
+      initialUrl: coverUrl,
+      libraryAssets: mediaLibraryAssets,
+      imageTarget: { target: "page_cover", targetId: page.id },
+      placementLabel: "Page cover",
+      title: "Choose a page cover",
+      uploadContext: {
+        assetType: "cover",
+        lessonId: page.lesson_id,
+        placement: "page_cover",
+      },
+    });
+
+    if (!picked || picked.alreadyApplied) return;
+
+    onChange({
+      ...page,
+      cover_image: {
+        ...coverImage,
+        alt: picked.altText,
+        caption: picked.caption,
+        fit: picked.fit,
+        positionX: picked.positionX,
+        positionY: picked.positionY,
+        src: picked.url,
+      },
+    });
+  }
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSaveNow();
-      }}
-    >
+    <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-[1fr_10rem]">
         <label>
           <span className={labelClasses()}>Page title</span>
@@ -321,96 +299,121 @@ function PageSettingsEditor({
         </label>
         <label>
           <span className={labelClasses()}>Page type</span>
-          <select
-            className={compactFieldClasses()}
-            name="pageType"
+          <AdminSelect
+            className="mt-2"
+            onValueChange={(nextType) => onChange({ ...page, page_type: nextType })}
+            options={[
+              { label: "Primer", value: "primer" },
+              { label: "Concept", value: "concept" },
+              { label: "Example", value: "example" },
+              { label: "Reflection", value: "reflection" },
+              { label: "Summary", value: "summary" },
+            ]}
+            size="compact"
             value={page.page_type}
-            onChange={(event) => onChange({ ...page, page_type: event.target.value })}
-          >
-            <option value="primer">Primer</option>
-            <option value="concept">Concept</option>
-            <option value="example">Example</option>
-            <option value="reflection">Reflection</option>
-            <option value="summary">Summary</option>
-          </select>
+          />
         </label>
       </div>
-      <MediaPicker
-        aiGenerationAvailable={aiGenerationAvailable}
-        assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
-        caption={String(coverImage.caption ?? "")}
-        initialAltText={getImageValue(coverImage, "alt")}
-        initialFit={String(coverImage.fit ?? "cover")}
-        initialPositionX={Number(coverImage.positionX ?? 50)}
-        initialPositionY={Number(coverImage.positionY ?? 50)}
-        initialUrl={getImageValue(coverImage, "src")}
-        libraryAssets={mediaLibraryAssets}
-        onPresentationChange={(value) =>
-          onChange({
-            ...page,
-            cover_image: {
-              ...coverImage,
-              alt: value.altText,
-              caption: value.caption,
-              fit: value.fit,
-              positionX: value.positionX,
-              positionY: value.positionY,
-              src: value.url,
-            },
-          })
-        }
-        placementLabel="Page cover"
-        renderFormFields={false}
-        showCaption
-      />
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-        {isSaving ? "Saving..." : "Save now"}
-      </button>
-    </form>
+      <div>
+        <span className={labelClasses()}>Page cover</span>
+        <p className="mt-1 text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+          Optional — shown above this page&apos;s content. The first page falls back to the lesson cover if empty.
+        </p>
+        <button
+          className="relative mt-2 block h-32 w-full overflow-hidden rounded-[14px] text-left"
+          onClick={() => {
+            void pickCover();
+          }}
+          type="button"
+        >
+          {coverUrl ? (
+            <>
+              <Image
+                alt={coverAlt}
+                className={getImageFitClass(coverImage)}
+                fill
+                sizes="600px"
+                src={coverUrl}
+                style={getImagePresentationStyle(coverImage)}
+              />
+              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/55 to-transparent p-3">
+                <span className="text-xs font-bold text-white/90">Page cover &middot; click to change</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]">
+              <AdminDesignIcon className="h-5 w-5" />
+              <span className="text-xs font-bold">Add a page cover</span>
+            </div>
+          )}
+        </button>
+      </div>
+    </div>
   );
 }
 
-function BlockEditor({
-  aiGenerationAvailable = true,
+const calloutVariants: Array<{ value: string; label: string }> = [
+  { value: "key_point", label: "Key point" },
+  { value: "tip", label: "Tip" },
+  { value: "warning", label: "Warning" },
+  { value: "example", label: "Example" },
+];
+
+function pillToggleClasses(active: boolean) {
+  return cn(
+    "rounded-full border px-3 py-1.5 text-xs font-extrabold transition",
+    active
+      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
+      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface)] hover:border-[var(--admin-primary)]",
+  );
+}
+
+function underlineFieldClasses() {
+  return "w-full border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]";
+}
+
+function BlockCardShell({
   block,
+  children,
+  dragAttributes,
+  dragListeners,
   isFirst,
   isLast,
   isSelected,
-  mediaLibraryAssets,
+  kindLabel,
   onDuplicate,
-  onPayloadChange,
-  onReorder,
   onRemove,
-  onSaveNow,
+  onReorder,
   onSelect,
-  isSaving,
 }: {
-  aiGenerationAvailable?: boolean;
   block: DraftBlock;
+  children: React.ReactNode;
+  dragAttributes: DraggableAttributes;
+  dragListeners: DraggableSyntheticListeners;
   isFirst: boolean;
   isLast: boolean;
   isSelected: boolean;
-  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+  kindLabel: string;
   onDuplicate: (block: DraftBlock) => void;
-  onPayloadChange: (key: string, value: unknown) => void;
-  onReorder: (blockId: string, direction: ReorderDirection) => void;
   onRemove: (block: DraftBlock) => void;
-  onSaveNow: () => void;
+  onReorder: (blockId: string, direction: ReorderDirection) => void;
   onSelect: (blockId: string) => void;
-  isSaving: boolean;
 }) {
-  const payload = block.payload ?? {};
-  const title = String(payload.title ?? payload.heading ?? "");
-  const body = String(payload.body ?? payload.transcript ?? "");
-
-  function Header({ label }: { label: string }) {
-    return (
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className={labelClasses()}>{label}</p>
-          {blockSummary(block) ? (
-            <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{blockSummary(block)}</p>
-          ) : null}
+  return (
+    <div
+      className={cn(
+        "space-y-2.5 rounded-[16px] border bg-[var(--admin-surface-milk)] p-4",
+        isSelected ? "border-[var(--admin-primary)]" : "border-[var(--admin-border-warm)]",
+      )}
+      id={`block-${block.id}`}
+      onFocus={() => onSelect(block.id)}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <AdminDragHandle attributes={dragAttributes} className="h-6 w-6" label={`${kindLabel} block`} listeners={dragListeners} />
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+            {kindLabel} block
+          </span>
         </div>
         <BlockActionButtons
           block={block}
@@ -421,310 +424,444 @@ function BlockEditor({
           onReorder={onReorder}
         />
       </div>
+      {children}
+    </div>
+  );
+}
+
+type MediaChooserKind = "image" | "gif" | "video" | "audio";
+
+const mediaChooserLabel: Record<MediaChooserKind, string> = {
+  audio: "Audio",
+  gif: "GIF",
+  image: "Image",
+  video: "Video",
+};
+
+function MediaBlockChooser({
+  kind,
+  onOpen,
+  src,
+}: {
+  kind: MediaChooserKind;
+  onOpen: () => void;
+  src: string;
+}) {
+  const [interactive, setInteractive] = useState(false);
+  useEffect(() => setInteractive(true), []);
+  const hasMedia = src.trim().length > 0;
+  const label = mediaChooserLabel[kind];
+
+  if (hasMedia && kind === "video") {
+    return (
+      <div className="space-y-2">
+        <MediaVideo className="w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-black" controls src={src} />
+        <button disabled={!interactive} className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={onOpen} type="button">
+          Change video
+        </button>
+      </div>
     );
   }
 
-  if (block.block_type === "image") {
+  if (hasMedia && kind === "audio") {
     return (
-      <form
-        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
-        onFocus={() => onSelect(block.id)}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSaveNow();
-        }}
-      >
-        <Header label="Image block" />
-        {typeof payload.aiManagedByAssetId === "string" && payload.aiManagedByAssetId ? (
-          <>
-            <input name="aiManagedByAssetId" type="hidden" value={payload.aiManagedByAssetId} />
-            <input name="aiManagedKind" type="hidden" value={String(payload.aiManagedKind ?? "learning_media_asset")} />
-            <input name="aiGenerated" type="hidden" value={payload.aiGenerated === true ? "true" : "false"} />
-            <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-3 py-2 text-xs font-semibold text-[var(--ve-muted)]">
-              This image block is linked to an AI media brief. Editing the content here keeps that link intact.
-            </div>
-          </>
-        ) : null}
-        <MediaPicker
-          aiGenerationAvailable={aiGenerationAvailable}
-          assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
-          caption={String(payload.caption ?? "")}
-          initialAltText={String(payload.alt ?? "")}
-          initialFit={String(payload.fit ?? "cover")}
-          initialPositionX={Number(payload.positionX ?? 50)}
-          initialPositionY={Number(payload.positionY ?? 50)}
-          initialUrl={String(payload.src ?? "")}
-          libraryAssets={mediaLibraryAssets}
-          onCaptionChange={(value) => onPayloadChange("caption", value)}
-          onPresentationChange={(value) => {
-            onPayloadChange("src", value.url);
-            onPayloadChange("alt", value.altText);
-            onPayloadChange("fit", value.fit);
-            onPayloadChange("positionX", value.positionX);
-            onPayloadChange("positionY", value.positionY);
-            onPayloadChange("caption", value.caption);
-          }}
-          placementLabel="Image block"
-          renderFormFields={false}
-          showCaption
-        />
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "Saving..." : "Save now"}
+      <div className="flex items-center gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-3.5">
+        <MediaAudio className="min-w-0 flex-1" controls src={src} />
+        <button disabled={!interactive} className="shrink-0 text-xs font-extrabold text-[var(--admin-primary)]" onClick={onOpen} type="button">
+          Change
         </button>
-      </form>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      disabled={!interactive}
+      className={`relative flex ${kind === "video" ? "aspect-video" : "min-h-[140px]"} w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[14px] border border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]`}
+      onClick={onOpen}
+      type="button"
+    >
+      {hasMedia ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="" className="absolute inset-0 h-full w-full object-cover" src={src} />
+          <span className="relative z-10 rounded-full bg-black/55 px-3 py-1.5 text-xs font-bold text-white">
+            {label} set · click to change
+          </span>
+        </>
+      ) : (
+        <>
+          {blockTypeIcon(kind)}
+          <span className="text-xs font-bold">Add {kind === "audio" ? "audio" : `${kind === "image" ? "an" : "a"} ${label.toLowerCase()}`}</span>
+        </>
+      )}
+    </button>
+  );
+}
+
+function TableGridEditor({
+  columns,
+  onPayloadChange,
+  rows,
+}: {
+  columns: string[];
+  onPayloadChange: (key: string, value: unknown) => void;
+  rows: string[][];
+}) {
+  function updateColumnLabel(columnIndex: number, value: string) {
+    onPayloadChange("columns", columns.map((column, index) => (index === columnIndex ? value : column)));
+  }
+
+  function addColumn() {
+    onPayloadChange("columns", [...columns, `Column ${columns.length + 1}`]);
+    onPayloadChange("rows", rows.map((row) => [...row, ""]));
+  }
+
+  function removeColumn(columnIndex: number) {
+    onPayloadChange("columns", columns.filter((_, index) => index !== columnIndex));
+    onPayloadChange("rows", rows.map((row) => row.filter((_, index) => index !== columnIndex)));
+  }
+
+  function updateCell(rowIndex: number, columnIndex: number, value: string) {
+    onPayloadChange(
+      "rows",
+      rows.map((row, index) => (index === rowIndex ? row.map((cell, cellIndex) => (cellIndex === columnIndex ? value : cell)) : row)),
+    );
+  }
+
+  function addRow() {
+    onPayloadChange("rows", [...rows, columns.map(() => "")]);
+  }
+
+  function removeRow(rowIndex: number) {
+    onPayloadChange("rows", rows.filter((_, index) => index !== rowIndex));
+  }
+
+  return (
+    <div className="space-y-2.5">
+      <div className="overflow-x-auto rounded-[12px] border border-[var(--admin-border-warm)]">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="bg-[var(--admin-surface-container-low)]">
+              {columns.map((column, columnIndex) => (
+                <th className="border-b border-r border-[var(--admin-border-warm)] p-0 text-left last:border-r-0" key={columnIndex}>
+                  <div className="flex items-center gap-1 px-2.5 py-2">
+                    <input
+                      className="min-w-0 flex-1 bg-transparent text-xs font-extrabold uppercase tracking-[0.04em] text-[var(--admin-on-surface)] outline-none"
+                      onChange={(event) => updateColumnLabel(columnIndex, event.target.value)}
+                      value={column}
+                    />
+                    <button
+                      aria-label="Remove column"
+                      className="shrink-0 text-[var(--admin-outline)] hover:text-[var(--admin-error)]"
+                      onClick={() => removeColumn(columnIndex)}
+                      type="button"
+                    >
+                      <svg aria-hidden="true" className="h-3 w-3" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </th>
+              ))}
+              <th className="p-2">
+                <button className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={addColumn} type="button">
+                  + Column
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr className="border-t border-[var(--admin-border-warm)]" key={rowIndex}>
+                {columns.map((_, columnIndex) => (
+                  <td className="border-r border-[var(--admin-border-warm)] p-0 last:border-r-0" key={columnIndex}>
+                    <input
+                      className="w-full bg-transparent px-2.5 py-2 text-sm font-medium text-[var(--admin-on-surface)] outline-none"
+                      onChange={(event) => updateCell(rowIndex, columnIndex, event.target.value)}
+                      value={row[columnIndex] ?? ""}
+                    />
+                  </td>
+                ))}
+                <td className="p-2">
+                  <button
+                    aria-label="Remove row"
+                    className="text-[var(--admin-outline)] hover:text-[var(--admin-error)]"
+                    onClick={() => removeRow(rowIndex)}
+                    type="button"
+                  >
+                    <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={addRow} type="button">
+        + Add row
+      </button>
+    </div>
+  );
+}
+
+function BlockEditor({
+  aiGenerationAvailable = true,
+  block,
+  dragAttributes,
+  dragListeners,
+  isFirst,
+  isLast,
+  isSelected,
+  lessonId,
+  mediaBriefContext,
+  mediaLibraryAssets,
+  onDuplicate,
+  onPayloadChange,
+  onReorder,
+  onRemove,
+  onSelect,
+  isSaving,
+}: {
+  aiGenerationAvailable?: boolean;
+  block: DraftBlock;
+  dragAttributes: DraggableAttributes;
+  dragListeners: DraggableSyntheticListeners;
+  isFirst: boolean;
+  isLast: boolean;
+  isSelected: boolean;
+  lessonId: string;
+  mediaBriefContext: MediaBriefContext;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+  onDuplicate: (block: DraftBlock) => void;
+  onPayloadChange: (key: string, value: unknown) => void;
+  onReorder: (blockId: string, direction: ReorderDirection) => void;
+  onRemove: (block: DraftBlock) => void;
+  onSelect: (blockId: string) => void;
+  isSaving: boolean;
+}) {
+  const { requestMedia } = useMediaPicker();
+  const payload = block.payload ?? {};
+  const intent = mediaIntent(payload);
+  const placeholderDetails = isEmptyMediaPlaceholder(block) && intent ? <div className="rounded-xl bg-[var(--admin-surface-container-low)] p-4 text-sm">
+    <p className="font-bold">Optional media</p>
+    <p className="mt-2 leading-6">{intent.purpose}</p>
+    <p className="mt-2 text-xs">Choose media below, or leave this out. Empty optional placeholders aren’t shown to learners.</p>
+  </div> : null;
+  const title = String(payload.title ?? payload.heading ?? "");
+  const body = String(payload.body ?? payload.transcript ?? "");
+  const kindLabel = blockKindLabel(block);
+  const shellProps = {
+    block,
+    dragAttributes,
+    dragListeners,
+    isFirst,
+    isLast,
+    isSelected,
+    kindLabel,
+    onDuplicate,
+    onRemove,
+    onReorder,
+    onSelect,
+  };
+
+  if (block.block_type === "image") {
+    const isGif = payload.mediaKind === "gif";
+    const src = String(payload.src ?? "");
+
+    async function pickImage() {
+      const picked = await requestMedia({
+        aiGenerationAvailable,
+        imageTarget: block.block_type === "image" ? { target: "block", targetId: block.id } : undefined,
+        onGenerationStyleChange: (style) => onPayloadChange("mediaStyle", style),
+        initialGenerationBrief: mediaGenerationBrief(payload, mediaBriefContext),
+        onGenerationBriefChange: (brief) => onPayloadChange("mediaBrief", brief),
+        assetTypeFilter: ["cover", "image", "infographic", "thumbnail"],
+        caption: String(payload.caption ?? ""),
+        initialAltText: String(payload.alt ?? ""),
+        initialFit: String(payload.fit ?? "cover"),
+        initialPositionX: Number(payload.positionX ?? 50),
+        initialPositionY: Number(payload.positionY ?? 50),
+        initialUrl: src,
+        isGif,
+        libraryAssets: mediaLibraryAssets,
+        mediaKind: "image",
+        placementLabel: isGif ? "GIF block" : "Image block",
+        title: isGif ? "Choose a GIF" : "Choose an image",
+        uploadContext: {
+          assetType: "image",
+          lessonId,
+          placement: "page_block",
+        },
+      });
+
+      if (!picked || picked.alreadyApplied) return;
+
+      onPayloadChange("src", picked.url);
+      onPayloadChange("alt", picked.altText);
+      onPayloadChange("fit", picked.fit);
+      onPayloadChange("positionX", picked.positionX);
+      onPayloadChange("positionY", picked.positionY);
+      onPayloadChange("caption", picked.caption);
+    }
+
+    return (
+      <BlockCardShell {...shellProps}>
+        {typeof payload.aiManagedByAssetId === "string" && payload.aiManagedByAssetId ? (
+          <div className="rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+            This image block is linked to an AI media brief. Editing the content here keeps that link intact.
+          </div>
+        ) : null}
+        {placeholderDetails}
+        <MediaBlockChooser kind={isGif ? "gif" : "image"} onOpen={() => void pickImage()} src={src} />
+        <input
+          className={underlineFieldClasses()}
+          onChange={(event) => onPayloadChange("caption", event.target.value)}
+          placeholder="Caption (optional)"
+          value={String(payload.caption ?? "")}
+        />
+      </BlockCardShell>
     );
   }
 
   if (block.block_type === "video" || block.block_type === "audio") {
     const mediaLabel = block.block_type === "video" ? "Video" : "Audio";
+    const src = String(payload.src ?? "");
+    const blockKind = block.block_type;
+
+    async function pickMedia() {
+      const picked = await requestMedia({
+        aiGenerationAvailable,
+        imageTarget: block.block_type === "image" ? { target: "block", targetId: block.id } : undefined,
+        onGenerationStyleChange: (style) => onPayloadChange("mediaStyle", style),
+        initialGenerationBrief: mediaGenerationBrief(payload, mediaBriefContext),
+        onGenerationBriefChange: (brief) => onPayloadChange("mediaBrief", brief),
+        assetTypeFilter: [blockKind],
+        initialUrl: src,
+        libraryAssets: mediaLibraryAssets,
+        mediaKind: blockKind,
+        placementLabel: `${mediaLabel} block`,
+        title: blockKind === "video" ? "Choose a video" : "Choose an audio clip",
+        uploadContext: {
+          assetType: blockKind,
+          lessonId,
+          placement: "page_block",
+        },
+      });
+
+      if (!picked || picked.alreadyApplied) return;
+
+      onPayloadChange("src", picked.url);
+    }
 
     return (
-      <form
-        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
-        onFocus={() => onSelect(block.id)}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSaveNow();
-        }}
-      >
-        <Header label={`${mediaLabel} block`} />
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>{mediaLabel} title</span>
-            <input
-              className={compactFieldClasses()}
-              name="heading"
-              value={title}
-              onChange={(event) => onPayloadChange("title", event.target.value)}
-            />
-          </label>
-          <label>
-            <span className={labelClasses()}>Media URL</span>
-            <input
-              className={compactFieldClasses()}
-              name="src"
-              value={String(payload.src ?? "")}
-              onChange={(event) => onPayloadChange("src", event.target.value)}
-            />
-          </label>
-        </div>
-        <label className="block">
-          <span className={labelClasses()}>Transcript / notes</span>
-          <textarea
-            className={`${compactFieldClasses()} min-h-24 resize-none`}
-            name="body"
-            value={body}
-            onChange={(event) => onPayloadChange("body", event.target.value)}
-          />
-        </label>
-        <label className="block">
-          <span className={labelClasses()}>Caption</span>
-          <input
-            className={compactFieldClasses()}
-            name="caption"
-            value={String(payload.caption ?? "")}
-            onChange={(event) => onPayloadChange("caption", event.target.value)}
-          />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "Saving..." : "Save now"}
-        </button>
-      </form>
+      <BlockCardShell {...shellProps}>
+        <input
+          className={underlineFieldClasses()}
+          onChange={(event) => onPayloadChange("title", event.target.value)}
+          placeholder={`${mediaLabel} title (optional)`}
+          value={title}
+        />
+        {placeholderDetails}
+        <MediaBlockChooser kind={blockKind} onOpen={() => void pickMedia()} src={src} />
+        <textarea
+          className="min-h-16 w-full resize-none rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-3 py-2 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+          onChange={(event) => onPayloadChange("body", event.target.value)}
+          placeholder={block.block_type === "video" ? "Caption (optional)" : "Transcript (optional)"}
+          value={body}
+        />
+      </BlockCardShell>
     );
   }
 
   if (block.block_type === "table") {
-    const rowsValue = Array.isArray(payload.rows)
-      ? payload.rows.map((row) => (Array.isArray(row) ? row.join(", ") : String(row))).join("\n")
-      : "";
+    const columns = Array.isArray(payload.columns) ? payload.columns.map(String) : ["Column 1", "Column 2"];
+    const rows = Array.isArray(payload.rows)
+      ? payload.rows.map((row) => (Array.isArray(row) ? row.map(String) : [String(row)]))
+      : [];
 
     return (
-      <form
-        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
-        onFocus={() => onSelect(block.id)}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSaveNow();
-        }}
-      >
-        <Header label="Table block" />
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Table title</span>
-            <input
-              className={compactFieldClasses()}
-              name="heading"
-              value={title}
-              onChange={(event) => onPayloadChange("title", event.target.value)}
-            />
-          </label>
-          <label>
-            <span className={labelClasses()}>Columns</span>
-            <input
-              className={compactFieldClasses()}
-              name="columns"
-              placeholder="Situation, Fair action"
-              value={Array.isArray(payload.columns) ? payload.columns.join(", ") : ""}
-              onChange={(event) =>
-                onPayloadChange(
-                  "columns",
-                  event.target.value
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                )
-              }
-            />
-          </label>
-        </div>
-        <label className="block">
-          <span className={labelClasses()}>Rows</span>
-          <textarea
-            className={`${compactFieldClasses()} min-h-28 resize-none font-mono text-xs`}
-            name="rows"
-            placeholder={"A queue is long, Wait your turn\nA teammate made a mistake, Correct kindly"}
-            value={rowsValue}
-            onChange={(event) =>
-              onPayloadChange(
-                "rows",
-                event.target.value
-                  .split("\n")
-                  .map((row) => row.split(",").map((cell) => cell.trim()))
-                  .filter((row) => row.some(Boolean)),
-              )
-            }
-          />
-        </label>
-        <label className="block">
-          <span className={labelClasses()}>Caption</span>
-          <input
-            className={compactFieldClasses()}
-            name="caption"
-            value={String(payload.caption ?? "")}
-            onChange={(event) => onPayloadChange("caption", event.target.value)}
-          />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "Saving..." : "Save now"}
-        </button>
-      </form>
+      <BlockCardShell {...shellProps}>
+        <input
+          className={underlineFieldClasses()}
+          onChange={(event) => onPayloadChange("title", event.target.value)}
+          placeholder="Table title (optional)"
+          value={title}
+        />
+        <TableGridEditor columns={columns} onPayloadChange={onPayloadChange} rows={rows} />
+        <input
+          className={underlineFieldClasses()}
+          onChange={(event) => onPayloadChange("caption", event.target.value)}
+          placeholder="Caption (optional)"
+          value={String(payload.caption ?? "")}
+        />
+      </BlockCardShell>
     );
   }
 
   if (block.block_type === "callout") {
     return (
-      <form
-        className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
-        onFocus={() => onSelect(block.id)}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSaveNow();
-        }}
-      >
-        <Header label="Callout block" />
-        <div className="grid gap-3 md:grid-cols-[10rem_1fr]">
-          <label>
-            <span className={labelClasses()}>Tone</span>
-            <select
-              className={compactFieldClasses()}
-              name="variant"
-              value={String(payload.variant ?? "key_point")}
-              onChange={(event) => onPayloadChange("variant", event.target.value)}
+      <BlockCardShell {...shellProps}>
+        <div className="flex flex-wrap gap-1.5">
+          {calloutVariants.map((variant) => (
+            <button
+              className={pillToggleClasses(String(payload.variant ?? "key_point") === variant.value)}
+              key={variant.value}
+              onClick={() => onPayloadChange("variant", variant.value)}
+              type="button"
             >
-              <option value="key_point">Key point</option>
-              <option value="tip">Tip</option>
-              <option value="warning">Warning</option>
-              <option value="example">Example</option>
-            </select>
-          </label>
-          <label>
-            <span className={labelClasses()}>Callout label</span>
-            <input
-              className={compactFieldClasses()}
-              name="label"
-              placeholder="Example: Think about this"
-              value={String(payload.label ?? "")}
-              onChange={(event) => onPayloadChange("label", event.target.value)}
-            />
-          </label>
+              {variant.label}
+            </button>
+          ))}
         </div>
-        <label className="block">
-          <span className={labelClasses()}>Title</span>
-          <input
-            className={compactFieldClasses()}
-            name="heading"
-            placeholder="Optional"
-            value={title}
-            onChange={(event) => onPayloadChange("title", event.target.value)}
-          />
-        </label>
-        <label className="block">
-          <span className={labelClasses()}>Body</span>
+        <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] p-3.5">
           <textarea
-            className={`${compactFieldClasses()} min-h-24 resize-none`}
-            name="body"
-            value={body}
+            className="min-h-14 w-full resize-none border-0 bg-transparent text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)] outline-none"
             onChange={(event) => onPayloadChange("body", event.target.value)}
+            placeholder="Callout text"
+            value={body}
           />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "Saving..." : "Save now"}
-        </button>
-      </form>
+        </div>
+      </BlockCardShell>
     );
   }
 
   return (
-    <form
-      className={`space-y-3 rounded-[18px] border bg-[var(--ve-card)] p-4 ${isSelected ? "border-[var(--ve-green)]" : "border-[var(--ve-line-soft)]"}`}
-      onFocus={() => onSelect(block.id)}
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSaveNow();
-      }}
-    >
-      <Header label="Text block" />
-      <label className="block">
-        <span className={labelClasses()}>Heading</span>
-        <input
-          className={compactFieldClasses()}
-          name="heading"
-          value={title}
-          onChange={(event) => onPayloadChange("heading", event.target.value)}
-        />
-      </label>
-      <label className="block">
-        <span className={labelClasses()}>Text</span>
-        <RichTextBlockEditor
-          disabled={isSaving}
-          value={body}
-          onChange={(value) => onPayloadChange("body", value)}
-        />
-      </label>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">
-        {isSaving ? "Saving..." : "Save now"}
-      </button>
-    </form>
+    <BlockCardShell {...shellProps}>
+      <input
+        className={underlineFieldClasses()}
+        onChange={(event) => onPayloadChange("heading", event.target.value)}
+        placeholder="Heading (optional)"
+        value={title}
+      />
+      <RichTextBlockEditor
+        disabled={isSaving}
+        onChange={(value) => onPayloadChange("body", value)}
+        value={body}
+      />
+    </BlockCardShell>
   );
 }
 
 export function LessonBuilderPagesPanel({
+  aiAuthoringControls,
   pages,
-  blocks,
   selectedPageId,
   onSelectPage,
   onAddPage,
   onDuplicatePage,
-  onReorderPage,
+  onRequestDeletePage,
   onReorderPageById,
 }: {
+  aiAuthoringControls?: React.ReactNode;
   pages: AdminLessonPageRow[];
-  blocks: DraftBlock[];
   selectedPageId: string;
   onSelectPage: (pageId: string) => void;
   onAddPage: () => void;
   onDuplicatePage: (pageId: string) => void;
-  onReorderPage: (pageId: string, direction: ReorderDirection) => void;
+  onRequestDeletePage: (page: AdminLessonPageRow) => void;
   onReorderPageById: (activePageId: string, overPageId: string) => void;
 }) {
   const sensors = useSensors(
@@ -742,125 +879,131 @@ export function LessonBuilderPagesPanel({
   }
 
   return (
-    <div className="h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-      <h2 className="text-lg font-black">Pages</h2>
-      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-        Pick a page to edit. Drag pages to reorder; buttons provide a keyboard fallback.
+    <div className="flex flex-col gap-1.5 border-r border-[var(--admin-border-warm)] px-4 py-6">
+      <p className="px-2.5 pb-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+        Pages
       </p>
       {pages.length === 0 ? (
-        <div className="mt-4">
-          <EmptyAdminState>No pages yet.</EmptyAdminState>
-        </div>
+        <p className="px-2.5 py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">No pages yet.</p>
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+        <DndContext collisionDetection={closestCenter} id="lesson-pages-dnd" onDragEnd={handleDragEnd} sensors={sensors}>
           <SortableContext items={pages.map((page) => page.id)} strategy={verticalListSortingStrategy}>
-            <div className="mt-4 space-y-2">
-              {pages.map((page, index) => (
-                <SortablePageCard
-                  blockCount={blocks.filter((block) => block.page_id === page.id).length}
-                  index={index}
-                  isLast={index === pages.length - 1}
-                  isSelected={selectedPageId === page.id}
-                  key={page.id}
-                  onDuplicatePage={onDuplicatePage}
-                  onReorderPage={onReorderPage}
-                  onSelectPage={onSelectPage}
-                  page={page}
-                />
-              ))}
-            </div>
+            {pages.map((page, index) => (
+              <SortablePageRow
+                canDelete={pages.length > 1}
+                index={index}
+                isSelected={selectedPageId === page.id}
+                key={page.id}
+                onDuplicatePage={onDuplicatePage}
+                onRequestDeletePage={onRequestDeletePage}
+                onSelectPage={onSelectPage}
+                page={page}
+              />
+            ))}
           </SortableContext>
         </DndContext>
       )}
 
-      <div className="mt-5 border-t border-[var(--ve-line-soft)] pt-5">
-        <h2 className="mb-1 text-base font-black">Add page</h2>
-        <p className="mb-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-          Adds a blank page at the end. Edit details in Page settings.
-        </p>
-        <AddPageButton onAddPage={onAddPage} />
-      </div>
+      <button
+        className="mt-1.5 flex items-center gap-2 rounded-[10px] px-2.5 py-2.5 text-[13px] font-extrabold text-[var(--admin-primary)] transition hover:bg-[var(--admin-surface-container-low)]"
+        onClick={onAddPage}
+        type="button"
+      >
+        <svg aria-hidden="true" className="h-[15px] w-[15px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add page
+      </button>
+
+      {aiAuthoringControls}
     </div>
   );
 }
 
-function SortablePageCard({
-  blockCount,
+function SortablePageRow({
+  canDelete,
   index,
-  isLast,
   isSelected,
   onDuplicatePage,
-  onReorderPage,
+  onRequestDeletePage,
   onSelectPage,
   page,
 }: {
-  blockCount: number;
+  canDelete: boolean;
   index: number;
-  isLast: boolean;
   isSelected: boolean;
   onDuplicatePage: (pageId: string) => void;
-  onReorderPage: (pageId: string, direction: ReorderDirection) => void;
+  onRequestDeletePage: (page: AdminLessonPageRow) => void;
   onSelectPage: (pageId: string) => void;
   page: AdminLessonPageRow;
 }) {
-  const {
-    attributes,
-    isDragging,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: page.id });
+  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({ id: page.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
   return (
-    <div
-      className={`rounded-[16px] border p-3 transition ${
-        isSelected
-          ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))]"
-          : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] hover:bg-[var(--ve-shell)]"
-      } ${isDragging ? "opacity-80 shadow-lg" : ""}`}
-      ref={setNodeRef}
-      style={style}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <button
-          aria-label={`Drag ${page.title}`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] touch-none"
-          type="button"
-          {...attributes}
-          {...listeners}
-        >
-          ::
-        </button>
-        <button
-          className="text-left text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]"
-          onClick={() => onSelectPage(page.id)}
-          type="button"
-        >
-          Page {index + 1}
-        </button>
-        <ReorderPageButtons
-          isFirst={index === 0}
-          isLast={isLast}
-          onDuplicatePage={onDuplicatePage}
-          onReorder={onReorderPage}
-          pageId={page.id}
-        />
-      </div>
+    <div className={cn("group flex items-center gap-0.5", isDragging && "opacity-80")} ref={setNodeRef} style={style}>
+      <AdminDragHandle attributes={attributes} className="h-6 w-6 shrink-0" label={page.title} listeners={listeners} />
       <button
-        className="mt-2 block w-full text-left"
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] px-2 py-2 text-left transition",
+          isSelected
+            ? "bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_70%,var(--admin-surface-milk))]"
+            : "hover:bg-[var(--admin-surface-container-low)]",
+        )}
         onClick={() => onSelectPage(page.id)}
         type="button"
       >
-        <h3 className="line-clamp-2 text-sm font-black">{page.title}</h3>
-        <p className="mt-1 text-[11px] font-bold capitalize text-[var(--ve-muted)]">
-          {page.page_type} · {blockCount} blocks
-        </p>
+        <span
+          className={cn(
+            "shrink-0 text-[13px] font-extrabold",
+            isSelected ? "text-[var(--admin-primary)]" : "text-[var(--admin-outline)]",
+          )}
+        >
+          {index + 1}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--admin-on-surface)]">{page.title}</span>
       </button>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger
+          aria-label={`More actions for ${page.title}`}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--admin-outline)] opacity-0 transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)] focus-visible:opacity-100 group-hover:opacity-100"
+          type="button"
+        >
+          ⋯
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            className="z-50 min-w-44 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+            sideOffset={6}
+          >
+            <DropdownMenu.Item asChild>
+              <button
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
+                onClick={() => onDuplicatePage(page.id)}
+                type="button"
+              >
+                Duplicate page
+              </button>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
+            <DropdownMenu.Item asChild>
+              <button
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!canDelete}
+                onClick={() => onRequestDeletePage(page)}
+                title={canDelete ? undefined : "A lesson needs at least one page."}
+                type="button"
+              >
+                Delete page
+              </button>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     </div>
   );
 }
@@ -869,16 +1012,17 @@ export function LessonBuilderEditorPanel({
   aiGenerationAvailable = true,
   allowedBlockTypes,
   selectedPage,
+  lesson,
   selectedPageBlocks,
   autosaveState,
   autosaveMessage,
   lastSavedAt,
   autosaveDelayMs,
-  onSaveNow,
   onAddDraftBlock,
   onDuplicateBlock,
   mediaLibraryAssets,
   onUpdateBlock,
+  onUpdatePage,
   onReorderBlock,
   onReorderBlockById,
   onRemoveBlock,
@@ -887,23 +1031,25 @@ export function LessonBuilderEditorPanel({
 }: {
   aiGenerationAvailable?: boolean;
   allowedBlockTypes?: string[];
+  lesson: MediaBriefContext["lesson"];
   selectedPage: AdminLessonPageRow | null;
   selectedPageBlocks: DraftBlock[];
   autosaveState: AutosaveState;
   autosaveMessage: string;
   lastSavedAt: string | null;
   autosaveDelayMs: number;
-  onSaveNow: () => void;
   onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
   onDuplicateBlock: (block: DraftBlock) => void;
   mediaLibraryAssets: AdminLearningMediaAssetRow[];
   onUpdateBlock: (blockId: string, key: string, value: unknown) => void;
+  onUpdatePage: (page: AdminLessonPageRow) => void;
   onReorderBlock: (blockId: string, direction: ReorderDirection) => void;
   onReorderBlockById: (activeBlockId: string, overBlockId: string) => void;
   onRemoveBlock: (block: DraftBlock) => void;
   onSelectBlock: (blockId: string) => void;
   selectedBlockId: string;
 }) {
+  const [editingPageSettings, setEditingPageSettings] = useState(false);
   const isSaving = autosaveState === "saving";
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -920,84 +1066,75 @@ export function LessonBuilderEditorPanel({
   }
 
   return (
-    <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-      {selectedPage ? (
-        <>
-          <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-                Page builder
-              </p>
-              <h2 className="mt-1 text-xl font-black">{selectedPage.title}</h2>
-              {selectedPage.subtitle ? (
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  {selectedPage.subtitle}
-                </p>
-              ) : null}
-              <p className="mt-2 text-xs font-bold text-[var(--ve-muted)]">
-                {autosaveState === "saving" && "Saving changes..."}
-                {autosaveState === "dirty" && `Autosaving in ${Math.round(autosaveDelayMs / 1000)}s.`}
-                {autosaveState === "saved" &&
-                  (lastSavedAt
-                    ? `Saved at ${new Date(lastSavedAt).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}.`
-                    : "All changes saved.")}
-                {autosaveState === "error" && autosaveMessage}
-                {autosaveState === "idle" && "Autosaves after you stop editing."}
-              </p>
-            </div>
+    <div className="flex justify-center px-6 py-14">
+      <div className="flex w-full max-w-[640px] flex-col gap-4">
+        {selectedPage ? (
+          <>
             <div className="flex items-center gap-2">
-              <AdminStatusBadge>{selectedPageBlocks.length} blocks</AdminStatusBadge>
+              <h2 className="text-[30px] font-black leading-[1.2] tracking-[-0.01em] text-[var(--admin-brand-hero)]">
+                {selectedPage.title}
+              </h2>
               <button
-                className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-black transition hover:border-[var(--ve-green)] hover:text-[var(--ve-green)] disabled:opacity-60"
-                disabled={isSaving}
-                onClick={onSaveNow}
+                aria-label="Edit page settings"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+                onClick={() => setEditingPageSettings((current) => !current)}
                 type="button"
               >
-                {isSaving ? "Saving..." : "Save now"}
+                <AdminDesignIcon className="h-4 w-4" />
               </button>
             </div>
-          </div>
+            {selectedPage.subtitle ? (
+              <p className="-mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                {selectedPage.subtitle}
+              </p>
+            ) : null}
+            <p className="-mt-2 text-xs font-bold text-[var(--admin-on-surface-variant)]">
+              {autosaveState === "saving" && "Saving changes..."}
+              {autosaveState === "dirty" && `Autosaving in ${Math.round(autosaveDelayMs / 1000)}s.`}
+              {autosaveState === "saved" &&
+                (lastSavedAt
+                  ? `Saved at ${new Date(lastSavedAt).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}.`
+                  : "All changes saved.")}
+              {autosaveState === "error" && autosaveMessage}
+              {autosaveState === "idle" && "Autosaves after you stop editing."}
+            </p>
 
-          <div className="mt-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-black">Add content</h3>
-              <p className="text-xs font-bold text-[var(--ve-muted)]">Choose a position in the canvas</p>
-            </div>
-            <BlockInserter
-              allowedBlockTypes={allowedBlockTypes}
-              insertIndex={0}
-              onAddDraftBlock={onAddDraftBlock}
-            />
-          </div>
+            {editingPageSettings ? (
+              <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4">
+                <PageSettingsEditor
+                  aiGenerationAvailable={aiGenerationAvailable}
+                  mediaLibraryAssets={mediaLibraryAssets}
+                  onChange={onUpdatePage}
+                  page={selectedPage}
+                />
+              </div>
+            ) : null}
 
-          <div className="mt-5 space-y-4">
             {selectedPageBlocks.length === 0 ? (
-              <EmptyAdminState>No blocks on this page yet.</EmptyAdminState>
+              <p className="rounded-[16px] border border-dashed border-[var(--admin-border-warm)] py-8 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">No blocks on this page yet.</p>
             ) : (
-              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+              <DndContext collisionDetection={closestCenter} id="lesson-blocks-dnd" onDragEnd={handleDragEnd} sensors={sensors}>
                 <SortableContext items={selectedPageBlocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
                   <div className="space-y-4">
                     {selectedPageBlocks.map((block, index) => (
                       <SortableBlockCard
                         block={block}
-                        index={index}
                         isFirst={index === 0}
                         isLast={index === selectedPageBlocks.length - 1}
                         isSaving={isSaving}
                         isSelected={selectedBlockId === block.id}
                         key={block.id}
-                        allowedBlockTypes={allowedBlockTypes}
                         aiGenerationAvailable={aiGenerationAvailable}
+                        lessonId={selectedPage.lesson_id}
+                        mediaBriefContext={{ lesson, page: selectedPage, blocks: selectedPageBlocks }}
                         mediaLibraryAssets={mediaLibraryAssets}
-                        onAddDraftBlock={onAddDraftBlock}
                         onDuplicate={onDuplicateBlock}
                         onPayloadChange={(key, value) => onUpdateBlock(block.id, key, value)}
                         onRemove={onRemoveBlock}
                         onReorder={onReorderBlock}
-                        onSaveNow={onSaveNow}
                         onSelect={onSelectBlock}
                       />
                     ))}
@@ -1005,16 +1142,75 @@ export function LessonBuilderEditorPanel({
                 </SortableContext>
               </DndContext>
             )}
-          </div>
-        </>
-      ) : (
-        <EmptyAdminState>Create a page before adding content blocks.</EmptyAdminState>
-      )}
+
+            <AddBlockDisclosure
+              allowedBlockTypes={allowedBlockTypes}
+              insertIndex={selectedPageBlocks.length}
+              onAddDraftBlock={onAddDraftBlock}
+            />
+          </>
+        ) : (
+          <p className="py-10 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">Create a page before adding content blocks.</p>
+        )}
+      </div>
     </div>
   );
 }
 
-function BlockInserter({
+function blockTypeIcon(type: string) {
+  switch (type) {
+    case "image":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <rect height="14" rx="2" width="18" x="3" y="5" />
+          <circle cx="9" cy="10" r="1.5" />
+          <path d="m21 16-5-4-4 3-3-2-6 5" />
+        </svg>
+      );
+    case "gif":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <rect height="14" rx="2" width="18" x="3" y="5" />
+          <path d="M7 10v4M12 10v4M17 10.5c-.8-.5-2-.5-2 .8v1.4c0 1.3 1.2 1.3 2 .8" />
+        </svg>
+      );
+    case "callout":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v5M12 16h.01" />
+        </svg>
+      );
+    case "video":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <rect height="14" rx="2" width="14" x="3" y="5" />
+          <path d="m17 9 4-2v10l-4-2" />
+        </svg>
+      );
+    case "audio":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <path d="M3 12h3l3-6 3 12 3-9 3 6h3" />
+        </svg>
+      );
+    case "table":
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <rect height="18" rx="2" width="18" x="3" y="3" />
+          <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+        </svg>
+      );
+    default:
+      return (
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+      );
+  }
+}
+
+function AddBlockDisclosure({
   allowedBlockTypes,
   insertIndex,
   onAddDraftBlock,
@@ -1023,20 +1219,42 @@ function BlockInserter({
   insertIndex: number;
   onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  // A GIF is stored as an image block, so its availability follows the
+  // "image" entitlement rather than needing its own allow-list entry.
   const availableItems = allowedBlockTypes
-    ? blockToolbarItems.filter((item) => allowedBlockTypes.includes(item.type))
+    ? blockToolbarItems.filter((item) => allowedBlockTypes.includes(item.type === "gif" ? "image" : item.type))
     : blockToolbarItems;
 
+  if (!open) {
+    return (
+      <button
+        className="flex items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-3.5 text-[13px] font-bold text-[var(--admin-outline)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]"
+        onClick={() => setOpen(true)}
+        type="button"
+      >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add a block
+      </button>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap gap-2 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-2">
+    <div className="grid grid-cols-3 gap-2">
       {availableItems.map((item) => (
         <button
-          className="rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
+          className="flex flex-col items-center gap-1.5 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3.5 text-xs font-extrabold text-[var(--admin-on-surface)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]"
           key={item.type}
-          onClick={() => onAddDraftBlock(item.type, insertIndex)}
+          onClick={() => {
+            onAddDraftBlock(item.type, insertIndex);
+            setOpen(false);
+          }}
           type="button"
         >
-          + {item.label}
+          {blockTypeIcon(item.type)}
+          {item.label}
         </button>
       ))}
     </div>
@@ -1044,38 +1262,34 @@ function BlockInserter({
 }
 
 function SortableBlockCard({
-  allowedBlockTypes,
   aiGenerationAvailable = true,
   block,
-  index,
   isFirst,
   isLast,
   isSaving,
   isSelected,
+  lessonId,
+  mediaBriefContext,
   mediaLibraryAssets,
-  onAddDraftBlock,
   onDuplicate,
   onPayloadChange,
   onRemove,
   onReorder,
-  onSaveNow,
   onSelect,
 }: {
-  allowedBlockTypes?: string[];
   aiGenerationAvailable?: boolean;
   block: DraftBlock;
-  index: number;
   isFirst: boolean;
   isLast: boolean;
   isSaving: boolean;
   isSelected: boolean;
+  lessonId: string;
+  mediaBriefContext: MediaBriefContext;
   mediaLibraryAssets: AdminLearningMediaAssetRow[];
-  onAddDraftBlock: (blockType: string, insertIndex?: number) => void;
   onDuplicate: (block: DraftBlock) => void;
   onPayloadChange: (key: string, value: unknown) => void;
   onRemove: (block: DraftBlock) => void;
   onReorder: (blockId: string, direction: ReorderDirection) => void;
-  onSaveNow: () => void;
   onSelect: (blockId: string) => void;
 }) {
   const {
@@ -1093,274 +1307,24 @@ function SortableBlockCard({
 
   return (
     <div className={isDragging ? "opacity-80" : undefined} ref={setNodeRef} style={style}>
-      <div className="mb-2 flex items-center gap-2">
-        <button
-          aria-label={`Drag ${block.block_type} block`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] touch-none"
-          type="button"
-          {...attributes}
-          {...listeners}
-        >
-          ::
-        </button>
-        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-          Block {index + 1}
-        </span>
-      </div>
       <BlockEditor
         aiGenerationAvailable={aiGenerationAvailable}
         block={block}
+        dragAttributes={attributes}
+        dragListeners={listeners}
         isFirst={isFirst}
         isLast={isLast}
         isSaving={isSaving}
         isSelected={isSelected}
+        lessonId={lessonId}
+        mediaBriefContext={mediaBriefContext}
         mediaLibraryAssets={mediaLibraryAssets}
         onDuplicate={onDuplicate}
         onPayloadChange={onPayloadChange}
         onRemove={onRemove}
         onReorder={onReorder}
-        onSaveNow={onSaveNow}
         onSelect={onSelect}
       />
-      <div className="mt-3">
-        <BlockInserter
-          allowedBlockTypes={allowedBlockTypes}
-          insertIndex={index + 1}
-          onAddDraftBlock={onAddDraftBlock}
-        />
-      </div>
     </div>
-  );
-}
-
-export function LessonBuilderPreviewPanel({
-  embedded = false,
-  lesson,
-  selectedPage,
-  selectedPreviewBlocks,
-  pageCoverImage,
-}: {
-  embedded?: boolean;
-  lesson: AdminLessonRow;
-  selectedPage: AdminLessonPageRow | null;
-  selectedPreviewBlocks: LessonContentBlock[];
-  pageCoverImage: ImageAsset | null;
-}) {
-  return (
-    <div className={embedded ? "h-fit" : "h-fit rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm xl:sticky xl:top-6"}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-            Live preview
-          </p>
-          <h2 className="mt-1 text-lg font-black">Learner page</h2>
-        </div>
-        {selectedPage ? (
-          <Link className="text-xs font-black text-[var(--ve-green)]" href={`/lessons/${lesson.id}?page=${selectedPage.page_number}`}>
-            Open
-          </Link>
-        ) : null}
-      </div>
-      <div className="mx-auto max-w-[23rem] overflow-hidden rounded-[30px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--ve-line-soft)] px-5 py-4">
-          <span className="text-[var(--foreground)]">
-            <ArrowLeftIcon className="h-5 w-5" />
-          </span>
-          <p className="line-clamp-1 text-sm font-black">{lesson.title}</p>
-          <span className="text-[var(--foreground)]">
-            <MenuIcon className="h-5 w-5" />
-          </span>
-        </div>
-        {selectedPage ? (
-          <div className="p-5">
-            <LessonPageLayout
-              blocks={selectedPreviewBlocks}
-              coverImage={pageCoverImage}
-              isPreview
-              pageType={selectedPage.page_type}
-              subtitle={selectedPage.subtitle}
-              title={selectedPage.title}
-            />
-          </div>
-        ) : (
-          <div className="px-5 py-12 text-center text-xs font-bold text-[var(--ve-muted)]">
-            Create a page to see the learner preview.
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function LessonBuilderInspectorPanel({
-  aiGenerationAvailable = true,
-  autosaveState,
-  hasUnsavedChanges,
-  isSaving,
-  lastSavedAt,
-  lesson,
-  mediaLibraryAssets,
-  onDuplicateBlock,
-  onDuplicatePage,
-  onRemoveBlock,
-  onSaveNow,
-  onUpdatePage,
-  pageCoverImage,
-  selectedBlock,
-  selectedPage,
-  selectedPreviewBlocks,
-}: {
-  aiGenerationAvailable?: boolean;
-  autosaveState: AutosaveState;
-  hasUnsavedChanges: boolean;
-  isSaving: boolean;
-  lastSavedAt: string | null;
-  lesson: AdminLessonRow;
-  mediaLibraryAssets: AdminLearningMediaAssetRow[];
-  onDuplicateBlock?: () => void;
-  onDuplicatePage?: () => void;
-  onRemoveBlock?: () => void;
-  onSaveNow: () => void;
-  onUpdatePage: (page: AdminLessonPageRow) => void;
-  pageCoverImage: ImageAsset | null;
-  selectedBlock: DraftBlock | null;
-  selectedPage: AdminLessonPageRow | null;
-  selectedPreviewBlocks: LessonContentBlock[];
-}) {
-  const [showPreview, setShowPreview] = useState(false);
-  const saveLabel =
-    autosaveState === "saving"
-      ? "Saving"
-      : hasUnsavedChanges
-        ? "Unsaved locally"
-        : "Saved";
-
-  return (
-    <aside className="space-y-4 xl:sticky xl:top-6 xl:h-fit">
-      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-              Inspector
-            </p>
-            <h2 className="mt-1 text-lg font-black">Authoring state</h2>
-          </div>
-          <AdminStatusBadge tone={autosaveState === "error" ? "danger" : hasUnsavedChanges ? "warning" : "good"}>
-            {saveLabel}
-          </AdminStatusBadge>
-        </div>
-        <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-          {autosaveState === "error"
-            ? "Save failed. Your local draft remains recoverable in this browser session."
-            : hasUnsavedChanges
-              ? "Changes are local until autosave or Save now completes."
-              : lastSavedAt
-                ? `Saved at ${new Date(lastSavedAt).toLocaleTimeString([], {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}.`
-                : "No unsaved builder changes."}
-        </p>
-        <div className="mt-4 grid gap-2">
-          <button
-            className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--ve-green)] px-4 text-sm font-black text-white disabled:opacity-60"
-            disabled={isSaving}
-            onClick={onSaveNow}
-            type="button"
-          >
-            {isSaving ? "Saving..." : "Save now"}
-          </button>
-          <Link className={secondaryButtonClasses()} href={`/admin/courses/${lesson.course_id}?tab=curriculum`}>
-            Course curriculum
-          </Link>
-          <Link className={secondaryButtonClasses()} href={`/lessons/${lesson.id}`}>
-            Learner preview
-          </Link>
-        </div>
-      </div>
-
-      {selectedPage ? (
-        <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className={labelClasses()}>Selected page</p>
-              <h3 className="mt-1 text-base font-black">{selectedPage.title}</h3>
-            </div>
-            {onDuplicatePage ? (
-              <button className={secondaryButtonClasses()} onClick={onDuplicatePage} type="button">
-                Duplicate
-              </button>
-            ) : null}
-          </div>
-          <div className="mt-4">
-            <PageSettingsEditor
-              aiGenerationAvailable={aiGenerationAvailable}
-              isSaving={isSaving}
-                mediaLibraryAssets={mediaLibraryAssets}
-                onChange={onUpdatePage}
-              onSaveNow={onSaveNow}
-              page={selectedPage}
-            />
-          </div>
-        </div>
-      ) : null}
-
-      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-        <p className={labelClasses()}>Selected block</p>
-        {selectedBlock ? (
-          <>
-            <h3 className="mt-1 text-base font-black capitalize">
-              {selectedBlock.block_type.replaceAll("_", " ")} block
-            </h3>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              {blockSummary(selectedBlock) || "No content summary yet."}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {onDuplicateBlock ? (
-                <button className={secondaryButtonClasses()} onClick={onDuplicateBlock} type="button">
-                  Duplicate
-                </button>
-              ) : null}
-              {onRemoveBlock ? (
-                <button
-                  className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_82%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
-                  onClick={onRemoveBlock}
-                  type="button"
-                >
-                  Remove
-                </button>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-            Select a block in the canvas to inspect, duplicate or remove it.
-          </p>
-        )}
-      </div>
-
-      <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className={labelClasses()}>Preview</p>
-            <h3 className="mt-1 text-base font-black">Learner page</h3>
-          </div>
-          <button className={secondaryButtonClasses()} onClick={() => setShowPreview((current) => !current)} type="button">
-            {showPreview ? "Hide" : "Show"}
-          </button>
-        </div>
-        {showPreview ? (
-          <div className="mt-4">
-            <LessonBuilderPreviewPanel
-              embedded
-              lesson={lesson}
-              pageCoverImage={pageCoverImage}
-              selectedPage={selectedPage}
-              selectedPreviewBlocks={selectedPreviewBlocks}
-            />
-          </div>
-        ) : null}
-      </div>
-    </aside>
   );
 }

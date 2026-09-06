@@ -69,6 +69,17 @@ repository, data loader, RPC, list/card surface, dashboard, or cache:
 
 ## Tests And CI
 
+- Run quick, focused checks as each meaningful task is completed; do not defer
+  all validation until the end.
+- Run broader integration, browser and regression checks after a coherent batch
+  of related changes is integrated. Choose scope from dependencies and affected
+  behavior, rather than phase labels alone.
+- After fixes, rerun the affected checks. Repeat broader suites when new changes,
+  failures or unresolved risks justify them; avoid unchanged duplicate runs.
+- Security-specific, CI and release requirements remain mandatory. Do not mark
+  work complete before its applicable completion checks pass.
+- Plans and tickets should reference this canonical policy and state their
+  specific acceptance criteria and validation commands.
 - New security-sensitive behavior needs the right gate:
   - pgTAP for DB/RLS/RPC boundaries.
   - unit tests for pure domain/application rules.
@@ -110,7 +121,10 @@ repository, data loader, RPC, list/card surface, dashboard, or cache:
 
 ## Before Closing
 
-Run the smallest sufficient validation, then broaden when the blast radius requires it. For remediation-affecting work, prefer:
+Follow the testing cadence above and confirm that the integrated change has
+passed its applicable completion checks. Reuse still-valid results; rerun checks
+when subsequent changes, failures or unresolved risks affect them. For
+remediation-affecting work, prefer:
 
 ```bash
 npm run typecheck

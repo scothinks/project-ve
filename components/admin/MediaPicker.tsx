@@ -1,7 +1,11 @@
 "use client";
 
+import { useMediaPicker } from "./MediaPickerProvider";
 import * as Tabs from "@radix-ui/react-tabs";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { MediaLibrary } from "@/components/admin/MediaLibrary";
+import { libraryAssetToEditorialRow } from "@/features/media/domain/editorial-adapter";
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import { mapMediaAssetToPickerValue } from "@/components/admin/media-picker-domain";
 import type { AdminLearningMediaAssetRow } from "@/lib/admin";
@@ -32,8 +36,17 @@ type MediaPickerUploadContext = {
   placement: string;
 };
 
+type MediaPickerKind = "image" | "video" | "audio";
+
+const mediaKindAccept: Record<MediaPickerKind, string> = {
+  audio: "audio/mpeg,audio/mp4,audio/wav,audio/ogg",
+  image: "image/png,image/jpeg,image/webp",
+  video: "video/mp4,video/webm,video/quicktime,video/ogg",
+};
+
 type MediaPickerProps = {
   aiGenerationAvailable?: boolean;
+  aiGenerationSupported?: boolean;
   assetTypeFilter?: string[];
   canGenerate?: boolean;
   caption?: string;
@@ -46,6 +59,7 @@ type MediaPickerProps = {
   initialUrl: string;
   libraryAssets?: AdminLearningMediaAssetRow[];
   libraryFieldName?: string;
+  mediaKind?: MediaPickerKind;
   onCaptionChange?: (value: string) => void;
   onPickAsset?: (asset: AdminLearningMediaAssetRow) => void;
   onPresentationChange?: (value: {
@@ -69,19 +83,19 @@ type MediaPickerProps = {
 };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
 }
 
 function tabClasses(active = false) {
   return cn(
-    "rounded-[12px] px-3 py-2 text-xs font-black transition",
+    "rounded-full border px-4 py-2 text-xs font-extrabold transition",
     active
-      ? "bg-[var(--ve-green)] text-white"
-      : "bg-[var(--ve-panel)] text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]",
+      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
+      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface)] hover:border-[var(--admin-primary)]",
   );
 }
 
@@ -115,28 +129,17 @@ function getPreviewImage({
   );
 }
 
-function assetLabel(asset: AdminLearningMediaAssetRow) {
-  return [
-    asset.lesson?.title,
-    asset.placement,
-    asset.asset_type,
-  ].filter(Boolean).join(" · ");
-}
-
 export function MediaPicker({
   aiGenerationAvailable = true,
-  assetTypeFilter,
-  canGenerate = false,
   caption = "",
   fieldNames,
-  generateAction,
   initialAltText,
   initialFit = "cover",
   initialPositionX = 50,
   initialPositionY = 50,
   initialUrl,
-  libraryAssets = [],
   libraryFieldName = "libraryAssetId",
+  mediaKind = "image",
   onCaptionChange,
   onPickAsset,
   onPresentationChange,
@@ -151,6 +154,7 @@ export function MediaPicker({
   useLibraryAction,
   uploadContext,
 }: MediaPickerProps) {
+  const { requestMedia } = useMediaPicker();
   const [activeTab, setActiveTab] = useState("library");
   const [url, setUrl] = useState(initialUrl);
   const [altText, setAltText] = useState(initialAltText);
@@ -158,45 +162,19 @@ export function MediaPicker({
   const [positionX, setPositionX] = useState(normalizeImagePosition(initialPositionX, 50));
   const [positionY, setPositionY] = useState(normalizeImagePosition(initialPositionY, 50));
   const [captionValue, setCaptionValue] = useState(caption);
-  const [search, setSearch] = useState("");
-  const [assetType, setAssetType] = useState("all");
-  const [uploadedAssets, setUploadedAssets] = useState<AdminLearningMediaAssetRow[]>([]);
+  const [selectedLibraryAsset, setSelectedLibraryAsset] = useState<AdminLearningMediaAssetRow | null>(null);
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [uploadAltText, setUploadAltText] = useState(initialAltText);
   const [uploadError, setUploadError] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedLibraryAssetId, setSelectedLibraryAssetId] = useState("");
   const tabs = [
     ["library", "Choose from library"],
     ...(aiGenerationAvailable ? [["generate", "Generate with AI"] as const] : []),
     ["external", "External URL"],
     ["upload", "Upload"],
   ] as const;
-  const combinedLibraryAssets = useMemo(
-    () => [...uploadedAssets, ...libraryAssets],
-    [libraryAssets, uploadedAssets],
-  );
-  const libraryAssetTypes = useMemo(
-    () => Array.from(new Set(combinedLibraryAssets.map((asset) => asset.asset_type))).sort(),
-    [combinedLibraryAssets],
-  );
-  const filteredLibraryAssets = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return combinedLibraryAssets.filter((asset) => {
-      if (assetTypeFilter && !assetTypeFilter.includes(asset.asset_type)) return false;
-      if (assetType !== "all" && asset.asset_type !== assetType) return false;
-      if (!normalizedSearch) return true;
-      return assetLabel(asset).toLowerCase().includes(normalizedSearch)
-        || (asset.alt_text ?? "").toLowerCase().includes(normalizedSearch)
-        || (asset.caption ?? "").toLowerCase().includes(normalizedSearch);
-    });
-  }, [assetType, assetTypeFilter, combinedLibraryAssets, search]);
-  const selectedLibraryAsset =
-    combinedLibraryAssets.find((asset) => asset.id === selectedLibraryAssetId)
-    ?? filteredLibraryAssets[0]
-    ?? null;
   const previewImage = getPreviewImage({
     altText,
     fit,
@@ -237,7 +215,7 @@ export function MediaPicker({
   function applyAsset(asset: AdminLearningMediaAssetRow) {
     const nextValue = mapMediaAssetToPickerValue(asset, { fit, positionX, positionY });
 
-    setSelectedLibraryAssetId(asset.id);
+    setSelectedLibraryAsset(asset);
     setUrl(nextValue.url);
     setAltText(nextValue.altText);
     setFit(nextValue.fit);
@@ -259,17 +237,18 @@ export function MediaPicker({
     }
 
     if (!uploadFile) {
-      setUploadError("Choose an image file to upload.");
+      setUploadError("Choose a file to upload.");
       return;
     }
 
-    if (!uploadAltText.trim()) {
+    if (mediaKind === "image" && !uploadAltText.trim()) {
       setUploadError("Alt text is required for uploaded CMS images.");
       return;
     }
 
     const body = new FormData();
     body.set("file", uploadFile);
+    body.set("rightsConfirmed", String(rightsConfirmed));
     body.set("altText", uploadAltText);
     body.set("assetType", uploadContext.assetType);
     body.set("placement", uploadContext.placement);
@@ -297,7 +276,7 @@ export function MediaPicker({
         throw new Error(result.error || "Upload failed.");
       }
 
-      setUploadedAssets((assets) => [result.asset as AdminLearningMediaAssetRow, ...assets]);
+
       applyAsset(result.asset);
       setUploadFile(null);
       setUploadStatus("Uploaded and selected.");
@@ -311,7 +290,7 @@ export function MediaPicker({
   }
 
   return (
-    <div className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+    <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
       {renderFormFields ? (
         <>
           <input name={names.url} type="hidden" value={url} />
@@ -332,67 +311,11 @@ export function MediaPicker({
         </Tabs.List>
 
         <Tabs.Content className="mt-4" value="library">
-          <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
-            <label>
-              <span className={labelClasses()}>Search media</span>
-              <input
-                className={fieldClasses()}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search placement, lesson, alt text"
-                value={search}
-              />
-            </label>
-            <label>
-              <span className={labelClasses()}>Asset type</span>
-              <select className={fieldClasses()} onChange={(event) => setAssetType(event.target.value)} value={assetType}>
-                <option value="all">All types</option>
-                {libraryAssetTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-          {renderFormFields ? (
-            <input name={libraryFieldName} type="hidden" value={selectedLibraryAsset?.id ?? ""} />
-          ) : null}
-          <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            {filteredLibraryAssets.length === 0 ? (
-              <div className="rounded-[14px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-4 py-5 text-sm font-semibold text-[var(--ve-muted)]">
-                No matching approved or reusable media is available yet.
-              </div>
-            ) : (
-              filteredLibraryAssets.slice(0, 8).map((asset) => (
-                <button
-                  className={cn(
-                    "rounded-[14px] border p-3 text-left transition",
-                    selectedLibraryAsset?.id === asset.id
-                      ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_80%,var(--ve-card))]"
-                      : "border-[var(--ve-line-soft)] bg-[var(--ve-panel)] hover:border-[var(--ve-green)]",
-                  )}
-                  key={asset.id}
-                  onClick={() => applyAsset(asset)}
-                  type="button"
-                >
-                  <div className="h-28 overflow-hidden rounded-[12px] bg-[var(--ve-card-subtle)]">
-                    {asset.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img alt={asset.alt_text ?? asset.placement} className="h-full w-full object-cover" src={asset.url} />
-                    ) : null}
-                  </div>
-                  <p className="mt-2 line-clamp-1 text-xs font-black">{assetLabel(asset)}</p>
-                  <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">
-                    {asset.review_status.replaceAll("_", " ")} · {asset.generation_status.replaceAll("_", " ")}
-                  </p>
-                  {!asset.alt_text?.trim() ? (
-                    <p className="mt-1 text-[11px] font-black text-[var(--ve-danger)]">Missing alt text</p>
-                  ) : null}
-                </button>
-              ))
-            )}
-          </div>
+          <MediaLibrary courseId={uploadContext?.courseId} mediaType={mediaKind} onPick={(asset) => applyAsset(libraryAssetToEditorialRow(asset))} />
+          {renderFormFields ? <input name={libraryFieldName} type="hidden" value={selectedLibraryAsset?.id ?? ""} /> : null}
           {useLibraryAction && renderFormFields ? (
             <PendingSubmitButton
-              className="mt-4 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+              className="mt-4 rounded-[12px] bg-[var(--admin-primary)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
               disabled={!selectedLibraryAsset}
               formAction={useLibraryAction}
               label="Use selected media"
@@ -406,138 +329,131 @@ export function MediaPicker({
         </Tabs.Content>
 
         <Tabs.Content className="mt-4" value="generate">
-          <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-            <p className="text-sm font-black">AI generation</p>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              Edit the prompt or placement details in this form, then generate a new candidate for this exact media slot.
-            </p>
-            {generateAction && renderFormFields ? (
-              <PendingSubmitButton
-                className="mt-4 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
-                disabled={!canGenerate}
-                formAction={generateAction}
-                label="Generate media"
-                name="actionIntent"
-                pendingLabel="Generating..."
-                pendingValue="generate"
-                type="submit"
-                value="generate"
-              />
-            ) : (
-              <p className="mt-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                AI generation is available from seeded course and lesson media briefs.
-              </p>
-            )}
-          </div>
+          <button type="button" className={tabClasses()} onClick={async () => {
+            const picked = await requestMedia({ aiGenerationAvailable, mediaKind, placementLabel, title: `Choose ${placementLabel.toLowerCase()}`, uploadContext, initialAltText: altText, initialUrl: url, initialTab: "ai" });
+            if (!picked) return;
+            setUrl(picked.url); setAltText(picked.altText); setCaptionValue(picked.caption);
+          }}>Open image chooser</button>
         </Tabs.Content>
 
         <Tabs.Content className="mt-4" value="external">
-          {previewImage ? (
-            previewVariant === "course-thumbnail" ? (
-              <div className="overflow-hidden rounded-[18px] bg-[var(--ve-panel)] shadow-sm">
-                <div className="h-28">{previewImage}</div>
-                <div className="p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
-                    {previewEyebrow || "Values Education"}
-                  </p>
-                  <h4 className="mt-2 text-lg font-black leading-6">{previewTitle || "Course title"}</h4>
-                  <p className="mt-2 line-clamp-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                    {previewDescription || "Short learner-facing course description."}
-                  </p>
-                  <p className="mt-3 text-[11px] font-black text-[var(--ve-muted)]">{previewMinutes ?? 0} min from lessons</p>
+          {mediaKind === "image" ? (
+            previewImage ? (
+              previewVariant === "course-thumbnail" ? (
+                <div className="overflow-hidden rounded-[18px] bg-[var(--admin-surface-container-low)] shadow-sm">
+                  <div className="h-28">{previewImage}</div>
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--admin-primary)]">
+                      {previewEyebrow || "Values Education"}
+                    </p>
+                    <h4 className="mt-2 text-lg font-black leading-6">{previewTitle || "Course title"}</h4>
+                    <p className="mt-2 line-clamp-3 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                      {previewDescription || "Short learner-facing course description."}
+                    </p>
+                    <p className="mt-3 text-[11px] font-black text-[var(--admin-on-surface-variant)]">{previewMinutes ?? 0} min from lessons</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="h-48 overflow-hidden rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-high)]">
+                  {previewImage}
+                </div>
+              )
             ) : (
-              <div className="h-48 overflow-hidden rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)]">
-                {previewImage}
+              <div className="rounded-[16px] border border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-high)] px-4 py-6 text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+                Add a media URL or choose from the library to preview it here.
               </div>
             )
-          ) : (
-            <div className="rounded-[16px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-card-subtle)] px-4 py-6 text-sm font-semibold text-[var(--ve-muted)]">
-              Add a media URL or choose from the library to preview it here.
-            </div>
-          )}
+          ) : null}
 
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
+          <div className={cn("grid gap-3", mediaKind === "image" ? "mt-3 md:grid-cols-3" : "max-w-[480px]")}>
             <label>
-              <span className={labelClasses()}>External URL</span>
+              <span className={labelClasses()}>{mediaKind === "image" ? "External URL" : `${placementLabel} URL`}</span>
               <input
                 className={fieldClasses()}
                 onChange={(event) => {
                   setUrl(event.target.value);
                   emit({ url: event.target.value });
                 }}
+                placeholder={mediaKind === "video" ? "https://example.com/video.mp4" : mediaKind === "audio" ? "https://example.com/audio.mp3" : undefined}
                 value={url}
               />
             </label>
-            <label>
-              <span className={labelClasses()}>Alt text</span>
-              <input
-                className={fieldClasses()}
-                onChange={(event) => {
-                  setAltText(event.target.value);
-                  emit({ altText: event.target.value });
-                }}
-                required={Boolean(url.trim())}
-                value={altText}
-              />
-            </label>
-            <label>
-              <span className={labelClasses()}>Image fit</span>
-              <select
-                className={fieldClasses()}
-                onChange={(event) => {
-                  const nextFit = normalizeImageFit(event.target.value);
-                  setFit(nextFit);
-                  emit({ fit: nextFit });
-                }}
-                value={fit}
-              >
-                <option value="cover">Cover</option>
-                <option value="contain">Contain</option>
-              </select>
-            </label>
+            {mediaKind === "image" ? (
+              <>
+                <label>
+                  <span className={labelClasses()}>Alt text</span>
+                  <input
+                    className={fieldClasses()}
+                    onChange={(event) => {
+                      setAltText(event.target.value);
+                      emit({ altText: event.target.value });
+                    }}
+                    required={Boolean(url.trim())}
+                    value={altText}
+                  />
+                </label>
+                <label>
+                  <span className={labelClasses()}>Image fit</span>
+                  <AdminSelect
+                    className="mt-2"
+                    onValueChange={(next) => {
+                      const nextFit = normalizeImageFit(next);
+                      setFit(nextFit);
+                      emit({ fit: nextFit });
+                    }}
+                    options={[
+                      { label: "Cover", value: "cover" },
+                      { label: "Contain", value: "contain" },
+                    ]}
+                    size="compact"
+                    value={fit}
+                  />
+                </label>
+              </>
+            ) : null}
           </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <label>
-              <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-                <span>Horizontal focus</span>
-                <span>{positionX}%</span>
-              </span>
-              <input
-                className="mt-2 w-full"
-                max={100}
-                min={0}
-                onChange={(event) => {
-                  const nextPosition = normalizeImagePosition(Number(event.target.value), 50);
-                  setPositionX(nextPosition);
-                  emit({ positionX: nextPosition });
-                }}
-                type="range"
-                value={positionX}
-              />
-            </label>
-            <label>
-              <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-                <span>Vertical focus</span>
-                <span>{positionY}%</span>
-              </span>
-              <input
-                className="mt-2 w-full"
-                max={100}
-                min={0}
-                onChange={(event) => {
-                  const nextPosition = normalizeImagePosition(Number(event.target.value), 50);
-                  setPositionY(nextPosition);
-                  emit({ positionY: nextPosition });
-                }}
-                type="range"
-                value={positionY}
-              />
-            </label>
-          </div>
+          {mediaKind === "image" ? (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label>
+                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                  <span>Horizontal focus</span>
+                  <span>{positionX}%</span>
+                </span>
+                <input
+                  className="mt-2 w-full"
+                  max={100}
+                  min={0}
+                  onChange={(event) => {
+                    const nextPosition = normalizeImagePosition(Number(event.target.value), 50);
+                    setPositionX(nextPosition);
+                    emit({ positionX: nextPosition });
+                  }}
+                  type="range"
+                  value={positionX}
+                />
+              </label>
+              <label>
+                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                  <span>Vertical focus</span>
+                  <span>{positionY}%</span>
+                </span>
+                <input
+                  className="mt-2 w-full"
+                  max={100}
+                  min={0}
+                  onChange={(event) => {
+                    const nextPosition = normalizeImagePosition(Number(event.target.value), 50);
+                    setPositionY(nextPosition);
+                    emit({ positionY: nextPosition });
+                  }}
+                  type="range"
+                  value={positionY}
+                />
+              </label>
+            </div>
+          ) : null}
           {showCaption ? (
-            <label className="mt-3 block">
+            <label className="mt-3 block max-w-[480px]">
               <span className={labelClasses()}>Caption / attribution</span>
               <input
                 className={fieldClasses()}
@@ -553,14 +469,31 @@ export function MediaPicker({
         </Tabs.Content>
 
         <Tabs.Content className="mt-4" value="upload">
-          <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-            <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
-              <label>
-                <span className={labelClasses()}>Image file</span>
+          <label className="mb-3 flex gap-2 text-sm"><input type="checkbox" checked={rightsConfirmed} onChange={e => setRightsConfirmed(e.target.checked)} />I have permission for in-project reuse, cropping and derivation without mandatory attribution.</label>
+          {!uploadContext?.courseId && !uploadContext?.lessonId ? (
+            <div className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4">
+              <p className="text-sm font-black">Upload not available yet</p>
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                File uploads need a saved course to attach to. Save this course as a draft first, then come back here to
+                upload directly — or use Choose from library or External URL for now.
+              </p>
+            </div>
+          ) : (
+            <div className="flex max-w-[480px] flex-col gap-4">
+              <label
+                className={cn(
+                  "flex cursor-pointer items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-[22px] text-sm font-extrabold text-[var(--admin-primary)]",
+                  isUploading && "pointer-events-none opacity-60",
+                )}
+              >
+                <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                </svg>
+                {uploadFile ? uploadFile.name : "Choose a file to upload"}
                 <input
-                  accept="image/png,image/jpeg,image/webp"
-                  className={fieldClasses()}
-                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
+                  accept={mediaKindAccept[mediaKind]}
+                  className="sr-only"
+                  disabled={isUploading}
                   onChange={(event) => {
                     setUploadFile(event.target.files?.[0] ?? null);
                     setUploadError("");
@@ -569,51 +502,48 @@ export function MediaPicker({
                   type="file"
                 />
               </label>
-              <label>
-                <span className={labelClasses()}>Alt text</span>
-                <input
-                  className={fieldClasses()}
-                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
-                  onChange={(event) => setUploadAltText(event.target.value)}
-                  value={uploadAltText}
-                />
-              </label>
+              {mediaKind === "image" ? (
+                <label>
+                  <span className={labelClasses()}>Alt text</span>
+                  <input
+                    className={fieldClasses()}
+                    disabled={isUploading}
+                    onChange={(event) => setUploadAltText(event.target.value)}
+                    value={uploadAltText}
+                  />
+                </label>
+              ) : null}
+              {showCaption ? (
+                <label>
+                  <span className={labelClasses()}>Caption / attribution</span>
+                  <input
+                    className={fieldClasses()}
+                    disabled={isUploading}
+                    onChange={(event) => {
+                      setCaptionValue(event.target.value);
+                      onCaptionChange?.(event.target.value);
+                      emit({ caption: event.target.value });
+                    }}
+                    value={captionValue}
+                  />
+                </label>
+              ) : null}
+              {uploadError ? (
+                <p className="text-xs font-black text-[var(--admin-error)]">{uploadError}</p>
+              ) : null}
+              {uploadStatus ? (
+                <p className="text-xs font-black text-[var(--admin-primary)]">{uploadStatus}</p>
+              ) : null}
+              <button
+                className="self-start rounded-full bg-[var(--admin-primary)] px-[22px] py-3 text-[13px] font-extrabold text-[var(--admin-on-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isUploading || !uploadFile}
+                onClick={uploadSelectedAsset}
+                type="button"
+              >
+                {isUploading ? "Uploading..." : "Upload media"}
+              </button>
             </div>
-            {showCaption ? (
-              <label className="mt-3 block">
-                <span className={labelClasses()}>Caption / attribution</span>
-                <input
-                  className={fieldClasses()}
-                  disabled={isUploading || (!uploadContext?.courseId && !uploadContext?.lessonId)}
-                  onChange={(event) => {
-                    setCaptionValue(event.target.value);
-                    onCaptionChange?.(event.target.value);
-                    emit({ caption: event.target.value });
-                  }}
-                  value={captionValue}
-                />
-              </label>
-            ) : null}
-            {!uploadContext?.courseId && !uploadContext?.lessonId ? (
-              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                Save this item before uploading media.
-              </p>
-            ) : null}
-            {uploadError ? (
-              <p className="mt-3 text-xs font-black text-[var(--ve-danger)]">{uploadError}</p>
-            ) : null}
-            {uploadStatus ? (
-              <p className="mt-3 text-xs font-black text-[var(--ve-green)]">{uploadStatus}</p>
-            ) : null}
-            <button
-              className="mt-4 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isUploading || !uploadFile || (!uploadContext?.courseId && !uploadContext?.lessonId)}
-              onClick={uploadSelectedAsset}
-              type="button"
-            >
-              {isUploading ? "Uploading..." : "Upload media"}
-            </button>
-          </div>
+          )}
         </Tabs.Content>
       </Tabs.Root>
     </div>

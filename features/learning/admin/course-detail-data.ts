@@ -1,3 +1,4 @@
+import { isImageMediaAsset } from "@/lib/ai-media-workflow";
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -5,7 +6,6 @@ import {
   parseStoredNewCoursePlanSelection,
 } from "@/features/learning/admin/planner-model";
 import {
-  isImageMediaAsset,
   isRequiredMediaAsset,
   validateMediaApproval,
 } from "@/lib/ai-media-workflow";
@@ -254,11 +254,7 @@ export async function getAdminCourseDetailPageData(
 
   const mediaValidation = validateMediaApproval(mediaAssets);
   const hasRequiredImageAssets = mediaAssets.some(isRequiredMediaAsset);
-  const mediaLibraryAssets = mediaAssets.filter(
-    (asset) => typeof asset.url === "string"
-      && asset.url.trim().length > 0
-      && isImageMediaAsset(asset),
-  );
+  const mediaLibraryAssets: typeof mediaAssets = [];
   const hasManualCourseMedia =
     typeof course.thumbnail?.src === "string" && course.thumbnail.src.trim().length > 0;
   const optionalWarningCounts = mediaValidation.optionalWarnings.reduce(
@@ -303,8 +299,7 @@ export async function getAdminCourseDetailPageData(
     course.ai_generated
     && course.ai_text_status === "approved"
     && (
-      !hasRequiredImageAssets
-      || mediaValidation.missingRequiredAssets.length > 0
+      mediaValidation.missingRequiredAssets.length > 0
       || mediaValidation.failedRequiredAssets.length > 0
     );
   const readiness = buildCourseReadiness({

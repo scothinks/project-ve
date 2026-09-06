@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient, type User } from "@supabase/supabase
 import { expect, test, type Page } from "@playwright/test";
 
 const authCredential = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
+const invitationTokenHash = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
 const runId = randomUUID().slice(0, 8);
 const platformAdminEmail = `e2e-platform-admin-${runId}@example.test`;
 const catalogManagerEmail = `e2e-catalog-manager-${runId}@example.test`;
@@ -143,6 +144,19 @@ async function seedFixture() {
     }),
     "seed platform catalog manager",
   );
+
+  await assertNoError(
+    await supabase.from("platform_catalog_invitations").insert({
+      email: organizationOwnerEmail,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString(),
+      invited_by: catalogManager.id,
+      invited_user_id: organizationOwner.id,
+      role: "content_editor",
+      status: "pending",
+      token_hash: invitationTokenHash,
+    }),
+    "seed platform catalog invitation",
+  );
 }
 
 test.describe.serial("Phase 1 admin workspace release coverage", () => {
@@ -211,5 +225,8 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
     await expect(page.getByRole("tab", { name: "Members" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Invitations" })).toBeVisible();
     await expect(page.getByText(`Catalog Manager ${runId}`)).toBeVisible();
+
+    await page.getByRole("tab", { name: "Invitations" }).click();
+    await expect(page.getByText(organizationOwnerEmail)).toBeVisible();
   });
 });

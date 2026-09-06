@@ -2,6 +2,10 @@
 
 Project VE is a learning platform built with Next.js and Supabase. It combines short lessons, scored quizzes, XP, missions, referrals, rewards, notifications, onboarding assessment, and an admin console for content and operations.
 
+Start with the [Project VE handbook](https://github.com/scothinks/project-ve/wiki) for current product knowledge, decisions and working guidance. The [AI Authoring initiative](https://github.com/users/scothinks/projects/1) groups its existing issues; the [product backlog](https://github.com/scothinks/project-ve/issues) holds the wider work. Executable [agent guardrails](docs/codex/skills/project-ve-guardrails/SKILL.md), technical instructions and evidence remain in this repository.
+
+**[Task Log](https://github.com/users/scothinks/projects/2)** — capture future features and tasks before choosing an initiative (project access required). Capturing an idea does not start implementation.
+
 ## Stack
 
 - Next.js 15 App Router
@@ -152,6 +156,7 @@ npm run build
 npm run start
 npm run lint
 npm run typecheck
+npm run test:release-readiness
 ```
 
 ## Deployment
@@ -160,7 +165,11 @@ The app is currently shaped for Vercel deployment.
 
 - cron config lives in [vercel.json](vercel.json)
 - the current cron calls `/api/notifications/dispatch` and `/api/admin/ai/jobs/process`
-- on Vercel Hobby, the schedule must remain daily-compatible
+- on Vercel Hobby, the checked-in daily schedule is deployable but does not meet
+  the AI Authoring recovery release gate
+- run the manual `Hosted AI Authoring Qualification` GitHub workflow against an
+  exact deployed SHA; protected previews require the staging environment's
+  `VERCEL_AUTOMATION_BYPASS_SECRET`
 
 Typical build flow:
 

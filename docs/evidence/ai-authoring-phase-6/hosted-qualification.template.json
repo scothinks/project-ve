@@ -1,0 +1,51 @@
+{
+  "revision": {
+    "sha": "FULL_DEPLOYED_GIT_SHA"
+  },
+  "migration": {
+    "compatible": false,
+    "forwardReplay": false,
+    "ledger": []
+  },
+  "runtime": {
+    "afterDispatchObserved": false,
+    "streamingObserved": false,
+    "workerMaxDurationSeconds": 0
+  },
+  "timings": {
+    "operations": [
+      { "kind": "course_outline", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "course_draft", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "lesson_plan", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "lesson_draft", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "page", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "quiz", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null },
+      { "kind": "image", "acknowledgementMs": null, "dispatchVisibleMs": null, "firstResultMs": null, "completionMs": null }
+    ]
+  },
+  "maintenance": {
+    "maxIntervalMinutes": null,
+    "invocationObserved": false,
+    "recovery": {
+      "recoveredImages": null,
+      "settledIncomplete": null,
+      "deferred": null
+    }
+  },
+  "tenantMedia": {
+    "tenantDenialObserved": false,
+    "privateDeliveryObserved": false,
+    "publicDeliveryDenied": false,
+    "storageReconciled": false
+  },
+  "reconciliation": {
+    "jobs": false,
+    "credits": false,
+    "media": false
+  },
+  "rollback": {
+    "featureSwitchDisabled": false,
+    "acceptedHistoryRetained": false,
+    "legacyReviewAvailable": false
+  }
+}

@@ -1,5 +1,6 @@
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { LessonContent } from "@/components/lesson/LessonContent";
+import { Card } from "@/components/ui/Card";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import type { ImageAsset, LessonContentBlock, LessonPageType } from "@/lib/lessons";
 
@@ -112,7 +113,7 @@ export function LessonPageLayout({
 
   return (
     <div className={config.shell}>
-      <div className={isPreview && config.shell === "bg-[var(--ve-card)]" ? "" : undefined}>
+      <div>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] ${config.badge}`}>
@@ -165,9 +166,19 @@ export function LessonPageLayout({
             {emptyText}
           </div>
         ) : (
-          <LessonContent blocks={blocks} variant={pageType} />
+          <LessonContent blocks={blocks} variant={pageType} isPreview={isPreview} />
         )}
       </div>
     </div>
+  );
+}
+
+export function LessonPageCard(props: LessonPageLayoutProps) {
+  return (
+    <Card className="learner-readable overflow-hidden">
+      <div className="px-6 py-7 lg:px-10 lg:py-10">
+        <LessonPageLayout {...props} />
+      </div>
+    </Card>
   );
 }

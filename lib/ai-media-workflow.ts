@@ -82,7 +82,10 @@ export function isRequiredMediaAsset(asset: MediaApprovalAsset) {
     return false;
   }
 
-  return getMetadataBoolean(asRecord(asset.metadata), "required");
+  // Legacy inline seeds can carry required:true. Only existing cover/thumbnail
+  // requirements participate in completeness checks.
+  return ["course_thumbnail", "lesson_thumbnail", "lesson_cover"].includes(getMediaAssetTargetKind(asset))
+    && getMetadataBoolean(asRecord(asset.metadata), "required");
 }
 
 export function isGenerationExcludedMediaAsset(asset: Pick<MediaApprovalAsset, "metadata">) {

@@ -110,7 +110,7 @@ async function mapCourseCardRows(
 
   const courseIds = courses.map((course) => course.id);
   const { data: lessonsData, error: lessonsError } = await supabase
-    .from("lessons")
+    .from("learner_lessons")
     .select(learningCourseCardSelections.lessons)
     .in("course_id", courseIds)
     .eq("status", "published")
@@ -123,7 +123,7 @@ async function mapCourseCardRows(
   const [pagesResult, quizzesResult] = lessonIds.length > 0
     ? await Promise.all([
         supabase
-          .from("lesson_pages")
+          .from("learner_lesson_page_references")
           .select(learningCourseCardSelections.pages)
           .in("lesson_id", lessonIds)
           .order("page_number", { ascending: true }),

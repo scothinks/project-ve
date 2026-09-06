@@ -89,3 +89,25 @@ runContract(
   },
   "tests/integration/repository-contracts.live.mjs",
 );
+
+runContract(
+  "lesson publication",
+  {
+    APP_MODE: "live",
+    NEXT_PUBLIC_SUPABASE_URL: localSupabaseConnection.url,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: localSupabaseConnection.publishableKey,
+    SUPABASE_SERVICE_ROLE_KEY: localSupabaseConnection.serviceRoleKey,
+  },
+  "tests/integration/lesson-publication.live.mjs",
+);
+
+runContract(
+  "media authorisation",
+  {
+    APP_MODE: "live",
+    NEXT_PUBLIC_SUPABASE_URL: localSupabaseConnection.url,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: localSupabaseConnection.publishableKey,
+    SUPABASE_SERVICE_ROLE_KEY: localSupabaseConnection.serviceRoleKey,
+  },
+  "tests/integration/media-authorization.live.mjs",
+);

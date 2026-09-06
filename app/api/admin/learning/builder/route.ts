@@ -1,3 +1,5 @@
+import { imageStyleDraft } from "@/features/ai-generation/authoring/image-style";
+import { mediaIntent } from "@/lib/media-intent";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { sanitizePlainTextInput, sanitizeUrlInput } from "@/lib/input-safety";
@@ -34,20 +36,6 @@ type BuilderBlockInput = {
   isDraft?: boolean;
 };
 
-type SavedPageResult = {
-  clientId: string;
-  pageId: string;
-  status: string;
-};
-
-type SavedBlockResult = {
-  clientId: string;
-  blockId: string;
-  pageId: string;
-  sortOrder: number;
-  status: string;
-};
-
 function asRecord(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -57,10 +45,6 @@ function asRecord(value: unknown) {
 function parseInteger(value: unknown, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function isDraftId(value: string) {
-  return value.startsWith("draft-");
 }
 
 function sanitizePageImagePayload(input: unknown) {
@@ -89,6 +73,10 @@ function sanitizePageImagePayload(input: unknown) {
 
 function sanitizeBlockPayload(blockType: string, input: unknown) {
   const payload = asRecord(input);
+  const intent = mediaIntent(payload);
+  const briefFields = typeof payload.mediaBrief === "string"
+    ? { mediaBrief: sanitizePlainTextInput(payload.mediaBrief, 6000) } : {};
+  const intentFields = intent?.kind === blockType ? { mediaIntent: { ...intent, purpose: sanitizePlainTextInput(intent.purpose, 1000) } } : {};
 
   if (blockType === "callout") {
     return {
@@ -101,6 +89,9 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
 
   if (blockType === "image") {
     const next: Record<string, unknown> = {
+      ...intentFields,
+      ...briefFields,
+      ...(imageStyleDraft(payload.mediaStyle) !== undefined ? { mediaStyle: imageStyleDraft(payload.mediaStyle) } : {}),
       src: sanitizeUrlInput(String(payload.src ?? ""), 1000),
       alt: sanitizePlainTextInput(String(payload.alt ?? ""), 240),
       caption: sanitizePlainTextInput(String(payload.caption ?? ""), 500),
@@ -110,6 +101,12 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
     }
     next.positionX = Math.max(0, Math.min(100, parseInteger(payload.positionX, 50)));
     next.positionY = Math.max(0, Math.min(100, parseInteger(payload.positionY, 50)));
+
+    // A GIF is stored as an image block with this flag — no dedicated DB enum
+    // value, since it renders and is picked exactly like an image.
+    if (payload.mediaKind === "gif") {
+      next.mediaKind = "gif";
+    }
 
     const aiManagedByAssetId = sanitizePlainTextInput(String(payload.aiManagedByAssetId ?? ""), 120);
     const aiManagedKind = sanitizePlainTextInput(String(payload.aiManagedKind ?? ""), 80);
@@ -121,6 +118,8 @@ function sanitizeBlockPayload(blockType: string, input: unknown) {
 
   if (blockType === "video" || blockType === "audio") {
     return {
+      ...intentFields,
+      ...briefFields,
       src: sanitizeUrlInput(String(payload.src ?? ""), 1000),
       title: sanitizePlainTextInput(String(payload.title ?? payload.heading ?? ""), 180),
       caption: sanitizePlainTextInput(String(payload.caption ?? ""), 500),
@@ -208,6 +207,7 @@ export async function POST(request: Request) {
   const issues: ValidationIssue[] = [];
   const rawLessonId = getStringField(bodyResult.data, "lessonId", issues);
   const lessonId = sanitizePlainTextInput(rawLessonId ?? "", 120);
+  const expectedRevision = getNumberField(bodyResult.data, "expectedRevision", issues, { integer: true, min: 0 });
   const rawPages = getArrayField(bodyResult.data, "pages", issues, { required: false }) ?? [];
   const rawBlocks = getArrayField(bodyResult.data, "blocks", issues, { required: false }) ?? [];
   const pages: BuilderPageInput[] = [];
@@ -240,127 +240,25 @@ export async function POST(request: Request) {
   }
 
   const { supabase } = await requireAdmin();
-  const savedPages: SavedPageResult[] = [];
-  const savedBlocks: SavedBlockResult[] = [];
-  const pageIdMap = new Map<string, string>();
-  const existingPageIds = pages
-    .map((page) => sanitizePlainTextInput(String(page.id ?? ""), 120))
-    .filter((pageId) => pageId && !isDraftId(pageId));
-
-  for (const [index, pageId] of existingPageIds.entries()) {
-    const { error } = await supabase
-      .from("lesson_pages")
-      .update({ page_number: 100_000 + index })
-      .eq("lesson_id", lessonId)
-      .eq("id", pageId);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-  }
-
-  for (const page of [...pages].sort((a, b) => parseInteger(a.page_number, 0) - parseInteger(b.page_number, 0))) {
-    const clientId = sanitizePlainTextInput(String(page.id ?? ""), 120);
-    if (!clientId) {
-      continue;
-    }
-
-    const { data, error } = await supabase.rpc("admin_upsert_lesson_page", {
-      p_page_id: isDraftId(clientId) ? "" : clientId,
-      p_lesson_id: lessonId,
-      p_title: sanitizePlainTextInput(String(page.title ?? ""), 160),
-      p_subtitle: sanitizePlainTextInput(String(page.subtitle ?? ""), 300),
-      p_page_type: sanitizePlainTextInput(String(page.page_type ?? "concept"), 40) || "concept",
-      p_page_number: parseInteger(page.page_number, 1),
-      p_cover_image: sanitizePageImagePayload(page.cover_image),
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    const result = (data ?? {}) as { pageId?: string; status?: string };
-    const savedPageId = sanitizePlainTextInput(String(result.pageId ?? ""), 120);
-    if (!savedPageId) {
-      return NextResponse.json({ error: "The lesson page could not be saved." }, { status: 500 });
-    }
-
-    pageIdMap.set(clientId, savedPageId);
-    savedPages.push({
-      clientId,
-      pageId: savedPageId,
-      status: sanitizePlainTextInput(String(result.status ?? "saved"), 40) || "saved",
-    });
-  }
-
-  const existingBlockIds = blocks
-    .map((block) => sanitizePlainTextInput(String(block.id ?? ""), 160))
-    .filter((blockId) => blockId && !isDraftId(blockId));
-
-  for (const [index, blockId] of existingBlockIds.entries()) {
-    const { error } = await supabase
-      .from("lesson_content_blocks")
-      .update({ sort_order: 100_000 + index })
-      .eq("id", blockId);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-  }
-
-  for (const block of [...blocks].sort((a, b) => parseInteger(a.sort_order, 0) - parseInteger(b.sort_order, 0))) {
-    const clientId = sanitizePlainTextInput(String(block.id ?? ""), 160);
-    const rawPageId = sanitizePlainTextInput(String(block.page_id ?? ""), 120);
-    const pageId = pageIdMap.get(rawPageId) ?? rawPageId;
-    const blockType = sanitizePlainTextInput(String(block.block_type ?? "text"), 40) || "text";
-    if (!pageId) {
-      continue;
-    }
-
-    const blockId = block.isDraft || isDraftId(clientId) ? null : clientId || null;
-
-    const { data, error } = await supabase.rpc("admin_upsert_lesson_block", {
-      p_block_id: blockId,
-      p_page_id: pageId,
-      p_block_type: blockType,
-      p_sort_order: parseInteger(block.sort_order, 1),
-      p_payload: sanitizeBlockPayload(blockType, block.payload),
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    const result = (data ?? {}) as { blockId?: string; status?: string };
-    const savedBlockId = sanitizePlainTextInput(String(result.blockId ?? ""), 160);
-    if (!savedBlockId) {
-      return NextResponse.json({ error: "The lesson block could not be saved." }, { status: 500 });
-    }
-
-    const { data: savedBlockRow, error: savedBlockLookupError } = await supabase
-      .from("lesson_content_blocks")
-      .select("sort_order")
-      .eq("id", savedBlockId)
-      .maybeSingle();
-
-    if (savedBlockLookupError) {
-      return NextResponse.json({ error: savedBlockLookupError.message }, { status: 500 });
-    }
-
-    savedBlocks.push({
-      clientId,
-      blockId: savedBlockId,
-      pageId,
-      sortOrder: savedBlockRow?.sort_order ?? parseInteger(block.sort_order, 1),
-      status: sanitizePlainTextInput(String(result.status ?? "saved"), 40) || "saved",
-    });
-  }
-
-  return NextResponse.json({
-    status: "saved",
-    notice: "Lesson content saved.",
-    pages: savedPages,
-    blocks: savedBlocks,
-    savedAt: new Date().toISOString(),
+  const { data, error } = await supabase.rpc("admin_save_lesson_builder", {
+    p_lesson_id: lessonId,
+    p_expected_revision: expectedRevision!,
+    p_pages: pages.map((page) => ({
+      id: sanitizePlainTextInput(String(page.id ?? ""), 120),
+      title: sanitizePlainTextInput(String(page.title ?? ""), 160),
+      subtitle: sanitizePlainTextInput(String(page.subtitle ?? ""), 300),
+      page_type: sanitizePlainTextInput(String(page.page_type ?? "concept"), 40),
+      page_number: parseInteger(page.page_number, 1),
+      cover_image: sanitizePageImagePayload(page.cover_image),
+    })),
+    p_blocks: blocks.map((block) => ({
+      id: sanitizePlainTextInput(String(block.id ?? ""), 160),
+      page_id: sanitizePlainTextInput(String(block.page_id ?? ""), 120),
+      block_type: sanitizePlainTextInput(String(block.block_type ?? "text"), 40),
+      sort_order: parseInteger(block.sort_order, 1),
+      payload: sanitizeBlockPayload(String(block.block_type ?? "text"), block.payload),
+    })),
   });
+  if (error) return NextResponse.json({ error: error.message }, { status: error.code === "PT409" ? 409 : 422 });
+  return NextResponse.json({ ...asRecord(data), notice: "Lesson content saved." });
 }

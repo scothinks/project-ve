@@ -19,21 +19,35 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import Image from "@/components/media/MediaImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import {
-  archiveLessonFromCurriculum,
   reorderCourseLessons,
+  saveLessonCover,
 } from "@/app/admin/courses/actions";
-import { AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
+import { AdminDragHandle } from "@/components/admin/AdminDragHandle";
+import { useMediaPicker } from "@/components/admin/MediaPickerProvider";
+import { SparkleIcon } from "@/components/ui/Icons";
+import type { AdminLearningMediaAssetRow } from "@/lib/admin";
+import { coverAccent } from "@/lib/gradient-accent";
 import { cn } from "@/lib/utils";
+
+function PlusIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
 
 export type CurriculumLesson = {
   aiGenerated: boolean;
   aiMediaStatus: string;
   aiPublishStatus: string;
   aiTextStatus: string;
+  coverImage: Record<string, unknown> | null;
   description: string | null;
   estimatedMinutes: number;
   failedMediaCount: number;
@@ -67,89 +81,110 @@ function buttonClasses(tone: "primary" | "secondary" | "danger" = "secondary") {
   );
 }
 
-function statusTone(status: string) {
-  if (status === "published") return "good" as const;
-  if (status === "archived") return "danger" as const;
-  return "warning" as const;
+function statusPillClasses(status: string) {
+  if (status === "published") {
+    return "bg-[#e6f4ea] text-[#0b5a3a]";
+  }
+  if (status === "archived") {
+    return "bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]";
+  }
+  return "bg-[var(--admin-surface-container)] text-[var(--admin-on-surface-variant)]";
 }
 
-function workflowTone(status: string) {
-  if (status === "approved" || status === "ready" || status === "published") return "good" as const;
-  if (status === "changes_requested" || status === "not_ready") return "danger" as const;
-  if (status === "draft" || status === "generation_ready" || status === "in_review") return "warning" as const;
-  return "neutral" as const;
+function statusLabel(status: string) {
+  if (status === "published") return "Published";
+  if (status === "archived") return "Archived";
+  return "Draft";
 }
 
-function lessonIssues(lesson: CurriculumLesson) {
-  const issues: string[] = [];
 
-  if (lesson.status === "archived") {
-    issues.push("Archived");
-  } else if (lesson.status !== "published") {
-    issues.push("Draft");
-  }
-
-  if (lesson.pageCount === 0) {
-    issues.push("Missing pages");
-  }
-
-  if (!lesson.hasQuiz) {
-    issues.push("Quiz missing");
-  } else if (lesson.questionCount === 0) {
-    issues.push("Quiz incomplete");
-  }
-
-  if (lesson.failedMediaCount > 0) {
-    issues.push(`${lesson.failedMediaCount} failed media`);
-  } else if (lesson.mediaPendingCount > 0) {
-    issues.push("Media needs review");
-  }
-
-  if (lesson.aiGenerated) {
-    if (lesson.aiTextStatus === "changes_requested" || lesson.aiMediaStatus === "changes_requested") {
-      issues.push("Changes requested");
-    } else if (lesson.aiPublishStatus !== "ready" && lesson.aiPublishStatus !== "published") {
-      issues.push("Review gates pending");
-    }
-  }
-
-  return Array.from(new Set(issues));
+function iconButtonClasses() {
+  return "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-35";
 }
 
-function readinessTone(lesson: CurriculumLesson) {
-  const issues = lessonIssues(lesson).filter((issue) => issue !== "Archived");
+function LessonThumbButton({
+  aiGenerationAvailable,
+  courseId,
+  index,
+  lesson,
+  mediaLibraryAssets,
+}: {
+  aiGenerationAvailable?: boolean;
+  courseId: string;
+  index: number;
+  lesson: CurriculumLesson;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
+}) {
+  const { requestMedia } = useMediaPicker();
+  const src = typeof lesson.coverImage?.src === "string" ? lesson.coverImage.src : "";
+  const hasCover = src.trim().length > 0;
 
-  if (lesson.status === "archived") return "danger" as const;
-  if (issues.length === 0) return "good" as const;
-  if (issues.some((issue) => issue.includes("failed") || issue === "Changes requested")) return "danger" as const;
-  return "warning" as const;
-}
+  async function pickCover() {
+    const picked = await requestMedia({
+      aiGenerationAvailable,
+      assetTypeFilter: ["cover", "image", "thumbnail"],
+      initialAltText: typeof lesson.coverImage?.alt === "string" ? lesson.coverImage.alt : "",
+      initialUrl: src,
+      libraryAssets: mediaLibraryAssets,
+      mediaKind: "image",
+      placementLabel: "Lesson cover",
+      title: "Choose a lesson thumbnail",
+      uploadContext: {
+        assetType: "thumbnail",
+        courseId,
+        lessonId: lesson.id,
+        placement: "lesson_thumbnail",
+      },
+    });
 
-function readinessLabel(lesson: CurriculumLesson) {
-  if (lesson.status === "archived") return "Archived";
-  return lessonIssues(lesson).filter((issue) => issue !== "Archived").length === 0
-    ? "Ready"
-    : "Needs attention";
+    if (!picked) return;
+
+    const formData = new FormData();
+    formData.set("lessonId", lesson.id);
+    formData.set("courseId", courseId);
+    formData.set("coverImageUrl", picked.url);
+    formData.set("coverImageAlt", picked.altText);
+    await saveLessonCover(formData);
+  }
+
+  return (
+    <button
+      aria-label={`Change cover for ${lesson.title}`}
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[12px] text-sm font-black text-white/90"
+      onClick={() => {
+        void pickCover();
+      }}
+      style={{ background: hasCover ? undefined : `linear-gradient(135deg, ${coverAccent(lesson.id)})` }}
+      type="button"
+    >
+      {hasCover ? (
+        <Image alt="" className="object-cover" fill sizes="44px" src={src} />
+      ) : (
+        index + 1
+      )}
+    </button>
+  );
 }
 
 function SortableLessonRow({
+  aiGenerationAvailable,
+  courseId,
   index,
   isPending,
   lesson,
-  lessonCount,
-  moveLesson,
+  mediaLibraryAssets,
   onDuplicateLesson,
   requestArchive,
 }: {
+  aiGenerationAvailable?: boolean;
+  courseId: string;
   index: number;
   isPending: boolean;
   lesson: CurriculumLesson;
-  lessonCount: number;
-  moveLesson: (fromIndex: number, toIndex: number) => void;
+  mediaLibraryAssets: AdminLearningMediaAssetRow[];
   onDuplicateLesson: (lesson: CurriculumLesson) => void;
   requestArchive: (lesson: CurriculumLesson) => void;
 }) {
-  const issues = lessonIssues(lesson);
   const {
     attributes,
     isDragging,
@@ -166,157 +201,82 @@ function SortableLessonRow({
   return (
     <article
       className={cn(
-        "rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm transition",
+        "flex items-center gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 transition",
         isDragging && "border-[color:color-mix(in_srgb,var(--admin-primary-container)_40%,var(--admin-border-warm))] opacity-80 shadow-lg",
       )}
       ref={setNodeRef}
       style={style}
     >
-      <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-start">
-        <button
-          aria-label={`Drag ${lesson.title}`}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-lg font-black text-[var(--admin-on-surface-variant)] touch-none"
-          type="button"
-          {...attributes}
-          {...listeners}
-        >
-          ::
-        </button>
-
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--admin-primary-container)] text-xs font-black text-[var(--admin-on-primary)]">
-              {index + 1}
-            </span>
-            <Link
-              className="text-lg font-black text-[var(--admin-ink-charcoal)] hover:text-[var(--admin-primary)]"
-              href={`/admin/courses/lessons/${lesson.id}`}
-            >
-              {lesson.title}
-            </Link>
-            <AdminStatusBadge tone={statusTone(lesson.status)}>{lesson.status}</AdminStatusBadge>
-            <AdminStatusBadge tone={readinessTone(lesson)}>{readinessLabel(lesson)}</AdminStatusBadge>
-          </div>
-          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
-            {lesson.description || "No lesson description yet."}
-          </p>
-          <div className="mt-4 grid gap-3 text-sm font-semibold text-[var(--admin-on-surface-variant)] sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em]">Pages</p>
-              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">{lesson.pageCount}</p>
-            </div>
-            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em]">Quiz</p>
-              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">
-                {lesson.hasQuiz ? `${lesson.questionCount} questions` : "Missing"}
-              </p>
-            </div>
-            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em]">Media</p>
-              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">
-                {lesson.failedMediaCount > 0 ? `${lesson.failedMediaCount} failed` : `${lesson.mediaPendingCount} pending`}
-              </p>
-            </div>
-            <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em]">Duration</p>
-              <p className="mt-2 font-black text-[var(--admin-ink-charcoal)]">{lesson.estimatedMinutes} min</p>
-            </div>
-          </div>
-          {issues.length > 0 ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {issues.map((issue) => (
-                <AdminStatusBadge key={issue} tone={issue.includes("failed") || issue === "Changes requested" ? "danger" : "warning"}>
-                  {issue}
-                </AdminStatusBadge>
-              ))}
-            </div>
-          ) : null}
-          {lesson.aiGenerated ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <AdminStatusBadge tone={workflowTone(lesson.aiTextStatus)}>
-                Text {lesson.aiTextStatus.replaceAll("_", " ")}
-              </AdminStatusBadge>
-              <AdminStatusBadge tone={workflowTone(lesson.aiMediaStatus)}>
-                Media {lesson.aiMediaStatus.replaceAll("_", " ")}
-              </AdminStatusBadge>
-              <AdminStatusBadge tone={workflowTone(lesson.aiPublishStatus)}>
-                Publish {lesson.aiPublishStatus.replaceAll("_", " ")}
-              </AdminStatusBadge>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap justify-end gap-2">
-          <button
-            className={buttonClasses()}
-            disabled={isPending || index === 0}
-            onClick={() => moveLesson(index, index - 1)}
-            type="button"
+      <AdminDragHandle attributes={attributes} label={lesson.title} listeners={listeners} />
+      <LessonThumbButton
+        aiGenerationAvailable={aiGenerationAvailable}
+        courseId={courseId}
+        index={index}
+        lesson={lesson}
+        mediaLibraryAssets={mediaLibraryAssets}
+      />
+      <Link
+        className="min-w-0 flex-1 py-0.5"
+        href={`/admin/courses/lessons/${lesson.id}`}
+      >
+        <span className="block truncate text-[15px] font-extrabold text-[var(--admin-on-surface)]">{lesson.title}</span>
+        <span className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+          {lesson.pageCount} pages &middot; {lesson.estimatedMinutes} min
+        </span>
+      </Link>
+      <span className={cn("rounded-full px-2.5 py-[3px] text-[10px] font-extrabold uppercase tracking-[0.06em]", statusPillClasses(lesson.status))}>
+        {statusLabel(lesson.status)}
+      </span>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger aria-label={`More actions for ${lesson.title}`} className={iconButtonClasses()} type="button">
+          ⋯
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+            sideOffset={6}
           >
-            Move up
-          </button>
-          <button
-            className={buttonClasses()}
-            disabled={isPending || index === lessonCount - 1}
-            onClick={() => moveLesson(index, index + 1)}
-            type="button"
-          >
-            Move down
-          </button>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger className={buttonClasses()} type="button">
-              More
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                align="end"
-                className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
-                sideOffset={6}
+            <DropdownMenu.Item asChild>
+              <button
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
+                disabled={isPending}
+                onClick={() => onDuplicateLesson(lesson)}
+                type="button"
               >
-                <DropdownMenu.Item asChild>
-                  <Link
-                    className="block rounded-[10px] px-3 py-2 text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
-                    href={`/admin/courses/lessons/${lesson.id}`}
-                  >
-                    Edit lesson
-                  </Link>
-                </DropdownMenu.Item>
-                <DropdownMenu.Item asChild>
-                  <button
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
-                    disabled={isPending}
-                    onClick={() => onDuplicateLesson(lesson)}
-                    type="button"
-                  >
-                    Duplicate lesson
-                  </button>
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
-                <DropdownMenu.Item asChild>
-                  <button
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)]"
-                    disabled={lesson.status === "archived"}
-                    onClick={() => requestArchive(lesson)}
-                    type="button"
-                  >
-                    Archive lesson
-                  </button>
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        </div>
-      </div>
+                Duplicate lesson
+              </button>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
+            <DropdownMenu.Item asChild>
+              <button
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)]"
+                disabled={lesson.status === "archived"}
+                onClick={() => requestArchive(lesson)}
+                type="button"
+              >
+                Archive lesson
+              </button>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     </article>
   );
 }
 
 export function CurriculumOutlineEditor({
+  aiGenerationAvailable,
+  aiSuggestHref,
   courseId,
   lessons,
+  mediaLibraryAssets = [],
 }: {
+  aiGenerationAvailable?: boolean;
+  aiSuggestHref?: string;
   courseId: string;
   lessons: CurriculumLesson[];
+  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
 }) {
   const sortedLessons = useMemo(
     () => [...lessons].sort((first, second) => first.sortOrder - second.sortOrder),
@@ -417,6 +377,33 @@ export function CurriculumOutlineEditor({
     }
   }
 
+  async function archiveLesson(lesson: CurriculumLesson) {
+    setArchiveTarget(null);
+    setMessage(null);
+    const previousLessons = orderedLessons;
+    setOrderedLessons((current) =>
+      current.map((item) => (item.id === lesson.id ? { ...item, status: "archived" } : item)),
+    );
+
+    try {
+      const response = await fetch("/api/admin/learning/lessons/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId, lessonId: lesson.id }),
+      });
+      const payload = await response.json() as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Lesson could not be archived.");
+      }
+
+      setMessage("Lesson archived.");
+    } catch (error) {
+      setOrderedLessons(previousLessons);
+      setMessage(error instanceof Error ? error.message : "Lesson could not be archived.");
+    }
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
@@ -434,37 +421,21 @@ export function CurriculumOutlineEditor({
     moveLesson(oldIndex, newIndex);
   }
 
-  const totalIssues = orderedLessons.reduce((count, lesson) => count + lessonIssues(lesson).length, 0);
-  const publishedLessons = orderedLessons.filter((lesson) => lesson.status === "published").length;
-  const totalDurationMinutes = orderedLessons.reduce((total, lesson) => total + lesson.estimatedMinutes, 0);
-  const completionPercent = orderedLessons.length > 0
-    ? Math.round((publishedLessons / orderedLessons.length) * 100)
-    : 0;
-
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
+    <div className="space-y-5">
       <section className="space-y-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {message ? (
-              <p className="text-sm font-black text-[var(--admin-on-surface-variant)]">{message}</p>
-            ) : null}
-          </div>
-          <button
-            className={buttonClasses("primary")}
-            disabled={isPending || isCreatingLesson}
-            onClick={createLesson}
-            type="button"
-          >
-            {isCreatingLesson ? "Creating..." : "Add New Lesson"}
-          </button>
-        </div>
+        {message ? (
+          <p className="text-sm font-black text-[var(--admin-on-surface-variant)]">{message}</p>
+        ) : null}
 
         {orderedLessons.length === 0 ? (
-          <EmptyAdminState>No lessons yet.</EmptyAdminState>
+          <p className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-10 text-center text-sm font-bold text-[var(--admin-on-surface-variant)]">
+            No lessons yet.
+          </p>
         ) : (
           <DndContext
             collisionDetection={closestCenter}
+            id="curriculum-lessons-dnd"
             onDragEnd={handleDragEnd}
             sensors={sensors}
           >
@@ -475,12 +446,13 @@ export function CurriculumOutlineEditor({
               <div className="space-y-3">
                 {orderedLessons.map((lesson, index) => (
                   <SortableLessonRow
+                    aiGenerationAvailable={aiGenerationAvailable}
+                    courseId={courseId}
                     index={index}
                     isPending={isPending || duplicatingLessonId === lesson.id}
                     key={lesson.id}
                     lesson={lesson}
-                    lessonCount={orderedLessons.length}
-                    moveLesson={moveLesson}
+                    mediaLibraryAssets={mediaLibraryAssets}
                     onDuplicateLesson={duplicateLesson}
                     requestArchive={setArchiveTarget}
                   />
@@ -489,40 +461,28 @@ export function CurriculumOutlineEditor({
             </SortableContext>
           </DndContext>
         )}
-      </section>
 
-      <aside className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-        <h3 className="text-sm font-black text-[var(--admin-on-surface)]">Course Stats</h3>
-        <div className="mt-4 flex flex-col gap-2">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-            Total Duration
-          </p>
-          <p className="text-lg font-black text-[var(--admin-ink-charcoal)]">{totalDurationMinutes} mins</p>
+        <div className="flex gap-2.5">
+          <button
+            className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-[18px] text-sm font-extrabold text-[var(--admin-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isPending || isCreatingLesson}
+            onClick={createLesson}
+            type="button"
+          >
+            <PlusIcon />
+            {isCreatingLesson ? "Adding..." : "Add lesson"}
+          </button>
+          {aiSuggestHref ? (
+            <Link
+              className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-accent-violet,#8d68f2)] p-[18px] text-sm font-extrabold text-[var(--admin-accent-violet,#8d68f2)]"
+              href={aiSuggestHref}
+            >
+              <SparkleIcon className="h-4 w-4" />
+              Suggest lessons with AI
+            </Link>
+          ) : null}
         </div>
-        <div className="mt-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-              Completion
-            </p>
-            <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">
-              {publishedLessons} of {orderedLessons.length} Lessons
-            </span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
-            <div
-              className="h-full rounded-full bg-[var(--admin-primary-container)]"
-              style={{ width: `${completionPercent}%` }}
-            />
-          </div>
-        </div>
-        {totalIssues > 0 ? (
-          <p className="mt-4 text-xs font-bold text-[var(--admin-secondary)]">
-            {totalIssues} readiness issue{totalIssues === 1 ? "" : "s"} across this curriculum.
-          </p>
-        ) : (
-          <p className="mt-4 text-xs font-bold text-[var(--admin-primary)]">All lessons are ready.</p>
-        )}
-      </aside>
+      </section>
 
       <AlertDialog.Root onOpenChange={(open) => !open && setArchiveTarget(null)} open={archiveTarget !== null}>
         <AlertDialog.Portal>
@@ -537,13 +497,15 @@ export function CurriculumOutlineEditor({
                 Cancel
               </AlertDialog.Cancel>
               {archiveTarget ? (
-                <form action={archiveLessonFromCurriculum}>
-                  <input name="courseId" type="hidden" value={courseId} />
-                  <input name="lessonId" type="hidden" value={archiveTarget.id} />
-                  <AlertDialog.Action className={buttonClasses("danger")} type="submit">
-                    Archive lesson
-                  </AlertDialog.Action>
-                </form>
+                <AlertDialog.Action
+                  className={buttonClasses("danger")}
+                  onClick={() => {
+                    void archiveLesson(archiveTarget);
+                  }}
+                  type="button"
+                >
+                  Archive lesson
+                </AlertDialog.Action>
               ) : null}
             </div>
           </AlertDialog.Content>

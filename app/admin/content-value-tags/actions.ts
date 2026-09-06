@@ -122,6 +122,8 @@ function revalidateContentPaths(contentType: ContentType, contentId: string) {
 
   if (contentType === "lesson") {
     revalidatePath(`/admin/courses/lessons/${contentId}`);
+    revalidatePath(`/admin/courses/lessons/${contentId}/values`);
+    revalidatePath(`/admin/courses/lessons/${contentId}/preview`);
     revalidatePath("/courses");
     revalidatePath(`/lessons/${contentId}`);
     return;
@@ -162,7 +164,7 @@ export async function saveContentValueTag(formData: FormData) {
     }
 
     revalidateContentPaths(contentType, contentId);
-    redirectWithNotice(redirectTo, "Value tag saved.");
+    redirectWithNotice(redirectTo, contentType === "lesson" ? "Value saved." : "Value tag saved.");
   } catch (error) {
     unstable_rethrow(error);
     redirectWithNotice(
@@ -198,7 +200,7 @@ export async function updateContentValueTag(formData: FormData) {
     }
 
     revalidateContentPaths(contentType, contentId);
-    redirectWithNotice(redirectTo, "Value tag updated.");
+    redirectWithNotice(redirectTo, contentType === "lesson" ? "Value updated." : "Value tag updated.");
   } catch (error) {
     unstable_rethrow(error);
     redirectWithNotice(
@@ -230,7 +232,7 @@ export async function deleteContentValueTag(formData: FormData) {
     }
 
     revalidateContentPaths(contentType, contentId);
-    redirectWithNotice(redirectTo, "Value tag removed.");
+    redirectWithNotice(redirectTo, contentType === "lesson" ? "Value removed." : "Value tag removed.");
   } catch (error) {
     unstable_rethrow(error);
     redirectWithNotice(

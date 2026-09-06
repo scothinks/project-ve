@@ -20,7 +20,9 @@ import {
 } from "@/features/ai-generation/application/job-orchestration";
 import {
   estimateCourseTextUnits,
+  estimateLessonPageExtensionUnits,
   estimateMediaUnits,
+  estimateQuizQuestionGenerationUnits,
 } from "@/features/ai-generation/application/organization-ai-metering";
 import type { AiCourseGenerationInput } from "@/lib/ai-learning-generator";
 import type { Database } from "@/types/database";
@@ -105,6 +107,82 @@ export async function requestAiLessonExtensionJob(
   );
 
   return { courseId, jobId };
+}
+
+export async function requestAiLessonPageExtensionJob(
+  supabase: AiGenerationAdminClient,
+  actorUserId: string,
+  lessonId: string,
+  args: {
+    focus: string;
+    pageType: string;
+    priorDraft?: Record<string, unknown> | null;
+    refinementInstruction?: string;
+  },
+): Promise<JobRequestResult> {
+  if (!lessonId) {
+    throw new Error("Select a lesson to add a page to.");
+  }
+
+  const { course, lesson } = await getLessonWorkflowData(supabase, lessonId);
+
+  const jobId = await enqueueCourseTextJob(
+    supabase,
+    actorUserId,
+    {
+      actorUserId,
+      mode: "extend_lesson_page",
+      lessonId,
+      focus: args.focus,
+      pageType: args.pageType,
+      priorDraft: args.priorDraft ?? null,
+      refinementInstruction: args.refinementInstruction ?? "",
+    },
+    course.id,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateLessonPageExtensionUnits(),
+          lessonId,
+          operationType: "ai_lesson_page_extension",
+          organizationId: course.organization_id,
+        }
+      : undefined,
+  );
+
+  return { courseId: course.id, lessonId: lesson.id, jobId };
+}
+
+export async function requestAiQuizQuestionGenerationJob(
+  supabase: AiGenerationAdminClient,
+  actorUserId: string,
+  lessonId: string,
+): Promise<JobRequestResult> {
+  if (!lessonId) {
+    throw new Error("Select a lesson to add a quiz question to.");
+  }
+
+  const { course, lesson } = await getLessonWorkflowData(supabase, lessonId);
+
+  const jobId = await enqueueCourseTextJob(
+    supabase,
+    actorUserId,
+    {
+      actorUserId,
+      mode: "generate_quiz_question",
+      lessonId,
+    },
+    course.id,
+    course.organization_id
+      ? {
+          estimatedUnits: estimateQuizQuestionGenerationUnits(),
+          lessonId,
+          operationType: "ai_quiz_question_generation",
+          organizationId: course.organization_id,
+        }
+      : undefined,
+  );
+
+  return { courseId: course.id, lessonId: lesson.id, jobId };
 }
 
 export async function requestAiCourseTextRevisionJob(

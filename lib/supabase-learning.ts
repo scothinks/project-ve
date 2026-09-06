@@ -1,3 +1,5 @@
+import { isEmptyMediaPlaceholder } from "./media-intent.ts";
+import { publishedLessonContent } from "@/features/learning/application/published-lesson-content";
 import "server-only";
 import {
   logAppError,
@@ -63,6 +65,7 @@ type LessonRow = {
   retry_requires_reread: boolean;
   max_earning_attempts: number | null;
   quiz_requires_lesson_completion: boolean;
+  published_snapshot?: unknown;
 };
 
 type PageRow = {
@@ -369,7 +372,7 @@ function mapCatalog({
         order: page.page_number,
         type: isPageType(page.page_type) ? page.page_type : "concept",
         coverImage: toOptionalImageAsset(page.cover_image),
-        blocks: (blocksByPageId.get(page.id) ?? []).map(mapContentBlock),
+        blocks: (blocksByPageId.get(page.id) ?? []).filter(block => !isEmptyMediaPlaceholder(block)).map(mapContentBlock),
       }));
 
       return {
@@ -456,7 +459,7 @@ async function getPublishedLessonByIdOrSlug(
     "id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion";
 
   const { data: byId, error: idError } = await supabase
-    .from("lessons")
+    .from("learner_lessons")
     .select(lessonSelect)
     .eq("id", idOrSlug)
     .eq("status", "published")
@@ -466,7 +469,7 @@ async function getPublishedLessonByIdOrSlug(
   if (byId) return byId as LessonRow;
 
   const { data: bySlug, error: slugError } = await supabase
-    .from("lessons")
+    .from("learner_lessons")
     .select(lessonSelect)
     .eq("slug", idOrSlug)
     .eq("status", "published")
@@ -527,8 +530,8 @@ async function loadMappedPublishedCourses(
   }
 
   const { data: lessons, error: lessonsError } = await supabase
-    .from("lessons")
-    .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion")
+    .from("learner_lessons")
+    .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion, published_snapshot")
     .in("course_id", courseIds)
     .eq("status", "published")
     .order("sort_order", { ascending: true });
@@ -550,48 +553,20 @@ async function loadMappedPublishedCourses(
     });
   }
 
-  const [pagesResult, quizzesResult] = await Promise.all([
-    supabase
-      .from("lesson_pages")
-      .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image")
-      .in("lesson_id", lessonIds)
-      .order("page_number", { ascending: true }),
-    supabase
-      .from("quizzes")
-      .select("id, lesson_id, title, version")
-      .in("lesson_id", lessonIds)
-      .eq("status", "published"),
-  ]);
-
-  if (pagesResult.error) throw pagesResult.error;
+  const content = lessonRows.map((lesson) => publishedLessonContent(lesson.id, lesson.published_snapshot));
+  const pageRows = content.flatMap((lesson) => lesson.pages);
+  const blockRows = content.flatMap((lesson) => lesson.blocks);
+  const quizzesResult = await supabase.from("quizzes")
+    .select("id, lesson_id, title, version").in("lesson_id", lessonIds).eq("status", "published");
   if (quizzesResult.error) throw quizzesResult.error;
-
-  const pageRows = (pagesResult.data ?? []) as PageRow[];
   const quizRows = (quizzesResult.data ?? []) as QuizRow[];
-  const pageIds = pageRows.map((page) => page.id);
   const quizIds = quizRows.map((quiz) => quiz.id);
-
-  const [blocksResult, questionsResult] = await Promise.all([
-    pageIds.length > 0
-      ? supabase
-          .from("lesson_content_blocks")
-          .select("id, page_id, block_type, sort_order, payload")
-          .in("page_id", pageIds)
-          .order("sort_order", { ascending: true })
-      : Promise.resolve({ data: [], error: null }),
-    quizIds.length > 0
-      ? supabase
-          .from("learner_quiz_questions")
-          .select("id, quiz_id, question_order, question_type, prompt, xp")
-          .in("quiz_id", quizIds)
-          .order("question_order", { ascending: true })
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  if (blocksResult.error) throw blocksResult.error;
+  const questionsResult = quizIds.length > 0
+    ? await supabase.from("learner_quiz_questions")
+        .select("id, quiz_id, question_order, question_type, prompt, xp")
+        .in("quiz_id", quizIds).order("question_order", { ascending: true })
+    : { data: [], error: null };
   if (questionsResult.error) throw questionsResult.error;
-
-  const blockRows = (blocksResult.data ?? []) as BlockRow[];
   const questionRows = (questionsResult.data ?? []) as QuestionRow[];
   const questionIds = questionRows.map((question) => question.id);
   const optionsResult =
@@ -713,6 +688,143 @@ export async function getLearningCourse(
       resourceId: idOrSlug,
     });
   }
+}
+
+async function loadMappedCoursesForAdminPreview(
+  supabase: AppSupabaseClient,
+  courses: CourseRow[],
+): Promise<Course[]> {
+  if (courses.length === 0) return [];
+
+  const courseIds = courses.map((course) => course.id);
+  const courseCoverAssetsResult = await supabase
+    .from("learning_media_assets")
+    .select("id, course_id, lesson_id, placement, url, alt_text, caption, metadata, sort_order")
+    .in("course_id", courseIds)
+    .is("lesson_id", null)
+    .order("sort_order", { ascending: true });
+
+  if (courseCoverAssetsResult.error) throw courseCoverAssetsResult.error;
+
+  const courseCoverByCourseId = new Map<string, CourseCoverAssetRow>();
+  for (const asset of (courseCoverAssetsResult.data ?? []) as CourseCoverAssetRow[]) {
+    const metadataTargetKind = getString(asset.metadata ?? {}, "targetKind");
+    const isCourseCover = asset.placement === "course_cover" || metadataTargetKind === "course_cover";
+    if (asset.course_id && asset.url && isCourseCover && !courseCoverByCourseId.has(asset.course_id)) {
+      courseCoverByCourseId.set(asset.course_id, asset);
+    }
+  }
+
+  const { data: lessons, error: lessonsError } = await supabase
+    .from("lessons")
+    .select("id, course_id, slug, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, max_earning_attempts, quiz_requires_lesson_completion")
+    .in("course_id", courseIds)
+    .order("sort_order", { ascending: true });
+
+  if (lessonsError) throw lessonsError;
+
+  const lessonRows = (lessons ?? []) as LessonRow[];
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
+  if (lessonIds.length === 0) {
+    return mapCatalog({
+      courses,
+      lessons: [],
+      pages: [],
+      blocks: [],
+      quizzes: [],
+      questions: [],
+      options: [],
+      courseCoverByCourseId,
+    });
+  }
+
+  const [pagesResult, quizzesResult] = await Promise.all([
+    supabase
+      .from("lesson_pages")
+      .select("id, lesson_id, page_number, title, subtitle, page_type, cover_image")
+      .in("lesson_id", lessonIds)
+      .order("page_number", { ascending: true }),
+    supabase
+      .from("quizzes")
+      .select("id, lesson_id, title, version")
+      .in("lesson_id", lessonIds),
+  ]);
+
+  if (pagesResult.error) throw pagesResult.error;
+  if (quizzesResult.error) throw quizzesResult.error;
+
+  const pageRows = (pagesResult.data ?? []) as PageRow[];
+  const quizRows = (quizzesResult.data ?? []) as QuizRow[];
+  const pageIds = pageRows.map((page) => page.id);
+  const quizIds = quizRows.map((quiz) => quiz.id);
+
+  const [blocksResult, questionsResult] = await Promise.all([
+    pageIds.length > 0
+      ? supabase
+          .from("lesson_content_blocks")
+          .select("id, page_id, block_type, sort_order, payload")
+          .in("page_id", pageIds)
+          .order("sort_order", { ascending: true })
+      : Promise.resolve({ data: [], error: null }),
+    quizIds.length > 0
+      ? supabase
+          .from("learner_quiz_questions")
+          .select("id, quiz_id, question_order, question_type, prompt, xp")
+          .in("quiz_id", quizIds)
+          .order("question_order", { ascending: true })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (blocksResult.error) throw blocksResult.error;
+  if (questionsResult.error) throw questionsResult.error;
+
+  const blockRows = (blocksResult.data ?? []) as BlockRow[];
+  const questionRows = (questionsResult.data ?? []) as QuestionRow[];
+  const questionIds = questionRows.map((question) => question.id);
+  const optionsResult =
+    questionIds.length > 0
+      ? await supabase
+          .from("learner_quiz_options")
+          .select("id, question_id, option_order, label")
+          .in("question_id", questionIds)
+          .order("option_order", { ascending: true })
+      : { data: [], error: null };
+
+  if (optionsResult.error) throw optionsResult.error;
+
+  return mapCatalog({
+    courses,
+    lessons: lessonRows,
+    pages: pageRows,
+    blocks: blockRows,
+    quizzes: quizRows,
+    questions: questionRows,
+    options: (optionsResult.data ?? []) as OptionRow[],
+    courseCoverByCourseId,
+  });
+}
+
+/**
+ * Admin-only: loads a course with all of its lessons/pages/quizzes regardless of
+ * publish status, for the admin "preview as learner" workflow. Never call this
+ * from a learner-facing route — it bypasses the published-content boundary that
+ * `getLearningCourse` enforces.
+ */
+export async function getAdminCoursePreview(
+  supabase: AppSupabaseClient,
+  courseId: string,
+): Promise<Course | null> {
+  const { data: courseRow, error } = await supabase
+    .from("courses")
+    .select(courseSelect)
+    .eq("id", courseId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!courseRow) return null;
+
+  const courses = await loadMappedCoursesForAdminPreview(supabase, [courseRow as CourseRow]);
+  return courses[0] ?? null;
 }
 
 export async function getLearningLesson(

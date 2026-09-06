@@ -6,6 +6,8 @@ const supabaseImageHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Browser builds must not replace the manifests used by a running dev server.
+  distDir: process.env.PROJECT_VE_LOCAL_E2E === "1" ? ".next-e2e" : ".next",
   images: {
     remotePatterns: [
       {

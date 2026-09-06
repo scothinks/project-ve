@@ -1,0 +1,109 @@
+import { test, expect } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { checked, mediaFixture } from '../support/media-browser';
+import { listeningLesson, comparisonLesson } from '../support/course-teaching-fixtures';
+test.use({ actionTimeout: 60_000 });
+test.describe.configure({ timeout: 300_000 });
+const outline={title:'Decide together',description:'Listen and choose fairly.',lessons:[{title:'Listen first',description:'Hear everyone.'},{title:'Choose fairly',description:'Compare effects.'}]};
+const question={prompt:'What comes first?',questionType:'single_choice',explanation:'Hear everyone before choosing.',xp:10,options:[{label:'Hear everyone',isCorrect:true},{label:'Choose immediately',isCorrect:false}]};
+const lesson=(title:string,questions:number,index:number)=>({...structuredClone(index===0?listeningLesson:comparisonLesson),title,questions:questions?[index===0?question:{...question,prompt:'What makes a comparison fair?',explanation:'Apply the same needs to each option so its tradeoffs are visible.',options:[{label:'Compare each option against the same needs',isCorrect:true},{label:'Count only the most popular preference',isCorrect:false}]}]:[]});
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j7l8AAAAASUVORK5CYII=','base64');
+for(const partial of [false,true])test(partial?'partial course recovery keeps completed lessons and retries only unfinished work':'editable outline, separate quote, explicit course save, review and publish',async({browser,baseURL})=>{
+  const f=await mediaFixture(browser,baseURL!);const page=await f.context.newPage();const resultIds:string[]=[];const calls:number[]=[];let savedCourse:string|undefined;let failNextDraft=partial;let dropApply=false;
+  try{
+    // Exercise real fallback reads so a buffered SSE response cannot make the
+    // concurrent-edit assertion depend on transport timing.
+    if(!partial)await page.route('**/api/admin/ai/authoring/events?**',route=>route.abort());
+    await page.route('**/api/admin/ai/authoring',async route=>{
+      const body=route.request().method()==='POST'?route.request().postDataJSON():{};
+      if(body.action==='apply'&&dropApply){dropApply=false;const replies=await Promise.all([route.fetch(),route.fetch()]);for(const r of replies)expect(r.ok(),await r.text()).toBeTruthy();return route.abort();}
+      if(body.action!=='start')return route.continue();
+      const result=checked(await f.editor.rpc('admin_start_ai_page',{p_id:body.id}));resultIds.push(body.id);
+      const j=checked(await f.service.rpc('service_claim_ai_page',{p_id:body.id,p_worker:'course-browser'}))[0];
+      const step=async(action:string,candidate?:object)=>checked(await f.service.rpc('service_ai_course_checkpoint',{p_job:j.id,p_worker:'course-browser',p_token:j.lock_token,p_version:j.lock_version,p_action:action,p_candidate:candidate}));
+      if(result.kind==='course_outline'){await step('begin');await step('checkpoint',outline);}
+      else for(let i=0;i<6;i++){
+        const ctx=await step('begin');if(ctx.done)break;calls.push(ctx.index);
+        if(failNextDraft&&i===1){failNextDraft=false;await step('failed');break;}
+        const state=await step('checkpoint',lesson(ctx.outline.lessons[ctx.index].title,ctx.questionsPerLesson,ctx.index));if(state.done)break;
+      }
+      await route.fulfill({json:result});
+    });
+    await page.goto(`${baseURL}/admin/courses/ai/brief`);
+    await page.getByLabel('The learning need').fill('Make fair choices in a community.');await page.getByLabel('Who is it for?').fill('Young adults');await page.getByLabel('Number of lessons').fill('2');
+    await page.getByRole('button',{name:'Check outline cost'}).click();await expect(page.getByRole('heading',{name:'57 credits · One editable outline'})).toBeVisible();
+    expect(resultIds).toHaveLength(0);await page.getByRole('button',{name:'Generate outline',exact:true}).click();
+    await expect(page.getByLabel('Course title', {exact:true})).toHaveValue('Decide together');
+    await page.getByLabel('Course title',{exact:true}).fill('Community choices');
+    await page.getByRole('button',{name:'Add lesson',exact:true}).click();
+    await page.getByLabel('Lesson title',{exact:true}).nth(2).fill('Reflect together');await page.getByLabel('What it teaches').nth(2).fill('Review the decision.');
+    await page.getByRole('button',{name:'Move up',exact:true}).nth(2).click();await expect(page.getByLabel('Lesson title',{exact:true}).nth(1)).toHaveValue('Reflect together');
+    await page.getByRole('button',{name:'Remove',exact:true}).nth(1).click();
+    if(!partial){
+      checked(await f.editor.rpc('admin_save_ai_course_outline',{p_id:resultIds[0],p_revision:1,p_outline:{...outline,title:'Another editor course'}}));
+      await expect(page.locator('[data-outline-revision="2"]')).toBeVisible({timeout:30_000});
+      await page.getByRole('button',{name:'Save outline and check draft cost'}).click();
+      await expect(page.getByRole('alert').filter({hasText:'The outline changed'})).toBeVisible();
+      await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Community choices');
+      expect(checked(await f.editor.rpc('admin_read_ai_results',{p_id:resultIds[0]})).outline.title).toBe('Another editor course');
+      await page.getByRole('button',{name:'Reload saved outline'}).click();await page.getByRole('button',{name:'Reload outline',exact:true}).click();
+      await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Another editor course');await page.getByLabel('Course title',{exact:true}).fill('Community choices');
+    }
+    await page.getByLabel('Quiz scope').selectOption(partial?'0':'1');
+    await page.getByRole('button',{name:'Save outline and check draft cost'}).click();
+    await expect(page.getByRole('heading',{name:`${partial?170:182} credits · 2 lessons to draft`})).toBeVisible();expect(resultIds).toHaveLength(1);
+    await page.getByRole('button',{name:'Generate course draft',exact:true}).click();
+    if(partial){
+      await expect(page.getByRole('button',{name:'Check cost to retry unfinished lessons'})).toBeVisible();
+      await expect(page.getByRole('button',{name:'Save only 1 completed lesson',exact:true})).toBeVisible();
+      const failedId=resultIds[1];
+      await page.goto(`${baseURL}/admin/courses/ai-results`);await page.locator(`button[data-result-id="${failedId}"]`).click();await page.getByRole('link',{name:'Open course result'}).click();
+      await expect(page.getByText('Lesson 1: Listen first',{exact:true})).toBeVisible();
+      await page.getByRole('button',{name:'Check cost to retry unfinished lessons'}).click();await expect(page.getByRole('heading',{name:'135 credits · 1 lessons to draft'})).toBeVisible();
+      await page.getByRole('button',{name:'Generate course draft',exact:true}).click();await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
+      expect(calls).toEqual([0,1,1]);expect(checked(await f.editor.rpc('admin_read_ai_results',{p_id:failedId})).completedCount).toBe(1);
+    }else await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
+    await expect(page.getByText('A quiet neighbour',{exact:true})).toBeVisible();
+    await expect(page.getByText('Defend and revisit the choice',{exact:true})).toBeVisible();
+    await expect(page.getByRole('cell',{name:'Family carers need cover',exact:true})).toBeVisible();
+    await expect(page.getByText('Try: You need a time that fits your shift. Have I understood correctly?',{exact:true})).toBeVisible();
+    const finalId=resultIds.at(-1)!;
+    expect(checked(await f.editor.from('courses').select('id').eq('id',`course-ai-${finalId.replaceAll('-','')}`))).toHaveLength(0);
+    await page.setViewportSize({width:390,height:844});await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
+    await mkdir('docs/evidence/ai-authoring-phase-3',{recursive:true});await page.screenshot({path:`docs/evidence/ai-authoring-phase-3/${partial?'recovered-mobile':'course-mobile'}.png`,fullPage:true});
+    await page.setViewportSize({width:1280,height:900});
+    if(partial)dropApply=true;
+    await page.getByRole('button',{name:'Save course draft',exact:true}).click();
+    if(partial){await page.reload();}
+    await expect(page.getByRole('link',{name:'Open saved course'})).toBeVisible({timeout:30_000});
+    const result=checked(await f.editor.rpc('admin_read_ai_results',{p_id:finalId}));savedCourse=result.receipt.courseId;
+    expect(checked(await f.editor.from('lessons').select('id').eq('course_id',savedCourse!))).toHaveLength(2);
+    expect(checked(await f.editor.from('learning_media_assets').select('id').eq('course_id',savedCourse!))).toHaveLength(0);
+    expect(checked(await f.editor.from('courses').select('status,ai_text_status').eq('id',savedCourse!).single())).toMatchObject({status:'draft',ai_text_status:'draft'});
+    if(!partial){
+      await page.goto(`${baseURL}/admin/courses/${savedCourse}/review`);await expect(page.getByRole('button',{name:'Approve reviewed course'})).toBeDisabled();
+      const art=(await f.upload(png)).asset!;
+      checked(await f.editor.rpc('admin_set_ai_course_artwork',{p_course:savedCourse,p_version:art.id,p_target:'course_thumbnail'}));
+      checked(await f.editor.rpc('admin_set_ai_course_artwork',{p_course:savedCourse,p_version:art.id,p_target:'course_cover'}));
+      await page.reload();await expect(page.getByRole('button',{name:'Approve reviewed course'})).toBeEnabled();
+      await page.getByRole('checkbox',{name:'I have reviewed the course, lesson content, quiz answers and any attached media.'}).check();
+      await page.getByRole('button',{name:'Approve reviewed course'}).click();await expect(page.getByRole('button',{name:'Publish course',exact:true})).toBeVisible();
+      await page.screenshot({path:'docs/evidence/ai-authoring-phase-3/review-desktop.png',fullPage:true});
+      await page.getByRole('button',{name:'Publish course',exact:true}).click();await expect.poll(async()=>checked(await f.editor.from('courses').select('status').eq('id',savedCourse!).single()).status).toBe('published');
+      const lessons=checked(await f.editor.from('lessons').select('id,published_snapshot').eq('course_id',savedCourse!).order('sort_order'));expect(lessons.every(l=>l.published_snapshot)).toBeTruthy();
+      await page.goto(`${baseURL}/lessons/${lessons[0].id}`);await expect(page.getByText(/A request for evening meetings may hide a need/)).toBeVisible();
+      await page.goto(`${baseURL}/lessons/${lessons[0].id}?page=2`);await expect(page.getByText(/At a meeting, Ada stays silent/)).toBeVisible();await expect(page.getByText(/Image Placeholder/i)).toHaveCount(0);
+      await page.goto(`${baseURL}/lessons/${lessons[1].id}`);await expect(page.getByRole('cell',{name:'Family carers need cover',exact:true})).toBeVisible();
+      await page.goto(`${baseURL}/lessons/${lessons[1].id}?page=2`);await expect(page.getByText('Choose a meeting time from the comparison. Name the need it serves, the barrier it leaves, and one adjustment that reduces that barrier. What evidence after the first meeting would make you reconsider?',{exact:true})).toBeVisible();
+    }else{
+      const first=checked(await f.editor.from('lessons').select('id').eq('course_id',savedCourse!).order('sort_order').limit(1))[0];
+      await page.goto(`${baseURL}/admin/courses/lessons/${first.id}/preview?section=review`);
+      await page.getByRole('checkbox',{name:'I have reviewed the lesson text, quiz and any media. Optional placeholders can remain empty.'}).check();
+      await page.getByRole('button',{name:'Mark lesson reviewed'}).click();
+      await expect.poll(async()=>checked(await f.editor.from('lessons').select('ai_text_status').eq('id',first.id).single()).ai_text_status).toBe('approved');
+    }
+  }finally{
+    if(savedCourse)checked(await f.service.from('courses').delete().eq('id',savedCourse));
+    await f.cleanup();
+  }
+});

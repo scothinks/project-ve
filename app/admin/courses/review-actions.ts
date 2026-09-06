@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getRedirectTarget } from "@/features/ai-generation/application/form-input";
-import { publishApprovedAiCourseCommand } from "@/features/ai-generation/application/course-finalization";
 import {
   assertAdminCoursePublishReady,
   getAdminCourseReadiness,
@@ -89,7 +88,7 @@ function revalidateCourseReviewPaths(courseId: string) {
 export async function sendCourseForReview(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
   const course = await getCourseReviewRow(supabase, courseId);
   const notes = appendReviewHistory(course.ai_generation_notes, {
     actorId: profile.id,
@@ -116,7 +115,7 @@ export async function sendCourseForReview(formData: FormData) {
 export async function requestCourseReviewChanges(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
   const feedback = getReviewFeedback(formData);
   const course = await getCourseReviewRow(supabase, courseId);
   const notes = appendReviewHistory(course.ai_generation_notes, {
@@ -143,85 +142,40 @@ export async function requestCourseReviewChanges(formData: FormData) {
   redirect(appendAdminNotice(redirectTo, "Course changes requested."));
 }
 
+function authoredReviewInput(formData: FormData) {
+  const revisions=JSON.parse(String(formData.get("lessonRevisions")??"{}")) as Json;
+  const updated=String(formData.get("courseUpdated")??"");
+  return {p_revisions:revisions,p_updated:updated};
+}
+
 export async function approveCourseReview(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const { supabase } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
-  const readiness = await getAdminCourseReadiness(supabase, courseId, {
-    includeLifecycleApproval: false,
-  });
-
-  if (!readiness.canApprove) {
-    throw new Error(`Course cannot be approved yet. ${readiness.blockers.map((issue) => issue.detail).join(" ")}`);
-  }
-
-  const course = await getCourseReviewRow(supabase, courseId);
-  const notes = appendReviewHistory(course.ai_generation_notes, {
-    actorId: profile.id,
-    kind: "approved",
-    requestedAt: new Date().toISOString(),
-  });
-
-  const { error } = await supabase
-    .from("courses")
-    .update({
-      ai_generation_notes: notes as Json,
-      ai_media_status: "approved",
-      ai_publish_status: "ready",
-      ai_text_status: "approved",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", courseId);
-
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
+  const readiness = await getAdminCourseReadiness(supabase, courseId, { includeLifecycleApproval: false });
+  if (!readiness.canApprove) throw new Error(`Course cannot be approved yet. ${readiness.blockers.map(issue => issue.detail).join(" ")}`);
+  if (formData.get("reviewed") !== "on") throw new Error("Confirm you reviewed the course, lessons, quizzes and attached media.");
+  const { error } = await supabase.rpc("admin_review_ai_authored_course", { p_course: courseId, ...authoredReviewInput(formData) });
   if (error) throw error;
-
   revalidateCourseReviewPaths(courseId);
-  redirect(appendAdminNotice(redirectTo, "Course approved for publishing."));
+  redirect(appendAdminNotice(redirectTo, "Course reviewed and approved. Publication is a separate action."));
 }
 
 export async function publishReviewedCourse(formData: FormData) {
-  const { supabase, profile } = await requireAdmin();
+  const { supabase } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
   await assertAdminCoursePublishReady(supabase, courseId);
-  const course = await getCourseReviewRow(supabase, courseId);
-
-  if (course.ai_generated) {
-    const result = await publishApprovedAiCourseCommand(supabase, profile.id, courseId);
-    revalidateCourseReviewPaths(result.courseId);
-    for (const lessonId of result.lessonIds) {
-      revalidatePath(`/admin/courses/lessons/${lessonId}`);
-      revalidatePath(`/lessons/${lessonId}`);
-    }
-    redirect(appendAdminNotice(redirectTo, "Approved AI course published."));
-  }
-
-  const notes = appendReviewHistory(course.ai_generation_notes, {
-    actorId: profile.id,
-    kind: "published",
-    requestedAt: new Date().toISOString(),
-  });
-
-  const { error } = await supabase
-    .from("courses")
-    .update({
-      ai_generation_notes: notes as Json,
-      ai_publish_status: "published",
-      status: "published",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", courseId);
-
+  const { error } = await supabase.rpc("admin_publish_ai_authored_course", { p_course: courseId, ...authoredReviewInput(formData) });
   if (error) throw error;
-
   revalidateCourseReviewPaths(courseId);
-  redirect(appendAdminNotice(redirectTo, "Course published."));
+  redirect(appendAdminNotice(redirectTo, "Reviewed course published."));
 }
 
 export async function unpublishReviewedCourse(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
   const course = await getCourseReviewRow(supabase, courseId);
   const notes = appendReviewHistory(course.ai_generation_notes, {
     actorId: profile.id,
@@ -245,10 +199,36 @@ export async function unpublishReviewedCourse(formData: FormData) {
   redirect(appendAdminNotice(redirectTo, "Course unpublished."));
 }
 
+export async function restoreCourseToDraft(formData: FormData) {
+  const { supabase, profile } = await requireAdmin();
+  const courseId = getCourseId(formData);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
+  const course = await getCourseReviewRow(supabase, courseId);
+  const notes = appendReviewHistory(course.ai_generation_notes, {
+    actorId: profile.id,
+    kind: "restored_to_draft",
+    requestedAt: new Date().toISOString(),
+  });
+
+  const { error } = await supabase
+    .from("courses")
+    .update({
+      ai_generation_notes: notes as Json,
+      status: "draft",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", courseId);
+
+  if (error) throw error;
+
+  revalidateCourseReviewPaths(courseId);
+  redirect(appendAdminNotice(redirectTo, "Course restored to draft."));
+}
+
 export async function archiveReviewedCourse(formData: FormData) {
   const { supabase, profile } = await requireAdmin();
   const courseId = getCourseId(formData);
-  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}?tab=review-publish`);
+  const redirectTo = getRedirectTarget(formData, `/admin/courses/${courseId}/review`);
   const course = await getCourseReviewRow(supabase, courseId);
   const notes = appendReviewHistory(course.ai_generation_notes, {
     actorId: profile.id,

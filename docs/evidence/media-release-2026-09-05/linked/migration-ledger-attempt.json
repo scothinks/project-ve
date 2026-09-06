@@ -1,0 +1,13 @@
+{
+  "target": "xmqkrsmuokmuzcyivgbi.supabase.co",
+  "command": "node scripts/supabase-cli.mjs migration list --linked",
+  "status": "blocked",
+  "error": {
+    "_tag": "Error",
+    "error": {
+      "code": "LegacyPlatformAuthRequiredError",
+      "message": "Access token not provided. Supply an access token by running `supabase login` or setting the SUPABASE_ACCESS_TOKEN environment variable."
+    }
+  },
+  "deployedRevisionVerified": false
+}

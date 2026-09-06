@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { AdEventTracker } from "@/components/ads/AdEventTracker";
 import { HouseAdEventTracker } from "@/components/ads/HouseAdEventTracker";
 import type { DirectAdCardModel } from "@/lib/ads";

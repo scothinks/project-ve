@@ -1,0 +1,390 @@
+{
+  "baselineCommit": "ffcbffb80dd03dfd494619f5b7e3d2366cff31e9",
+  "scope": "Integrated Phase 4/5 paths plus Phase 6 implementation/evidence; pre-existing uncommitted Phase 1\u20133 and unrelated work also present. Not a deployed revision.",
+  "phase6Paths": [
+    "app/api/admin/ai/jobs/process/route.ts",
+    "features/ai-generation/authoring/image-worker.ts",
+    "components/admin/ai/useAuthoringDelay.ts",
+    "components/admin/ai/AiCourseAuthoring.tsx",
+    "components/admin/ai/AiImageResult.tsx",
+    "components/admin/RichTextBlockEditor.tsx",
+    "components/admin/RichTextEditorLoading.tsx",
+    "features/learning/admin/lesson-page-builder-ui.tsx",
+    "tests/integration/repository-contracts.live.mjs",
+    "tests/unit/ai-image-authoring.test.mjs",
+    "tests/unit/ai-generation-worker-boundary.test.mjs",
+    "tests/unit/ai-worker-release-route.test.mjs",
+    "supabase/tests/database/ai_authoring_release.sql",
+    "supabase/migrations/20260907020000_ai_authoring_outage_recovery.sql",
+    "tests/e2e/ai-authoring-release.spec.ts",
+    "types/database.ts",
+    "docs/ai-authoring-phase-6.md",
+    "docs/database-rpc-security.md",
+    "docs/ai-authoring-experience-redesign-plan.md",
+    "docs/project-ve-engineering-remediation-plan.md",
+    "docs/project-ve-cms-lms-product-remediation-plan.md",
+    "docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md"
+  ],
+  "files": [
+    {
+      "path": "app/admin/courses/[id]/media/page.tsx",
+      "sha256": "314826f0ecb4dd9df74d596d9feb32414de5fd4d49843ea31deabfe82b6ecbf1"
+    },
+    {
+      "path": "app/admin/courses/[id]/review/page.tsx",
+      "sha256": "58f25f3fe83d6d87d46e8cc65f1bd09b331a303f30addc1f810b83b382f186e4"
+    },
+    {
+      "path": "app/admin/courses/[id]/settings/page.tsx",
+      "sha256": "1fd89a9158b6726a87255dbd83b250fdf258baaa0b40d64410a4286a051a0b97"
+    },
+    {
+      "path": "app/admin/courses/ai-actions.ts",
+      "sha256": "805362d9597b3a86fcfe5fb84eaa8bf022d98d016abeda90229506bd87493ae2"
+    },
+    {
+      "path": "app/admin/courses/detail-page-actions.ts",
+      "sha256": "d6f2b16d8506e5811060fa9a711c91e2834fa65db5e50ceb7fa2703564fc7940"
+    },
+    {
+      "path": "app/admin/courses/lesson-page-actions.ts",
+      "sha256": null
+    },
+    {
+      "path": "app/admin/courses/review-actions.ts",
+      "sha256": "6b06766d0bd1092845d374f46e96b68fbe1cb747d92d614d6dd4202b6fd0f84c"
+    },
+    {
+      "path": "app/api/admin/ai/authoring/route.ts",
+      "sha256": "52262495035028c8fba99b185605ae34548ab2bf1f9f8a1a2d73c1d3aab30198"
+    },
+    {
+      "path": "app/api/admin/ai/jobs/process/route.ts",
+      "sha256": "6ac99f3c8feef2eb4015f6180d805ee1beec5c8ff3f2f025796faeed995d0063"
+    },
+    {
+      "path": "app/api/admin/ai/legacy-media/route.ts",
+      "sha256": "1228ae91bfee2541ae8f6c2fb4a2a0a2c1d73fb85faae44f50e8d32ddd25cf15"
+    },
+    {
+      "path": "app/api/admin/learning/builder/route.ts",
+      "sha256": "b895c215a677c74ac03f9fa52e491ce4bf94fafb3e4a862202e22ca070476aba"
+    },
+    {
+      "path": "components/admin/AdminShell.tsx",
+      "sha256": "3c458d0e8dd75b84a0814f77a0deffdb18dded9ebd1b912a42ef4d7cff197cd2"
+    },
+    {
+      "path": "components/admin/LearningForms.tsx",
+      "sha256": "94f13539ced2c805851afa65185512e0e68cf5a80d95113ae4d3377d4cd12e3f"
+    },
+    {
+      "path": "components/admin/LessonPageBuilder.tsx",
+      "sha256": "3ffcee46108ad312a65f9bb3d587c3c5c1202d8747770fa4a229105693f79b4f"
+    },
+    {
+      "path": "components/admin/LessonReviewSummary.tsx",
+      "sha256": "add45910575993fd0f357ab2bcad5f0d5edba634df744c98f09101cdd71f7967"
+    },
+    {
+      "path": "components/admin/MediaLibrary.tsx",
+      "sha256": "e525d13f2801d3c6af0f7b32177f208ae5b965fcfa89e7d3dbfb2c170f47e90d"
+    },
+    {
+      "path": "components/admin/MediaManager.tsx",
+      "sha256": "cd30c5ef48a4b63c38c5cc452a145b699585fe0ce2850793569a1c2ae8a861b0"
+    },
+    {
+      "path": "components/admin/MediaPicker.tsx",
+      "sha256": "50923e01f5a15d94a51e3faab3b3ae1317531c1de1ad6864080975a9dc710ee5"
+    },
+    {
+      "path": "components/admin/MediaPickerProvider.tsx",
+      "sha256": "2d5d171f1f615cbfc82c9e591c0758b65b6d468360cadfeea84f9f05e54a6e10"
+    },
+    {
+      "path": "components/admin/MediaPickerScreen.tsx",
+      "sha256": "83b15a6a0dd448f144b045e8abd25dc7fbffe60a72090429e6993b1c2b8290f2"
+    },
+    {
+      "path": "components/admin/RichTextBlockEditor.tsx",
+      "sha256": "ef74488ef1e59f91931f887b281bfaf98a408b1d7fa90bf350498993ec0f968c"
+    },
+    {
+      "path": "components/admin/RichTextEditorLoading.tsx",
+      "sha256": "ac5cd52b1e444e3d39e8e3d16c44834dc22439de202e9e586935c8b5008f4f0f"
+    },
+    {
+      "path": "components/admin/ai/AiCourseArtwork.tsx",
+      "sha256": "c927d05b63a36a5d71e50736e6c71844539718d3a043d228bf989b74a3848d0f"
+    },
+    {
+      "path": "components/admin/ai/AiCourseAuthoring.tsx",
+      "sha256": "b7e1bad4d67d0af01fd9eeb4d5ef6ca2eefb9f20afe86a0cdb454eda44bbf35a"
+    },
+    {
+      "path": "components/admin/ai/AiImageAuthoring.tsx",
+      "sha256": "9e095f15aaa0e8495595241da1b17450ca29c825b24f834fed0ad35476db5933"
+    },
+    {
+      "path": "components/admin/ai/AiImageResult.tsx",
+      "sha256": "b56e93f14c2497533466acd9d8a4415f2fd030f8f55fbd3429b8d90ab043c7f3"
+    },
+    {
+      "path": "components/admin/ai/AiPageAuthoring.tsx",
+      "sha256": "5b60fc82a34231cb30b2453701c73e5f1299e2986be548ed8dd9ace6e9dfd2ca"
+    },
+    {
+      "path": "components/admin/ai/ImageStyleSample.tsx",
+      "sha256": "03f6526ee056e198422da5086529cd4575754fcd5fe28978eaee8649ef146937"
+    },
+    {
+      "path": "components/admin/ai/LegacyMediaReview.tsx",
+      "sha256": "f6b40a9947d20d9dc61c490803e2492d3fec64cb5ee5c9c61f610bb65fde3832"
+    },
+    {
+      "path": "components/admin/ai/useAuthoringDelay.ts",
+      "sha256": "fbe1ea1d3eeb21c060311a167e506c6a1412fbbff2b674128052fc0b08c004b3"
+    },
+    {
+      "path": "docs/ai-authoring-experience-redesign-plan.md",
+      "sha256": "0c0c6d0cd5de3a6be6ce5bae957a603a40c4804d1d83500e981422c4b97da24d"
+    },
+    {
+      "path": "docs/ai-authoring-phase-4.md",
+      "sha256": "8ea0394c32e413426006f40c89c555f4f07e08fe49b3c457e7f6ab8e19a71c1d"
+    },
+    {
+      "path": "docs/ai-authoring-phase-5.md",
+      "sha256": "05fa9f3bcc1e4e3339374c745a9bb1ca1f58c9c64fa80a202126ffab6487f1c7"
+    },
+    {
+      "path": "docs/ai-authoring-phase-6.md",
+      "sha256": "32942a8e9be358943d65ad6d67c22c6c0f8709b1060ab16cfa4abda2c4cc6c3c"
+    },
+    {
+      "path": "docs/database-rpc-security.md",
+      "sha256": "c38db7aee7439a51983fbed9e0b54cf76cc75ea44f4ab1ed5736230849e8e24e"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-4/changed-files.txt",
+      "sha256": "13b8a041b22ec6ea97311a9f7fadbf9947617f3b21ee080a2f4b4ddc7e25e63f"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-4/image-cost-1280.png",
+      "sha256": "15699e0fb1f55a0bfe8f4bc2c67f0ca7615caad4d39a92515a5a2a2144d32278"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-4/image-cost-390.png",
+      "sha256": "4dc991141957cf6cfb2273a76770e54f3dee4827b6bb25e02838683fc82239c0"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-4/image-ready-mobile.png",
+      "sha256": "3712d4e4079618aae35ebf756333da7ea4e6ad6f2f725420ca8c104fc5c96808"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-5/changed-files.txt",
+      "sha256": "3fad85fca74855a7debcd72f307b735daac0cef712d3e6871b7d910883985ac4"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-5/legacy-media-mobile.png",
+      "sha256": "71a3f6d6107a60c52f565b7306988a1a042eb64cd8de00305963b1cc482776ed"
+    },
+    {
+      "path": "docs/evidence/ai-authoring-phase-5/legacy-review-desktop.png",
+      "sha256": "2a54f8296f1585d95003485953d6ae13d67209304d279683751628750eed3b0e"
+    },
+    {
+      "path": "docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md",
+      "sha256": "1e3213af9cd5d18243fe7e8d27817ca830b877a19a1b027529a6313ed99b9494"
+    },
+    {
+      "path": "docs/project-ve-cms-lms-product-remediation-plan.md",
+      "sha256": "3b86c906f0c4141203cce71b46ed76d5adf51aa99a856461335d6873d9b6f796"
+    },
+    {
+      "path": "docs/project-ve-engineering-remediation-plan.md",
+      "sha256": "d1a05420605286b816c68b04814022d24dc81a9641cc7a8720146688aa0b5f36"
+    },
+    {
+      "path": "features/ai-generation/application/job-orchestration.ts",
+      "sha256": "e23f0f8a769124b53f1b998a6fd11b3ad0bcec974f036383ca43fa5853299532"
+    },
+    {
+      "path": "features/ai-generation/authoring/contracts.ts",
+      "sha256": "0fe8de987de9fc0cf3a2ad789239cc6e93e1bfa94248a45b6116b56d9e7f2f32"
+    },
+    {
+      "path": "features/ai-generation/authoring/image-contracts.ts",
+      "sha256": "ac36c4983030351cc1b9ac8ff2f8dc67693e57b42f0746c27066b9711cf1edec"
+    },
+    {
+      "path": "features/ai-generation/authoring/image-requests.ts",
+      "sha256": "fd89cc430b7e8af0659b185ea2d77157c8776deecb52ff776f45a5c6dfc5bf4c"
+    },
+    {
+      "path": "features/ai-generation/authoring/image-style.ts",
+      "sha256": "1861702b958b2533b5e21ebe39917c0c0ba95635625e7cb399da98ae0f39c8cd"
+    },
+    {
+      "path": "features/ai-generation/authoring/image-worker.ts",
+      "sha256": "488aaf3197e2fa3dbc5da6f8cd85fee248d38e4c2b0a3298afeea254f0d4f71b"
+    },
+    {
+      "path": "features/ai-generation/authoring/legacy-contracts.ts",
+      "sha256": "5c472c00c56510a39721bcb34aa5cf8d956493cf84ce73f15fe7925ed295cee5"
+    },
+    {
+      "path": "features/ai-generation/authoring/worker.ts",
+      "sha256": "a2de8127c0ce001fa68226d72cd259b6e6956d8d284be5caf25ce3ff11b48a05"
+    },
+    {
+      "path": "features/ai-generation/domain/media-planning.ts",
+      "sha256": "728df3fdcb0e731af7a3e1b9feac4e996f2a5c4d455da99f86980ea5f9b8e43f"
+    },
+    {
+      "path": "features/learning/admin/course-media-workspace.tsx",
+      "sha256": null
+    },
+    {
+      "path": "features/learning/admin/course-readiness.ts",
+      "sha256": "821f6b6b14d297a2933b7f10980c2fdb09b3f4608bbfc8468e4c80b6e559efa3"
+    },
+    {
+      "path": "features/learning/admin/lesson-detail-ai-media-section.tsx",
+      "sha256": null
+    },
+    {
+      "path": "features/learning/admin/lesson-page-builder-ui.tsx",
+      "sha256": "926268b7b9ddd19b970f874c3ddfd1be2bf6f78fd85953232bbbef2e9ca61ab7"
+    },
+    {
+      "path": "lib/ai-media-generator.ts",
+      "sha256": "911b2e4b83013dfd345c8bd11e31b052236b0b2d3a08d67e2d62d2c10175311d"
+    },
+    {
+      "path": "supabase/migrations/20260906230000_ai_image_authoring.sql",
+      "sha256": "a0bed298726e5089b3b2221199c8dd91f457f3fd83c9271a5b2471c9d2fbfa67"
+    },
+    {
+      "path": "supabase/migrations/20260906231000_ai_image_library.sql",
+      "sha256": "9cb0a2ed36b33be2bef7a660bc2b097199826f018f59d377d22afc6fde8ba183"
+    },
+    {
+      "path": "supabase/migrations/20260906232000_ai_image_job_type.sql",
+      "sha256": "c2d7c3ba4258ee5ed741151696cec7f34fe25b1f2e632a8db7f8ca6119af1428"
+    },
+    {
+      "path": "supabase/migrations/20260906233000_ai_image_recovery_read.sql",
+      "sha256": "a03563ef09be8d35f46e286e0cf655a5233c46012a20654c0b02f6e94441678c"
+    },
+    {
+      "path": "supabase/migrations/20260906234000_ai_image_apply_columns.sql",
+      "sha256": "f8e51f8c2328ce6030e3cf9c5f5a6f700db82d93724fa571b456147fb89f871a"
+    },
+    {
+      "path": "supabase/migrations/20260906235000_ai_image_lesson_cover.sql",
+      "sha256": "1fa802532f182551a1c3b16be11b226159416061975db174ee39d12b1a7391bf"
+    },
+    {
+      "path": "supabase/migrations/20260906235500_ai_image_cover_compatibility.sql",
+      "sha256": "4c945edd3c466d32bd6257a0f22b84d813dc08da3ac20aa45df5acb70d042164"
+    },
+    {
+      "path": "supabase/migrations/20260907010000_ai_legacy_media_mapping.sql",
+      "sha256": "4e60450f28669569c691dd36e83365ca1d433d196ac84bc84a8494bd52a01df1"
+    },
+    {
+      "path": "supabase/migrations/20260907011000_ai_legacy_job_choices.sql",
+      "sha256": "06aed9276bdb952863ff60600ecc00275c45c1434f271dea7142bc2e5d0bb197"
+    },
+    {
+      "path": "supabase/migrations/20260907012000_ai_legacy_review_cutover.sql",
+      "sha256": "1c380286a23609f8339793a2d1460b5f9ab3ec44d19120cb5da0dce2797caffd"
+    },
+    {
+      "path": "supabase/migrations/20260907013000_ai_legacy_mapping_types.sql",
+      "sha256": "4937e5c9202e0f5925b20754c99753fbce7e8d8582aa28a1e737daff1d976520"
+    },
+    {
+      "path": "supabase/migrations/20260907014000_ai_legacy_mapping_errors.sql",
+      "sha256": "fcf4e1757f4e12f393022a10f577b3268d6db34a83f7a45d4cb1a05ec49c5332"
+    },
+    {
+      "path": "supabase/migrations/20260907015000_ai_legacy_rolling_queue.sql",
+      "sha256": "79d6f73d58e24c3f50afeeb6bf6a960ba5b132ffab1c34492477552525346b8d"
+    },
+    {
+      "path": "supabase/migrations/20260907016000_ai_legacy_cancel_accounting.sql",
+      "sha256": "094ba30362c1cdd549a02bbd7aaf3a983f8565991a11e6903d3aa88e354f53d2"
+    },
+    {
+      "path": "supabase/migrations/20260907017000_ai_legacy_backfill.sql",
+      "sha256": "ce4a8d78ae8ff13b0ec72279b3834a70a08a0942aa02aeed839b08ab07d26881"
+    },
+    {
+      "path": "supabase/migrations/20260907020000_ai_authoring_outage_recovery.sql",
+      "sha256": "2eb3b702f29d7a9ace0870c4e9de1306b07709628146084126e6ce63c376f5dd"
+    },
+    {
+      "path": "supabase/tests/database/ai_authoring_release.sql",
+      "sha256": "75c54d17edebef55251877f430dd84d77aa8cf0b7867778de06c47af2d2078ee"
+    },
+    {
+      "path": "supabase/tests/database/ai_image_authoring.sql",
+      "sha256": "fdb1c61956a14fe69f0df6bbb077bf53afdd884477f419f259be550e61a0abd7"
+    },
+    {
+      "path": "supabase/tests/database/ai_legacy_cutover.sql",
+      "sha256": "a87b20be703c19dc31a7dfe9e52fd2941d93375be4b6461d47b062435caae3bb"
+    },
+    {
+      "path": "tests/e2e/ai-authoring-release.spec.ts",
+      "sha256": "a5713ca8f5ec302af89692b879460e31d83c2cba9466e4b8473001f4c5dd3f7b"
+    },
+    {
+      "path": "tests/e2e/ai-image-authoring.spec.ts",
+      "sha256": "ca44ab017d75fba6fa786e72dd96f05512041a51498cab3dfdda6143a18aa075"
+    },
+    {
+      "path": "tests/e2e/ai-legacy-cutover.spec.ts",
+      "sha256": "594a6abe5cfe03aea5d9e36a9f2ef41fab4fa3e965bdd5030d6d7e92e585db63"
+    },
+    {
+      "path": "tests/e2e/ai-page-authoring.spec.ts",
+      "sha256": "fa76f72527c13517894d679f910efff9d580fe98555c033d91aeb3a0155c30aa"
+    },
+    {
+      "path": "tests/integration/repository-contracts.live.mjs",
+      "sha256": "9023d67f5495c0be99f81c8b262138a8f06fa44d86a614ca7a194a42caa013cf"
+    },
+    {
+      "path": "tests/unit/ai-authoring-routes.test.mjs",
+      "sha256": "02ca2e61dda1bc45c147008d21c24e388a180dfa6ff01dee89e78176de154fb4"
+    },
+    {
+      "path": "tests/unit/ai-generation-worker-boundary.test.mjs",
+      "sha256": "f386558ead54bc55e7e468aa8c0f772a2822a673f4bc8ed5698f2b49740ed258"
+    },
+    {
+      "path": "tests/unit/ai-image-authoring.test.mjs",
+      "sha256": "c7dc4fc1b8cfec5b09718d5c8c4c33c880c3c320fde3b3e99639d5fe806c01b0"
+    },
+    {
+      "path": "tests/unit/ai-legacy-cutover.test.mjs",
+      "sha256": "889ff2ff176d2292c6f8b8c000011939130091036b0eccb0bf0681480a739b4d"
+    },
+    {
+      "path": "tests/unit/ai-worker-release-route.test.mjs",
+      "sha256": "95a7a373d4c9b411df245159eaabb340bbd7f9d55ef06c072aa937f77cedb8d6"
+    },
+    {
+      "path": "tests/unit/cms-product-regressions.test.mjs",
+      "sha256": "314584a25007fef9c7e0595c794f8dfb16391a809858c40ed5204c286f995fc7"
+    },
+    {
+      "path": "types/database.ts",
+      "sha256": "e0949af7422462e3278aa9476f8a6233a539110332b6cf02b7969862a5fc6b55"
+    }
+  ]
+}

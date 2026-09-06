@@ -1,4 +1,6 @@
+import { processAuthoringImage } from "@/features/ai-generation/authoring/image-worker";
 import "server-only";
+import { processAuthoringCourse } from "@/features/ai-generation/authoring/course-worker";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -16,6 +18,10 @@ import {
   processExtendCourseTextJob,
   processReviseCourseTextJob,
 } from "@/features/ai-generation/application/course-text-jobs";
+import { processExtendLessonPageJob } from "@/features/ai-generation/application/lesson-page-jobs";
+import { processGenerateQuizQuestionJob } from "@/features/ai-generation/application/quiz-question-jobs";
+import { processAuthoringAssistance } from "@/features/ai-generation/authoring/assistance-worker";
+import { processAuthoringPage } from "@/features/ai-generation/authoring/worker";
 import {
   processMediaAssetsJob,
 } from "@/features/ai-generation/application/media-jobs";
@@ -33,6 +39,7 @@ export async function enqueueCourseTextJob(
   entityId?: string | null,
   metering?: {
     estimatedUnits: number;
+    lessonId?: string | null;
     operationType: OrganizationAiOperationType;
     organizationId: string | null;
   },
@@ -41,6 +48,7 @@ export async function enqueueCourseTextJob(
     courseId: entityId,
     entityId,
     estimatedUnits: metering?.estimatedUnits,
+    lessonId: metering?.lessonId,
     operationType: metering?.operationType,
     organizationId: metering?.organizationId,
     status: "queued",
@@ -87,6 +95,10 @@ export async function processNextAiGenerationJob(
   }
 
   try {
+    if (getPromptString(job.prompt, "mode") === "authoring_image_v4") {
+      const result = await processAuthoringImage(supabase, job, workerId);
+      return { jobId: job.id, processed: true, result, status: result.status };
+    }
     if (job.job_type === "media_assets") {
       const result = await processMediaAssetsJob(supabase, job, {
         revalidateLearningPaths: options.revalidateLearningPaths,
@@ -106,6 +118,10 @@ export async function processNextAiGenerationJob(
     }
 
     const mode = getPromptString(job.prompt, "mode");
+    if (mode === "authoring_page_v1" || mode === "authoring_assistance_v2" || mode === "authoring_course_v3" || mode === "authoring_image_v4") {
+      const result = await (mode === "authoring_image_v4" ? processAuthoringImage : mode === "authoring_course_v3" ? processAuthoringCourse : mode === "authoring_assistance_v2" ? processAuthoringAssistance : processAuthoringPage)(supabase, job, workerId);
+      return { jobId: job.id, processed: true, result, status: result.status };
+    }
     const result =
       mode === "create_course"
         ? await processCreateCourseTextJob(supabase, job, workerId)
@@ -113,9 +129,13 @@ export async function processNextAiGenerationJob(
           ? await processExtendCourseTextJob(supabase, job, workerId)
           : mode === "revise_course"
             ? await processReviseCourseTextJob(supabase, job, workerId)
-            : (() => {
-                throw new ValidationError(`Unsupported AI course text job mode: ${mode}`);
-              })();
+            : mode === "extend_lesson_page"
+              ? await processExtendLessonPageJob(supabase, job, workerId)
+              : mode === "generate_quiz_question"
+                ? await processGenerateQuizQuestionJob(supabase, job, workerId)
+                : (() => {
+                    throw new ValidationError(`Unsupported AI course text job mode: ${mode}`);
+                  })();
 
     options.revalidateLearningPaths(result.courseId, result.lessonIds);
 

@@ -506,6 +506,9 @@ select extensions.ok(
   'active organisation plans only advertise wired organisation XP mission reward mode'
 );
 
+reset role;
+-- Publish the completed content fixtures before switching to learner access.
+update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id like 'lesson-p15b-%' and status = 'published';
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 

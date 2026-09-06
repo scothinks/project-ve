@@ -6,6 +6,7 @@ import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace
 import {
   buildCourseReadiness,
   getCourseReadinessIssueLabels,
+  type CourseReadinessCheck,
 } from "@/features/learning/admin/course-readiness";
 
 export type AdminCourseRow = {
@@ -44,6 +45,7 @@ export type AdminCourseRow = {
   draft_lesson_count?: number;
   published_lesson_count?: number;
   readiness_issues?: string[];
+  readiness_blockers?: CourseReadinessCheck[];
   created_at: string;
   updated_at: string;
 };
@@ -76,6 +78,9 @@ export type AdminLessonRow = {
   media_approved_by_name?: string | null;
   created_at: string;
   updated_at: string;
+  published_snapshot?: Record<string, unknown> | null;
+  published_at?: string | null;
+  draft_revision?: number;
 };
 
 export type AdminLessonPageRow = {
@@ -358,35 +363,38 @@ export async function getAdminCourses(supabase: SupabaseClient, workspaceId?: st
       total: 0,
     };
 
+    const courseReadiness = buildCourseReadiness({
+      blocks: blockRows.filter((block) => {
+        const page = pageRows.find((item) => item.id === block.page_id);
+        const lesson = page ? lessonRows.find((item) => item.id === page.lesson_id) : null;
+        return lesson?.course_id === course.id;
+      }),
+      course,
+      lessons: lessonRows.filter((lesson) => lesson.course_id === course.id),
+      mediaAssets: mediaRows.filter((asset) => asset.course_id === course.id),
+      pages: pageRows.filter((page) => {
+        const lesson = lessonRows.find((item) => item.id === page.lesson_id);
+        return lesson?.course_id === course.id;
+      }),
+      questions: questionsWithOptions.filter((question) => {
+        const quiz = quizRows.find((item) => item.id === question.quiz_id);
+        const lesson = quiz ? lessonRows.find((item) => item.id === quiz.lesson_id) : null;
+        return lesson?.course_id === course.id;
+      }),
+      quizzes: quizRows.filter((quiz) => {
+        const lesson = lessonRows.find((item) => item.id === quiz.lesson_id);
+        return lesson?.course_id === course.id;
+      }),
+    });
+
     return {
       ...course,
       draft_lesson_count: summary.draft,
       estimated_minutes: summary.minutes,
       lesson_count: summary.total,
       published_lesson_count: summary.published,
-      readiness_issues: getCourseReadinessIssueLabels(buildCourseReadiness({
-        blocks: blockRows.filter((block) => {
-          const page = pageRows.find((item) => item.id === block.page_id);
-          const lesson = page ? lessonRows.find((item) => item.id === page.lesson_id) : null;
-          return lesson?.course_id === course.id;
-        }),
-        course,
-        lessons: lessonRows.filter((lesson) => lesson.course_id === course.id),
-        mediaAssets: mediaRows.filter((asset) => asset.course_id === course.id),
-        pages: pageRows.filter((page) => {
-          const lesson = lessonRows.find((item) => item.id === page.lesson_id);
-          return lesson?.course_id === course.id;
-        }),
-        questions: questionsWithOptions.filter((question) => {
-          const quiz = quizRows.find((item) => item.id === question.quiz_id);
-          const lesson = quiz ? lessonRows.find((item) => item.id === quiz.lesson_id) : null;
-          return lesson?.course_id === course.id;
-        }),
-        quizzes: quizRows.filter((quiz) => {
-          const lesson = lessonRows.find((item) => item.id === quiz.lesson_id);
-          return lesson?.course_id === course.id;
-        }),
-      })),
+      readiness_issues: getCourseReadinessIssueLabels(courseReadiness),
+      readiness_blockers: courseReadiness.blockers,
     };
   });
 }
@@ -447,7 +455,7 @@ export async function getAdminLessons(
 ) {
   let query = supabase
     .from("lessons")
-    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at, draft_revision")
     .order("sort_order", { ascending: true });
 
   if (filters.courseId) {
@@ -472,7 +480,7 @@ export async function getAdminLessons(
 export async function getAdminLesson(supabase: SupabaseClient, lessonId: string) {
   const { data: lesson, error } = await supabase
     .from("lessons")
-    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at")
+    .select("id, course_id, slug, title, description, cover_image, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts, ai_text_status, ai_media_status, ai_publish_status, ai_generated, ai_generation_notes, text_approved_at, text_approved_by, media_approved_at, media_approved_by, created_at, updated_at, published_snapshot, published_at, draft_revision")
     .eq("id", lessonId)
     .maybeSingle();
 

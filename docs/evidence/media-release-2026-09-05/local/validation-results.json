@@ -1,0 +1,73 @@
+{
+  "recordedAt": "2026-09-05T11:59:29.715273+00:00",
+  "revision": {
+    "localBuildId": "BQ2MbyFaytImxw-1SzyQt",
+    "validationSha256": "1856e7207d1a947e5754393072cf122bb11a96da7c857575f86a37da3cea04c3",
+    "head": "ffcbffb80dd03dfd494619f5b7e3d2366cff31e9",
+    "branch": "codex-ai-course-workflow-polish",
+    "sourceSha256": "61a9e313644f033dfd414c6a2be2cf2defb0b1b949d020651f568a69ab80024c"
+  },
+  "environment": {
+    "mode": "live",
+    "server": "Next production",
+    "database": "local Supabase"
+  },
+  "results": [
+    {
+      "command": "node scripts/supabase-cli.mjs test db supabase/tests/database",
+      "result": "42 files / 1078 assertions",
+      "log": "database.log",
+      "sha256": "27ab088b706be1d9c154192df1e9dd681c6f7c3eb46f5a65afd2f3e0af81ea33",
+      "logModifiedAt": "2026-09-05T11:04:48.649522+00:00"
+    },
+    {
+      "command": "npm run test:unit",
+      "result": "171 passed",
+      "log": "unit.log",
+      "sha256": "47b822cda5059c4c05267fa16c15f831e7c7a74635a50c9fb762fc2526418095",
+      "logModifiedAt": "2026-09-05T11:14:08.371198+00:00"
+    },
+    {
+      "command": "npm run test:guardrails",
+      "result": "20 passed",
+      "log": "guardrails.log",
+      "sha256": "b425924842b7ed96fe89a6318a10e2b1457db98a2fafd14866b6d310b3a60961",
+      "logModifiedAt": "2026-09-05T11:14:04.350238+00:00"
+    },
+    {
+      "command": "npm run test:repositories:local",
+      "result": "demo/live/publication and media concurrency passed",
+      "log": "repositories.log",
+      "sha256": "17500f8f86fc894404e1f37442bf09cedadeba056a821702218667e11012edd7",
+      "logModifiedAt": "2026-09-05T10:04:01.628864+00:00"
+    },
+    {
+      "command": "PROJECT_VE_E2E_KEEP_BUILD_CACHE=1 npm run test:e2e -- tests/e2e/media-release.spec.ts",
+      "result": "production build + 3 browser cases passed",
+      "log": "browser.log",
+      "sha256": "76f693e5a0d11e112446e53c00c8e6a197a6063fa2db7545bb118192fbb1f5bd",
+      "logModifiedAt": "2026-09-05T11:31:10.197865+00:00"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed",
+      "log": "typecheck.log",
+      "sha256": "21400c74a7de63482d373f1499d1659275c90940c695542101be6641f67b2824",
+      "logModifiedAt": "2026-09-05T11:53:57.185878+00:00"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "log": "lint.log",
+      "sha256": "d319ef74e3c0441f95148b1e362ffff1edb1ce3381ee1d7e435181c8c361c30d",
+      "logModifiedAt": "2026-09-05T11:53:40.286620+00:00"
+    },
+    {
+      "command": "npm run db:types:local:check",
+      "result": "passed",
+      "log": "type-parity.log",
+      "sha256": "11def172c70ca4e8cf3964e2a9845728fb3184551b6f30e2834c21c52c742711",
+      "logModifiedAt": "2026-09-05T10:56:49.151844+00:00"
+    }
+  ]
+}

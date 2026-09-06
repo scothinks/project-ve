@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminDrawer } from "@/components/admin/AdminDialog";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import { searchInviteCandidates, sendInvitation } from "@/app/admin/people/actions";
-import { ORGANIZATION_ROLE_LABELS } from "@/features/organizations/shared/roles";
+import { ORGANIZATION_ROLE_DESCRIPTIONS, ORGANIZATION_ROLE_LABELS } from "@/features/organizations/shared/roles";
 import type { AdminPeopleTargetOption } from "@/lib/admin";
 import type { Database } from "@/types/database";
 
@@ -57,6 +57,7 @@ export function PeopleInviteDrawer({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [role, setRole] = useState<OrganizationRoleKey>("learner");
+  const [target, setTarget] = useState(targetOptions[0]?.value ?? "organization");
   const [method, setMethod] = useState<"email" | "existing">("email");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<InviteCandidate[]>([]);
@@ -229,8 +230,9 @@ export function PeopleInviteDrawer({
           </span>
           <select
             className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
-            defaultValue="organization"
             name="target"
+            onChange={(event) => setTarget(event.target.value)}
+            value={target}
           >
             {targetOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -239,6 +241,19 @@ export function PeopleInviteDrawer({
             ))}
           </select>
         </label>
+
+        <div className="flex items-start gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-3 text-xs text-[var(--admin-on-surface-variant)]">
+          <span className="mt-0.5 shrink-0 text-[var(--admin-primary)]">ⓘ</span>
+          <p>
+            As a{role === "organisation_owner" || role === "organisation_admin" || role === "instructor" ? "n" : ""}{" "}
+            <span className="font-bold text-[var(--admin-on-surface)]">{ORGANIZATION_ROLE_LABELS[role]}</span>{" "}
+            assigned to{" "}
+            <span className="font-bold text-[var(--admin-on-surface)]">
+              {targetOptions.find((option) => option.value === target)?.label ?? "Whole organisation"}
+            </span>
+            , this person will: {ORGANIZATION_ROLE_DESCRIPTIONS[role].toLowerCase()}
+          </p>
+        </div>
 
         <label className="flex flex-col gap-2">
           <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">

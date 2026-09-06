@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { RewardThumbnailVisual } from "@/components/rewards/RewardThumbnailVisual";

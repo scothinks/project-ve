@@ -57,11 +57,17 @@ export async function getAdminCatalogPeopleWorkspace(
   ]);
 
   if (membershipsResult.error) {
-    throw membershipsResult.error;
+    throw new Error(
+      `Catalog Staff memberships query failed (${membershipsResult.error.code}): ${membershipsResult.error.message}`,
+      { cause: membershipsResult.error },
+    );
   }
 
   if (invitationsResult.error) {
-    throw invitationsResult.error;
+    throw new Error(
+      `Catalog Staff invitations query failed (${invitationsResult.error.code}): ${invitationsResult.error.message}`,
+      { cause: invitationsResult.error },
+    );
   }
 
   const normalizeProfile = <P>(profile: P | P[] | null | undefined): P | null =>

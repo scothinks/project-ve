@@ -5,6 +5,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { richTextButtonBase, richTextFrameClass } from './RichTextEditorLoading';
 
 export type RichTextBlockEditorProps = {
   disabled?: boolean;
@@ -14,10 +15,11 @@ export type RichTextBlockEditorProps = {
 
 function toolbarButtonClasses(active = false) {
   return cn(
-    "inline-flex min-h-9 items-center justify-center rounded-[10px] border px-3 text-xs font-black transition disabled:cursor-not-allowed disabled:opacity-50",
+    richTextButtonBase,
+    "transition disabled:cursor-not-allowed disabled:opacity-50",
     active
-      ? "border-[var(--ve-green)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_80%,var(--ve-card))] text-[var(--ve-green)]"
-      : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]",
+      ? "border-[var(--admin-primary)] bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_80%,var(--admin-surface-milk))] text-[var(--admin-primary)]"
+      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]",
   );
 }
 
@@ -32,7 +34,7 @@ export function RichTextBlockEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-44 rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-semibold leading-7 outline-none focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]",
+          "min-h-44 rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-semibold leading-7 outline-none focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]",
       },
     },
     extensions: [
@@ -63,7 +65,8 @@ export function RichTextBlockEditor({
   }, [editor, value]);
 
   useEffect(() => {
-    editor?.setEditable(!disabled);
+    // Changing editor availability must not turn normalized HTML into an edit.
+    editor?.setEditable(!disabled, false);
   }, [disabled, editor]);
 
   function applyLink() {
@@ -79,7 +82,7 @@ export function RichTextBlockEditor({
   }
 
   return (
-    <div className="mt-2 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-2">
+    <div className={richTextFrameClass}>
       <div className="mb-2 flex flex-wrap gap-2">
         <button
           className={toolbarButtonClasses(editor?.isActive("bold") ?? false)}
@@ -124,7 +127,7 @@ export function RichTextBlockEditor({
       </div>
       <div className="mb-2 grid gap-2 md:grid-cols-[1fr_auto]">
         <input
-          className="min-h-9 rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-xs font-bold outline-none focus:border-[var(--ve-green)]"
+          className="min-h-9 rounded-[10px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 text-xs font-bold outline-none focus:border-[var(--admin-primary)]"
           disabled={disabled || !editor}
           onChange={(event) => setLinkHref(event.target.value)}
           placeholder="https://example.com"
@@ -139,7 +142,9 @@ export function RichTextBlockEditor({
           Link
         </button>
       </div>
-      <EditorContent editor={editor} />
+      {/* Reserve the editor's minimum height before Tiptap mounts so nearby
+          controls do not move between pointer down and pointer up. */}
+      <EditorContent className="min-h-44" editor={editor} />
     </div>
   );
 }

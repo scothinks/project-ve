@@ -16,6 +16,7 @@ function requireLocalSupabaseEnv() {
   assert.ok(localSupabaseUrl, "NEXT_PUBLIC_SUPABASE_URL is required.");
   assert.ok(publishableKey, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required.");
   assert.ok(serviceRoleKey, "SUPABASE_SERVICE_ROLE_KEY is required.");
+  assert.ok(['127.0.0.1', 'localhost'].includes(new URL(localSupabaseUrl).hostname), 'Repository fixtures require local Supabase.');
 }
 
 test("live repositories use local Supabase data and do not serve demo snapshots", async () => {
@@ -61,8 +62,12 @@ test("live repositories use local Supabase data and do not serve demo snapshots"
 
     assert.ok(catalog.length > 0, "local migrations should provide published courses.");
 
-    const course = catalog[0];
-    const lesson = course.lessons[0];
+    // Quiz-free courses are now valid. Do not mistake their display fallback
+    // quiz id for a stored quiz, or depend on concurrently created fixture order.
+    const selected = catalog.flatMap(course => course.lessons.map(lesson => ({ course, lesson })))
+      .find(({ lesson }) => lesson.pages.length > 0 && lesson.quiz.questions.length > 0);
+    assert.ok(selected, 'The local catalog needs a published lesson with quiz questions for this contract.');
+    const { course, lesson } = selected;
     const page = lesson.pages[0];
 
     assert.ok(lesson, "local published course should include a lesson.");
@@ -99,9 +104,11 @@ test("live repositories use local Supabase data and do not serve demo snapshots"
       origin: "http://127.0.0.1:3000",
     });
 
-    assert.ok(courseCards[0].lessons[0].pages.length > 0);
-    assert.equal("blocks" in courseCards[0].lessons[0].pages[0], false);
-    assert.equal("options" in courseCards[0].lessons[0].quiz, false);
+    const selectedCard = courseCards.find(card => card.id === course.id);
+    const selectedLesson = selectedCard?.lessons.find(item => item.id === lesson.id);
+    assert.ok(selectedLesson?.pages.length > 0);
+    assert.equal("blocks" in selectedLesson.pages[0], false);
+    assert.equal("options" in selectedLesson.quiz, false);
     assert.equal(courseDetail?.id, course.id);
     assert.equal(lessonDetail?.lesson.id, lesson.id);
     assert.equal(quizDetail?.quiz.id, lesson.quiz.id);

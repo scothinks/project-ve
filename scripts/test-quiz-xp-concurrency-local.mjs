@@ -245,6 +245,8 @@ async function setupFixture() {
     end;
     $$;
 
+    update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id = ${literal(lessonId)};
+
     create trigger ${sleepTriggerName}
     before insert on public.xp_transactions
     for each row execute function public.${sleepFunctionName}();

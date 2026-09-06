@@ -40,6 +40,7 @@ export default async function AdminPeoplePage({
   const query = (firstValue(params.q) ?? "").trim().toLowerCase();
   const roleFilter = firstValue(params.role) ?? "";
   const statusFilter = firstValue(params.status) ?? "";
+  const unitFilter = firstValue(params.unit) ?? "";
   const shouldOpenInvite = firstValue(params.invite) === "1";
   const organizationId = workspace.id;
 
@@ -54,7 +55,8 @@ export default async function AdminPeoplePage({
       : true;
     const matchesRole = roleFilter ? member.role === roleFilter : true;
     const matchesStatus = statusFilter ? member.status === statusFilter : true;
-    return matchesQuery && matchesRole && matchesStatus;
+    const matchesUnit = unitFilter ? member.unitIds.includes(unitFilter) : true;
+    return matchesQuery && matchesRole && matchesStatus && matchesUnit;
   });
 
   return (
@@ -110,6 +112,18 @@ export default async function AdminPeoplePage({
               <option value="invited">Invited</option>
               <option value="suspended">Suspended</option>
               <option value="removed">Removed</option>
+            </select>
+            <select
+              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 text-sm font-semibold outline-none"
+              defaultValue={unitFilter}
+              name="unit"
+            >
+              <option value="">All units</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.name}
+                </option>
+              ))}
             </select>
             <button
               className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-2.5 text-sm font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"

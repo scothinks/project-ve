@@ -243,3 +243,12 @@ test("lesson media readiness requires approved text and approved required media 
     false,
   );
 });
+
+
+test("inline media is discretionary even with legacy required flags; cover requirements remain", () => {
+  const inline = asset({ lesson_id: "lesson-1", asset_type: "image", placement: "page_1_diagram", metadata: { required: true, targetKind: "lesson_page_block" } });
+  assert.equal(isLessonMediaApprovalReady(lesson({ ai_text_status: "approved" }), [inline]), true);
+  assert.equal(isLessonMediaApprovalReady(lesson({ ai_text_status: "approved" }), []), true);
+  assert.equal(deriveCourseMediaStatus(course(), [lesson({ ai_media_status: "approved" })], []), "approved");
+  assert.equal(isLessonMediaApprovalReady(lesson({ ai_text_status: "approved" }), [asset({ asset_type: "cover", lesson_id: "lesson-1", metadata: { required: true, targetKind: "lesson_cover" } })]), false);
+});

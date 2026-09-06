@@ -2,26 +2,25 @@
 
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import * as Select from "@radix-ui/react-select";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useMemo, useState, useTransition } from "react";
-import {
-  AdminPagination,
-  AdminStatusBadge,
-  EmptyAdminState,
-  adminButtonClasses,
-} from "@/components/admin/AdminPrimitives";
+import { AdminCourseCard, AdminCourseCardGrid } from "@/components/admin/AdminCourseCard";
+import { AdminDrawer } from "@/components/admin/AdminDialog";
+import type { CourseReadinessCheck } from "@/features/learning/admin/course-readiness";
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import { duplicateCourseShell, setCourseStatus } from "@/app/admin/courses/actions";
-import { formatRewardDate } from "@/lib/rewards";
+import { getPaginationWindow } from "@/lib/pagination";
+import { cn } from "@/lib/utils";
+
+const adminPrimaryButtonClasses =
+  "inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary-container)] px-3 text-xs font-bold text-[var(--admin-on-primary)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60";
+const adminSecondaryButtonClasses =
+  "inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 text-xs font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-60";
+const adminDangerButtonClasses =
+  "inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--admin-error)] bg-[var(--admin-surface-milk)] px-4 text-sm font-bold text-[var(--admin-error)] transition hover:bg-[var(--admin-error)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60";
 
 export type CourseIndexCourse = {
   id: string;
@@ -33,6 +32,7 @@ export type CourseIndexCourse = {
   status: string;
   estimated_minutes: number;
   catalog_scope: string;
+  thumbnail: Record<string, unknown> | null;
   organization_id: string | null;
   source_course_id: string | null;
   source_catalog_version: number | null;
@@ -43,6 +43,7 @@ export type CourseIndexCourse = {
   updated_at: string;
   lesson_count?: number;
   readiness_issues?: string[];
+  readiness_blockers?: CourseReadinessCheck[];
 };
 
 type CourseIndexFilters = {
@@ -62,46 +63,6 @@ type PaginationProps = {
 };
 
 const allValue = "all";
-const columnHelper = createColumnHelper<CourseIndexCourse>();
-
-function statusTone(status: string) {
-  if (status === "published") return "good" as const;
-  if (status === "draft") return "warning" as const;
-  if (status === "archived") return "danger" as const;
-  return "neutral" as const;
-}
-
-function statusLabel(status: string) {
-  if (status === "published") return "Published";
-  if (status === "draft") return "Draft";
-  if (status === "archived") return "Archived";
-  return status.replaceAll("_", " ");
-}
-
-function catalogScopeLabel(scope: string) {
-  if (scope === "platform") return "Platform";
-  if (scope === "organization_private") return "Private";
-  if (scope === "adapted_platform") return "Adapted";
-  return scope.replaceAll("_", " ");
-}
-
-function catalogScopeTone(scope: string) {
-  if (scope === "organization_private") return "warning" as const;
-  if (scope === "adapted_platform") return "store" as const;
-  return "neutral" as const;
-}
-
-function readinessTone(course: CourseIndexCourse) {
-  if ((course.readiness_issues ?? []).length > 0) return "warning" as const;
-  if (course.status === "published") return "good" as const;
-  return "neutral" as const;
-}
-
-function readinessLabel(course: CourseIndexCourse) {
-  if ((course.readiness_issues ?? []).length > 0) return "Needs attention";
-  if (course.status === "published") return "Published";
-  return "Ready draft";
-}
 
 function buildCoursesHref(filters: CourseIndexFilters, page?: number) {
   const params = new URLSearchParams();
@@ -117,13 +78,6 @@ function buildCoursesHref(filters: CourseIndexFilters, page?: number) {
   return query ? `/admin/courses?${query}` : "/admin/courses";
 }
 
-function selectLabel(
-  value: string,
-  options: Array<{ label: string; value: string }>,
-) {
-  return options.find((option) => option.value === value)?.label ?? "All";
-}
-
 function FilterSelect({
   label,
   onChange,
@@ -137,35 +91,20 @@ function FilterSelect({
 }) {
   return (
     <label className="min-w-[160px] flex-1">
-      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
         {label}
       </span>
-      <Select.Root value={value} onValueChange={onChange}>
-        <Select.Trigger className="mt-2 flex min-h-11 w-full items-center justify-between rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-left text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
-          <Select.Value>{selectLabel(value, options)}</Select.Value>
-          <Select.Icon className="text-[var(--ve-muted)]">v</Select.Icon>
-        </Select.Trigger>
-        <Select.Portal>
-          <Select.Content
-            className="z-50 overflow-hidden rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-1 shadow-xl"
-            position="popper"
-            sideOffset={6}
-          >
-            <Select.Viewport>
-              {options.map((option) => (
-                <Select.Item
-                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ve-panel)] data-[state=checked]:text-[var(--ve-green)]"
-                  key={option.value}
-                  value={option.value}
-                >
-                  <Select.ItemText>{option.label}</Select.ItemText>
-                </Select.Item>
-              ))}
-            </Select.Viewport>
-          </Select.Content>
-        </Select.Portal>
-      </Select.Root>
+      <AdminSelect className="mt-2" onValueChange={onChange} options={options} value={value} />
     </label>
+  );
+}
+
+function statusPillClasses(active: boolean) {
+  return cn(
+    "inline-flex items-center justify-center rounded-full border px-[18px] py-[10px] text-[13px]",
+    active
+      ? "border-[var(--admin-primary)] bg-[color:color-mix(in_srgb,var(--admin-primary)_8%,transparent)] font-extrabold text-[var(--admin-primary)]"
+      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface-variant)]",
   );
 }
 
@@ -181,43 +120,39 @@ function CourseActions({
   const isDisabling = nextStatus === "draft";
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <Link className={adminButtonClasses("primary", "px-3 text-xs")} href={`/admin/courses/${course.id}`}>
-        Open workspace
-      </Link>
+    <div className="flex items-center justify-end">
       <AlertDialog.Root open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger
             aria-label={`More actions for ${course.title}`}
-            className={adminButtonClasses("secondary", "px-3 text-xs")}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)]"
             type="button"
           >
-            More
+            ⋯
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
-              className="z-50 min-w-56 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-2 shadow-xl"
+              className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
               sideOffset={6}
             >
               <DropdownMenu.Item asChild>
                 <form action={duplicateCourseShell}>
                   <input name="courseId" type="hidden" value={course.id} />
                   <PendingSubmitButton
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none transition hover:bg-[var(--ve-panel)] focus-visible:ring-4 focus-visible:ring-[color:color-mix(in_srgb,var(--ve-green)_12%,transparent)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-on-surface)] outline-none transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-60"
                     label="Duplicate course"
                     pendingLabel="Duplicating..."
                     type="submit"
                   />
                 </form>
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="my-1 h-px bg-[var(--ve-line-soft)]" />
+              <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
               <DropdownMenu.Item
-                className={`cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none transition hover:bg-[var(--ve-panel)] focus-visible:ring-4 ${
-                  isDisabling
-                    ? "text-[var(--ve-danger)] focus-visible:ring-[color:color-mix(in_srgb,var(--ve-danger)_14%,transparent)]"
-                    : "text-[var(--ve-green)] focus-visible:ring-[color:color-mix(in_srgb,var(--ve-green)_14%,transparent)]"
-                }`}
+                className={cn(
+                  "cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none transition hover:bg-[var(--admin-surface-container-low)]",
+                  isDisabling ? "text-[var(--admin-error)]" : "text-[var(--admin-primary)]",
+                )}
                 onSelect={(event) => {
                   event.preventDefault();
                   setStatusDialogOpen(true);
@@ -230,17 +165,17 @@ function CourseActions({
         </DropdownMenu.Root>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-xl">
-            <AlertDialog.Title className="text-lg font-black">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+            <AlertDialog.Title className="text-lg font-black text-[var(--admin-ink-charcoal)]">
               {isDisabling ? "Disable published course?" : "Enable course?"}
             </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
               {isDisabling
                 ? `"${course.title}" will move back to draft and no longer appear as a published course.`
                 : `"${course.title}" will be moved to published status. Review readiness before enabling learner access.`}
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className={adminButtonClasses("secondary")} type="button">
+              <AlertDialog.Cancel className={cn(adminSecondaryButtonClasses, "min-h-10 px-4 text-sm")} type="button">
                 Cancel
               </AlertDialog.Cancel>
               <form action={setCourseStatus}>
@@ -248,7 +183,7 @@ function CourseActions({
                 <input name="redirectTo" type="hidden" value={currentHref} />
                 <input name="status" type="hidden" value={nextStatus} />
                 <PendingSubmitButton
-                  className={adminButtonClasses(isDisabling ? "danger" : "primary")}
+                  className={isDisabling ? adminDangerButtonClasses : cn(adminPrimaryButtonClasses, "min-h-10 px-4 text-sm")}
                   label={isDisabling ? "Disable course" : "Enable course"}
                   pendingLabel={isDisabling ? "Disabling..." : "Enabling..."}
                   type="submit"
@@ -262,29 +197,19 @@ function CourseActions({
   );
 }
 
-export function CourseIndexWorkspace({
+export function CourseSearchAndFilters({
   categories,
-  courses,
-  currentHref,
   filters,
   levels,
-  pagination,
-  templateCourses,
-  totalCourseCount,
 }: {
   categories: string[];
-  courses: CourseIndexCourse[];
-  currentHref: string;
   filters: CourseIndexFilters;
   levels: string[];
-  pagination: PaginationProps;
-  templateCourses: CourseIndexCourse[];
-  totalCourseCount: number;
 }) {
   const router = useRouter();
+  const [moreOpen, setMoreOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState(filters.query);
-  const [status, setStatus] = useState(filters.status || allValue);
   const [category, setCategory] = useState(filters.category || allValue);
   const [level, setLevel] = useState(filters.level || allValue);
   const [sort, setSort] = useState(filters.sort);
@@ -303,291 +228,78 @@ export function CourseIndexWorkspace({
     ],
     [levels],
   );
+  const moreActiveCount = [
+    filters.category !== allValue && filters.category ? 1 : 0,
+    filters.level !== allValue && filters.level ? 1 : 0,
+  ].reduce((total, value) => total + value, 0);
 
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor("title", {
-        header: "Course",
-        cell: (info) => {
-          const course = info.row.original;
-
-          return (
-            <div className="min-w-[280px]">
-              <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/courses/${course.id}`}>
-                {course.title}
-              </Link>
-              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{course.slug}</p>
-              {course.source_course_id ? (
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-                  Adapted from {course.source_course_id}
-                </p>
-              ) : null}
-              <p className="mt-2 line-clamp-2 max-w-md text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
-                {course.description || "No course promise added yet."}
-              </p>
-            </div>
-          );
-        },
-      }),
-      columnHelper.display({
-        id: "scope",
-        header: "Scope",
-        cell: (info) => {
-          const course = info.row.original;
-
-          return (
-            <div className="min-w-[150px]">
-              <AdminStatusBadge tone={catalogScopeTone(course.catalog_scope)}>
-                {catalogScopeLabel(course.catalog_scope)}
-              </AdminStatusBadge>
-              {course.catalog_scope === "adapted_platform" ? (
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  {course.upstream_update_available
-                    ? "Update available"
-                    : `Source v${course.source_catalog_version ?? "unknown"}`}
-                </p>
-              ) : null}
-              {course.catalog_scope !== "platform" && course.organization_id ? (
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  Organisation owned
-                </p>
-              ) : null}
-            </div>
-          );
-        },
-      }),
-      columnHelper.display({
-        id: "metadata",
-        header: "Category and level",
-        cell: (info) => {
-          const course = info.row.original;
-
-          return (
-            <div className="min-w-[170px]">
-              <p className="font-bold">{course.category || "Uncategorised"}</p>
-              <p className="mt-1 text-xs font-black capitalize text-[var(--ve-muted)]">{course.level}</p>
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor("status", {
-        header: "Editorial status",
-        cell: (info) => (
-          <AdminStatusBadge tone={statusTone(info.getValue())}>{statusLabel(info.getValue())}</AdminStatusBadge>
-        ),
-      }),
-      columnHelper.display({
-        id: "lessons",
-        header: "Lessons",
-        cell: (info) => {
-          const course = info.row.original;
-
-          return (
-            <div className="whitespace-nowrap">
-              <p className="font-black tabular-nums">{course.lesson_count ?? 0}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-                {course.estimated_minutes} min
-              </p>
-            </div>
-          );
-        },
-      }),
-      columnHelper.display({
-        id: "readiness",
-        header: "Readiness",
-        cell: (info) => {
-          const course = info.row.original;
-          const issues = course.readiness_issues ?? [];
-
-          return (
-            <div className="min-w-[220px]">
-              <AdminStatusBadge tone={readinessTone(course)}>{readinessLabel(course)}</AdminStatusBadge>
-              {issues.length > 0 ? (
-                <ul className="mt-2 space-y-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  {issues.slice(0, 2).map((issue) => (
-                    <li key={issue}>{issue}</li>
-                  ))}
-                  {issues.length > 2 ? <li>{issues.length - 2} more issue(s)</li> : null}
-                </ul>
-              ) : (
-                <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">No obvious blockers.</p>
-              )}
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor("updated_at", {
-        header: "Last updated",
-        cell: (info) => (
-          <span className="whitespace-nowrap text-sm font-bold">{formatRewardDate(info.getValue())}</span>
-        ),
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "",
-        cell: (info) => (
-          <CourseActions course={info.row.original} currentHref={currentHref} />
-        ),
-      }),
-    ],
-    [currentHref],
-  );
-
-  const table = useReactTable({
-    data: courses,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  function applyFilters() {
+  function goToStatus(status: string) {
     startTransition(() => {
-      router.push(buildCoursesHref({ category, level, query, sort, status }));
+      router.push(buildCoursesHref({ ...filters, status }));
     });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    applyFilters();
+    startTransition(() => {
+      router.push(buildCoursesHref({ ...filters, query }));
+    });
   }
 
-  const filterSearchParams = {
-    category: filters.category === allValue ? undefined : filters.category,
-    level: filters.level === allValue ? undefined : filters.level,
-    query: filters.query || undefined,
-    sort: filters.sort || undefined,
-    status: filters.status === allValue ? undefined : filters.status,
-  };
+  function handleMoreSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    startTransition(() => {
+      router.push(buildCoursesHref({ category, level, query: filters.query, sort, status: filters.status }));
+    });
+    setMoreOpen(false);
+  }
 
   return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm font-black text-[var(--foreground)]">
-            {pagination.totalItems} matching course{pagination.totalItems === 1 ? "" : "s"}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-            {totalCourseCount} total in the Project VE platform catalogue.
-          </p>
-        </div>
-      </div>
-
-      <div>
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-          How would you like to build?
-        </p>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))]">
-            <h2 className="text-lg font-black text-[var(--admin-ink-charcoal)]">Create Manually</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
-              Start with a blank canvas. Build your curriculum, modules, and lessons step-by-step for complete
-              authorial control.
-            </p>
-            <Link
-              className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[var(--admin-primary)] hover:underline"
-              href="/admin/courses/new"
-            >
-              Select Manual →
-            </Link>
-          </div>
-
-          <div className="rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))]">
-            <h2 className="text-lg font-black text-[var(--admin-ink-charcoal)]">Duplicate a Course</h2>
-            <form action={duplicateCourseShell} className="mt-4 space-y-3">
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-                  Source course
-                </span>
-                <select
-                  className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 text-sm font-bold outline-none focus:border-[var(--admin-primary-container)]"
-                  name="courseId"
-                  required
-                >
-                  <option value="">Choose source</option>
-                  {templateCourses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-                  New title
-                </span>
-                <input
-                  className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 text-sm font-bold outline-none focus:border-[var(--admin-primary-container)]"
-                  name="templateTitle"
-                  placeholder="Copy of source title"
-                />
-              </label>
-              <PendingSubmitButton
-                className="rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-xs font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"
-                label="Use template"
-                pendingLabel="Duplicating..."
-                type="submit"
-              />
-            </form>
-          </div>
-
-          <div className="rounded-[20px] border border-[color:color-mix(in_srgb,var(--admin-primary-container)_18%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_6%,var(--admin-surface-milk))] p-5 shadow-sm">
-            <span className="rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-2 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--admin-primary)]">
-              AI-Assisted
-            </span>
-            <h2 className="mt-2 text-lg font-black text-[var(--admin-ink-charcoal)]">Create with AI</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
-              Collaborate with an intelligent assistant to outline your syllabus, generate learning objectives,
-              and draft initial content.
-            </p>
-            <Link
-              className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[var(--admin-primary)] hover:underline"
-              href="/admin/courses/ai/planner"
-            >
-              Start with AI Guide →
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <form
-        className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm"
-        onSubmit={handleSubmit}
+    <div className="flex flex-wrap items-center gap-3.5">
+      <form className="relative max-w-[400px] flex-1 basis-[260px]" onSubmit={handleSearchSubmit}>
+        <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--admin-outline)]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <input
+          className="min-h-11 w-full rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-[13px] pl-11 pr-4 text-sm font-semibold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)]"
+          defaultValue={query}
+          name="query"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search your courses"
+          type="search"
+        />
+      </form>
+      {[
+        { label: "All", value: allValue },
+        { label: "Published", value: "published" },
+        { label: "Draft", value: "draft" },
+        { label: "Archived", value: "archived" },
+      ].map((option) => (
+        <button
+          className={statusPillClasses((filters.status || allValue) === option.value)}
+          disabled={isPending}
+          key={option.value}
+          onClick={() => goToStatus(option.value)}
+          type="button"
+        >
+          {option.label}
+        </button>
+      ))}
+      <AdminDrawer
+        description="Narrow by category, level, or sort order."
+        onOpenChange={setMoreOpen}
+        open={moreOpen}
+        title="More filters"
+        trigger={
+          <button className={adminSecondaryButtonClasses} type="button">
+            More filters{moreActiveCount > 0 ? ` (${moreActiveCount})` : ""}
+          </button>
+        }
       >
-        <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.5fr)_repeat(4,minmax(150px,1fr))_auto] xl:items-end">
-          <label>
-            <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-              Search
-            </span>
-            <input
-              className="mt-2 min-h-11 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-sm font-bold outline-none transition placeholder:text-[var(--ve-muted)] focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Title, slug, category, or description"
-              type="search"
-              value={query}
-            />
-          </label>
-          <FilterSelect
-            label="Status"
-            onChange={setStatus}
-            options={[
-              { label: "All statuses", value: allValue },
-              { label: "Draft", value: "draft" },
-              { label: "Published", value: "published" },
-              { label: "Archived", value: "archived" },
-            ]}
-            value={status}
-          />
-          <FilterSelect
-            label="Category"
-            onChange={setCategory}
-            options={categoryOptions}
-            value={category}
-          />
-          <FilterSelect
-            label="Level"
-            onChange={setLevel}
-            options={levelOptions}
-            value={level}
-          />
+        <form className="flex flex-col gap-5" onSubmit={handleMoreSubmit}>
+          <FilterSelect label="Category" onChange={setCategory} options={categoryOptions} value={category} />
+          <FilterSelect label="Level" onChange={setLevel} options={levelOptions} value={level} />
           <FilterSelect
             label="Sort"
             onChange={setSort}
@@ -599,58 +311,103 @@ export function CourseIndexWorkspace({
             ]}
             value={sort}
           />
-          <div className="flex gap-2">
-            <button className={adminButtonClasses("primary", "px-3 text-xs")} disabled={isPending} type="submit">
-              {isPending ? "Applying..." : "Apply"}
-            </button>
-            <Link className={adminButtonClasses("secondary", "px-3 text-xs")} href="/admin/courses">
+          <div className="flex justify-end gap-3 border-t border-[var(--admin-border-warm)] pt-4">
+            <Link className={adminSecondaryButtonClasses} href="/admin/courses" onClick={() => setMoreOpen(false)}>
               Reset
             </Link>
+            <button className={adminPrimaryButtonClasses} disabled={isPending} type="submit">
+              {isPending ? "Applying..." : "Apply"}
+            </button>
           </div>
-        </div>
-      </form>
+        </form>
+      </AdminDrawer>
+    </div>
+  );
+}
 
+export function CourseCreateButton() {
+  return (
+    <Link
+      className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-[var(--admin-primary)] px-[26px] py-0 text-[15px] font-extrabold text-[var(--admin-on-primary)] shadow-[0_8px_24px_rgba(18,60,53,0.16)]"
+      href="/admin/courses/choose"
+    >
+      <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      New course
+    </Link>
+  );
+}
+
+export function CourseIndexWorkspace({
+  courses,
+  currentHref,
+  filters,
+  pagination,
+}: {
+  courses: CourseIndexCourse[];
+  currentHref: string;
+  filters: CourseIndexFilters;
+  pagination: PaginationProps;
+}) {
+  return (
+    <section className="space-y-5">
       {courses.length === 0 ? (
-        <EmptyAdminState>No courses match the current filters.</EmptyAdminState>
+        <p className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-10 text-center text-sm font-bold text-[var(--admin-on-surface-variant)]">
+          No courses match the current filters.
+        </p>
       ) : (
         <>
-          <div className="overflow-hidden rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-left text-sm">
-                <thead className="bg-[var(--ve-panel)] text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th className="whitespace-nowrap px-4 py-3" key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className="divide-y divide-[var(--ve-line-soft)]">
-                  {table.getRowModel().rows.map((row) => (
-                    <tr className="align-top hover:bg-[var(--ve-panel)]/60" key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <td className="px-4 py-4" key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <AdminCourseCardGrid>
+            {courses.map((course) => (
+              <AdminCourseCard
+                actions={<CourseActions course={course} currentHref={currentHref} />}
+                course={course}
+                key={course.id}
+              />
+            ))}
+          </AdminCourseCardGrid>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+              Showing {pagination.startItem}-{pagination.endItem} of {pagination.totalItems} courses
+            </p>
+            {pagination.totalPages > 1 ? (
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <Link
+                  className={cn(
+                    "rounded-[12px] border border-[var(--admin-border-warm)] px-3 py-2 text-xs font-black text-[var(--admin-on-surface)]",
+                    pagination.currentPage === 1 && "pointer-events-none opacity-40",
+                  )}
+                  href={buildCoursesHref(filters, Math.max(1, pagination.currentPage - 1))}
+                >
+                  Prev
+                </Link>
+                {getPaginationWindow(pagination.currentPage, pagination.totalPages).map((page) => (
+                  <Link
+                    className={cn(
+                      "rounded-[12px] border px-3 py-2 text-xs font-black",
+                      page === pagination.currentPage
+                        ? "border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_12%,transparent)] text-[var(--admin-primary)]"
+                        : "border-[var(--admin-border-warm)] text-[var(--admin-on-surface-variant)]",
+                    )}
+                    href={buildCoursesHref(filters, page)}
+                    key={page}
+                  >
+                    {page}
+                  </Link>
+                ))}
+                <Link
+                  className={cn(
+                    "rounded-[12px] border border-[var(--admin-border-warm)] px-3 py-2 text-xs font-black text-[var(--admin-on-surface)]",
+                    pagination.currentPage === pagination.totalPages && "pointer-events-none opacity-40",
+                  )}
+                  href={buildCoursesHref(filters, Math.min(pagination.totalPages, pagination.currentPage + 1))}
+                >
+                  Next
+                </Link>
+              </div>
+            ) : null}
           </div>
-          <AdminPagination
-            basePath="/admin/courses"
-            currentPage={pagination.currentPage}
-            searchParams={filterSearchParams}
-            summary={`Showing ${pagination.startItem}-${pagination.endItem} of ${pagination.totalItems} courses`}
-            totalPages={pagination.totalPages}
-          />
         </>
       )}
     </section>

@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-09-06T20:00:12Z",
+  "deployedBaseSha": "369d3723807b715f2e49c27e02d23759b0b7411c",
+  "scope": "Post-deploy Phase 6 CI gate alignment",
+  "changes": [
+    "Aligned lesson quiz saves and unified lesson review assertions with the current in-place editor.",
+    "Replaced the retired tabbed CMS journey with current creation, settings, lesson authoring, media placement, review, publish, remix and AI cost-entry routes.",
+    "Changed the institutional fixture to include the immutable published lesson snapshot consumed by learner read models.",
+    "Reduced the institutional scenario timeout from 420 seconds to 180 seconds after removing stale waits."
+  ],
+  "validation": [
+    {
+      "command": "PROJECT_VE_E2E_KEEP_BUILD_CACHE=1 npm run test:e2e",
+      "status": "pass",
+      "detail": "39 of 39 Playwright scenarios passed in 3.8 minutes."
+    },
+    {
+      "command": "npm run ci",
+      "status": "pass",
+      "detail": "Typecheck, lint, 35 guardrail tests, 9 release-readiness checks, 231 unit tests and the production build passed."
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "hostedReleaseStatus": "blocked",
+  "remainingHostedBlockers": [
+    "Automation bypass for Vercel Deployment Protection is unavailable to the staging workflow.",
+    "Hosted migration ledger and forward replay evidence are incomplete.",
+    "Worker maintenance is declared daily rather than observed at a cadence of five minutes or less.",
+    "Hosted acknowledgement, dispatch, first-result and completion timings are unmeasured for the seven supported operations.",
+    "Tenant denial, private media delivery, storage/reference reconciliation and job/credit/media reconciliation have not run against the exact deployment.",
+    "The deployed rollback-switch smoke has not run.",
+    "Representative paid provider-output review has no authorized spending cap."
+  ]
+}

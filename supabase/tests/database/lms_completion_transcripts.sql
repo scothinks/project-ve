@@ -399,6 +399,9 @@ values (
 on conflict do nothing;
 
 reset role;
+-- Published fixture baseline for learner completion rules.
+update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id like 'lesson-lms-completion-%' and status='published';
+reset role;
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 

@@ -66,14 +66,12 @@ export async function approveCourseMediaReview(
 
   const typedAssets = (assets ?? []) as WorkflowMediaAssetRow[];
   const validation: MediaApprovalValidation<WorkflowMediaAssetRow> = validateMediaApproval(typedAssets);
-  const hasRequiredImageAssets = typedAssets.some(isRequiredMediaAsset);
   if (
-    !hasRequiredImageAssets
-    || validation.missingRequiredAssets.length > 0
+    validation.missingRequiredAssets.length > 0
     || validation.failedRequiredAssets.length > 0
   ) {
     throw new Error(
-      "Required media assets are still missing, failed, or not seeded yet. Regenerate media and confirm the required previews before approval.",
+      "A required cover is missing or failed. Complete it before approval.",
     );
   }
 
@@ -292,15 +290,13 @@ export async function approveLessonMediaReview(
   const lessonAssets = (await getCourseMediaAssets(supabase, course.id))
     .filter((asset) => asset.lesson_id === lessonId);
   const validation: MediaApprovalValidation<WorkflowMediaAssetRow> = validateMediaApproval(lessonAssets);
-  const hasRequiredImageAssets = lessonAssets.some(isRequiredMediaAsset);
 
   if (
-    !hasRequiredImageAssets
-    || validation.missingRequiredAssets.length > 0
+    validation.missingRequiredAssets.length > 0
     || validation.failedRequiredAssets.length > 0
   ) {
     throw new Error(
-      "Required lesson media assets are still missing, failed, or not seeded yet. Generate lesson media and confirm the required previews before approval.",
+      "A required lesson cover is missing or failed. Complete the cover before approval.",
     );
   }
 

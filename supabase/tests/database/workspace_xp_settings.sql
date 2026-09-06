@@ -330,6 +330,9 @@ values
 on conflict (id) do update set is_correct = excluded.is_correct;
 
 reset role;
+-- Publication fixture for the account-aware quiz-policy test.
+update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id = 'lesson-workspace-xp-settings';
+reset role;
 select set_config('request.jwt.claim.sub', '30110000-0000-4000-8000-000000000001', true);
 set local role authenticated;
 select public.admin_save_workspace_xp_settings(

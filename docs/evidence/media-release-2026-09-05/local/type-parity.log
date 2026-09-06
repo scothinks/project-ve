@@ -1,0 +1,5 @@
+
+> project-ve-mvp@0.1.0 db:types:local:check
+> node scripts/supabase-cli.mjs gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public | node scripts/check-database-types.mjs
+
+Connecting to 127.0.0.1 54322

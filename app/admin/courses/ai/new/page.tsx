@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function LegacyAdminAiCourseCreatorPage() {
-  redirect("/admin/courses/ai/planner");
+  redirect("/admin/courses/ai/brief");
 }

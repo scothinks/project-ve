@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { Button } from "@/components/ui/Button";

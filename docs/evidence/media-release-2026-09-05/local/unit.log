@@ -1,0 +1,1230 @@
+
+> project-ve-mvp@0.1.0 test:unit
+> node --experimental-strip-types --test "tests/unit/**/*.test.mjs"
+
+TAP version 13
+# (node:53054) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53054) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-ad-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: ad partner form keeps CTA domains canonical and requires HTTPS website URLs
+ok 1 - ad partner form keeps CTA domains canonical and requires HTTPS website URLs
+  ---
+  duration_ms: 185.818167
+  type: 'test'
+  ...
+# Subtest: ad campaign form rejects invalid status and inverted campaign windows
+ok 2 - ad campaign form rejects invalid status and inverted campaign windows
+  ---
+  duration_ms: 3.439125
+  type: 'test'
+  ...
+# Subtest: ad creative version form validates client-facing URL and alt text
+ok 3 - ad creative version form validates client-facing URL and alt text
+  ---
+  duration_ms: 0.553708
+  type: 'test'
+  ...
+# Subtest: ad billing snapshot form requires a valid ordered period
+ok 4 - ad billing snapshot form requires a valid ordered period
+  ---
+  duration_ms: 0.248125
+  type: 'test'
+  ...
+# (node:53055) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53055) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-ai-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: AI course generation form requires core prompt fields and bounded counts
+ok 5 - AI course generation form requires core prompt fields and bounded counts
+  ---
+  duration_ms: 419.421042
+  type: 'test'
+  ...
+# Subtest: AI course generation form returns canonical model input
+ok 6 - AI course generation form returns canonical model input
+  ---
+  duration_ms: 2.072542
+  type: 'test'
+  ...
+# Subtest: new course planner form requires operator prompt context
+ok 7 - new course planner form requires operator prompt context
+  ---
+  duration_ms: 0.352834
+  type: 'test'
+  ...
+# Subtest: course expansion planner form validates goal and suggestion count
+ok 8 - course expansion planner form validates goal and suggestion count
+  ---
+  duration_ms: 0.429792
+  type: 'test'
+  ...
+# (node:53056) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53056) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-course-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: course form requires a title and rejects unexpected status values
+ok 9 - course form requires a title and rejects unexpected status values
+  ---
+  duration_ms: 332.896208
+  type: 'test'
+  ...
+# Subtest: course form normalizes custom category, URL, and numeric fields
+ok 10 - course form normalizes custom category, URL, and numeric fields
+  ---
+  duration_ms: 199.553917
+  type: 'test'
+  ...
+# Subtest: lesson form validates required course, retry enum, and numeric ranges
+ok 11 - lesson form validates required course, retry enum, and numeric ranges
+  ---
+  duration_ms: 1.067625
+  type: 'test'
+  ...
+# Subtest: quiz question form rejects invalid question type, XP range, and missing correct answer
+ok 12 - quiz question form rejects invalid question type, XP range, and missing correct answer
+  ---
+  duration_ms: 14.027833
+  type: 'test'
+  ...
+# Subtest: quiz question form returns validated canonical values for domain execution
+ok 13 - quiz question form returns validated canonical values for domain execution
+  ---
+  duration_ms: 0.731
+  type: 'test'
+  ...
+# (node:53057) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53057) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-inventory-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: inventory batch form rejects missing reward and inverted availability window
+ok 14 - inventory batch form rejects missing reward and inverted availability window
+  ---
+  duration_ms: 473.181916
+  type: 'test'
+  ...
+# Subtest: set inventory quantity form accepts zero allocation and default reason
+ok 15 - set inventory quantity form accepts zero allocation and default reason
+  ---
+  duration_ms: 0.484666
+  type: 'test'
+  ...
+# Subtest: reallocate inventory form validates required campaign endpoints and quantity
+ok 16 - reallocate inventory form validates required campaign endpoints and quantity
+  ---
+  duration_ms: 0.537125
+  type: 'test'
+  ...
+# (node:53058) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53058) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-media-upload.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: CMS image upload validator accepts PNG bytes and reads dimensions
+ok 17 - CMS image upload validator accepts PNG bytes and reads dimensions
+  ---
+  duration_ms: 2.306375
+  type: 'test'
+  ...
+# Subtest: CMS image upload validator rejects unsupported and mismatched files
+ok 18 - CMS image upload validator rejects unsupported and mismatched files
+  ---
+  duration_ms: 0.300833
+  type: 'test'
+  ...
+# Subtest: CMS image upload validator rejects empty and oversized files
+ok 19 - CMS image upload validator rejects empty and oversized files
+  ---
+  duration_ms: 47.462083
+  type: 'test'
+  ...
+# Subtest: CMS storage path generation removes user-controlled path segments
+ok 20 - CMS storage path generation removes user-controlled path segments
+  ---
+  duration_ms: 36.118625
+  type: 'test'
+  ...
+# (node:53059) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53059) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/admin-reward-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: reward payload form rejects malformed JSON and invalid thumbnail URL
+ok 21 - reward payload form rejects malformed JSON and invalid thumbnail URL
+  ---
+  duration_ms: 106.471791
+  type: 'test'
+  ...
+# Subtest: reward payload form enforces LMS owner scope requirements
+ok 22 - reward payload form enforces LMS owner scope requirements
+  ---
+  duration_ms: 0.925833
+  type: 'test'
+  ...
+# Subtest: bulk perk prize form requires at least one source reward
+ok 23 - bulk perk prize form requires at least one source reward
+  ---
+  duration_ms: 0.792083
+  type: 'test'
+  ...
+# Subtest: perk release bucket form validates required dates and ordering
+ok 24 - perk release bucket form validates required dates and ordering
+  ---
+  duration_ms: 69.053583
+  type: 'test'
+  ...
+# (node:53060) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53060) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/application/form-input.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: form input helpers sanitize redirect and required change text
+ok 25 - form input helpers sanitize redirect and required change text
+  ---
+  duration_ms: 480.006083
+  type: 'test'
+  ...
+# Subtest: boolean and continuity helpers normalize common form values
+ok 26 - boolean and continuity helpers normalize common form values
+  ---
+  duration_ms: 0.570375
+  type: 'test'
+  ...
+# Subtest: image presentation and payload string helpers normalize image input
+ok 27 - image presentation and payload string helpers normalize image input
+  ---
+  duration_ms: 1.224667
+  type: 'test'
+  ...
+# (node:53069) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53069) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/domain/generated-tree.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: generated tree helpers normalize text IDs and placement page numbers
+ok 28 - generated tree helpers normalize text IDs and placement page numbers
+  ---
+  duration_ms: 58.6045
+  type: 'test'
+  ...
+# Subtest: generated block mapper sanitizes unsupported media into learner-safe callouts
+ok 29 - generated block mapper sanitizes unsupported media into learner-safe callouts
+  ---
+  duration_ms: 9.847917
+  type: 'test'
+  ...
+# Subtest: duplicate generated lesson titles fail before materializing rows
+ok 30 - duplicate generated lesson titles fail before materializing rows
+  ---
+  duration_ms: 1.974166
+  type: 'test'
+  ...
+# Subtest: generated lesson tree creates draft lesson, quiz, page, content, option, and media rows
+ok 31 - generated lesson tree creates draft lesson, quiz, page, content, option, and media rows
+  ---
+  duration_ms: 20.456334
+  type: 'test'
+  ...
+# (node:53070) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53070) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/application/generation-form.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: generation form parser returns canonical AI generation input
+ok 32 - generation form parser returns canonical AI generation input
+  ---
+  duration_ms: 93.325417
+  type: 'test'
+  ...
+# Subtest: generation form parser raises structured validation errors
+ok 33 - generation form parser raises structured validation errors
+  ---
+  duration_ms: 2.323042
+  type: 'test'
+  ...
+# (node:53071) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53071) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/application/job-prompts.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: prompt primitive helpers preserve strict JSON prompt typing
+ok 34 - prompt primitive helpers preserve strict JSON prompt typing
+  ---
+  duration_ms: 2.186416
+  type: 'test'
+  ...
+# Subtest: media job mode prefers explicit valid modes and falls back from prompt ids
+ok 35 - media job mode prefers explicit valid modes and falls back from prompt ids
+  ---
+  duration_ms: 8.334833
+  type: 'test'
+  ...
+# Subtest: prompt input normalizes generation fields without importing server-only generator code
+ok 36 - prompt input normalizes generation fields without importing server-only generator code
+  ---
+  duration_ms: 1.646833
+  type: 'test'
+  ...
+# Subtest: prompt input defaults unsupported difficulty and missing numeric values
+ok 37 - prompt input defaults unsupported difficulty and missing numeric values
+  ---
+  duration_ms: 0.203875
+  type: 'test'
+  ...
+# (node:53072) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53072) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/domain/media-planning.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: course media seed rows create course, lesson, and page visual placeholders
+ok 38 - course media seed rows create course, lesson, and page visual placeholders
+  ---
+  duration_ms: 2.257333
+  type: 'test'
+  ...
+# Subtest: course-level media seed rows create cover and required thumbnail from a starting sort order
+ok 39 - course-level media seed rows create cover and required thumbnail from a starting sort order
+  ---
+  duration_ms: 0.375375
+  type: 'test'
+  ...
+# Subtest: media seed rows do not duplicate existing assets for the same target
+ok 40 - media seed rows do not duplicate existing assets for the same target
+  ---
+  duration_ms: 0.770667
+  type: 'test'
+  ...
+# Subtest: media target resolution respects metadata and placement fallbacks
+ok 41 - media target resolution respects metadata and placement fallbacks
+  ---
+  duration_ms: 0.865792
+  type: 'test'
+  ...
+# Subtest: image payload uses media metadata presentation with safe fallbacks
+ok 42 - image payload uses media metadata presentation with safe fallbacks
+  ---
+  duration_ms: 0.507958
+  type: 'test'
+  ...
+# (node:53073) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53073) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/application/media-targets.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: managed image block payload preserves existing presentation fields and stamps asset ownership
+ok 43 - managed image block payload preserves existing presentation fields and stamps asset ownership
+  ---
+  duration_ms: 1.715709
+  type: 'test'
+  ...
+# Subtest: managed image block payload falls back from alt text to caption and placement
+ok 44 - managed image block payload falls back from alt text to caption and placement
+  ---
+  duration_ms: 0.223083
+  type: 'test'
+  ...
+# Subtest: managed block lookup only matches image blocks for the selected media asset
+ok 45 - managed block lookup only matches image blocks for the selected media asset
+  ---
+  duration_ms: 0.254458
+  type: 'test'
+  ...
+# Subtest: page grouping returns pages keyed by owning lesson
+ok 46 - page grouping returns pages keyed by owning lesson
+  ---
+  duration_ms: 0.203792
+  type: 'test'
+  ...
+# Subtest: legacy media asset type normalization preserves image types and infers known target types
+ok 47 - legacy media asset type normalization preserves image types and infers known target types
+  ---
+  duration_ms: 0.442208
+  type: 'test'
+  ...
+# Subtest: manual media target kind resolution only changes page placement when target page metadata exists
+ok 48 - manual media target kind resolution only changes page placement when target page metadata exists
+  ---
+  duration_ms: 0.293792
+  type: 'test'
+  ...
+# (node:53074) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53074) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/application/media-worker.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: bounded concurrency runs no more than the requested worker count
+ok 49 - bounded concurrency runs no more than the requested worker count
+  ---
+  duration_ms: 7.777625
+  type: 'test'
+  ...
+# Subtest: bounded concurrency handles empty input and clamps invalid limits to one worker
+ok 50 - bounded concurrency handles empty input and clamps invalid limits to one worker
+  ---
+  duration_ms: 3.619458
+  type: 'test'
+  ...
+# Subtest: media outcome helpers preserve skipped counts and aggregate worker results
+ok 51 - media outcome helpers preserve skipped counts and aggregate worker results
+  ---
+  duration_ms: 0.473167
+  type: 'test'
+  ...
+# Subtest: completed media asset preserves metadata and records page cover target context
+ok 52 - completed media asset preserves metadata and records page cover target context
+  ---
+  duration_ms: 1.059375
+  type: 'test'
+  ...
+# Subtest: completed media asset clears target page id for non-page-cover targets
+ok 53 - completed media asset clears target page id for non-page-cover targets
+  ---
+  duration_ms: 0.454167
+  type: 'test'
+  ...
+# (node:53075) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53075) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/domain/revision.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: generated-from input uses stored prompt metadata with safe defaults
+ok 54 - generated-from input uses stored prompt metadata with safe defaults
+  ---
+  duration_ms: 33.380958
+  type: 'test'
+  ...
+# Subtest: revision feedback history returns latest request and keeps bounded history
+ok 55 - revision feedback history returns latest request and keeps bounded history
+  ---
+  duration_ms: 1.239
+  type: 'test'
+  ...
+# Subtest: revision helpers build extension context and recommended question counts
+ok 56 - revision helpers build extension context and recommended question counts
+  ---
+  duration_ms: 0.503459
+  type: 'test'
+  ...
+# Subtest: course revision notes include course, page, block, quiz, and feedback context
+ok 57 - course revision notes include course, page, block, quiz, and feedback context
+  ---
+  duration_ms: 0.872791
+  type: 'test'
+  ...
+# Subtest: AI job processing remains isolated from App Router redirects
+ok 58 - AI job processing remains isolated from App Router redirects
+  ---
+  duration_ms: 1.471333
+  type: 'test'
+  ...
+# (node:53077) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53077) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/ai-generation/domain/workflow-status.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: AI workflow guards reject non-AI-generated records
+ok 59 - AI workflow guards reject non-AI-generated records
+  ---
+  duration_ms: 6.610292
+  type: 'test'
+  ...
+# Subtest: course text status derives from AI lesson text review state
+ok 60 - course text status derives from AI lesson text review state
+  ---
+  duration_ms: 0.4335
+  type: 'test'
+  ...
+# Subtest: course media status requires approved AI lessons and approved required course assets
+ok 61 - course media status requires approved AI lessons and approved required course assets
+  ---
+  duration_ms: 14.357
+  type: 'test'
+  ...
+# Subtest: course publish status requires approved text, approved media, and ready lessons
+ok 62 - course publish status requires approved text, approved media, and ready lessons
+  ---
+  duration_ms: 4.07775
+  type: 'test'
+  ...
+# Subtest: media approval promotion only approves usable non-failed assets
+ok 63 - media approval promotion only approves usable non-failed assets
+  ---
+  duration_ms: 1.040375
+  type: 'test'
+  ...
+# Subtest: course AI status patch stamps approval metadata only for approved scopes
+ok 64 - course AI status patch stamps approval metadata only for approved scopes
+  ---
+  duration_ms: 0.95925
+  type: 'test'
+  ...
+# Subtest: lesson media readiness requires approved text and approved required media previews
+ok 65 - lesson media readiness requires approved text and approved required media previews
+  ---
+  duration_ms: 0.435791
+  type: 'test'
+  ...
+# (node:53078) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53078) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/app-errors.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: logAppError emits structured context without throwing
+ok 66 - logAppError emits structured context without throwing
+  ---
+  duration_ms: 103.7655
+  type: 'test'
+  ...
+# Subtest: withLoggedFallback returns explicit fallback and logs dependency failures
+ok 67 - withLoggedFallback returns explicit fallback and logs dependency failures
+  ---
+  duration_ms: 0.491584
+  type: 'test'
+  ...
+# Subtest: APP_MODE centrally selects demo mode
+ok 68 - APP_MODE centrally selects demo mode
+  ---
+  duration_ms: 685.132625
+  type: 'test'
+  ...
+# Subtest: APP_MODE centrally selects live mode by default
+ok 69 - APP_MODE centrally selects live mode by default
+  ---
+  duration_ms: 581.476792
+  type: 'test'
+  ...
+# Subtest: APP_MODE rejects unknown values
+ok 70 - APP_MODE rejects unknown values
+  ---
+  duration_ms: 244.47125
+  type: 'test'
+  ...
+# (node:53080) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53080) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/auth-confirmation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: confirmed login path preserves contextual referral parameters
+ok 71 - confirmed login path preserves contextual referral parameters
+  ---
+  duration_ms: 1.590792
+  type: 'test'
+  ...
+# Subtest: confirmed login path preserves public referral without contextual kind
+ok 72 - confirmed login path preserves public referral without contextual kind
+  ---
+  duration_ms: 0.318875
+  type: 'test'
+  ...
+# Subtest: confirmed login path rejects unsafe next paths and sanitizes contextual tokens
+ok 73 - confirmed login path rejects unsafe next paths and sanitizes contextual tokens
+  ---
+  duration_ms: 0.186875
+  type: 'test'
+  ...
+# (node:53081) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53081) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/auth-redirect.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: auth next path helper accepts internal application paths
+ok 74 - auth next path helper accepts internal application paths
+  ---
+  duration_ms: 1.066792
+  type: 'test'
+  ...
+# Subtest: auth next path helper rejects external or empty destinations
+ok 75 - auth next path helper rejects external or empty destinations
+  ---
+  duration_ms: 0.162291
+  type: 'test'
+  ...
+# Subtest: login href helper encodes intended internal destinations
+ok 76 - login href helper encodes intended internal destinations
+  ---
+  duration_ms: 0.157083
+  type: 'test'
+  ...
+# Subtest: organization auth destinations bypass the public assessment callback gate
+ok 77 - organization auth destinations bypass the public assessment callback gate
+  ---
+  duration_ms: 0.487708
+  type: 'test'
+  ...
+# Subtest: public auth destinations still use the public assessment callback gate
+ok 78 - public auth destinations still use the public assessment callback gate
+  ---
+  duration_ms: 0.833583
+  type: 'test'
+  ...
+# (node:53084) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53084) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/learning/admin/lesson-page-builder-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: course readiness aggregates blockers, warnings, lifecycle, and publish gates
+ok 79 - course readiness aggregates blockers, warnings, lifecycle, and publish gates
+  ---
+  duration_ms: 9.076583
+  type: 'test'
+  ...
+# Subtest: quiz validation blocks invalid publish states and totals XP
+ok 80 - quiz validation blocks invalid publish states and totals XP
+  ---
+  duration_ms: 1.426084
+  type: 'test'
+  ...
+# Subtest: lesson builder domain covers drag ordering and insert-position behavior
+ok 81 - lesson builder domain covers drag ordering and insert-position behavior
+  ---
+  duration_ms: 3.302458
+  type: 'test'
+  ...
+# Subtest: media picker maps library asset values into editable presentation state
+ok 82 - media picker maps library asset values into editable presentation state
+  ---
+  duration_ms: 0.405667
+  type: 'test'
+  ...
+# Subtest: AI-assisted planner transformations stay deterministic without live model calls
+ok 83 - AI-assisted planner transformations stay deterministic without live model calls
+  ---
+  duration_ms: 43.342833
+  type: 'test'
+  ...
+# Subtest: dashboard keeps identity, XP, progress, and continue learning in the core path
+ok 84 - dashboard keeps identity, XP, progress, and continue learning in the core path
+  ---
+  duration_ms: 1.421292
+  type: 'test'
+  ...
+# Subtest: dashboard streams every optional feature behind explicit Suspense fallbacks
+ok 85 - dashboard streams every optional feature behind explicit Suspense fallbacks
+  ---
+  duration_ms: 0.410792
+  type: 'test'
+  ...
+# Subtest: personalization reads and caches editorial configuration separately from user state
+ok 86 - personalization reads and caches editorial configuration separately from user state
+  ---
+  duration_ms: 0.284875
+  type: 'test'
+  ...
+# (node:53086) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53086) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/progress/demo/mission-policy.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: demo store bootstrap preserves seeded mission and referral defaults
+ok 87 - demo store bootstrap preserves seeded mission and referral defaults
+  ---
+  duration_ms: 1.308209
+  type: 'test'
+  ...
+# Subtest: daily XP policy counts only same-day quiz earn transactions
+ok 88 - daily XP policy counts only same-day quiz earn transactions
+  ---
+  duration_ms: 139.252625
+  type: 'test'
+  ...
+# Subtest: daily and weekly reset helpers use the configured learner timezone
+ok 89 - daily and weekly reset helpers use the configured learner timezone
+  ---
+  duration_ms: 3.23175
+  type: 'test'
+  ...
+# Subtest: mission policy helpers derive scopes, claim keys, labels, and proof defaults
+ok 90 - mission policy helpers derive scopes, claim keys, labels, and proof defaults
+  ---
+  duration_ms: 1.256041
+  type: 'test'
+  ...
+# Subtest: mission progress normalization clamps counts and can force completed progress
+ok 91 - mission progress normalization clamps counts and can force completed progress
+  ---
+  duration_ms: 0.232042
+  type: 'test'
+  ...
+# (node:53087) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53087) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/organizations/application/learner-workspace-context.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: organization workspace context parser maps the focused RPC delivery projection
+ok 92 - organization workspace context parser maps the focused RPC delivery projection
+  ---
+  duration_ms: 2.520834
+  type: 'test'
+  ...
+# Subtest: organization workspace context parser rejects cross-workspace delivery identifiers
+ok 93 - organization workspace context parser rejects cross-workspace delivery identifiers
+  ---
+  duration_ms: 0.654917
+  type: 'test'
+  ...
+# Subtest: organization route context uses one focused database operation
+ok 94 - organization route context uses one focused database operation
+  ---
+  duration_ms: 1.019791
+  type: 'test'
+  ...
+# (node:53089) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53089) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/organizations/application/learner-workspace-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: organization transcript filter keeps only active workspace records
+ok 95 - organization transcript filter keeps only active workspace records
+  ---
+  duration_ms: 2.41525
+  type: 'test'
+  ...
+# (node:53090) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53090) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/learning/application/course-card-model.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: course card model preserves navigation, progress, imagery, and XP metadata
+ok 96 - course card model preserves navigation, progress, imagery, and XP metadata
+  ---
+  duration_ms: 11.247709
+  type: 'test'
+  ...
+# Subtest: course card model and database projections exclude rich lesson and answer payloads
+ok 97 - course card model and database projections exclude rich lesson and answer payloads
+  ---
+  duration_ms: 1.468917
+  type: 'test'
+  ...
+# (node:53092) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53092) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/learning/admin/lesson-page-builder-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: builder snapshot key is stable across unsorted input order
+ok 98 - builder snapshot key is stable across unsorted input order
+  ---
+  duration_ms: 40.674125
+  type: 'test'
+  ...
+# Subtest: save reconciliation replaces draft page and block ids from server response
+ok 99 - save reconciliation replaces draft page and block ids from server response
+  ---
+  duration_ms: 1.42875
+  type: 'test'
+  ...
+# Subtest: draft block merge keeps edited server rows and local-only draft blocks
+ok 100 - draft block merge keeps edited server rows and local-only draft blocks
+  ---
+  duration_ms: 0.535208
+  type: 'test'
+  ...
+# Subtest: page drag reorder and block swaps stay in scope
+ok 101 - page drag reorder and block swaps stay in scope
+  ---
+  duration_ms: 3.971084
+  type: 'test'
+  ...
+# Subtest: payload helpers normalize editable table rows and nested payload changes
+ok 102 - payload helpers normalize editable table rows and nested payload changes
+  ---
+  duration_ms: 0.441375
+  type: 'test'
+  ...
+# Subtest: preview mapping applies expected fallbacks for rich block types
+ok 103 - preview mapping applies expected fallbacks for rich block types
+  ---
+  duration_ms: 0.3905
+  type: 'test'
+  ...
+# Subtest: image preview and block summary use explicit values with safe fallbacks
+ok 104 - image preview and block summary use explicit values with safe fallbacks
+  ---
+  duration_ms: 0.579
+  type: 'test'
+  ...
+# Subtest: save reconciliation adopts sanitized fields without losing edits made in flight
+ok 105 - save reconciliation adopts sanitized fields without losing edits made in flight
+  ---
+  duration_ms: 1.004208
+  type: 'test'
+  ...
+# (node:53093) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53093) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/media/domain/media-reference.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: managed references survive URL sanitization without allowing arbitrary relative URLs
+ok 106 - managed references survive URL sanitization without allowing arbitrary relative URLs
+  ---
+  duration_ms: 5.423666
+  type: 'test'
+  ...
+# Subtest: media signing follows caller authorization and private responses bypass shared caching
+ok 107 - media signing follows caller authorization and private responses bypass shared caching
+  ---
+  duration_ms: 1.172834
+  type: 'test'
+  ...
+# Subtest: library reads are explicit paginated requests and uploads never overwrite shared storage
+ok 108 - library reads are explicit paginated requests and uploads never overwrite shared storage
+  ---
+  duration_ms: 0.732
+  type: 'test'
+  ...
+# (node:53095) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53095) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/app/api/admin/media/assets/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: storage deletion failure keeps tombstone and retry completes registry cleanup
+ok 109 - storage deletion failure keeps tombstone and retry completes registry cleanup
+  ---
+  duration_ms: 39.013167
+  type: 'test'
+  ...
+# Subtest: notification outage reports pending retry after successful revocation
+ok 110 - notification outage reports pending retry after successful revocation
+  ---
+  duration_ms: 2.044
+  type: 'test'
+  ...
+# Subtest: failed registry registration removes only the newly uploaded object
+ok 111 - failed registry registration removes only the newly uploaded object
+  ---
+  duration_ms: 106.154334
+  type: 'test'
+  ...
+# Subtest: byte-range classification covers bounds and suffixes without guessing object size
+ok 112 - byte-range classification covers bounds and suffixes without guessing object size
+  ---
+  duration_ms: 3.501
+  type: 'test'
+  ...
+# Subtest: storage 500 becomes 416 only when authorised object metadata proves an invalid range
+ok 113 - storage 500 becomes 416 only when authorised object metadata proves an invalid range
+  ---
+  duration_ms: 27.952792
+  type: 'test'
+  ...
+# Subtest: mission list rendering contains no award or referral-token mutation branch
+ok 114 - mission list rendering contains no award or referral-token mutation branch
+  ---
+  duration_ms: 2.067584
+  type: 'test'
+  ...
+# Subtest: contextual referral-link creation remains an authenticated explicit action
+ok 115 - contextual referral-link creation remains an authenticated explicit action
+  ---
+  duration_ms: 2.322416
+  type: 'test'
+  ...
+# (node:53097) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53097) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/observability.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: dashboard missing live profile resolves to zero XP and logs an invariant
+ok 116 - dashboard missing live profile resolves to zero XP and logs an invariant
+  ---
+  duration_ms: 26.862792
+  type: 'test'
+  ...
+# Subtest: dashboard uses real profile XP without logging fallback invariants
+ok 117 - dashboard uses real profile XP without logging fallback invariants
+  ---
+  duration_ms: 5.755875
+  type: 'test'
+  ...
+# Subtest: notification page load failure is observable and not treated as an empty inbox
+ok 118 - notification page load failure is observable and not treated as an empty inbox
+  ---
+  duration_ms: 37.359333
+  type: 'test'
+  ...
+# Subtest: notification page keeps valid empty inbox distinct from load failure
+ok 119 - notification page keeps valid empty inbox distinct from load failure
+  ---
+  duration_ms: 2.086041
+  type: 'test'
+  ...
+# (node:53098) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53098) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/organizations/entitlements.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: organization entitlement parser maps database keys into the typed contract
+ok 120 - organization entitlement parser maps database keys into the typed contract
+  ---
+  duration_ms: 2.203292
+  type: 'test'
+  ...
+# Subtest: organization entitlement parser falls back to Starter values for invalid shapes
+ok 121 - organization entitlement parser falls back to Starter values for invalid shapes
+  ---
+  duration_ms: 0.303958
+  type: 'test'
+  ...
+# Subtest: integer entitlement checks compare requested usage against resolved limits
+ok 122 - integer entitlement checks compare requested usage against resolved limits
+  ---
+  duration_ms: 0.226625
+  type: 'test'
+  ...
+# (node:53099) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53099) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/organizations/identity.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: organization accent token normalizer only accepts restrained tokens
+ok 123 - organization accent token normalizer only accepts restrained tokens
+  ---
+  duration_ms: 1.823958
+  type: 'test'
+  ...
+# Subtest: organization learner entry mirrors active lifecycle states
+ok 124 - organization learner entry mirrors active lifecycle states
+  ---
+  duration_ms: 0.239292
+  type: 'test'
+  ...
+# (node:53100) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53100) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/rewards/admin/perk-prize-manager-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: date input values normalize valid ISO timestamps and reject empty or invalid values
+ok 125 - date input values normalize valid ISO timestamps and reject empty or invalid values
+  ---
+  duration_ms: 32.859208
+  type: 'test'
+  ...
+# Subtest: prize labels describe each supported perk outcome type
+ok 126 - prize labels describe each supported perk outcome type
+  ---
+  duration_ms: 0.301667
+  type: 'test'
+  ...
+# Subtest: default prize titles use configured values when positive
+ok 127 - default prize titles use configured values when positive
+  ---
+  duration_ms: 0.16025
+  type: 'test'
+  ...
+# Subtest: thumbnail defaults preserve tabler icons and legacy icon aliases
+ok 128 - thumbnail defaults preserve tabler icons and legacy icon aliases
+  ---
+  duration_ms: 0.960542
+  type: 'test'
+  ...
+# Subtest: reward prize details are locked until stock is assigned
+ok 129 - reward prize details are locked until stock is assigned
+  ---
+  duration_ms: 0.321417
+  type: 'test'
+  ...
+# Subtest: focused prize notices only show for the edited prize and known notice codes
+ok 130 - focused prize notices only show for the edited prize and known notice codes
+  ---
+  duration_ms: 0.140292
+  type: 'test'
+  ...
+# Subtest: add prize helper copy is scoped to the selected outcome type
+ok 131 - add prize helper copy is scoped to the selected outcome type
+  ---
+  duration_ms: 0.480709
+  type: 'test'
+  ...
+# (node:53101) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53101) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/learning/admin/planner-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: planner primitive helpers stay importable without server-only dependencies
+ok 132 - planner primitive helpers stay importable without server-only dependencies
+  ---
+  duration_ms: 1.623833
+  type: 'test'
+  ...
+# Subtest: planner note builders preserve selected brief and expansion context
+ok 133 - planner note builders preserve selected brief and expansion context
+  ---
+  duration_ms: 5.979667
+  type: 'test'
+  ...
+# Subtest: planner option edit merge sanitizes JSON-backed editable fields
+ok 134 - planner option edit merge sanitizes JSON-backed editable fields
+  ---
+  duration_ms: 130.189958
+  type: 'test'
+  ...
+# Subtest: stored planner parsers normalize valid records and reject invalid ones
+ok 135 - stored planner parsers normalize valid records and reject invalid ones
+  ---
+  duration_ms: 31.638416
+  type: 'test'
+  ...
+# Subtest: course expansion normalization clamps context and parser output
+ok 136 - course expansion normalization clamps context and parser output
+  ---
+  duration_ms: 41.024042
+  type: 'test'
+  ...
+# Subtest: block summaries prefer meaningful text payload fields
+ok 137 - block summaries prefer meaningful text payload fields
+  ---
+  duration_ms: 3.648458
+  type: 'test'
+  ...
+# (node:53102) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53102) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/learning/application/published-lesson-content.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: published content derives ownership from the requested lesson and never substitutes drafts
+ok 138 - published content derives ownership from the requested lesson and never substitutes drafts
+  ---
+  duration_ms: 6.185958
+  type: 'test'
+  ...
+# Subtest: publication drift includes metadata and ignores JSON object key order
+ok 139 - publication drift includes metadata and ignores JSON object key order
+  ---
+  duration_ms: 132.975042
+  type: 'test'
+  ...
+# Subtest: learner reads stay on published projections and cards exclude snapshot bodies
+ok 140 - learner reads stay on published projections and cards exclude snapshot bodies
+  ---
+  duration_ms: 1.570083
+  type: 'test'
+  ...
+# (node:53104) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53104) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/recommendations/domain/scoring.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: recommendation scoring records the v2 policy version
+ok 141 - recommendation scoring records the v2 policy version
+  ---
+  duration_ms: 1.810959
+  type: 'test'
+  ...
+# Subtest: changing dimension score changes ranking predictably
+ok 142 - changing dimension score changes ranking predictably
+  ---
+  duration_ms: 0.313625
+  type: 'test'
+  ...
+# Subtest: low-confidence scores influence ranking less than high-confidence scores
+ok 143 - low-confidence scores influence ranking less than high-confidence scores
+  ---
+  duration_ms: 0.800583
+  type: 'test'
+  ...
+# Subtest: dimension fit aggregates multiple content dimension tags
+ok 144 - dimension fit aggregates multiple content dimension tags
+  ---
+  duration_ms: 1.664042
+  type: 'test'
+  ...
+# Subtest: primary and secondary labels do not outrank stronger score and confidence data
+ok 145 - primary and secondary labels do not outrank stronger score and confidence data
+  ---
+  duration_ms: 0.301667
+  type: 'test'
+  ...
+# Subtest: readiness mismatch is penalized by policy
+ok 146 - readiness mismatch is penalized by policy
+  ---
+  duration_ms: 0.2
+  type: 'test'
+  ...
+# Subtest: completed content is deprioritized
+ok 147 - completed content is deprioritized
+  ---
+  duration_ms: 0.224667
+  type: 'test'
+  ...
+# Subtest: scoring is deterministic for the same input
+ok 148 - scoring is deterministic for the same input
+  ---
+  duration_ms: 0.939791
+  type: 'test'
+  ...
+# Subtest: recommendation reason corresponds to actual scoring
+ok 149 - recommendation reason corresponds to actual scoring
+  ---
+  duration_ms: 0.907666
+  type: 'test'
+  ...
+# (node:53105) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53105) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/request-validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: readJsonObject rejects malformed JSON with a structured issue
+ok 150 - readJsonObject rejects malformed JSON with a structured issue
+  ---
+  duration_ms: 99.897375
+  type: 'test'
+  ...
+# Subtest: readJsonObject rejects non-object JSON bodies
+ok 151 - readJsonObject rejects non-object JSON bodies
+  ---
+  duration_ms: 0.8745
+  type: 'test'
+  ...
+# Subtest: field helpers reject unexpected enum values
+ok 152 - field helpers reject unexpected enum values
+  ---
+  duration_ms: 0.26325
+  type: 'test'
+  ...
+# Subtest: field helpers validate string array members
+ok 153 - field helpers validate string array members
+  ---
+  duration_ms: 0.949208
+  type: 'test'
+  ...
+# Subtest: field helpers validate numeric ranges before domain execution
+ok 154 - field helpers validate numeric ranges before domain execution
+  ---
+  duration_ms: 6.65225
+  type: 'test'
+  ...
+# (node:53106) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53106) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/rich-text.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: rich text sanitization preserves supported lesson markup
+ok 155 - rich text sanitization preserves supported lesson markup
+  ---
+  duration_ms: 6.862917
+  type: 'test'
+  ...
+# Subtest: rich text sanitization removes executable markup and unsafe links
+ok 156 - rich text sanitization removes executable markup and unsafe links
+  ---
+  duration_ms: 0.585625
+  type: 'test'
+  ...
+# Subtest: rich text sanitization unwraps unsupported tags and keeps escaped text
+ok 157 - rich text sanitization unwraps unsupported tags and keeps escaped text
+  ---
+  duration_ms: 0.229208
+  type: 'test'
+  ...
+# Subtest: rich text sanitization preserves safe anchor attributes only
+ok 158 - rich text sanitization preserves safe anchor attributes only
+  ---
+  duration_ms: 0.408667
+  type: 'test'
+  ...
+# Subtest: rich text sanitization rejects obfuscated unsafe link protocols
+ok 159 - rich text sanitization rejects obfuscated unsafe link protocols
+  ---
+  duration_ms: 0.407875
+  type: 'test'
+  ...
+# (node:53107) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53107) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/route-auth-policy.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: public and API routes bypass middleware auth refresh
+ok 160 - public and API routes bypass middleware auth refresh
+  ---
+  duration_ms: 2.45125
+  type: 'test'
+  ...
+# Subtest: protected learner and admin routes retain middleware auth refresh
+ok 161 - protected learner and admin routes retain middleware auth refresh
+  ---
+  duration_ms: 0.278458
+  type: 'test'
+  ...
+# Subtest: route classification keeps public entry points outside learner protection
+ok 162 - route classification keeps public entry points outside learner protection
+  ---
+  duration_ms: 0.160375
+  type: 'test'
+  ...
+# (node:53108) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53108) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/lib/security-env.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: development keeps local security fallbacks available
+ok 163 - development keeps local security fallbacks available
+  ---
+  duration_ms: 2.66325
+  type: 'test'
+  ...
+# Subtest: production reports missing security secrets and Supabase config
+ok 164 - production reports missing security secrets and Supabase config
+  ---
+  duration_ms: 0.19875
+  type: 'test'
+  ...
+# Subtest: production accepts the legacy anon key as publishable Supabase config
+ok 165 - production accepts the legacy anon key as publishable Supabase config
+  ---
+  duration_ms: 0.704458
+  type: 'test'
+  ...
+# Subtest: production refuses local fallback secrets
+ok 166 - production refuses local fallback secrets
+  ---
+  duration_ms: 0.613
+  type: 'test'
+  ...
+# (node:53109) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:53109) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/scoteritemu/Nu-Project-VE/features/rewards/learner/xp-store-domain.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/scoteritemu/Nu-Project-VE/package.json.
+# Subtest: store labels cover current reward fulfillment, distribution, and claim states
+ok 167 - store labels cover current reward fulfillment, distribution, and claim states
+  ---
+  duration_ms: 1.476958
+  type: 'test'
+  ...
+# Subtest: redemption message helper hides default fulfillment messages but preserves custom copy
+ok 168 - redemption message helper hides default fulfillment messages but preserves custom copy
+  ---
+  duration_ms: 0.3365
+  type: 'test'
+  ...
+# Subtest: native outcome copy distinguishes XP awards from boost unlocks
+ok 169 - native outcome copy distinguishes XP awards from boost unlocks
+  ---
+  duration_ms: 1.141875
+  type: 'test'
+  ...
+# Subtest: text parsing and claim field sanitation normalize learner-entered data
+ok 170 - text parsing and claim field sanitation normalize learner-entered data
+  ---
+  duration_ms: 0.51075
+  type: 'test'
+  ...
+# Subtest: pseudo QR SVG output is deterministic and encoded as a data URL
+ok 171 - pseudo QR SVG output is deterministic and encoded as a data URL
+  ---
+  duration_ms: 6.114542
+  type: 'test'
+  ...
+1..171
+# tests 171
+# suites 0
+# pass 171
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6291.109083

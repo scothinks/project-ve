@@ -1,4 +1,4 @@
-import { AdminCard, EmptyAdminState } from "@/components/admin/AdminPrimitives";
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
 import type { ContentValueTag, ValueDimension } from "@/lib/values-assessment";
 import {
@@ -7,10 +7,26 @@ import {
   updateContentValueTag,
 } from "@/app/admin/content-value-tags/actions";
 
-const inputClasses =
-  "w-full rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] px-3 py-2 text-sm font-semibold text-[var(--foreground)]";
+const fieldLabelClasses = "text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]";
 
-const labelClasses = "text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+const fieldClasses =
+  "mt-1.5 w-full rounded-[10px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-2.5 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]";
+
+const levelOptions = [
+  { label: "Any level", value: "" },
+  { label: "Beginner", value: "beginner" },
+  { label: "Intermediate", value: "intermediate" },
+  { label: "Advanced", value: "advanced" },
+];
+
+const outcomeOptions = [
+  { label: "None", value: "" },
+  { label: "Awareness", value: "awareness" },
+  { label: "Reflection", value: "reflection" },
+  { label: "Practice", value: "practice" },
+  { label: "Action", value: "action" },
+  { label: "Assessment", value: "assessment" },
+];
 
 type ContentValueTagEditorProps = {
   contentId: string;
@@ -34,51 +50,43 @@ export function ContentValueTagEditor({
   );
 
   return (
-    <AdminCard className="mb-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-            Value tags
-          </p>
-          <h2 className="mt-2 text-lg font-black">Personalized recommendation tags</h2>
-          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted)]">
-            Connect this {contentType} to the value dimensions it supports so learner dashboards can
-            suggest it more intelligently.
-          </p>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-primary)]">
+          Value tags
+        </p>
+        <p className="mt-1.5 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+          Connect this {contentType} to the value dimensions it supports so learner dashboards can
+          suggest it more intelligently.
+        </p>
       </div>
 
-      <div className="mt-5 space-y-4">
+      <div className="space-y-3">
         {tags.length > 0 ? (
           tags.map((tag) => {
             const dimension = dimensionsById.get(tag.dimensionId);
             return (
               <div
-                className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4"
+                className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3.5"
                 key={tag.id}
               >
-                <form action={updateContentValueTag} className="grid gap-4 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))_auto]">
+                <form action={updateContentValueTag} className="grid gap-3 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))_auto] lg:items-end">
                   <input name="tagId" type="hidden" value={tag.id} />
                   <input name="contentType" type="hidden" value={contentType} />
                   <input name="contentId" type="hidden" value={contentId} />
                   <input name="redirectTo" type="hidden" value={redirectTo} />
 
                   <div>
-                    <p className={labelClasses}>Dimension</p>
-                    <p className="mt-2 text-sm font-black text-[var(--foreground)]">
+                    <p className={fieldLabelClasses}>Dimension</p>
+                    <p className="mt-1.5 text-sm font-extrabold text-[var(--admin-on-surface)]">
                       {dimension?.label ?? tag.dimensionId}
                     </p>
-                    {dimension?.description ? (
-                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                        {dimension.description}
-                      </p>
-                    ) : null}
                   </div>
 
                   <label className="block">
-                    <span className={labelClasses}>Weight</span>
+                    <span className={fieldLabelClasses}>Weight</span>
                     <input
-                      className={`${inputClasses} mt-2`}
+                      className={fieldClasses}
                       defaultValue={tag.weight}
                       max="1"
                       min="0.1"
@@ -89,54 +97,44 @@ export function ContentValueTagEditor({
                   </label>
 
                   <label className="block">
-                    <span className={labelClasses}>Recommended level</span>
-                    <select
-                      className={`${inputClasses} mt-2`}
+                    <span className={fieldLabelClasses}>Recommended level</span>
+                    <AdminSelect
+                      className="mt-1.5"
                       defaultValue={tag.recommendedLevel ?? ""}
                       name="recommendedLevel"
-                    >
-                      <option value="">Any level</option>
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                    </select>
+                      options={levelOptions}
+                      size="compact"
+                    />
                   </label>
 
                   <label className="block">
-                    <span className={labelClasses}>Outcome type</span>
-                    <select
-                      className={`${inputClasses} mt-2`}
+                    <span className={fieldLabelClasses}>Outcome type</span>
+                    <AdminSelect
+                      className="mt-1.5"
                       defaultValue={tag.outcomeType ?? ""}
                       name="outcomeType"
-                    >
-                      <option value="">None</option>
-                      <option value="awareness">Awareness</option>
-                      <option value="reflection">Reflection</option>
-                      <option value="practice">Practice</option>
-                      <option value="action">Action</option>
-                      <option value="assessment">Assessment</option>
-                    </select>
+                      options={outcomeOptions}
+                      size="compact"
+                    />
                   </label>
 
-                  <div className="flex items-end gap-2">
-                    <PendingSubmitButton
-                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
-                      label="Update"
-                      pendingLabel="Updating..."
-                      type="submit"
-                    />
-                  </div>
+                  <PendingSubmitButton
+                    className="rounded-full bg-[var(--admin-primary)] px-4 py-2 text-xs font-extrabold text-[var(--admin-on-primary)]"
+                    label="Update"
+                    pendingLabel="Updating…"
+                    type="submit"
+                  />
                 </form>
 
-                <form action={deleteContentValueTag} className="mt-3 flex justify-end">
+                <form action={deleteContentValueTag} className="mt-2 flex justify-end">
                   <input name="tagId" type="hidden" value={tag.id} />
                   <input name="contentType" type="hidden" value={contentType} />
                   <input name="contentId" type="hidden" value={contentId} />
                   <input name="redirectTo" type="hidden" value={redirectTo} />
                   <PendingSubmitButton
-                    className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-2 text-xs font-black text-[var(--ve-danger)]"
+                    className="rounded-full px-3 py-1.5 text-[11px] font-extrabold text-[var(--admin-error)]"
                     label="Remove tag"
-                    pendingLabel="Removing..."
+                    pendingLabel="Removing…"
                     type="submit"
                   />
                 </form>
@@ -144,33 +142,35 @@ export function ContentValueTagEditor({
             );
           })
         ) : (
-          <EmptyAdminState>No value tags yet. Add a few to power personalized learner recommendations.</EmptyAdminState>
+          <p className="rounded-[14px] border border-dashed border-[var(--admin-border-warm)] p-4 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+            No value tags yet. Add a few to power personalized learner recommendations.
+          </p>
         )}
       </div>
 
-      <div className="mt-5 rounded-[16px] border border-dashed border-[var(--ve-line-soft)] p-4">
-        <h3 className="text-sm font-black">Add value tag</h3>
+      <div className="rounded-[14px] border border-dashed border-[var(--admin-border-warm)] p-3.5">
+        <p className="text-xs font-extrabold text-[var(--admin-on-surface)]">Add value tag</p>
         {unusedDimensions.length > 0 ? (
-          <form action={saveContentValueTag} className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))_auto]">
+          <form action={saveContentValueTag} className="mt-3 grid gap-3 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))_auto] lg:items-end">
             <input name="contentType" type="hidden" value={contentType} />
             <input name="contentId" type="hidden" value={contentId} />
             <input name="redirectTo" type="hidden" value={redirectTo} />
 
             <label className="block">
-              <span className={labelClasses}>Dimension</span>
-              <select className={`${inputClasses} mt-2`} defaultValue={unusedDimensions[0]?.id ?? ""} name="dimensionId">
-                {unusedDimensions.map((dimension) => (
-                  <option key={dimension.id} value={dimension.id}>
-                    {dimension.label}
-                  </option>
-                ))}
-              </select>
+              <span className={fieldLabelClasses}>Dimension</span>
+              <AdminSelect
+                className="mt-1.5"
+                defaultValue={unusedDimensions[0]?.id ?? ""}
+                name="dimensionId"
+                options={unusedDimensions.map((dimension) => ({ label: dimension.label, value: dimension.id }))}
+                size="compact"
+              />
             </label>
 
             <label className="block">
-              <span className={labelClasses}>Weight</span>
+              <span className={fieldLabelClasses}>Weight</span>
               <input
-                className={`${inputClasses} mt-2`}
+                className={fieldClasses}
                 defaultValue="0.8"
                 max="1"
                 min="0.1"
@@ -181,42 +181,28 @@ export function ContentValueTagEditor({
             </label>
 
             <label className="block">
-              <span className={labelClasses}>Recommended level</span>
-              <select className={`${inputClasses} mt-2`} defaultValue="" name="recommendedLevel">
-                <option value="">Any level</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+              <span className={fieldLabelClasses}>Recommended level</span>
+              <AdminSelect className="mt-1.5" defaultValue="" name="recommendedLevel" options={levelOptions} size="compact" />
             </label>
 
             <label className="block">
-              <span className={labelClasses}>Outcome type</span>
-              <select className={`${inputClasses} mt-2`} defaultValue="" name="outcomeType">
-                <option value="">None</option>
-                <option value="awareness">Awareness</option>
-                <option value="reflection">Reflection</option>
-                <option value="practice">Practice</option>
-                <option value="action">Action</option>
-                <option value="assessment">Assessment</option>
-              </select>
+              <span className={fieldLabelClasses}>Outcome type</span>
+              <AdminSelect className="mt-1.5" defaultValue="" name="outcomeType" options={outcomeOptions} size="compact" />
             </label>
 
-            <div className="flex items-end">
-              <PendingSubmitButton
-                className="w-full rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
-                label="Add tag"
-                pendingLabel="Adding..."
-                type="submit"
-              />
-            </div>
+            <PendingSubmitButton
+              className="rounded-full bg-[var(--admin-primary)] px-4 py-2 text-xs font-extrabold text-[var(--admin-on-primary)]"
+              label="Add tag"
+              pendingLabel="Adding…"
+              type="submit"
+            />
           </form>
         ) : (
-          <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
             All active value dimensions are already tagged on this {contentType}. Remove one before adding another.
           </p>
         )}
       </div>
-    </AdminCard>
+    </div>
   );
 }
