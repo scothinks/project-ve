@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { validateHostedEvidence } from "./ai-authoring-release-contract.mjs";
 
 function option(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -22,6 +23,7 @@ const evidencePath = option("--evidence", "");
 const outputPath = resolve(option("--out", "artifacts/ai-authoring-hosted-qualification.json"));
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const results = [];
+let qualifiedAppUrl = appUrl;
 
 function record(id, status, detail, data = {}) {
   results.push({ ...data, id, status, detail });
@@ -54,31 +56,36 @@ async function readJson(url) {
 
 async function checkDeploymentIdentity() {
   try {
-    const branch = await readJson(
-      `https://api.github.com/repos/${repository}/branches/${encodeURIComponent(ref)}`,
-    );
     const deployments = await readJson(
       `https://api.github.com/repos/${repository}/deployments?environment=Preview&per_page=100`,
     );
-    const deployment = deployments.find((entry) => entry.sha === expectedSha);
+    const deployment = deployments.find((entry) => entry.sha === expectedSha && entry.ref === ref)
+      ?? deployments.find((entry) => entry.sha === expectedSha);
     if (!deployment) {
-      record("deployment.identity", "blocked", `No Preview deployment is recorded for ${repository}@${ref}.`);
+      record("deployment.identity", "blocked", `No Preview deployment is recorded for ${repository}@${expectedSha}.`);
       return;
     }
     const statuses = await readJson(deployment.statuses_url);
-    const success = statuses.find((status) => status.state === "success") ?? statuses[0];
-    const matched = deployment.sha === expectedSha && branch.commit?.sha === expectedSha;
+    const currentStatus = statuses[0];
+    const success = currentStatus?.state === "success" ? currentStatus : null;
+    const deployedUrlValue = success?.environment_url ?? success?.target_url;
+    if (deployedUrlValue) {
+      const deployedUrl = new URL(deployedUrlValue);
+      if (deployedUrl.protocol === "https:") qualifiedAppUrl = deployedUrl;
+    }
+    const matched = deployment.sha === expectedSha && deployment.ref === ref && Boolean(success);
     record(
       "deployment.identity",
       matched ? "pass" : "fail",
       matched
-        ? `GitHub deployment ${deployment.id} matches ${expectedSha}.`
-        : `GitHub branch ${ref} is ${branch.commit?.sha ?? "unknown"} and deployment ${deployment.id} is ${deployment.sha}; expected both to be ${expectedSha}.`,
+        ? `GitHub Preview deployment ${deployment.id} matches ${ref}@${expectedSha}; runtime probes will use its immutable URL.`
+        : `Deployment ${deployment.id} records ref ${deployment.ref ?? "unknown"}, SHA ${deployment.sha}, and status ${currentStatus?.state ?? "missing"}; expected a successful ${ref}@${expectedSha} deployment.`,
       {
         deploymentId: deployment.id,
+        deployedRef: deployment.ref,
         deployedSha: deployment.sha,
         expectedSha,
-        immutableUrl: success?.environment_url ?? success?.target_url ?? null,
+        immutableUrl: deployedUrlValue ?? null,
         branchUrl: appUrl.origin,
       },
     );
@@ -89,7 +96,7 @@ async function checkDeploymentIdentity() {
 
 async function checkRuntime() {
   try {
-    const { response, durationMs } = await timedFetch(appUrl, { headers: applicationHeaders() });
+    const { response, durationMs } = await timedFetch(qualifiedAppUrl, { headers: applicationHeaders() });
     const location = response.headers.get("location") ?? "";
     if (response.status >= 300 && response.status < 400 && location.includes("vercel.com/sso-api")) {
       record(
@@ -102,7 +109,7 @@ async function checkRuntime() {
     }
     record(
       "runtime.protection",
-      response.status < 500 ? "pass" : "fail",
+      response.status >= 200 && response.status < 400 ? "pass" : "fail",
       `The protected app returned HTTP ${response.status} in ${durationMs} ms.`,
       { httpStatus: response.status, durationMs, vercelId: response.headers.get("x-vercel-id") },
     );
@@ -113,7 +120,7 @@ async function checkRuntime() {
 
 async function checkWorkerBoundary() {
   try {
-    const workerUrl = new URL("/api/admin/ai/jobs/process", appUrl);
+    const workerUrl = new URL("/api/admin/ai/jobs/process", qualifiedAppUrl);
     const { response, durationMs } = await timedFetch(workerUrl, { headers: applicationHeaders() });
     const location = response.headers.get("location") ?? "";
     if (response.status >= 300 && response.status < 400 && location.includes("vercel.com/sso-api")) {
@@ -138,20 +145,6 @@ async function checkWorkerBoundary() {
   }
 }
 
-const requiredOperations = [
-  "course_outline",
-  "course_draft",
-  "lesson_plan",
-  "lesson_draft",
-  "page",
-  "quiz",
-  "image",
-];
-
-function positiveNumber(value) {
-  return Number.isFinite(value) && value >= 0;
-}
-
 function validateEvidence() {
   if (!evidencePath) {
     record(
@@ -159,67 +152,15 @@ function validateEvidence() {
       "blocked",
       "No hosted evidence file was supplied. Record migration, runtime, timing, tenant/media, reconciliation, and rollback results.",
     );
+    results.push(...validateHostedEvidence({}, expectedSha).map((result) => ({
+      ...result,
+      status: "blocked",
+    })));
     return;
   }
   try {
     const evidence = JSON.parse(readFileSync(resolve(evidencePath), "utf8"));
-    const operations = new Map((evidence.timings?.operations ?? []).map((entry) => [entry.kind, entry]));
-    const timingsValid = requiredOperations.every((kind) => {
-      const entry = operations.get(kind);
-      return entry
-        && positiveNumber(entry.acknowledgementMs)
-        && entry.acknowledgementMs <= 2_000
-        && positiveNumber(entry.dispatchVisibleMs)
-        && entry.dispatchVisibleMs <= 5_000
-        && positiveNumber(entry.firstResultMs)
-        && positiveNumber(entry.completionMs)
-        && entry.dispatchVisibleMs >= entry.acknowledgementMs
-        && entry.firstResultMs >= entry.dispatchVisibleMs
-        && entry.completionMs >= entry.firstResultMs;
-    });
-    const migrationValid = evidence.revision?.sha === expectedSha
-      && evidence.migration?.compatible === true
-      && evidence.migration?.forwardReplay === true
-      && Array.isArray(evidence.migration?.ledger)
-      && evidence.migration.ledger.includes("20260907020000");
-    const runtimeValid = evidence.runtime?.afterDispatchObserved === true
-      && evidence.runtime?.streamingObserved === true
-      && evidence.runtime?.workerMaxDurationSeconds >= 300;
-    const maintenanceValid = positiveNumber(evidence.maintenance?.maxIntervalMinutes)
-      && evidence.maintenance.maxIntervalMinutes <= 5
-      && evidence.maintenance?.invocationObserved === true
-      && positiveNumber(evidence.maintenance?.recovery?.recoveredImages)
-      && positiveNumber(evidence.maintenance?.recovery?.settledIncomplete)
-      && evidence.maintenance?.recovery?.deferred === 0;
-    const tenantMediaValid = evidence.tenantMedia?.tenantDenialObserved === true
-      && evidence.tenantMedia?.privateDeliveryObserved === true
-      && evidence.tenantMedia?.publicDeliveryDenied === true
-      && evidence.tenantMedia?.storageReconciled === true;
-    const reconciliationValid = evidence.reconciliation?.jobs === true
-      && evidence.reconciliation?.credits === true
-      && evidence.reconciliation?.media === true;
-    const rollbackValid = evidence.rollback?.featureSwitchDisabled === true
-      && evidence.rollback?.acceptedHistoryRetained === true
-      && evidence.rollback?.legacyReviewAvailable === true;
-
-    const sections = {
-      migration: migrationValid,
-      runtime: runtimeValid,
-      timings: timingsValid,
-      maintenance: maintenanceValid,
-      tenantMedia: tenantMediaValid,
-      reconciliation: reconciliationValid,
-      rollback: rollbackValid,
-    };
-    const failedSections = Object.entries(sections).filter(([, passed]) => !passed).map(([name]) => name);
-    record(
-      "evidence.measurements",
-      failedSections.length === 0 ? "pass" : "fail",
-      failedSections.length === 0
-        ? "Hosted evidence covers the qualified revision and all required release sections."
-        : `Hosted evidence is incomplete or outside thresholds: ${failedSections.join(", ")}.`,
-      { sections },
-    );
+    results.push(...validateHostedEvidence(evidence, expectedSha));
   } catch (error) {
     record("evidence.measurements", "fail", error instanceof Error ? error.message : String(error));
   }
@@ -232,11 +173,14 @@ validateEvidence();
 
 const report = {
   generatedAt: new Date().toISOString(),
-  appUrl: appUrl.origin,
+  requestedAppUrl: appUrl.origin,
+  qualifiedAppUrl: qualifiedAppUrl.origin,
   repository,
   ref,
   expectedSha,
-  overall: results.every((result) => result.status === "pass") ? "pass" : "blocked",
+  overall: results.some((result) => result.status === "fail")
+    ? "fail"
+    : results.some((result) => result.status === "blocked") ? "blocked" : "pass",
   results,
 };
 mkdirSync(dirname(outputPath), { recursive: true });

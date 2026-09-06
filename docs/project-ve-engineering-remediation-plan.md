@@ -2,7 +2,10 @@
 
 ## AI authoring Phase 6, 2026-09-06
 
-Phase 6 implementation and local validation are complete. The integrated
+Phase 6 implementation and local validation are complete. Pull request #83 is
+merged to `main`; follow-up release tooling uses read-only Supabase Management API
+queries with the configured access token and shares its recovery-function contract
+between local preflight and hosted inspection. The integrated
 Phase 1–5 implementation now includes
 bounded worker-outage recovery, retained-image registration repair, conservative
 partial-work settlement and delay notices that work even when streams stay
@@ -10,11 +13,12 @@ silent. Existing tenant, lease, credit, media and publication boundaries remain.
 See [Phase 6 evidence](ai-authoring-phase-6.md) for the release acceptance matrix,
 exact local checks and remaining hosted/provider qualification. Full release is
 not closed: deployment/runtime evidence and explicitly capped real-output review
-are still required. The ordinary CI command now includes the secret-free hosted
+are still required. The ordinary CI command includes the secret-free hosted
 release-readiness contract, and a separate manual workflow validates an exact
-deployed SHA plus protected-runtime and recorded measurement evidence. The named
-Preview remains at the pre-feature base SHA and behind Vercel authentication; its
-daily worker cron, migration ledger, tenant/media smoke, reconciliation and
+deployed SHA plus protected-runtime and recorded measurement evidence. That workflow
+now resolves the immutable deployment, continues independent diagnostics after a
+failure, and reports each evidence assertion separately. Its daily worker cron,
+forward replay, measured operations, tenant/media fixtures, reconciliation and
 rollback evidence remain blockers. This does not open engineering P2 or authorize
 deployment.
 

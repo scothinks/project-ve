@@ -1,4 +1,11 @@
 import { readFileSync, readdirSync } from "node:fs";
+import {
+  hostedOperationKinds,
+  hostedThresholds,
+  operationKindMigrationFile,
+  recoveryFunctionMarkers,
+  recoveryMigration,
+} from "./ai-authoring-release-contract.mjs";
 
 const checks = [];
 
@@ -128,15 +135,35 @@ const requiredMigrations = [
   "20260907015000_ai_legacy_rolling_queue.sql",
   "20260907016000_ai_legacy_cancel_accounting.sql",
   "20260907017000_ai_legacy_backfill.sql",
-  "20260907020000_ai_authoring_outage_recovery.sql",
+  recoveryMigration.file,
 ];
 const missingMigrations = requiredMigrations.filter((file) => !migrationFiles.has(file));
+const recoveryMarkers = migrationFiles.has(recoveryMigration.file)
+  ? recoveryFunctionMarkers(read(`supabase/migrations/${recoveryMigration.file}`))
+  : {};
+const missingRecoveryMarkers = Object.entries(recoveryMarkers)
+  .filter(([, passed]) => !passed)
+  .map(([name]) => name);
+const operationKindSource = read(`supabase/migrations/${operationKindMigrationFile}`);
+const operationKindConstraint = /add constraint ai_authoring_results_kind_check check\s*\(\s*kind in\s*\(([^)]+)\)\s*\)/i.exec(operationKindSource);
+const databaseOperationKinds = operationKindConstraint
+  ? [...operationKindConstraint[1].matchAll(/'([^']+)'/g)].map((match) => match[1])
+  : [];
+const missingOperationKinds = hostedOperationKinds.filter((kind) => !databaseOperationKinds.includes(kind));
+const unexpectedOperationKinds = databaseOperationKinds.filter((kind) => !hostedOperationKinds.includes(kind));
 record(
   "migration.compatibility",
-  missingMigrations.length === 0,
   missingMigrations.length === 0
-    ? `${requiredMigrations.length} coordinated lesson, media, and AI Authoring migrations are present.`
-    : `Missing migrations: ${missingMigrations.join(", ")}`,
+    && missingRecoveryMarkers.length === 0
+    && missingOperationKinds.length === 0
+    && unexpectedOperationKinds.length === 0,
+  missingMigrations.length > 0
+    ? `Missing migrations: ${missingMigrations.join(", ")}`
+    : missingRecoveryMarkers.length > 0
+      ? `The local recovery function does not satisfy hosted markers: ${missingRecoveryMarkers.join(", ")}.`
+      : missingOperationKinds.length > 0 || unexpectedOperationKinds.length > 0
+        ? `Hosted operation kinds differ from the database constraint; missing: ${missingOperationKinds.join(", ") || "none"}; unexpected: ${unexpectedOperationKinds.join(", ") || "none"}.`
+        : `${requiredMigrations.length} coordinated migrations are present; hosted checks match all ${databaseOperationKinds.length} database operation kinds and the checked-in recovery function.`,
 );
 
 const workerCron = vercel.crons?.find((entry) => entry.path === "/api/admin/ai/jobs/process");
@@ -167,13 +194,21 @@ record(
     "test:release:migration:hosted",
     "qualify-ai-authoring-hosted.mjs",
   ])
-    && migrationFiles.has("20260907020000_ai_authoring_outage_recovery.sql")
+    && migrationFiles.has(recoveryMigration.file)
     && includesAll(read("scripts/qualify-ai-authoring-hosted.mjs"), [
       "deployment.identity",
       "runtime.protection",
       "security.worker",
       "evidence.measurements",
-    ]),
+    ])
+    && includesAll(read("scripts/ai-authoring-release-contract.mjs"), [
+      ...hostedOperationKinds,
+      recoveryMigration.version,
+    ])
+    && hostedThresholds.acknowledgementMs === 2_000
+    && hostedThresholds.dispatchVisibleMs === 5_000
+    && hostedThresholds.maintenanceIntervalMinutes === 5
+    && hostedThresholds.workerMaxDurationSeconds === 300,
   "A manual, secret-scoped Preview gate audits the hosted migration boundary, records deployment identity, probes the protected runtime, and validates measured evidence.",
 );
 

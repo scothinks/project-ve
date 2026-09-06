@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { recoveryFunctionMarkers, recoveryMigration } from "./ai-authoring-release-contract.mjs";
 
 function option(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -10,7 +11,6 @@ function option(name, fallback) {
 const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
 const projectRef = process.env.SUPABASE_PROJECT_REF;
 const outputPath = resolve(option("--out", "artifacts/ai-authoring-hosted-migration.json"));
-const recoveryVersion = "20260907020000";
 const generatedAt = new Date().toISOString();
 
 function localMigrations() {
@@ -64,7 +64,7 @@ try {
 
   report.ledger = {
     compatible: missingRemote.length === 0 && remoteOnly.length === 0,
-    recoveryMigrationPresent: remoteSet.has(recoveryVersion),
+    recoveryMigrationPresent: remoteSet.has(recoveryMigration.version),
     localCount: local.length,
     remoteCount: remote.length,
     missingRemote,
@@ -85,28 +85,7 @@ try {
   });
   const row = Array.isArray(rows) ? rows[0] : null;
   if (!row?.definition) throw new Error("The hosted recovery function definition was not returned.");
-  const definition = String(row.definition).toLowerCase().replace(/\s+/g, " ");
-  const boundedLimitPatterns = [
-    /limit\s+greatest\s*\(\s*1\s*,\s*least\s*\(\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*,\s*20\s*\)\s*\)/,
-    /limit\s+greatest\s*\(\s*1\s*,\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*\)/,
-    /limit\s+least\s*\(\s*coalesce\s*\([^,\)]+\s*,\s*20\s*\)\s*,\s*20\s*\)/,
-  ];
-  const markers = {
-    serviceIdentityCheck: definition.includes("private.current_request_is_service_role()"),
-    boundedLimit:
-      boundedLimitPatterns.some((pattern) => pattern.test(definition))
-      || (
-        definition.includes("limit") &&
-        /coalesce\s*\([^,)]*\s*,\s*20\s*\)/.test(definition) &&
-        /least\s*\([^,)]*\s*,\s*20\s*\)/.test(definition) &&
-        /greatest\s*\([^,)]*,\s*/.test(definition)
-      ),
-    expiredLeaseBoundary: definition.includes("interval '30 minutes'"),
-    skipLocked: definition.includes("for update of jobs skip locked"),
-    imageCheckpoint: definition.includes("service_ai_image_checkpoint"),
-    courseCheckpoint: definition.includes("service_ai_course_checkpoint"),
-    pageCheckpoint: definition.includes("service_ai_page_checkpoint"),
-  };
+  const markers = recoveryFunctionMarkers(row.definition);
   const acl = {
     serviceRoleExecute: row.service_role_execute === true,
     anonExecute: row.anon_execute === true,
