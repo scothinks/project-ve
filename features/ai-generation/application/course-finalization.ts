@@ -130,10 +130,17 @@ export async function publishApprovedAiCourseCommand(
   if (courseError) throw courseError;
 
   if (lessonIds.length > 0) {
+    for (const lessonId of lessonIds) {
+      const { error: publishError } = await supabase.rpc("admin_publish_lesson", {
+        p_lesson_id: lessonId,
+      });
+
+      if (publishError) throw publishError;
+    }
+
     const { error: lessonsError } = await supabase
       .from("lessons")
       .update({
-        status: "published",
         ai_publish_status: "published",
       })
       .in("id", lessonIds);

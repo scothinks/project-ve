@@ -1,3 +1,4 @@
+import { isEmptyMediaPlaceholder, mediaIntent } from "../../../lib/media-intent.ts";
 import { parseImagePresentation } from "../../../lib/image-presentation.ts";
 import type {
   AdminLessonBlockRow,
@@ -13,6 +14,7 @@ export type BuilderDraftSnapshot = {
   selectedPageId: string;
   pages: AdminLessonPageRow[];
   blocks: DraftBlock[];
+  baseSnapshotKey?: string;
 };
 
 export type BuilderSaveResponse = {
@@ -21,6 +23,8 @@ export type BuilderSaveResponse = {
   pages?: Array<{
     clientId: string;
     pageId: string;
+    pageNumber?: number;
+    page?: Partial<AdminLessonPageRow>;
     status: string;
   }>;
   blocks?: Array<{
@@ -28,9 +32,11 @@ export type BuilderSaveResponse = {
     blockId: string;
     pageId: string;
     sortOrder: number;
+    block?: Partial<DraftBlock>;
     status: string;
   }>;
   savedAt?: string;
+  draftRevision?: number;
 };
 
 export type ReorderDirection = "up" | "down";
@@ -125,7 +131,7 @@ export function createBuilderSnapshotKey(
       isDraft: block.isDraft === true,
     }));
 
-  return JSON.stringify({
+  return stableJson({
     pages: normalizedPages,
     blocks: normalizedBlocks,
   });
@@ -136,15 +142,30 @@ export function reconcileBuilderStateFromSave(
   currentBlocks: DraftBlock[],
   currentSelectedPageId: string,
   response: BuilderSaveResponse,
+  submittedPages = currentPages,
+  submittedBlocks = currentBlocks,
 ) {
   const pageResults = Array.isArray(response.pages) ? response.pages : [];
   const blockResults = Array.isArray(response.blocks) ? response.blocks : [];
   const pageIdMap = new Map(pageResults.map((item) => [item.clientId, item.pageId]));
   const blockResultMap = new Map(blockResults.map((item) => [item.clientId, item]));
 
+  function adoptUneditedFields<T extends object>(current: T, submitted: T | undefined, saved: Partial<T> | undefined, keys: (keyof T)[]): T {
+    const next = { ...current };
+    for (const key of keys) {
+      if (saved && key in saved && submitted && stableJson(current[key]) === stableJson(submitted[key])) {
+        next[key] = saved[key] as T[keyof T];
+      }
+    }
+    return next;
+  }
   const nextPages = currentPages.map((page) => {
     const savedPageId = pageIdMap.get(page.id);
-    return savedPageId ? { ...page, id: savedPageId } : page;
+    const savedPage = pageResults.find((item) => item.clientId === page.id);
+    const canonical = adoptUneditedFields(page, submittedPages.find((item) => item.id === page.id),
+      savedPage ? { ...savedPage.page, page_number: savedPage.pageNumber ?? page.page_number } : undefined,
+      ["title", "subtitle", "page_type", "page_number", "cover_image"]);
+    return savedPageId ? { ...canonical, id: savedPageId } : page;
   });
 
   const nextBlocks = currentBlocks.map((block) => {
@@ -153,10 +174,10 @@ export function reconcileBuilderStateFromSave(
 
     if (savedBlock) {
       return {
-        ...block,
+        ...adoptUneditedFields(block, submittedBlocks.find((item) => item.id === block.id),
+          { ...savedBlock.block, sort_order: savedBlock.sortOrder }, ["payload", "block_type", "sort_order"]),
         id: savedBlock.blockId,
-        page_id: savedBlock.pageId,
-        sort_order: savedBlock.sortOrder,
+        page_id: block.page_id === submittedBlocks.find((item) => item.id === block.id)?.page_id ? savedBlock.pageId : resolvedPageId,
         isDraft: false,
       };
     }
@@ -195,29 +216,6 @@ export function updateBlockPayload(
         }
       : block,
   );
-}
-
-export function swapPageOrder(
-  pages: AdminLessonPageRow[],
-  pageId: string,
-  direction: ReorderDirection,
-) {
-  const sorted = [...pages].sort((first, second) => first.page_number - second.page_number);
-  const index = sorted.findIndex((page) => page.id === pageId);
-  const targetIndex = direction === "up" ? index - 1 : index + 1;
-
-  if (index < 0 || targetIndex < 0 || targetIndex >= sorted.length) {
-    return pages;
-  }
-
-  const current = sorted[index];
-  const target = sorted[targetIndex];
-
-  return pages.map((page) => {
-    if (page.id === current.id) return { ...page, page_number: target.page_number };
-    if (page.id === target.id) return { ...page, page_number: current.page_number };
-    return page;
-  });
 }
 
 export function reorderPagesById(
@@ -331,6 +329,10 @@ export function insertBlockAtPosition(
 
 export function mapPreviewBlock(block: DraftBlock): LessonContentBlock {
   const payload = block.payload ?? {};
+  if (isEmptyMediaPlaceholder(block)) {
+    const intent = mediaIntent(payload)!;
+    return { id: block.id, type: "media_placeholder", kind: intent.kind, purpose: intent.purpose, required: intent.required };
+  }
   const title = getPayloadString(payload, "title") || getPayloadString(payload, "heading");
 
   if (block.block_type === "callout") {
@@ -432,4 +434,21 @@ export function blockSummary(block: DraftBlock) {
     .replace(/<[^>]*>/g, " ")
     .trim()
     .slice(0, 80);
+}
+
+export function stableJson(value: unknown): string {
+  function canonical(input: unknown): unknown {
+    if (Array.isArray(input)) return input.map(canonical);
+    if (input && typeof input === "object") return Object.fromEntries(
+      Object.entries(input).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, canonical(item)]),
+    );
+    return input;
+  }
+  return JSON.stringify(canonical(value));
+}
+
+export function lessonMetadataKey(value: Record<string, unknown>) {
+  const keys = ["title", "description", "cover_image", "estimated_minutes", "retry_mode",
+    "retry_cooldown_seconds", "retry_requires_reread", "quiz_requires_lesson_completion", "max_earning_attempts"];
+  return stableJson(Object.fromEntries(keys.map((key) => [key, value[key] ?? (key === "cover_image" ? {} : null)])));
 }

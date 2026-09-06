@@ -3,9 +3,12 @@ import { defineConfig, devices } from "@playwright/test";
 const port = Number.parseInt(process.env.PLAYWRIGHT_PORT ?? "3100", 10);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
 const localE2E = process.env.PROJECT_VE_LOCAL_E2E === "1";
+const developmentServer = localE2E && process.env.PROJECT_VE_E2E_DEV === "1";
 const reuseExistingServer =
   !process.env.CI && !localE2E;
-const buildCommand = localE2E
+// Keep the isolated production cache for iterative local regressions when
+// explicitly requested. Next still builds and validates all changed inputs.
+const buildCommand = localE2E && process.env.PROJECT_VE_E2E_KEEP_BUILD_CACHE !== "1"
   ? "node scripts/clean-next-build.mjs && npm run build"
   : "npm run build";
 
@@ -27,7 +30,9 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: `${buildCommand} && npm run start -- -p ${port}`,
+    command: developmentServer
+      ? `node scripts/clean-next-build.mjs && npm run dev -- -p ${port}`
+      : `${buildCommand} && npm run start -- -p ${port}`,
     url: baseURL,
     reuseExistingServer,
     timeout: localE2E ? 900_000 : 180_000,

@@ -90,8 +90,7 @@ export function deriveCourseMediaStatus(
   const requiredCourseAssets = courseAssets.filter(isRequiredMediaAsset);
   const courseAssetValidation = validateMediaApproval(courseAssets);
   const courseRequiredAssetsApproved =
-    requiredCourseAssets.length > 0
-    && courseAssetValidation.missingRequiredAssets.length === 0
+    courseAssetValidation.missingRequiredAssets.length === 0
     && courseAssetValidation.failedRequiredAssets.length === 0
     && requiredCourseAssets.every((asset) => asset.review_status === "approved");
 
@@ -183,7 +182,6 @@ export function isLessonMediaApprovalReady(
   const validation = validateMediaApproval(lessonAssets);
 
   return lesson.ai_text_status === "approved"
-    && requiredLessonAssets.length > 0
     && validation.missingRequiredAssets.length === 0
     && validation.failedRequiredAssets.length === 0
     && requiredLessonAssets.every((asset) => asset.review_status === "approved");

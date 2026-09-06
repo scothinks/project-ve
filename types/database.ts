@@ -1571,6 +1571,20 @@ export type Database = {
             foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -2648,6 +2662,20 @@ export type Database = {
             foreignKeyName: "learning_media_assets_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "learning_media_assets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_media_assets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -2715,14 +2743,21 @@ export type Database = {
             foreignKeyName: "lesson_page_completions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
-            referencedRelation: "lessons"
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_page_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "lesson_page_completions_page_id_fkey"
-            columns: ["page_id"]
+            foreignKeyName: "lesson_page_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
             isOneToOne: false
-            referencedRelation: "lesson_pages"
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
         ]
@@ -2762,6 +2797,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_pages_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_pages_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_pages_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -2810,6 +2859,20 @@ export type Database = {
             foreignKeyName: "lesson_progress_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -2826,11 +2889,14 @@ export type Database = {
           cover_image: Json | null
           created_at: string
           description: string | null
+          draft_revision: number
           estimated_minutes: number
           id: string
           max_earning_attempts: number | null
           media_approved_at: string | null
           media_approved_by: string | null
+          published_at: string | null
+          published_snapshot: Json | null
           quiz_requires_lesson_completion: boolean
           retry_cooldown_seconds: number | null
           retry_mode: Database["public"]["Enums"]["lesson_retry_mode"]
@@ -2854,11 +2920,14 @@ export type Database = {
           cover_image?: Json | null
           created_at?: string
           description?: string | null
+          draft_revision?: number
           estimated_minutes?: number
           id: string
           max_earning_attempts?: number | null
           media_approved_at?: string | null
           media_approved_by?: string | null
+          published_at?: string | null
+          published_snapshot?: Json | null
           quiz_requires_lesson_completion?: boolean
           retry_cooldown_seconds?: number | null
           retry_mode?: Database["public"]["Enums"]["lesson_retry_mode"]
@@ -2882,11 +2951,14 @@ export type Database = {
           cover_image?: Json | null
           created_at?: string
           description?: string | null
+          draft_revision?: number
           estimated_minutes?: number
           id?: string
           max_earning_attempts?: number | null
           media_approved_at?: string | null
           media_approved_by?: string | null
+          published_at?: string | null
+          published_snapshot?: Json | null
           quiz_requires_lesson_completion?: boolean
           retry_cooldown_seconds?: number | null
           retry_mode?: Database["public"]["Enums"]["lesson_retry_mode"]
@@ -3502,6 +3574,20 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_ai_usage_records_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "organization_ai_usage_records_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
             referencedColumns: ["id"]
           },
           {
@@ -4989,14 +5075,21 @@ export type Database = {
             foreignKeyName: "programme_lesson_page_completions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
-            referencedRelation: "lessons"
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "programme_lesson_page_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "programme_lesson_page_completions_page_id_fkey"
-            columns: ["page_id"]
+            foreignKeyName: "programme_lesson_page_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
             isOneToOne: false
-            referencedRelation: "lesson_pages"
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
           {
@@ -5352,6 +5445,20 @@ export type Database = {
             foreignKeyName: "quiz_attempts_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -5511,6 +5618,20 @@ export type Database = {
           version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "learner_lesson_page_references"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "learner_lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quizzes_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -7270,6 +7391,82 @@ export type Database = {
       }
     }
     Views: {
+      learner_lesson_page_references: {
+        Row: {
+          id: string | null
+          lesson_id: string | null
+          page_number: number | null
+        }
+        Relationships: []
+      }
+      learner_lessons: {
+        Row: {
+          course_id: string | null
+          cover_image: Json | null
+          description: string | null
+          estimated_minutes: number | null
+          id: string | null
+          max_earning_attempts: number | null
+          page_ids: string[] | null
+          published_at: string | null
+          published_snapshot: Json | null
+          quiz_requires_lesson_completion: boolean | null
+          retry_cooldown_seconds: number | null
+          retry_mode: Database["public"]["Enums"]["lesson_retry_mode"] | null
+          retry_requires_reread: boolean | null
+          slug: string | null
+          sort_order: number | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          title: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          cover_image?: never
+          description?: never
+          estimated_minutes?: never
+          id?: string | null
+          max_earning_attempts?: never
+          page_ids?: never
+          published_at?: string | null
+          published_snapshot?: Json | null
+          quiz_requires_lesson_completion?: never
+          retry_cooldown_seconds?: never
+          retry_mode?: never
+          retry_requires_reread?: never
+          slug?: string | null
+          sort_order?: number | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          title?: never
+        }
+        Update: {
+          course_id?: string | null
+          cover_image?: never
+          description?: never
+          estimated_minutes?: never
+          id?: string | null
+          max_earning_attempts?: never
+          page_ids?: never
+          published_at?: string | null
+          published_snapshot?: Json | null
+          quiz_requires_lesson_completion?: never
+          retry_cooldown_seconds?: never
+          retry_mode?: never
+          retry_requires_reread?: never
+          slug?: string | null
+          sort_order?: number | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          title?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learner_quiz_options: {
         Row: {
           id: string | null
@@ -7371,6 +7568,18 @@ export type Database = {
           p_xp_account_id: string
         }
         Returns: Json
+      }
+      admin_ai_image_setup: {
+        Args: { p_target: string; p_target_id: string }
+        Returns: Json
+      }
+      admin_apply_ai_assistance: { Args: { p_id: string }; Returns: Json }
+      admin_apply_ai_course: { Args: { p_id: string }; Returns: Json }
+      admin_apply_ai_image: { Args: { p_id: string }; Returns: Json }
+      admin_apply_ai_page: { Args: { p_id: string }; Returns: Json }
+      admin_apply_registered_media: {
+        Args: { p_course_id: string; p_media_id: string; p_version_id: string }
+        Returns: undefined
       }
       admin_assert_valid_mission_config: {
         Args: {
@@ -7652,8 +7861,17 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_decide_legacy_ai_job: {
+        Args: { p_decision: string; p_job: string }
+        Returns: undefined
+      }
+      admin_delete_ai_result: { Args: { p_id: string }; Returns: undefined }
       admin_delete_lesson_block: {
         Args: { p_block_id: string; p_page_id: string }
+        Returns: Json
+      }
+      admin_delete_lesson_page: {
+        Args: { p_lesson_id: string; p_page_id: string }
         Returns: Json
       }
       admin_delete_organization_assessment_question: {
@@ -7676,8 +7894,13 @@ export type Database = {
         Args: { p_item_id: string }
         Returns: Json
       }
+      admin_dispatch_media_notifications: { Args: never; Returns: number }
       admin_duplicate_course_template: {
         Args: { p_source_course_id: string; p_title?: string }
+        Returns: Json
+      }
+      admin_duplicate_lesson: {
+        Args: { p_course_id: string; p_lesson_id: string }
         Returns: Json
       }
       admin_get_instructor_workspace: {
@@ -7737,6 +7960,10 @@ export type Database = {
         Returns: Json
       }
       admin_insert_ad_flight: { Args: { p_payload: Json }; Returns: Json }
+      admin_legacy_ai_media_workspace: {
+        Args: { p_course: string }
+        Returns: Json
+      }
       admin_list_xp_account_transactions: {
         Args: {
           p_date_from?: string
@@ -7759,6 +7986,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_manage_media: {
+        Args: {
+          p_action: string
+          p_audience?: string
+          p_organization_id?: string
+          p_organizations?: string[]
+          p_rights_evidence?: string
+          p_title?: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
       admin_manual_xp_grant_status: {
         Args: never
         Returns: {
@@ -7768,8 +8007,37 @@ export type Database = {
           remaining_today: number
         }[]
       }
+      admin_map_legacy_ai_media: {
+        Args: {
+          p_asset?: string
+          p_course: string
+          p_kind?: string
+          p_target?: string
+        }
+        Returns: undefined
+      }
       admin_mark_reward_redemption_fulfilled: {
         Args: { p_note?: string; p_redemption_id: string }
+        Returns: Json
+      }
+      admin_media_issues: {
+        Args: { p_organization_id?: string }
+        Returns: Json
+      }
+      admin_media_library: {
+        Args: {
+          p_course_id?: string
+          p_manage?: boolean
+          p_offset?: number
+          p_organization_id?: string
+          p_search?: string
+          p_source?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
+      admin_media_permission_targets: {
+        Args: { p_search?: string; p_selected?: string[] }
         Returns: Json
       }
       admin_perk_prize_assignment_counts: {
@@ -7779,12 +8047,98 @@ export type Database = {
           prize_id: string
         }[]
       }
+      admin_prepare_ai_assistance_apply: {
+        Args: { p_id: string; p_selection: number[] }
+        Returns: undefined
+      }
+      admin_prepare_ai_course_apply: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      admin_prepare_ai_image_apply: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      admin_prepare_ai_page_apply: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
       admin_preview_organization_assessment_scoring: {
         Args: { p_answers: Json; p_assessment_version_id: string }
         Returns: Json
       }
+      admin_publish_ai_authored_course: {
+        Args: { p_course: string; p_revisions: Json; p_updated: string }
+        Returns: undefined
+      }
+      admin_publish_lesson: { Args: { p_lesson_id: string }; Returns: Json }
+      admin_publish_lesson_checked: {
+        Args: { p_expected_revision: number; p_lesson_id: string }
+        Returns: Json
+      }
       admin_publish_organization_assessment_version: {
         Args: { p_assessment_version_id: string }
+        Returns: Json
+      }
+      admin_quote_ai_assistance: {
+        Args: {
+          p_count?: number
+          p_course_id: string
+          p_focus?: string
+          p_kind: string
+          p_lesson_id?: string
+          p_parent_id?: string
+          p_refinement?: string
+          p_selected?: number
+        }
+        Returns: Json
+      }
+      admin_quote_ai_course: {
+        Args: {
+          p_brief?: Json
+          p_kind: string
+          p_organization_id?: string
+          p_parent_id?: string
+          p_questions?: number
+          p_refinement?: string
+          p_retry?: boolean
+          p_revision?: number
+        }
+        Returns: Json
+      }
+      admin_quote_ai_image: {
+        Args: {
+          p_alt: string
+          p_brief: string
+          p_caption?: string
+          p_parent?: string
+          p_revision: number
+          p_style: Json
+          p_target: string
+          p_target_id: string
+        }
+        Returns: Json
+      }
+      admin_quote_ai_page: {
+        Args: {
+          p_focus: string
+          p_lesson_id: string
+          p_page_type: string
+          p_parent_id?: string
+          p_position: number
+          p_refinement?: string
+          p_revision: number
+        }
+        Returns: Json
+      }
+      admin_read_ai_results: {
+        Args: {
+          p_course_id?: string
+          p_id?: string
+          p_lesson_id?: string
+          p_offset?: number
+          p_organization_id?: string
+        }
         Returns: Json
       }
       admin_reallocate_reward_inventory: {
@@ -7810,6 +8164,10 @@ export type Database = {
       admin_release_reward_stock_from_perk_prize: {
         Args: { p_prize_id: string; p_quantity: number; p_reason?: string }
         Returns: Json
+      }
+      admin_remove_media_placement: {
+        Args: { p_media_id: string }
+        Returns: undefined
       }
       admin_reorder_course_lessons: {
         Args: { p_course_id: string; p_lesson_ids: string[] }
@@ -7851,6 +8209,22 @@ export type Database = {
         Args: { p_course_id: string; p_text_status?: string }
         Returns: undefined
       }
+      admin_revert_lesson_checked: {
+        Args: { p_expected_revision: number; p_lesson_id: string }
+        Returns: Json
+      }
+      admin_revert_lesson_to_published: {
+        Args: { p_lesson_id: string }
+        Returns: Json
+      }
+      admin_review_ai_assistance_lesson: {
+        Args: { p_lesson_id: string; p_revision: number }
+        Returns: undefined
+      }
+      admin_review_ai_authored_course: {
+        Args: { p_course: string; p_revisions: Json; p_updated: string }
+        Returns: undefined
+      }
       admin_review_contextual_programme_access: {
         Args: {
           p_decision: string
@@ -7890,6 +8264,23 @@ export type Database = {
           total_available: number
         }[]
       }
+      admin_save_ai_course_outline: {
+        Args: { p_id: string; p_outline: Json; p_revision: number }
+        Returns: Json
+      }
+      admin_save_ai_image_style: {
+        Args: { p_course: string; p_style: Json }
+        Returns: undefined
+      }
+      admin_save_lesson_builder: {
+        Args: {
+          p_blocks: Json
+          p_expected_revision: number
+          p_lesson_id: string
+          p_pages: Json
+        }
+        Returns: Json
+      }
       admin_save_workspace_xp_settings: {
         Args: {
           p_admin_manual_grant_daily_limit: number
@@ -7918,6 +8309,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_set_ai_course_artwork: {
+        Args: { p_course: string; p_target: string; p_version: string }
+        Returns: undefined
+      }
       admin_set_campaign_enabled: {
         Args: { p_campaign_id: string; p_is_enabled: boolean }
         Returns: Json
@@ -7928,6 +8323,10 @@ export type Database = {
           p_status: Database["public"]["Enums"]["content_status"]
         }
         Returns: Json
+      }
+      admin_set_editorial_cover: {
+        Args: { p_id: string; p_target: string; p_version: string }
+        Returns: undefined
       }
       admin_set_lesson_status: {
         Args: {
@@ -7989,6 +8388,8 @@ export type Database = {
         Returns: Json
       }
       admin_slugify: { Args: { p_value: string }; Returns: string }
+      admin_start_ai_page: { Args: { p_id: string }; Returns: Json }
+      admin_stop_ai_result: { Args: { p_id: string }; Returns: Json }
       admin_sync_course_estimated_minutes: {
         Args: { p_course_id: string }
         Returns: Json
@@ -8890,6 +9291,10 @@ export type Database = {
         Args: { p_programme_id: string }
         Returns: boolean
       }
+      current_user_can_read_published_lesson: {
+        Args: { p_lesson_id: string }
+        Returns: boolean
+      }
       current_user_can_read_unit_learner: {
         Args: { p_organization_id: string; p_user_id: string }
         Returns: boolean
@@ -9144,6 +9549,14 @@ export type Database = {
             }
             Returns: undefined
           }
+      media_delivery: {
+        Args: { p_organization_id?: string; p_version_id: string }
+        Returns: Json
+      }
+      media_workspace_permissions: {
+        Args: { p_organization_id?: string }
+        Returns: Json
+      }
       mission_proof_fields_satisfy: {
         Args: {
           p_allowed_statuses: string[]
@@ -9408,6 +9821,115 @@ export type Database = {
       sanitize_jsonb_strings: { Args: { input: Json }; Returns: Json }
       sanitize_text_value: { Args: { input: string }; Returns: string }
       sanitize_url_value: { Args: { input: string }; Returns: string }
+      service_ai_course_checkpoint: {
+        Args: {
+          p_action: string
+          p_candidate?: Json
+          p_job: string
+          p_token: string
+          p_version: number
+          p_worker: string
+        }
+        Returns: Json
+      }
+      service_ai_image_checkpoint: {
+        Args: {
+          p_action: string
+          p_file?: Json
+          p_job: string
+          p_token: string
+          p_version: number
+          p_worker: string
+        }
+        Returns: Json
+      }
+      service_ai_page_checkpoint: {
+        Args: {
+          p_action: string
+          p_candidate?: Json
+          p_job: string
+          p_token: string
+          p_version: number
+          p_worker: string
+        }
+        Returns: Json
+      }
+      service_claim_ai_page: {
+        Args: { p_id: string; p_worker: string }
+        Returns: {
+          actual_internal_cost: number | null
+          actual_provider_cost: number | null
+          actual_provider_model: string | null
+          actual_provider_usage: Json
+          assessment_id: string | null
+          attempt_count: number
+          available_at: string
+          completed_at: string | null
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          entity_id: string | null
+          entity_type: string
+          error: string | null
+          estimated_units: number
+          failed_job_charge_policy: string | null
+          failure_code: string | null
+          failure_detail: Json
+          final_charged_units: number | null
+          heartbeat_at: string | null
+          id: string
+          idempotency_key: string | null
+          job_type: string
+          lesson_id: string | null
+          lock_token: string | null
+          lock_version: number
+          locked_at: string | null
+          locked_by: string | null
+          mission_id: string | null
+          operation_type: string | null
+          organization_ai_usage_record_id: string | null
+          organization_id: string | null
+          programme_id: string | null
+          prompt: Json
+          reconciliation_status: string
+          reserved_units: number
+          result: Json
+          source_entitlement: Json
+          started_at: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ai_generation_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      service_close_legacy_media_buckets: { Args: never; Returns: Json }
+      service_finish_media_deletion: {
+        Args: { p_version_id: string }
+        Returns: undefined
+      }
+      service_media_inventory: { Args: never; Returns: Json }
+      service_recover_ai_authoring_jobs: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      service_register_media: {
+        Args: {
+          p_alt_text: string
+          p_asset_id?: string
+          p_mime_type: string
+          p_organization_id: string
+          p_rights_evidence: string
+          p_size: number
+          p_source_version_id?: string
+          p_storage_path: string
+          p_title: string
+        }
+        Returns: Json
+      }
       slugify_label: { Args: { p_value: string }; Returns: string }
       start_quiz_attempt:
         | { Args: { p_lesson_id?: string; p_quiz_id: string }; Returns: Json }

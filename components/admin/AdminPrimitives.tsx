@@ -209,6 +209,7 @@ export function AdminMetricCard({
   tone = "default",
   progress,
   href,
+  action,
 }: {
   label: string;
   value: ReactNode;
@@ -218,6 +219,7 @@ export function AdminMetricCard({
   tone?: "default" | "attention" | "warning";
   progress?: number;
   href?: string;
+  action?: { label: string; href: string };
 }) {
   const toneClasses = {
     default: "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]",
@@ -238,22 +240,33 @@ export function AdminMetricCard({
         {icon}
         <span className="text-[11px] font-black uppercase tracking-[0.14em]">{label}</span>
       </div>
-      <div className="flex items-end gap-3">
-        <span className={cn("text-[28px] font-black leading-none tracking-[-0.02em]", valueTone[tone])}>
-          {value}
-        </span>
-        {trend ? (
-          <span
-            className={cn(
-              "mb-1 flex items-center text-sm font-bold",
-              trend.direction === "up" ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-secondary)]",
-            )}
-          >
-            {trend.direction === "up" ? "↑" : "↓"} {trend.label}
+      <div className="flex items-end justify-between gap-3">
+        <div className="flex items-end gap-3">
+          <span className={cn("text-[28px] font-black leading-none tracking-[-0.02em]", valueTone[tone])}>
+            {value}
           </span>
-        ) : null}
-        {helpText && !trend ? (
-          <span className="mb-1 text-sm text-[var(--admin-on-surface-variant)]">{helpText}</span>
+          {trend ? (
+            <span
+              className={cn(
+                "mb-1 flex items-center text-sm font-bold",
+                trend.direction === "up" ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-secondary)]",
+              )}
+            >
+              {trend.direction === "up" ? "↑" : "↓"} {trend.label}
+            </span>
+          ) : null}
+          {helpText && !trend ? (
+            <span className="mb-1 text-sm text-[var(--admin-on-surface-variant)]">{helpText}</span>
+          ) : null}
+        </div>
+        {action ? (
+          <Link
+            className="mb-0.5 shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--admin-secondary)_30%,transparent)] bg-[var(--admin-surface-milk)] px-3 py-1 text-xs font-bold text-[var(--admin-secondary)] transition hover:bg-[var(--admin-secondary)] hover:text-white"
+            href={action.href}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {action.label}
+          </Link>
         ) : null}
       </div>
       {typeof progress === "number" ? (
@@ -278,6 +291,34 @@ export function AdminMetricCard({
   }
 
   return <div className={className}>{content}</div>;
+}
+
+export function AdminBadge({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "good" | "warning" | "danger" | "info";
+}) {
+  const tones = {
+    neutral: "bg-[var(--admin-surface-container-high)] text-[var(--admin-on-surface-variant)]",
+    good: "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] text-[var(--admin-primary)]",
+    warning:
+      "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_60%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]",
+    danger: "bg-[var(--admin-error-container)] text-[var(--admin-on-error-container)]",
+    info: "bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_30%,transparent)] text-[var(--admin-secondary)]",
+  };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold capitalize",
+        tones[tone],
+      )}
+    >
+      {children}
+    </span>
+  );
 }
 
 export function AdminAlertCard({

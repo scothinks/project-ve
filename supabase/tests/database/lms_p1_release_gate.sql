@@ -508,6 +508,13 @@ on conflict (id) do update
       shared_with_programmes = excluded.shared_with_programmes;
 
 reset role;
+-- Threshold completion fixtures need real published page membership.
+insert into public.lesson_pages(id,lesson_id,page_number,title,page_type)
+select 'page-' || id,id,1,'Threshold page','concept' from public.lessons
+where id like 'lesson-lms-p1-alpha-threshold-%' on conflict(id) do nothing;
+update public.lessons set published_snapshot=private.lesson_draft_snapshot(id),published_at=now()
+where id like 'lesson-lms-p1-%' and status='published';
+reset role;
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
@@ -950,6 +957,14 @@ values
 on conflict (user_id, lesson_id) do update
   set completed_pages = excluded.completed_pages,
       completed_at = excluded.completed_at;
+
+-- Seed the published page completions supporting the threshold fixture timestamps.
+insert into public.lesson_page_completions(user_id,lesson_id,page_id)
+select progress.user_id,page.lesson_id,page.id from public.lesson_progress progress
+join public.lesson_pages page on page.lesson_id=progress.lesson_id
+where progress.user_id='66666666-6666-4666-8666-666666666601'
+and progress.lesson_id like 'lesson-lms-p1-alpha-threshold-%'
+on conflict(user_id,lesson_id,page_id) do nothing;
 
 reset role;
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);

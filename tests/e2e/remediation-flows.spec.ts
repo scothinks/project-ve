@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const authCredential = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
 const runId = randomUUID().slice(0, 8);
@@ -786,6 +786,11 @@ async function signIn(page: Page, email: string, expectedUrl: RegExp = /\/dashbo
   await expect(page).toHaveURL(expectedUrl, { timeout: 60_000 });
 }
 
+async function selectAdminOption(page: Page, select: Locator, optionName: string) {
+  await select.click();
+  await page.getByRole("option", { name: optionName, exact: true }).click();
+}
+
 async function completeCurrentValuesAssessment(page: Page) {
   for (let step = 0; step < 10; step += 1) {
     await page.locator("button[aria-pressed]").first().click();
@@ -837,8 +842,7 @@ async function saveLessonBuilder(page: Page) {
       response.url().includes("/api/admin/learning/builder") &&
       response.request().method() === "POST",
   );
-  const inspector = page.locator("aside").filter({ hasText: "Authoring state" }).first();
-  await inspector.getByRole("button", { name: "Save now" }).first().click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   const saveResponse = await saveResponsePromise;
   expect(
     saveResponse.status(),
@@ -863,6 +867,13 @@ test.describe.serial("remediation browser flows", () => {
     await cleanupFixture();
     await seedContent();
     await seedUsers();
+    const editor = createClient(requiredEnv("NEXT_PUBLIC_SUPABASE_URL"), requiredEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"), {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { error: signInError } = await editor.auth.signInWithPassword({ email: adminEmail, password: authCredential });
+    if (signInError) throw new Error(`authenticate fixture editor: ${signInError.message}`);
+    await assertNoError(await editor.rpc("admin_publish_lesson", { p_lesson_id: lessonId }), "publish learner fixture snapshot");
+    await editor.auth.signOut();
   });
 
   test.afterAll(async () => {
@@ -1012,13 +1023,19 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByRole("row").filter({ hasText: learnerEmail })).toBeVisible();
 
     await page.goto("/admin/courses/new");
-    await expect(page.getByRole("heading", { name: "Add course" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create New Course" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Generate with AI" })).toHaveCount(0);
-    await page.getByLabel("Title").fill(selfServiceCourseTitle);
-    await page.getByLabel("Description").fill("Organisation-private course created by the self-service owner.");
-    await page.getByLabel("Intended audience").fill("Starter organisation learners.");
-    await page.getByLabel("Learning outcomes").fill("Create a course through Org Mode\nRespect Starter lesson limits");
-    await page.getByRole("button", { name: "Save course" }).click();
+    const selfServiceCourseForm = page.locator("form").filter({
+      has: page.getByRole("heading", { name: "Course Title & Category" }),
+    });
+    await selfServiceCourseForm.getByLabel("Title").fill(selfServiceCourseTitle);
+    await selfServiceCourseForm.getByLabel("Brief Description").fill("Organisation-private course created by the self-service owner.");
+    await selfServiceCourseForm.getByLabel("Who this course is written for").fill("Starter organisation learners.");
+    const selfServiceOutcomeInputs = selfServiceCourseForm.getByPlaceholder("e.g., Master conflict resolution techniques");
+    await selfServiceOutcomeInputs.first().fill("Create a course through Org Mode");
+    await selfServiceCourseForm.getByRole("button", { name: "+ Add Outcome" }).click();
+    await selfServiceOutcomeInputs.nth(1).fill("Respect Starter lesson limits");
+    await selfServiceCourseForm.getByRole("button", { name: /Create Workspace/ }).click();
     await expect(page.getByText("Organisation-private course created.")).toBeVisible();
 
     const selfServiceCourseId = getCourseIdFromAdminUrl(page);
@@ -1155,12 +1172,13 @@ test.describe.serial("remediation browser flows", () => {
   test("learner completes a lesson page and earns quiz XP through supported APIs", async ({ page }) => {
     await signIn(page, learnerEmail);
 
+    const progressResponse = page.waitForResponse(
+      (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
+    );
     await page.goto(`/lessons/${lessonId}`);
     await expect(page.getByText("Supported progress page")).toBeVisible();
     await expect(page.getByText("This page lets the E2E suite exercise normal lesson progress.")).toBeVisible();
-    await page.waitForResponse(
-      (response) => response.url().includes("/api/lesson-progress") && response.status() === 200,
-    );
+    await progressResponse;
 
     await page.getByRole("link", { name: "Take Quiz" }).click();
     await expect(page).toHaveURL(new RegExp(`/quiz/${lessonId}$`));
@@ -1192,7 +1210,7 @@ test.describe.serial("remediation browser flows", () => {
     await signIn(page, adminEmail);
 
     await page.goto("/admin/courses");
-    await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Course Index" })).toBeVisible();
     const courseRow = page.getByRole("row").filter({ hasText: courseTitle });
     await expect(courseRow.getByText("Published")).toBeVisible();
     await courseRow.getByRole("button", { name: `More actions for ${courseTitle}` }).click();
@@ -1209,26 +1227,34 @@ test.describe.serial("remediation browser flows", () => {
     await signIn(page, adminEmail);
 
     await page.goto("/admin/courses");
-    await expect(page.getByRole("heading", { name: "Courses" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Select Manual/ })).toBeVisible();
-    await expect(page.getByText("Duplicate a Course")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Start with AI Guide/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Course Index" })).toBeVisible();
+    await page.getByRole("button", { name: "Create Course", exact: true }).click();
+    const createCourseDrawer = page.getByRole("dialog", { name: "Create Course" });
+    await expect(createCourseDrawer.getByRole("heading", { name: "Create Manually" })).toBeVisible();
+    await expect(createCourseDrawer.getByRole("heading", { name: "Duplicate a Course" })).toBeVisible();
+    await expect(createCourseDrawer.getByRole("link", { name: /Start with AI Guide/ })).toBeVisible();
+    await createCourseDrawer.getByRole("link", { name: /Select Manual/ }).click();
 
-    await page.getByRole("link", { name: /Select Manual/ }).click();
-    await expect(page.getByRole("heading", { name: "Add course" })).toBeVisible();
-    await page.getByLabel("Title").fill(blankCourseTitle);
-    await page.getByLabel("Description").fill("A browser-created CMS draft for regression coverage.");
-    await page.getByRole("button", { name: "Save course" }).click();
+    await expect(page.getByRole("heading", { name: "Create New Course" })).toBeVisible();
+    const createCourseForm = page.locator("form").filter({
+      has: page.getByRole("heading", { name: "Course Title & Category" }),
+    });
+    await createCourseForm.getByLabel("Title").fill(blankCourseTitle);
+    await createCourseForm.getByLabel("Brief Description").fill("A browser-created CMS draft for regression coverage.");
+    await createCourseForm.getByRole("button", { name: /Create Workspace/ }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: blankCourseTitle })).toBeVisible();
 
     const overviewPanel = page.getByRole("tabpanel", { name: "Overview" });
-    const courseIdentitySection = overviewPanel.locator("details").filter({ hasText: "Course identity" });
-    await courseIdentitySection.locator("summary").click();
-    await courseIdentitySection.getByLabel("Title").fill(updatedBlankCourseTitle);
-    await courseIdentitySection.getByLabel("Description").fill("Updated overview copy that should persist after save and refresh.");
-    await courseIdentitySection.getByLabel("Intended audience").fill(courseAudience);
-    await courseIdentitySection.getByLabel("Learning outcomes").fill(`${courseOutcomeOne}\n${courseOutcomeTwo}`);
+    const courseIdentityCard = overviewPanel.getByRole("heading", { name: "Course Title & Category" }).locator("..");
+    const pedagogyCard = overviewPanel.getByRole("heading", { name: "Pedagogy & Targeting" }).locator("..");
+    await courseIdentityCard.getByLabel("Title").fill(updatedBlankCourseTitle);
+    await courseIdentityCard.getByLabel("Brief Description").fill("Updated overview copy that should persist after save and refresh.");
+    await pedagogyCard.getByLabel("Who this course is written for").fill(courseAudience);
+    const outcomeInputs = pedagogyCard.getByPlaceholder("e.g., Master conflict resolution techniques");
+    await outcomeInputs.first().fill(courseOutcomeOne);
+    await pedagogyCard.getByRole("button", { name: "+ Add Outcome" }).click();
+    await outcomeInputs.nth(1).fill(courseOutcomeTwo);
     await overviewPanel.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
@@ -1237,18 +1263,21 @@ test.describe.serial("remediation browser flows", () => {
     await page.reload();
     await expect(page.getByRole("heading", { level: 1, name: updatedBlankCourseTitle })).toBeVisible();
     const reloadedOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
-    const reloadedCourseIdentitySection = reloadedOverviewPanel.locator("details").filter({ hasText: "Course identity" });
-    await reloadedCourseIdentitySection.locator("summary").click();
-    await expect(reloadedCourseIdentitySection.locator("textarea[name='description']")).toHaveValue("Updated overview copy that should persist after save and refresh.");
-    await expect(reloadedCourseIdentitySection.locator("textarea[name='intendedAudience']")).toHaveValue(courseAudience);
-    await expect(reloadedCourseIdentitySection.locator("textarea[name='learningOutcomes']")).toHaveValue(`${courseOutcomeOne}\n${courseOutcomeTwo}`);
+    const reloadedCourseIdentityCard = reloadedOverviewPanel.getByRole("heading", { name: "Course Title & Category" }).locator("..");
+    const reloadedPedagogyCard = reloadedOverviewPanel.getByRole("heading", { name: "Pedagogy & Targeting" }).locator("..");
+    await expect(reloadedCourseIdentityCard.getByLabel("Brief Description")).toHaveValue("Updated overview copy that should persist after save and refresh.");
+    await expect(reloadedPedagogyCard.getByLabel("Who this course is written for")).toHaveValue(courseAudience);
+    const reloadedOutcomeInputs = reloadedPedagogyCard.getByPlaceholder("e.g., Master conflict resolution techniques");
+    await expect(reloadedOutcomeInputs).toHaveCount(2);
+    await expect(reloadedOutcomeInputs.nth(0)).toHaveValue(courseOutcomeOne);
+    await expect(reloadedOutcomeInputs.nth(1)).toHaveValue(courseOutcomeTwo);
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
     await expect(page.getByRole("button", { name: "Add New Lesson" })).toBeVisible();
     await page.getByRole("tab", { name: "Media" }).click();
-    await expect(page.getByRole("heading", { name: "Usage and quality" })).toBeVisible();
+    await expect(page.getByText("Course media briefs have not been seeded yet.")).toBeVisible();
     await page.getByRole("tab", { name: "Review & Publish" }).click();
-    await expect(page.getByRole("heading", { name: "Course readiness" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Review & Publish" })).toBeVisible();
     await expect(page.getByText("Add at least one active lesson.")).toBeVisible();
 
     await page.getByRole("tab", { name: "Curriculum" }).click();
@@ -1263,7 +1292,11 @@ test.describe.serial("remediation browser flows", () => {
     await expect(lessonSetup.getByRole("heading", { name: "Lesson setup" }).first()).toBeVisible();
     await lessonSetup.getByLabel("Title").fill(authoredLessonTitle);
     await lessonSetup.getByLabel("Learner summary").fill(authoredLessonSummary);
-    await lessonSetup.getByLabel("Status").selectOption("published");
+    await selectAdminOption(
+      page,
+      lessonSetup.getByText("Status", { exact: true }).locator("..").getByRole("combobox"),
+      "Published",
+    );
     await lessonSetup.getByLabel("Minutes").fill("4");
     await lessonSetup.getByRole("button", { name: "Save lesson" }).click();
     await expect(page.getByText("Lesson saved.")).toBeVisible();
@@ -1274,7 +1307,11 @@ test.describe.serial("remediation browser flows", () => {
     const pageSettings = page.locator("aside").filter({ hasText: "Selected page" }).first();
     await pageSettings.getByLabel("Page title").fill(authoredPageOneTitle);
     await pageSettings.getByLabel("Subtitle").fill("First browser-authored page");
-    await pageSettings.getByLabel("Page type").selectOption("primer");
+    await selectAdminOption(
+      page,
+      pageSettings.getByText("Page type", { exact: true }).locator("..").getByRole("combobox"),
+      "Primer",
+    );
     await page.getByRole("button", { name: "+ Text" }).first().click();
     const textBlock = blockLocator(page, "Text block");
     await textBlock.getByLabel("Heading").fill(authoredTextHeading);
@@ -1361,7 +1398,11 @@ test.describe.serial("remediation browser flows", () => {
     await page.getByRole("tab", { name: "Index" }).click();
     const duplicatedLessonSetup = page.getByRole("tabpanel", { name: "Index" });
     await expect(duplicatedLessonSetup.getByRole("heading", { name: "Lesson setup" }).first()).toBeVisible();
-    await duplicatedLessonSetup.getByLabel("Status").selectOption("published");
+    await selectAdminOption(
+      page,
+      duplicatedLessonSetup.getByText("Status", { exact: true }).locator("..").getByRole("combobox"),
+      "Published",
+    );
     await duplicatedLessonSetup.getByRole("button", { name: "Save lesson" }).click();
     await expect(page.getByText("Lesson saved.")).toBeVisible();
     await page.getByRole("tab", { name: "Review" }).click();
@@ -1374,17 +1415,16 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.getByRole("tab", { name: "Overview" }).click();
     const authoredOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
-    const thumbnailSection = authoredOverviewPanel.locator("details").filter({ hasText: "Course thumbnail" });
-    await thumbnailSection.locator("summary").click();
-    await thumbnailSection.getByRole("tab", { name: "Upload" }).click();
-    await thumbnailSection.locator("input[type='file']").setInputFiles({
+    const courseCoverCard = authoredOverviewPanel.getByRole("heading", { name: "Course Cover" }).locator("..");
+    await courseCoverCard.getByRole("tab", { name: "Upload" }).click();
+    await courseCoverCard.locator("input[type='file']").setInputFiles({
       buffer: readFileSync(cmsUploadFixturePath),
       mimeType: "image/png",
       name: "authored-thumbnail.png",
     });
-    await thumbnailSection.getByLabel("Alt text").fill(uploadedMediaAlt);
-    await thumbnailSection.getByRole("button", { name: "Upload media" }).click();
-    await expect(thumbnailSection.locator(`img[alt="${uploadedMediaAlt}"]`).first()).toBeVisible();
+    await courseCoverCard.getByLabel("Alt text").fill(uploadedMediaAlt);
+    await courseCoverCard.getByRole("button", { name: "Upload media" }).click();
+    await expect(courseCoverCard.getByRole("button", { name: new RegExp(uploadedMediaAlt) })).toBeVisible();
     await authoredOverviewPanel.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
 
@@ -1404,10 +1444,10 @@ test.describe.serial("remediation browser flows", () => {
     expect(coverUploadResponse.status()).toBe(200);
 
     await page.goto(`/admin/courses/${authoredCourseId}?tab=review-publish`);
-    await expect(page.getByText("Course readiness")).toBeVisible();
+    await expect(page.getByText("Course readiness", { exact: true })).toBeVisible();
     await expect(page.getByText("1 blocker")).toBeVisible();
     await expect(page.getByText("Editorial approval complete")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Publish" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Publish Course" })).toBeDisabled();
     await expect(page.getByText("Draft").first()).toBeVisible();
     await page.getByRole("button", { name: "Send for review" }).click();
     await expect(page.getByText("Course sent for review.")).toBeVisible();
@@ -1416,7 +1456,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("Course approved for publishing.")).toBeVisible();
     await expect(page.getByText("Approved").first()).toBeVisible();
     await expect(page.getByText("0 blockers")).toBeVisible();
-    await page.getByRole("button", { name: "Publish" }).click();
+    await page.getByRole("button", { name: "Publish Course" }).click();
     await expect(page.getByText("Course published.")).toBeVisible();
     await expect(page.getByText("Published").first()).toBeVisible();
 
@@ -1502,8 +1542,12 @@ test.describe.serial("remediation browser flows", () => {
     await signIn(page, adminEmail);
 
     await page.goto("/admin/courses");
-    await page.locator("select[name='courseId']").selectOption({ label: courseTitle });
-    await page.getByRole("button", { name: "Use template" }).click();
+    await page.getByRole("button", { name: "Create Course", exact: true }).click();
+    const duplicateCourseDrawer = page.getByRole("dialog", { name: "Create Course" });
+    const duplicateCourseCard = duplicateCourseDrawer.locator("form").filter({ hasText: "Source course" });
+    await selectAdminOption(page, duplicateCourseCard.getByRole("combobox"), courseTitle);
+    await duplicateCourseCard.getByLabel("New title").fill(duplicatedCourseTitle);
+    await duplicateCourseCard.getByRole("button", { name: "Use template" }).click();
     await expect(page.getByText("Course duplicated as a draft.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: duplicatedCourseTitle })).toBeVisible();
     const duplicatedCourseId = page.url().split("/admin/courses/")[1]?.split("?")[0] ?? "";
@@ -1608,17 +1652,16 @@ test.describe.serial("remediation browser flows", () => {
 
     await page.getByRole("tab", { name: "Overview" }).click();
     const duplicatedOverviewPanel = page.getByRole("tabpanel", { name: "Overview" });
-    const duplicatedThumbnailSection = duplicatedOverviewPanel.locator("details").filter({ hasText: "Course thumbnail" });
-    await duplicatedThumbnailSection.locator("summary").click();
-    await duplicatedThumbnailSection.getByRole("tab", { name: "Upload" }).click();
-    await duplicatedThumbnailSection.locator("input[type='file']").setInputFiles({
+    const duplicatedCourseCoverCard = duplicatedOverviewPanel.getByRole("heading", { name: "Course Cover" }).locator("..");
+    await duplicatedCourseCoverCard.getByRole("tab", { name: "Upload" }).click();
+    await duplicatedCourseCoverCard.locator("input[type='file']").setInputFiles({
       buffer: readFileSync(cmsUploadFixturePath),
       mimeType: "image/png",
       name: "cms-upload-fixture.png",
     });
-    await duplicatedThumbnailSection.getByLabel("Alt text").fill(uploadedMediaAlt);
-    await duplicatedThumbnailSection.getByRole("button", { name: "Upload media" }).click();
-    await expect(duplicatedThumbnailSection.locator(`img[alt="${uploadedMediaAlt}"]`).first()).toBeVisible();
+    await duplicatedCourseCoverCard.getByLabel("Alt text").fill(uploadedMediaAlt);
+    await duplicatedCourseCoverCard.getByRole("button", { name: "Upload media" }).click();
+    await expect(duplicatedCourseCoverCard.getByRole("button", { name: new RegExp(uploadedMediaAlt) })).toBeVisible();
     await duplicatedOverviewPanel.getByRole("button", { name: "Save course" }).click();
     await expect(page.getByText("Course saved.")).toBeVisible();
 
@@ -1656,12 +1699,12 @@ test.describe.serial("remediation browser flows", () => {
     });
     expect(invalidUploadResponse.status()).toBe(400);
 
-    await page.goto("/admin/courses/ai/planner");
-    await expect(page.getByRole("heading", { name: "Create with AI" })).toBeVisible();
-    await expect(page.getByText("1. Learning need")).toBeVisible();
-    await expect(page.getByText("2. Intended audience")).toBeVisible();
-    await expect(page.getByText("3. Learning outcomes and constraints")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Create Proposals" })).toBeVisible();
+    await page.goto("/admin/courses/ai/brief");
+    await expect(page.getByRole("heading", { name: "What do you want to teach?" })).toBeVisible();
+    await expect(page.getByText("The learning need")).toBeVisible();
+    await expect(page.getByText("Who's it for?")).toBeVisible();
+    await expect(page.getByText("Tone")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Generate a curriculum" })).toBeVisible();
 
     await page.context().clearCookies();
     await signIn(page, learnerEmail);

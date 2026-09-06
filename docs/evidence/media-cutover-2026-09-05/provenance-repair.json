@@ -1,0 +1,72 @@
+{
+  "capturedAt": "2026-09-05T12:29:03.439Z",
+  "target": "xmqkrsmuokmuzcyivgbi.supabase.co",
+  "applied": true,
+  "changes": [
+    {
+      "id": "2131579b-6fa2-4113-9a8e-fd631180fbb4",
+      "oldUrlSha256": "cc03b2dedea0147e6117d5910406919a6899e61fe239184534e2734f14bd12a5",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "18c7676b-a9df-4849-906b-977727a7e7e3",
+      "oldUrlSha256": "aeb149505165a9c51af70289b70ad08670835993cc015396158526ffc8c54304",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "1afec84b-b921-4f19-b8e5-d0a613b2c67f",
+      "oldUrlSha256": "27fbd32196029d15a6516b7f2eba0aea6ffbda98be05aa9a6fa70e0f66cfd2b9",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "d3dcbf30-00c8-42b6-8bc6-00e698dbe27c",
+      "oldUrlSha256": "655d62711b4baf0791732f04ee496ef3e96d9109c7d09f1e3cbd92fb92bd38fd",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "2fc8c9fd-379c-4d9c-ac8b-1297e6ba8fd1",
+      "oldUrlSha256": "132c000edf6e38c5656b5eb833bbdc4749051a8e16e475a4804768366aaf58b4",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "775fb359-431c-415d-bdd4-ce7afe901186",
+      "oldUrlSha256": "e020fd2f12948c8502e2e55baf362de998f730d581fda1a1d93793be85dad479",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "71f79b89-0ad3-46aa-adce-73c7c849972f",
+      "oldUrlSha256": "15ded364636563c13031f0a6640d44a3378c79541efd6b51731c7bed65ef08e1",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "9c5d6f81-935a-42a4-8f50-e72c9737005c",
+      "oldUrlSha256": "2e5d67edbd74ac15c4b7063fa5f5c80178e969dd8a57d4755feb15c8d0d8bd5d",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "cb086901-29a6-4731-9308-e3ee20b5ab67",
+      "oldUrlSha256": "dcb44f3a030aa585dc57d325bf7ea2091ebe5e7ae1bbfe3772f4398e61a0c2cb",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "e03c002a-3d80-4b2b-9009-7777f26feed5",
+      "oldUrlSha256": "ae075b91740e1b2688816c9036aeb63563eb228de430d69754c05a0133f4c46d",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "e535cd65-f9f7-49ab-91f3-fd7c26fa484b",
+      "oldUrlSha256": "8df9543267374911c38b959e75cd43ac3eb62a40ff8d7cd6b195e6aec63f2409",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "9345973c-6640-4729-9671-21f96e5587aa",
+      "oldUrlSha256": "b0ec7f78345fa0b0788eb7f7b718854078ebe2f675280c97bb5673473973be80",
+      "preservedAs": "metadata.previousStorageObject"
+    },
+    {
+      "id": "7eeb8448-ad31-49f4-a620-ec0ecd07c68f",
+      "oldUrlSha256": "b2dd58b6a990c61946d27bb960acef6b1b08943afb74380f3fd5572919001f30",
+      "preservedAs": "metadata.previousStorageObject"
+    }
+  ]
+}

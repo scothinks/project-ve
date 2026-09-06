@@ -1,0 +1,32 @@
+{
+  "revision": {
+    "head": "ffcbffb80dd03dfd494619f5b7e3d2366cff31e9",
+    "sourceSha256": "daf35fe897e5247247b58657d42b56edd846343637b8de991b0db64ab784a54a",
+    "validationSha256": "fb0e3b7f0140a8104524e3c465b286b50521ffbaf92810df0c13c1e4e1b32ae8",
+    "localBuildId": "eF6NvU_AOrTJkq6G7Vr6D"
+  },
+  "results": {
+    "browser": "3 passed, production build; reader/preview/editor at 1280px and 390px",
+    "typecheck": "passed",
+    "lint": "passed",
+    "guardrails": "20 passed"
+  },
+  "logs": {
+    "browser": {
+      "file": "browser.log",
+      "sha256": "165398eca10c9b6814106335e92a6c435c876150ccbf0891dc8f855a3809e6d4"
+    },
+    "typecheck": {
+      "file": "typecheck.log",
+      "sha256": "21400c74a7de63482d373f1499d1659275c90940c695542101be6641f67b2824"
+    },
+    "lint": {
+      "file": "lint.log",
+      "sha256": "d319ef74e3c0441f95148b1e362ffff1edb1ce3381ee1d7e435181c8c361c30d"
+    },
+    "guardrails": {
+      "file": "guardrails.log",
+      "sha256": "460b646a91cc070231650fe3c600418b9886ff0c59817f8626754b416acbeff1"
+    }
+  }
+}

@@ -13,6 +13,7 @@ export function AdminDrawer({
   description,
   trigger,
   widthClassName = "w-full max-w-[420px]",
+  onCloseAutoFocus,
 }: {
   children: ReactNode;
   onOpenChange?: (open: boolean) => void;
@@ -21,6 +22,7 @@ export function AdminDrawer({
   description?: string;
   trigger?: ReactNode;
   widthClassName?: string;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   return (
     <Dialog.Root onOpenChange={onOpenChange} open={open}>
@@ -28,6 +30,7 @@ export function AdminDrawer({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/30 transition-opacity" />
         <Dialog.Content
+          onCloseAutoFocus={onCloseAutoFocus}
           className={cn(
             "fixed right-0 top-0 z-50 flex h-full flex-col overflow-y-auto border-l border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] shadow-2xl outline-none transition-transform",
             widthClassName,

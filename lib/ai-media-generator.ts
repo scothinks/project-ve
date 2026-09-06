@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Buffer } from "node:buffer";
+import { randomUUID } from "node:crypto";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
 import { createSupabaseAdminClient, getSupabaseAdminConfig } from "@/lib/supabase-admin";
 import { asSupabaseJson } from "@/lib/supabase-rpc";
@@ -94,7 +95,7 @@ function getImageModel() {
 }
 
 function getMediaBucket() {
-  return sanitizeText(process.env.LEARNING_MEDIA_BUCKET ?? "learning-media", 120, "learning-media") || "learning-media";
+  return "learning-media-private";
 }
 
 export function getAiMediaConfig() {
@@ -120,22 +121,8 @@ export function getAiMediaConfig() {
   };
 }
 
-function buildStoragePath(asset: LearningMediaAssetForGeneration, context: LearningMediaGenerationContext) {
-  const assetId = asset.id;
-
-  if (context.lessonId && context.pageId && context.targetKind === "page_cover") {
-    return `courses/${context.courseId}/lessons/${context.lessonId}/pages/${context.pageId}/${assetId}.png`;
-  }
-
-  if (context.lessonId) {
-    return `courses/${context.courseId}/lessons/${context.lessonId}/thumbnail/${assetId}.png`;
-  }
-
-  if (context.targetKind === "course_cover") {
-    return `courses/${context.courseId}/cover/${assetId}.png`;
-  }
-
-  return `courses/${context.courseId}/thumbnail/${assetId}.png`;
+function buildStoragePath() {
+  return `registry/${randomUUID()}.png`;
 }
 
 function getTargetSize(
@@ -219,17 +206,17 @@ function buildImagePrompt(asset: LearningMediaAssetForGeneration, context: Learn
     context.pageSubtitle ? `Page subtitle: ${context.pageSubtitle}` : "",
     context.placementLabel ? `Placement: ${context.placementLabel}` : "",
     `Target usage: ${context.targetKind.replaceAll("_", " ")}`,
-    `Asset brief: ${sanitizeText(asset.prompt, 2000, "Create a warm educational illustration.")}`,
+    `Asset brief: ${sanitizeText(asset.prompt, 2000, "Create an image that supports the teaching purpose.")}`,
     context.revisionFeedback ? `Reviewer requested media changes: ${sanitizeText(context.revisionFeedback, 2000)}` : "",
     asset.alt_text ? `Accessibility guidance: ${sanitizeText(asset.alt_text, 240)}` : "",
     asset.caption ? `Caption guidance: ${sanitizeText(asset.caption, 500)}` : "",
-    "Required style and safety rules:",
+    "Safety and representation rules:",
     "- safe for learners aged roughly 16 to 35",
     "- non-sexual and non-graphic",
     "- non-political and not party propaganda",
     "- no public figures, logos, brands, copyrighted characters, or identifiable private people",
-    "- realistic or clean illustrated style",
-    "- warm, modern educational illustration",
+
+
     "- African youth or community context where appropriate",
     ...getCompositionRules(asset, context),
   ];
@@ -265,7 +252,7 @@ async function extractImageBytes(data: OpenAiImageResponse) {
   throw new Error("The image provider returned an unsupported image payload.");
 }
 
-async function requestGeneratedImage(prompt: string, model: string, size: OpenAiImageSize) {
+export async function requestGeneratedImage(prompt: string, model: string, size: OpenAiImageSize) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is missing. Add it to the server environment before generating media.");
@@ -273,6 +260,7 @@ async function requestGeneratedImage(prompt: string, model: string, size: OpenAi
 
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
+    signal: AbortSignal.timeout(180_000),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
@@ -326,7 +314,7 @@ export async function generateLearningMediaImage(
   const originalPrompt = buildImagePrompt(asset, context);
   const size = getTargetSize(asset, context);
   const previousUrl = asset.url;
-  const storagePath = buildStoragePath(asset, context);
+  const storagePath = buildStoragePath();
 
   const { error: runningError } = await adminSupabase
     .from("learning_media_assets")
@@ -344,7 +332,7 @@ export async function generateLearningMediaImage(
     const generated = await requestGeneratedImage(originalPrompt, model, size);
     const uploadResult = await adminSupabase.storage.from(bucket).upload(storagePath, generated.bytes, {
       contentType: "image/png",
-      upsert: true,
+      upsert: false,
     });
 
     if (uploadResult.error) {
@@ -355,11 +343,23 @@ export async function generateLearningMediaImage(
       );
     }
 
-    const publicUrlResult = adminSupabase.storage.from(bucket).getPublicUrl(storagePath);
-    const publicUrl = sanitizeText(publicUrlResult.data.publicUrl, 1000);
-    if (!publicUrl) {
-      throw new Error(`A public URL could not be created for storage bucket "${bucket}".`);
+    const { data: course, error: courseError } = await adminSupabase.from("courses").select("organization_id").eq("id", context.courseId).single();
+    if (courseError || !course) throw new Error("Could not resolve generated media ownership.");
+    const { data: registered, error: registerError } = await adminSupabase.rpc("service_register_media", {
+      // SQL NULL denotes platform ownership.
+      p_organization_id: course.organization_id as string,
+      p_storage_path: storagePath,
+      p_mime_type: "image/png",
+      p_size: generated.bytes.byteLength,
+      p_title: asset.placement,
+      p_alt_text: asset.alt_text ?? "",
+      p_rights_evidence: "Generated within Project VE; platform stock approval remains a separate rights review.",
+    });
+    if (registerError || !registered) {
+      await adminSupabase.storage.from(bucket).remove([storagePath]);
+      throw new Error(registerError?.message ?? "Could not register generated media.");
     }
+    const publicUrl = (registered as { url: string }).url;
 
     const nextMetadata: JsonRecord = {
       ...metadata,

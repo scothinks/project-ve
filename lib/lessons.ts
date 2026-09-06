@@ -70,6 +70,7 @@ export type LessonPage = {
 
 export type LessonContentBlock =
   | TextBlock
+  | { id: string; type: "media_placeholder"; kind: string; purpose: string; required: boolean }
   | ImageBlock
   | VideoBlock
   | AudioBlock

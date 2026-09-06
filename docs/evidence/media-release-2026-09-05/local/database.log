@@ -1,0 +1,119 @@
+Connecting to local database...
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/ai_generation_worker.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/ai_generation_worker.sql ........................ ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:600: NOTICE:  relation "admin_template_lesson_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:600: NOTICE:  relation "admin_template_page_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:600: NOTICE:  relation "admin_template_media_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:600: NOTICE:  relation "admin_template_quiz_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql:600: NOTICE:  relation "admin_template_question_map" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/cms_template_duplication.sql .................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lesson_draft_publish.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lesson_draft_publish.sql ........................ ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lesson_published_read_boundary.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lesson_published_read_boundary.sql .............. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_assessment_plan_capabilities.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_assessment_plan_capabilities.sql ............ ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:319: NOTICE:  relation "admin_cohort_member_selection" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:363: NOTICE:  relation "admin_course_assignment_users" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:363: NOTICE:  relation "admin_course_assignment_cohorts" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:396: NOTICE:  relation "admin_course_assignment_users" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql:396: NOTICE:  relation "admin_course_assignment_cohorts" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_cohorts_assignments.sql ..................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_completion_transcripts.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_completion_transcripts.sql .................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_course_catalog_model.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_course_catalog_model.sql .................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_content_limits.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_content_limits.sql ............. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_entitlements.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_entitlements.sql ............... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_invitations.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_invitations.sql ................ ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_missions.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_missions.sql ................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_profile_lifecycle.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organization_profile_lifecycle.sql .......... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organizations_memberships.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_organizations_memberships.sql ............... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_p1_release_gate.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_p1_release_gate.sql:1200: NOTICE:  table "lms_reporting_enrolments" does not exist, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_p1_release_gate.sql:1200: NOTICE:  table "lms_reporting_users" does not exist, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_p1_release_gate.sql:1200: NOTICE:  table "lms_reporting_quiz_attempt_scores" does not exist, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_p1_release_gate.sql ......................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_builder.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_builder.sql ....................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_engagement.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_engagement.sql .................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_notifications.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_programme_notifications.sql ................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:864: NOTICE:  table "lms_reporting_enrolments" does not exist, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:864: NOTICE:  table "lms_reporting_users" does not exist, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:864: NOTICE:  table "lms_reporting_quiz_attempt_scores" does not exist, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1003: NOTICE:  relation "instructor_workspace_units" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1003: NOTICE:  relation "instructor_workspace_cohorts" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1003: NOTICE:  relation "instructor_workspace_enrolments" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_units" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_cohorts" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_enrolments" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_units" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_cohorts" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1144: NOTICE:  relation "instructor_workspace_enrolments" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql:1155: NOTICE:  relation "instructor_notification_targets" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_reporting.sql ............................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_self_service_organizations.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/lms_self_service_organizations.sql .............. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_library.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_library.sql ............................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:129: NOTICE:  relation "admin_template_lesson_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:129: NOTICE:  relation "admin_template_page_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:129: NOTICE:  relation "admin_template_media_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:129: NOTICE:  relation "admin_template_quiz_map" already exists, skipping
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql:129: NOTICE:  relation "admin_template_question_map" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/media_release_regressions.sql ................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/notification_security.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/notification_security.sql ....................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/organization_activity_history.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/organization_activity_history.sql ............... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/organization_ai_metering.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/organization_ai_metering.sql .................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p03_organization_learner_workspace_context.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p03_organization_learner_workspace_context.sql .. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p0_release_gate.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p0_release_gate.sql ............................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p11_dashboard_mission_state.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p11_dashboard_mission_state.sql ................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_rwd_starter_rewards.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_rwd_starter_rewards.sql ..................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_accounts.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_accounts.sql ............................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_balances.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_balances.sql ............................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_issuance_controls.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_issuance_controls.sql .................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_learning_earning.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_learning_earning.sql ..................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_presentation.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_presentation.sql ......................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_rewards.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/p15_xp_rewards.sql .............................. ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/platform_catalog_boundary_closure.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/platform_catalog_boundary_closure.sql ........... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/platform_catalog_invitation_email_acl_fix.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/platform_catalog_invitation_email_acl_fix.sql ... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/progress_security.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/progress_security.sql ........................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/quiz_security.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/quiz_security.sql ............................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/rpc_security.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/rpc_security.sql ................................ ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/workspace_xp_settings.sql:3: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/workspace_xp_settings.sql ....................... ok
+psql:/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/xp_ledger_security.sql:5: NOTICE:  extension "pgtap" already exists, skipping
+/Users/scoteritemu/Nu-Project-VE/supabase/tests/database/xp_ledger_security.sql .......................... ok
+All tests successful.
+Files=42, Tests=1078, 95 wallclock secs ( 5.81 usr  1.37 sys +  3.77 cusr  4.30 csys = 15.25 CPU)
+Result: PASS

@@ -200,11 +200,21 @@ test("course readiness aggregates blockers, warnings, lifecycle, and publish gat
   });
 
   assert.equal(incomplete.canApprove, false);
+  assert.equal(incomplete.checks.find(item => item.id === "media-alt").href, "/admin/courses/course-1/media#brief-asset-1");
   assert.deepEqual(
     incomplete.blockers.map((item) => item.id),
     ["course-overview", "assessments", "media-alt"],
   );
   assert.equal(getCourseEditorialLifecycle(course({ ai_text_status: "changes_requested" })), "changes_requested");
+});
+
+test("missing image alt text resolves to the actual block or course artwork", () => {
+  const input = { blocks: [], course: course(), lessons: [lesson()], mediaAssets: [], pages: [page()], questions: [question()], quizzes: [quiz()] };
+  const image = block({ block_type: "image", payload: { src: "https://example.test/image.png", alt: "" } });
+  const blockResult = buildCourseReadiness({ ...input, blocks: [image] });
+  assert.equal(blockResult.checks.find(item => item.id === "media-alt").href, `/admin/courses/lessons/${input.pages[0].lesson_id}?page=${image.page_id}#block-${image.id}`);
+  const coverResult = buildCourseReadiness({ ...input, course: course({ thumbnail: { src: "https://example.test/thumb.png", alt: "" } }) });
+  assert.equal(coverResult.checks.find(item => item.id === "media-alt").href, "/admin/courses/course-1/review#course-artwork");
 });
 
 test("quiz validation blocks invalid publish states and totals XP", () => {
@@ -346,4 +356,13 @@ test("AI-assisted planner transformations stay deterministic without live model 
   assert.equal(getRecommendedQuestionCount(merged.level), 9);
   assert.deepEqual(merged.learningObjectives, ["Identify pressure", "Choose a safer response"]);
   assert.deepEqual(buildSelectedPlanSelection(merged, { generatedCourseId: "course-1" }).generatedCourseId, "course-1");
+});
+
+
+test("course authoring review can approve actual content without prior AI approval or seed batches", () => {
+  const input={blocks:[block()],course:course({ai_generated:true,ai_generation_notes:{authoringVersion:3},ai_text_status:'draft',ai_media_status:'not_started',ai_publish_status:'not_ready'}),lessons:[lesson({ai_generated:true,ai_text_status:'draft',ai_media_status:'not_started'})],mediaAssets:[mediaAsset()],pages:[page()],questions:[question()],quizzes:[quiz()]};
+  const review=buildCourseReadiness(input);
+  assert.equal(review.canApprove,true);assert.equal(review.canPublish,false);
+  assert.equal(buildCourseReadiness({...input,mediaAssets:[]}).canApprove,false);
+  assert.equal(buildCourseReadiness({...input,course:{...input.course,ai_generation_notes:{}}}).canApprove,true);
 });

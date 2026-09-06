@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import type { Lesson } from "@/lib/lessons";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getLessonXP } from "@/lib/lessons";

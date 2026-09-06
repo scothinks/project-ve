@@ -1,0 +1,87 @@
+name: Hosted AI Authoring Qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: Exact protected staging or production URL to qualify
+        required: true
+        default: https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app
+        type: string
+      git_ref:
+        description: Git branch or ref recorded by the Vercel deployment
+        required: true
+        default: codex-ai-course-workflow-polish
+        type: string
+      expected_sha:
+        description: Full Git commit SHA expected on the deployment
+        required: true
+        type: string
+      evidence_path:
+        description: Repository path to completed hosted measurement evidence
+        required: false
+        default: ""
+        type: string
+      run_media_smoke:
+        description: Run the read-only hosted media inventory and delivery smoke
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    env:
+      HOSTED_APP_URL: ${{ inputs.app_url }}
+      HOSTED_GIT_REF: ${{ inputs.git_ref }}
+      HOSTED_EXPECTED_SHA: ${{ inputs.expected_sha }}
+      HOSTED_EVIDENCE_PATH: ${{ inputs.evidence_path }}
+      GITHUB_TOKEN: ${{ github.token }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.HOSTED_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.HOSTED_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.HOSTED_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.expected_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check deployable release contracts
+        run: npm run test:release-readiness
+      - name: Qualify hosted identity, protection, worker boundary, and evidence
+        run: |
+          arguments=(
+            --app-url "$HOSTED_APP_URL"
+            --repo "$GITHUB_REPOSITORY"
+            --ref "$HOSTED_GIT_REF"
+            --expected-sha "$HOSTED_EXPECTED_SHA"
+            --out artifacts/ai-authoring-hosted-qualification.json
+          )
+          if [[ -n "$HOSTED_EVIDENCE_PATH" ]]; then
+            arguments+=(--evidence "$HOSTED_EVIDENCE_PATH")
+          fi
+          node scripts/qualify-ai-authoring-hosted.mjs "${arguments[@]}"
+      - name: Run tenant-safe media smoke
+        if: ${{ always() && inputs.run_media_smoke }}
+        run: |
+          node scripts/media-cutover-verify.mjs \
+            --app-url "$HOSTED_APP_URL" \
+            --out artifacts/media-cutover-verify.json
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-authoring-hosted-qualification-${{ inputs.expected_sha }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 30

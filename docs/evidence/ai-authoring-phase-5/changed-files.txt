@@ -1,0 +1,43 @@
+Phase 5 delta against the inherited Phase 4 workspace snapshot on 2026-09-06.
+M = modified; A = added; D = deleted. This manifest excludes itself.
+
+A app/admin/courses/[id]/media/page.tsx
+M app/admin/courses/[id]/review/page.tsx
+M app/admin/courses/[id]/settings/page.tsx
+M app/admin/courses/ai-actions.ts
+M app/admin/courses/detail-page-actions.ts
+D app/admin/courses/lesson-page-actions.ts
+M app/admin/courses/review-actions.ts
+A app/api/admin/ai/legacy-media/route.ts
+M components/admin/AdminShell.tsx
+M components/admin/LessonReviewSummary.tsx
+M components/admin/ai/AiCourseArtwork.tsx
+A components/admin/ai/LegacyMediaReview.tsx
+M docs/ai-authoring-experience-redesign-plan.md
+M docs/ai-authoring-phase-4.md
+A docs/ai-authoring-phase-5.md
+A docs/evidence/ai-authoring-phase-5/legacy-media-mobile.png
+A docs/evidence/ai-authoring-phase-5/legacy-review-desktop.png
+M docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md
+M docs/project-ve-cms-lms-product-remediation-plan.md
+M docs/project-ve-engineering-remediation-plan.md
+A features/ai-generation/authoring/legacy-contracts.ts
+D features/learning/admin/course-media-workspace.tsx
+M features/learning/admin/course-readiness.ts
+D features/learning/admin/lesson-detail-ai-media-section.tsx
+M features/learning/admin/lesson-page-builder-ui.tsx
+A supabase/migrations/20260907010000_ai_legacy_media_mapping.sql
+A supabase/migrations/20260907011000_ai_legacy_job_choices.sql
+A supabase/migrations/20260907012000_ai_legacy_review_cutover.sql
+A supabase/migrations/20260907013000_ai_legacy_mapping_types.sql
+A supabase/migrations/20260907014000_ai_legacy_mapping_errors.sql
+A supabase/migrations/20260907015000_ai_legacy_rolling_queue.sql
+A supabase/migrations/20260907016000_ai_legacy_cancel_accounting.sql
+A supabase/migrations/20260907017000_ai_legacy_backfill.sql
+A supabase/tests/database/ai_legacy_cutover.sql
+M tests/e2e/ai-image-authoring.spec.ts
+A tests/e2e/ai-legacy-cutover.spec.ts
+M tests/unit/ai-authoring-routes.test.mjs
+A tests/unit/ai-legacy-cutover.test.mjs
+M tests/unit/cms-product-regressions.test.mjs
+M types/database.ts

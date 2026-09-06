@@ -249,6 +249,9 @@ select extensions.is(
 );
 
 reset role;
+reset role;
+-- Publish the completed content fixtures before switching to learner access.
+update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id = 'lesson-p15c-xp-learning' and status = 'published';
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 select public.complete_values_assessment(

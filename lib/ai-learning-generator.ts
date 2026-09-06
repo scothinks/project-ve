@@ -1,3 +1,5 @@
+import { PAGE_ADVICE_SCHEMA, pageAssistantInstructions, readPageAdvice, type PageAdvice } from "@/features/ai-generation/authoring/page-assistant";
+import { MEDIA_PLACEHOLDER_SCHEMA, normalizeMediaPlaceholder } from "./media-intent.ts";
 import "server-only";
 
 import { sanitizePlainTextInput } from "@/lib/input-safety";
@@ -27,7 +29,7 @@ export type AiGeneratedBlock = {
   payload: Record<string, unknown>;
 };
 
-export type AiGeneratedPage = {
+export type AiGeneratedPage = Partial<PageAdvice> & {
   title: string;
   subtitle: string;
   pageType: AiGeneratorPageType;
@@ -473,7 +475,8 @@ function buildExtensionPrompt(input: AiCourseGenerationInput, context: AiCourseE
   ].join("\n");
 }
 
-function normalizeBlockPayload(blockType: AiGeneratorBlockType, payload: Record<string, unknown>) {
+function normalizeBlockPayload(blockType: AiGeneratorBlockType, payload: Record<string, unknown>): Record<string, unknown> {
+  if (["image", "video", "audio"].includes(blockType) && payload.mediaIntent) return normalizeMediaPlaceholder(blockType, payload);
   if (blockType === "callout") {
     return {
       variant: ["tip", "warning", "example"].includes(asString(payload.variant, 24))
@@ -826,4 +829,392 @@ export async function generateAiLessonExtension(
 ): Promise<AiGeneratedCourseDraft> {
   const input = clampAiGenerationRequest(rawInput);
   return requestAiCourseDraft(input, buildExtensionPrompt(input, context));
+}
+
+export type AiLessonPageExtensionContext = {
+  assistant?: boolean;
+  pageCount?: number;
+  contextTruncated?: boolean;
+  textOnly?: boolean;
+  mediaPlaceholders?: boolean;
+  course: {
+    title: string;
+    category: string;
+    level: AiGeneratorLevel;
+  };
+  lesson: {
+    title: string;
+    description: string;
+  };
+  existingPages: Array<{
+    title: string;
+    pageType: AiGeneratorPageType;
+    content?: string;
+  }>;
+  focus: string;
+  pageType: AiGeneratorPageType;
+  priorDraft?: AiGeneratedPage | null;
+  refinementInstruction?: string;
+};
+
+const PAGE_RESPONSE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["title", "subtitle", "pageType", "blocks"],
+  properties: {
+    title: { type: "string" },
+    subtitle: { type: "string" },
+    pageType: { type: "string", enum: ["concept", "scenario", "reflection", "summary"] },
+    blocks: {
+      type: "array",
+      items: {
+        anyOf: [
+          TEXT_BLOCK_SCHEMA,
+          CALLOUT_BLOCK_SCHEMA,
+          IMAGE_BLOCK_SCHEMA,
+          VIDEO_BLOCK_SCHEMA,
+          AUDIO_BLOCK_SCHEMA,
+          TABLE_BLOCK_SCHEMA,
+        ],
+      },
+    },
+  },
+} as const;
+
+function buildLessonPageExtensionPrompt(context: AiLessonPageExtensionContext) {
+  const existingPageLines = context.existingPages.length > 0
+    ? context.existingPages.map((page, index) => `${index + 1}. ${page.title} (${page.pageType})`).join("\n")
+    : "No pages yet — this will be the first page in the lesson.";
+
+  const lines = [
+    context.assistant
+      ? "Recommend what would help this values education lesson next. Return a useful page draft or a suggestion to review the quiz, as strict JSON matching the schema."
+      : "Draft ONE new page for an existing safe, plain-language values education lesson, as strict JSON matching the schema.",
+    `Course: ${context.course.title} (${context.course.category}, ${context.course.level})`,
+    `Lesson: ${context.lesson.title} — ${context.lesson.description}`,
+    "Pages already in this lesson, in order:",
+    existingPageLines,
+    context.assistant ? "Choose the appropriate page type yourself." : `New page type: ${context.pageType}`,
+    `What this page should focus on: ${context.focus || "Continue the lesson's existing arc naturally."}`,
+    "Requirements:",
+    context.assistant ? "- Return one recommendation object. A review_quiz decision has an empty blocks array." : "- Return exactly ONE page object, not a list.",
+    "- Do not duplicate or closely restate any existing page.",
+    "- Match the lesson's existing tone and reading level.",
+    "- Use simple language suitable for semi-literate to secondary-school learners.",
+    "- Avoid party propaganda, hate, sexual content, medical advice, legal advice, financial advice, or unsafe instructions.",
+    "- For a page draft, keep blocks mostly text, callout, and table — at least 2 and at most 4 blocks.",
+    "- Keep table payloads simple: columns as short labels and rows as arrays of short strings.",
+  ];
+
+  if (context.assistant) lines.push(pageAssistantInstructions(context));
+
+  if (context.mediaPlaceholders) lines.push("- Add an optional image, video or audio placeholder only when it helps explain this page. Give it a concrete purpose and aspect ratio; match mediaIntent.kind to blockType. Do not add one to every page. No URLs, assets or media generation. Keep the teaching text self-contained without references to unseen media. Use style inheritance; do not impose a visual style.");
+  else if (context.textOnly) lines.push("- Use only text, callout and table blocks. No media blocks, URLs, placeholders or references to unseen visuals.");
+
+  if (context.priorDraft && context.refinementInstruction) {
+    lines.push(
+      context.assistant ? "Consider the earlier recommendation or draft and the editor’s feedback:" : "You already drafted this page once. Refine that draft rather than starting over:",
+      JSON.stringify(context.priorDraft),
+      `Requested change: ${context.refinementInstruction}`,
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function normalizePageShape(raw: unknown): AiGeneratedPage {
+  const pageRecord = asObject(raw);
+  if (!pageRecord) {
+    throw new Error("The AI response did not include a usable page.");
+  }
+
+  const rawBlocks = Array.isArray(pageRecord.blocks) ? pageRecord.blocks : [];
+  if (rawBlocks.length === 0) {
+    throw new Error("The AI-drafted page has no content blocks.");
+  }
+
+  const pageType = asString(pageRecord.pageType, 40) as AiGeneratorPageType;
+  if (!["concept", "scenario", "reflection", "summary"].includes(pageType)) {
+    throw new Error("The AI-drafted page has an invalid page type.");
+  }
+
+  const blocks = rawBlocks.slice(0, 4).map((blockValue, blockIndex) => {
+    const blockRecord = asObject(blockValue);
+    if (!blockRecord) {
+      throw new Error(`Block ${blockIndex + 1} is malformed.`);
+    }
+
+    const blockType = asString(blockRecord.blockType, 40) as AiGeneratorBlockType;
+    if (!["text", "callout", "image", "video", "audio", "table"].includes(blockType)) {
+      throw new Error(`Block ${blockIndex + 1} has an invalid block type.`);
+    }
+
+    const payload = normalizeBlockPayload(blockType, asObject(blockRecord.payload) ?? {});
+    if (blockType === "text" && !payload.body) {
+      throw new Error(`Block ${blockIndex + 1} needs text content.`);
+    }
+    if (blockType === "callout" && !payload.body) {
+      throw new Error(`Block ${blockIndex + 1} needs callout text.`);
+    }
+
+    return { blockType, payload };
+  });
+
+  const title = asString(pageRecord.title, 160);
+  if (!title) {
+    throw new Error("The AI-drafted page is missing a title.");
+  }
+
+  return {
+    title,
+    subtitle: asString(pageRecord.subtitle, 300),
+    pageType,
+    blocks,
+  };
+}
+
+export async function generateAiLessonPageExtension(
+  context: AiLessonPageExtensionContext,
+): Promise<AiGeneratedPage> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is missing. Add it to the server environment before generating AI drafts.");
+  }
+
+  const prompt = buildLessonPageExtensionPrompt(context);
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    signal: AbortSignal.timeout(120_000),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: DEFAULT_TEXT_MODEL,
+      store: false,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: context.assistant
+                ? "You help editors decide what their lesson needs. Recommend and draft a useful page, or recommend reviewing the quiz when no addition is needed. Return strict JSON only."
+                : "You draft one lesson page at a time for a safe educational course. Return strict JSON only.",
+            },
+          ],
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "learning_lesson_page",
+          schema: context.textOnly || context.mediaPlaceholders ? {
+            ...PAGE_RESPONSE_SCHEMA,
+            required: [...PAGE_RESPONSE_SCHEMA.required, ...(context.assistant ? ["decision", "reason", "position"] : [])],
+            properties: { ...PAGE_RESPONSE_SCHEMA.properties, ...(context.assistant ? PAGE_ADVICE_SCHEMA : {}), blocks: {
+              type: "array", items: { anyOf: [TEXT_BLOCK_SCHEMA, CALLOUT_BLOCK_SCHEMA, TABLE_BLOCK_SCHEMA, ...(context.mediaPlaceholders ? [MEDIA_PLACEHOLDER_SCHEMA] : [])] },
+            } },
+          } : PAGE_RESPONSE_SCHEMA,
+          strict: true,
+        },
+      },
+    }),
+  });
+
+  const payload = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    const apiError = asObject(payload.error);
+    const message = asString(apiError?.message, 500) || "The AI provider rejected the page request.";
+    throw new Error(message);
+  }
+
+  const rawText = extractResponseText(payload);
+  if (!rawText) {
+    throw new Error("The AI provider returned an empty response for the page.");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    throw new Error("The AI provider returned invalid JSON for the page.");
+  }
+
+  if (context.assistant) {
+    const record = asObject(parsed);
+    if (!record) throw new Error("The assistant returned an invalid recommendation.");
+    const advice = readPageAdvice(record, context.pageCount ?? context.existingPages.length, context.contextTruncated);
+    if (advice.decision === "review_quiz") return { ...advice, title: asString(record.title, 160) || "Review your quiz", subtitle: "", pageType: "concept", blocks: [] };
+    return { ...normalizePageShape(parsed), ...advice };
+  }
+  return normalizePageShape(parsed);
+}
+
+export type AiQuizQuestionGenerationContext = {
+  course: {
+    title: string;
+    category: string;
+    level: AiGeneratorLevel;
+  };
+  lesson: {
+    title: string;
+    description: string;
+  };
+  existingQuestions: Array<{ prompt: string }>;
+};
+
+const QUESTION_RESPONSE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["prompt", "questionType", "explanation", "xp", "options"],
+  properties: {
+    prompt: { type: "string" },
+    questionType: { type: "string", enum: ["single_choice"] },
+    explanation: { type: "string" },
+    xp: { type: "number" },
+    options: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["label", "isCorrect"],
+        properties: {
+          label: { type: "string" },
+          isCorrect: { type: "boolean" },
+        },
+      },
+    },
+  },
+} as const;
+
+function buildQuizQuestionPrompt(context: AiQuizQuestionGenerationContext) {
+  const existingLines = context.existingQuestions.length > 0
+    ? context.existingQuestions.map((question, index) => `${index + 1}. ${question.prompt}`).join("\n")
+    : "No questions yet — this will be the first question in the quiz.";
+
+  return [
+    "Draft ONE new quiz question for an existing safe, plain-language values education lesson, as strict JSON matching the schema.",
+    `Course: ${context.course.title} (${context.course.category}, ${context.course.level})`,
+    `Lesson: ${context.lesson.title} — ${context.lesson.description}`,
+    "Questions already in this quiz:",
+    existingLines,
+    "Requirements:",
+    "- Return exactly ONE question object, not a list.",
+    "- The question must be single_choice with 2 to 4 options and exactly 1 correct answer.",
+    "- Do not duplicate or closely restate any existing question.",
+    "- Require the learner to pause, compare options, and apply the lesson to a realistic situation rather than basic recall.",
+    "- Match the lesson's existing tone and reading level.",
+    "- Use simple language suitable for semi-literate to secondary-school learners.",
+    "- Avoid party propaganda, hate, sexual content, medical advice, legal advice, financial advice, or unsafe instructions.",
+    `- xp should be an integer between ${MIN_QUESTION_XP} and ${MAX_QUESTION_XP}.`,
+  ].join("\n");
+}
+
+function normalizeQuestionShape(raw: unknown): AiGeneratedQuestion {
+  const record = asObject(raw);
+  if (!record) {
+    throw new Error("The AI response did not include a usable question.");
+  }
+
+  const prompt = asString(record.prompt, 500);
+  if (!prompt) {
+    throw new Error("The AI-drafted question is missing a prompt.");
+  }
+
+  const options = normalizeQuestionOptions(record.options);
+  const rawXp = typeof record.xp === "number" ? record.xp : Number(record.xp);
+  const xp = Number.isFinite(rawXp)
+    ? Math.min(MAX_QUESTION_XP, Math.max(MIN_QUESTION_XP, Math.round(rawXp)))
+    : MIN_QUESTION_XP;
+
+  return {
+    prompt,
+    questionType: "single_choice",
+    explanation: asString(record.explanation, 1000),
+    xp,
+    options,
+  };
+}
+
+export async function generateAiQuizQuestion(
+  context: AiQuizQuestionGenerationContext,
+): Promise<AiGeneratedQuestion> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is missing. Add it to the server environment before generating AI drafts.");
+  }
+
+  const prompt = buildQuizQuestionPrompt(context);
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: DEFAULT_TEXT_MODEL,
+      store: false,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: "You draft one quiz question at a time for a safe educational course. Return strict JSON only.",
+            },
+          ],
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "learning_quiz_question",
+          schema: QUESTION_RESPONSE_SCHEMA,
+          strict: true,
+        },
+      },
+    }),
+  });
+
+  const payload = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    const apiError = asObject(payload.error);
+    const message = asString(apiError?.message, 500) || "The AI provider rejected the question request.";
+    throw new Error(message);
+  }
+
+  const rawText = extractResponseText(payload);
+  if (!rawText) {
+    throw new Error("The AI provider returned an empty response for the question.");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    throw new Error("The AI provider returned invalid JSON for the question.");
+  }
+
+  return normalizeQuestionShape(parsed);
 }

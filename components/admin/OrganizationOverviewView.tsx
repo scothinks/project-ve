@@ -204,6 +204,7 @@ export function OrganizationOverviewView({
             }
           />
           <AdminMetricCard
+            action={overview.pendingRewardClaims > 0 ? { label: "Fulfill now", href: "/admin/redemptions" } : undefined}
             helpText="Pending fulfillment"
             icon={<AdminRewardsIcon className="text-[18px] text-[var(--admin-secondary)]" />}
             label="Reward Claims"

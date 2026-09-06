@@ -1,0 +1,328 @@
+{
+  "capturedAt": "2026-09-05T12:30:58.670Z",
+  "target": "xmqkrsmuokmuzcyivgbi.supabase.co",
+  "appUrl": "http://localhost:3001",
+  "inventory": {
+    "issues": [],
+    "versions": 16,
+    "publicBuckets": [],
+    "unverifiedVersions": 16
+  },
+  "delivery": [
+    {
+      "versionId": "783a17ab-8f35-46e9-b01f-31d6b4539ce4",
+      "expectedAnonymousAccess": false,
+      "status": 404,
+      "bytes": 0,
+      "matchesStorage": null,
+      "contentRange": null,
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "2a4a2cad-61f8-4cf5-9e26-207f57a229bb",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2363203",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "9db46405-58a1-4b53-89d3-597566c53446",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2375930",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "69057e8c-7a62-4e5d-a0a4-ade65d0db81b",
+      "expectedAnonymousAccess": false,
+      "status": 404,
+      "bytes": 0,
+      "matchesStorage": null,
+      "contentRange": null,
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "4bf14efe-4c7e-4c55-84fc-5d0dde3852cd",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2742757",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "29ffdc09-34b1-4930-9a5d-4e5eb829d4a0",
+      "expectedAnonymousAccess": false,
+      "status": 404,
+      "bytes": 0,
+      "matchesStorage": null,
+      "contentRange": null,
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "2d82ca0b-2aa3-4db7-a064-6185e90946c8",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2624296",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "db691a06-d599-411e-a255-004ca454978d",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2781309",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "e6a3f693-976f-40cb-a1f0-b94b7e26a0f5",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2583271",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "fe260a6b-cfed-4a29-a7f5-e03ff72bd753",
+      "expectedAnonymousAccess": false,
+      "status": 404,
+      "bytes": 0,
+      "matchesStorage": null,
+      "contentRange": null,
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "0c1ab867-d5c6-43af-a322-6e30abe1c1cb",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2324947",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "06f99a8a-5ddc-42db-8ecc-49eb54e4574b",
+      "expectedAnonymousAccess": false,
+      "status": 404,
+      "bytes": 0,
+      "matchesStorage": null,
+      "contentRange": null,
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "62548c49-990e-47da-b2bc-bffa47c7a278",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2836885",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "a62ad52a-76f5-46c6-8154-642522912208",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2608793",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "6e87ef25-8124-4149-a771-cb1efac51f8e",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2598352",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    },
+    {
+      "versionId": "4cc8a1eb-d337-4079-97fa-6b0cd01be2ec",
+      "expectedAnonymousAccess": true,
+      "status": 206,
+      "bytes": 64,
+      "matchesStorage": true,
+      "contentRange": "bytes 0-63/2853735",
+      "cacheControl": "private, no-store",
+      "csp": "default-src 'none'; sandbox",
+      "passed": true
+    }
+  ],
+  "objects": [
+    {
+      "pathSha256": "fecb3d90c0941959be306b94f05ee4091dd21b55d8a85204d1dd9419bcaf5211",
+      "signedStatus": 200,
+      "byteLength": 2674899,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "af2fb9b1997c64152367e54825bc37412f5ff762e6d6e8ba228705dd8bde28c0",
+      "signedStatus": 200,
+      "byteLength": 2742757,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "761e883e90e5292143e63ceb3c5bad057ca67f50aa27f419d8a761a57141e94b",
+      "signedStatus": 200,
+      "byteLength": 2375930,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "899ae05490decab1b336029daed30f1199fe4b4379ea391db4794ecf15a985bd",
+      "signedStatus": 200,
+      "byteLength": 2363203,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "3cd3ad78e8fddfb71619cf7c88e51c94e1830046f9055a1c0f11f533d96ac320",
+      "signedStatus": 200,
+      "byteLength": 2598352,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "0a0f45af4c3c4f33f6b6d86b13739272636aea3a030e9d4cf3f10e073eed9ab7",
+      "signedStatus": 200,
+      "byteLength": 2836885,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "b59dff29a0b5d515fbc6456f09db9c2d46d4d81a8af354e2ccf181fe81caa3fa",
+      "signedStatus": 200,
+      "byteLength": 2583271,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "2c8f3d01171dfd24624eaa7fc0a5ca8747be104dc61b1c1bd9875e7714dd6ada",
+      "signedStatus": 200,
+      "byteLength": 2781309,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "abe4080b2555e5917493b405faaf82e818b5dc2f0fd14b3e14fc05293f49b116",
+      "signedStatus": 200,
+      "byteLength": 2608793,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "1c50f3a518d91d0fe3636b90c092bf32476b618d6347e71b0e967615e337b72d",
+      "signedStatus": 200,
+      "byteLength": 3045093,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "f2aa0a12396ee47ae4c74995f43ca2c52528a08d00f9eb46a6b0f3dd5f044697",
+      "signedStatus": 200,
+      "byteLength": 2643869,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "183005e8edce47ea476644f0f93cd4c5babbb1874f22ee850cce908470d20bca",
+      "signedStatus": 200,
+      "byteLength": 2624296,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "ebb02e75db325ceb3f5156ac9481ad8db2d799f4c3065aa05b880114aef159f0",
+      "signedStatus": 200,
+      "byteLength": 2853735,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "6f6d28a79722b11e92b0c3f70180aef15f09aca2c83b326202c2882050cf6be3",
+      "signedStatus": 200,
+      "byteLength": 2324947,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "a5073e97c7fb7bee5329e289b6136c8f55e014156e76dff8baa86da9d24081fb",
+      "signedStatus": 200,
+      "byteLength": 1770273,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    },
+    {
+      "pathSha256": "2295c0e6013eac5721225e5a97c3027d722e8b4e622c2af54b5b93e831d3865c",
+      "signedStatus": 200,
+      "byteLength": 1659153,
+      "publicStatus": 400,
+      "publicCacheControl": "no-cache",
+      "cacheStatus": "BYPASS"
+    }
+  ],
+  "allDeliveryChecksPassed": true,
+  "allListedObjectsExist": true,
+  "allListedPublicUrlsDenied": true,
+  "limitations": [
+    "Anonymous delivery checks do not exercise editor sessions or org membership.",
+    "Listed storage objects are not a private-registry-to-object join.",
+    "One location and time do not establish expiry at every CDN edge or browser cache.",
+    "RPC availability is not migration-ledger parity."
+  ]
+}

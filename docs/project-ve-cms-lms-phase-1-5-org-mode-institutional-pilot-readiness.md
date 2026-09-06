@@ -1,6 +1,113 @@
 # Project Ve CMS/LMS Remediation Addendum
 
+## AI authoring Phase 6, 2026-09-06
+
+Phase 6 implementation and local validation are complete. The integrated
+Phase 1–5 implementation now includes
+bounded worker-outage recovery, retained-image registration repair, conservative
+partial-work settlement and delay notices that work even when streams stay
+silent. Existing tenant, lease, credit, media and publication boundaries remain.
+See [Phase 6 evidence](ai-authoring-phase-6.md) for the release acceptance matrix,
+exact local checks and remaining hosted/provider qualification. Full release is
+not closed: deployment/runtime evidence and explicitly capped real-output review
+are still required. This does not open engineering P2 or authorize deployment.
+
+## AI authoring Phase 5, 2026-09-06
+
+Review and legacy cutover are implemented and locally validated. Exact, auditable
+brief mapping preserves selected assets, approvals and published snapshots;
+ambiguous briefs require an explicit destination. Earlier queued media requests
+require Continue or Cancel with existing credit accounting, while active work
+keeps its worker compatibility. Legacy drafts use explicit Review and Publish
+without inline-media quotas. Cover and attached-asset protections remain.
+The settings media grid and obsolete bulk-media actions are retired; resolution
+links lead to current controls. See [Phase 5 evidence](ai-authoring-phase-5.md).
+Phase 6 release hardening is now authorized; hosted activation and capped
+real-output qualification remain release gates. Closed P1.5 architecture and the engineering P2 boundary are unchanged.
+
+## AI authoring Phase 4, 2026-09-06
+
+Contextual individual images are implemented and locally validated: explicit
+style/brief and cost acceptance, durable private versions, retained recovery,
+Generated/Unused discovery and atomic Use image. Course defaults and block
+style overrides persist without charging; existing leases, metering, registry
+permissions, cover requirements and discretionary inline media remain enforced.
+See [Phase 4 evidence](ai-authoring-phase-4.md) for migrations and exact validation.
+Hosted activation and capped real-output qualification remain separate release
+gates. Phase 5 was subsequently completed locally; Phase 6 is now authorized; see the current evidence above; the closed P1.5 architecture and engineering P2
+boundary are unchanged.
+
+## AI authoring Phase 3 bounded extension, 2026-09-06
+
+The course-authoring journey adds editable outlines, intentional teaching
+composition, recoverable staged drafts and explicit atomic application/review.
+It reuses the closed P1.5 job, metering, workspace permission and media boundaries;
+no P1.5 architecture or engineering P2 work is reopened. Implementation and local
+validation are complete. See [Phase 3 evidence](ai-authoring-phase-3.md)
+for migrations, validation and the default-off hosted rollout boundary.
+
+## Organisation media and permitted Platform Catalog assets, 2026-09-05
+
+The user authorised the reviewed media plan in `docs/org-media-platform-library-plan.md`.
+The local implementation adds organisation-owned reusable media, explicitly
+permitted platform stock, immutable versions and saved-placement authorisations.
+Org-to-org media sharing remains unavailable. Private upload/delivery paths and
+owner/admin controls preserve published references during withdrawal and flag
+revoked media for replacement.
+
+This is a bounded product extension with a cross-cutting ownership/storage
+migration. The user reports migrations through `20260905180000` pushed.
+The [regression report](media-release-evidence-2026-09-05.md) records the earlier
+1,078 database assertions, 171 unit tests, repository contracts and local gates.
+The subsequent [cutover report](media-cutover-evidence-2026-09-05.md) records the
+completed linked-database privacy cutover against the local Project VE app on
+port 3001: zero public media buckets, all 16 legacy public URLs denied, all 16
+stored files retained, and all 16 anonymous app delivery decisions preserved.
+Thirteen historical `metadata.previousUrl` values were preserved as bucket/path
+provenance before the unmodified closure guard passed. No new rights approvals,
+object deletions, schema changes, database resets or P2 work were performed.
+
+The shared video frame and empty video blocks are now 16:9. Three production
+browser cases pass, including reader/preview/editor dimensions at desktop and
+mobile widths, playback, seeking and revocation. Typecheck, lint and 20 guardrails
+also pass on the exact source/build recorded in the cutover report. Removing an
+org’s stock permission still follows ordinary withdrawal for saved placements.
+
+Hosted app deployment, migration-ledger parity, forward replay against a target
+snapshot, private-registry/reference reconciliation and every CDN edge remain
+outside the evidence captured here. Bucket closure is complete; full hosted
+production readiness is not claimed.
+
+
 # Phase 1.5: Org Mode and Institutional Pilot Readiness
+
+## Lesson draft/publication cutover, 2026-09-05
+
+`LESSON-DRAFT-PUBLISH-001` now includes both the database prerequisites and
+application cutover in `docs/lesson-draft-publish-spec.md`. Learners read published
+lesson metadata and content through tenant-scoped views; raw drafts remain
+editor-only. Durable page identities preserve ordinary and programme completion
+history when draft pages are deleted. Completion, quiz policy and mission readers
+use the published page set; historical pages do not inflate current completion.
+
+The builder saves its full draft in one transaction. Revision-checked save,
+publish and revert reject stale tabs with HTTP 409. Canonical saved values are
+reconciled without discarding edits made during an in-flight save. Admin previews
+remain draft previews; quiz content and tags retain their separate lifecycle.
+
+Local gates: 40 database files / 946 assertions, 163 unit tests, 17 guardrails,
+demo/live/publication repository contracts, quiz XP concurrency, economic
+integrity, and the focused publication Playwright workflow. Type parity,
+typecheck, lint and production build pass. The existing database, repository,
+guardrail and browser CI commands include the new coverage. The only full-tree
+whitespace finding is the pre-existing trailing blank line in
+`features/learning/admin/planner-commands.ts:450`.
+
+The user reported deploying the original `20260904100000` snapshot migration.
+The `20260904110000` published-read boundary and `20260904120000` atomic-builder
+migrations are applied locally; deploy them with the matching application as a
+coordinated release. Hosted rollout/smoke checks remain pending. No P2 work or
+local database reset was performed.
 
 ## Document status
 
@@ -51,6 +158,38 @@ suite, all 37 database files / 816 assertions, 158 unit tests, 13 guardrail
 tests, the focused 3-test browser suite, typecheck, lint, database-type parity,
 quiz-XP concurrency, economic integrity and the production build. This does
 not reopen P1.5 architecture or authorise P2.
+
+Narrow invitation ACL follow-up, 2026-08-31:
+`HOTFIX-P15F-CATALOG-INVITE-ACL-001` removes the deployed dependency between
+the public Platform Catalog invitation boundaries and the revoked
+`private.authenticated_user_email()` helper. Invitation reads and responses use
+the normalized email from the signed caller JWT; helper ACLs, RLS and table
+grants remain closed. Validation passed a clean migration replay, the focused
+12-assertion invitation contract, the existing 31-assertion Catalog boundary
+suite, all 38 database files / 833 assertions, 13 guardrail tests, typecheck,
+lint, and an isolated production build plus the focused 3-test browser suite
+with a pending Catalog invitation. P2 remains blocked.
+
+A recurring hosted 42501 revealed that the deployed invitation SELECT policy,
+unlike the repaired function, still carried the original inline private-helper
+call. Migration `20260901010000_platform_catalog_invitation_policy_acl_fix.sql`
+rebinds the policy to the public read boundary and reloads the PostgREST schema
+cache without broadening grants. It was applied to the linked hosted project
+after a one-migration dry run, and the post-deploy public-schema dump confirmed
+the corrected policy expression and zero remaining `authenticated_user_email`
+references.
+
+Hosted invitation ACL completion, 2026-08-31:
+`HOTFIX-P15F-ORG-INVITE-ACL-001` removes the same revoked-helper dependency from
+organisation invitation RLS, the pending-invitation read model and invitation
+responses. Migration `20260831110000_organization_invitation_email_acl_fix.sql`
+was the only item in the hosted dry run and was applied successfully. A
+post-deploy function inspection confirmed zero organisation-boundary references
+to the private helper, whose API-role ACL remains closed. A later complete
+schema dump exposed the separate legacy Platform Catalog policy described
+above. The expanded organisation invitation suite
+passed 26/26 and the aggregate local database gate passed 38 files / 833
+assertions. P2 remains blocked.
 
 This addendum inserts a new phase:
 
@@ -4949,3 +5088,44 @@ P1.5 Org Mode and institutional pilot readiness
 P2 Enterprise and institutional expansion
 → BLOCKED UNTIL HOSTED QUERY EVIDENCE IS CAPTURED AND REVIEWED
 ```
+## AI authoring page pilot follow-up, 2026-09-05
+
+The bounded Phase 1 page-authoring extension reuses the accepted P1.5E ledger and
+lease model. Quotes do not reserve; accepted starts reserve once; stopping before
+provider work releases allocation, while started outcomes use existing settlement
+policy. Candidate application and dismissal cannot release generation charges.
+Durable candidate/application recovery is documented in
+[AI authoring Phase 1](ai-authoring-phase-1.md), including local test evidence and
+pending hosted rollout checks. P1.5 closure and the restriction on starting P2
+remain unchanged.
+
+The Phase 1 placeholder correction adds optional media intent to generated pages
+without reserving image credits or creating files. Empty optional slots are
+omitted for learners; legacy required inline slots no longer block publication after the Phase 2 user clarification; attached-media authorization remains enforced. Existing media registry and approval gates remain
+in force.
+
+Image placeholder briefs now carry lesson/page teaching context into the picker.
+Editor changes autosave with the block and survive reopening/reload; preparing
+a brief makes no generation request or credit reservation. Live picker image
+generation and style controls remain in the planned media phase.
+
+The Phase 1 assistant follow-up removes mandatory page-planning decisions and the
+old sidebar generator. A single metered request reviews lesson teaching context
+and prepares a recommendation/draft, or a no-page suggestion to review the quiz.
+The existing ledger, revision guard, publication and private-result boundaries
+remain in force. Migration `20260906080000` adds this locally; P1.5 closure and
+the P2 restriction remain unchanged.
+
+Phase 1 authoring implementation is now locally closed: the final production
+build and three browser scenarios pass, alongside the focused gates documented
+in `docs/ai-authoring-phase-1.md`. Hosted activation remains pending.
+
+
+## AI authoring Phase 2 follow-up, 2026-09-06
+
+Quiz and lesson assistance reuse the accepted P1.5E metering/lease model with
+retained candidates and explicit application. Local tests cover organisation
+reservation, settlement and no-charge receipt replay. The user confirmed that
+inline-media presence never blocks review/publishing; cover and attached-asset
+security rules stay in place. See [Phase 2 evidence](ai-authoring-phase-2.md).
+P1.5 remains closed; engineering P2 is not authorized by this product phase.

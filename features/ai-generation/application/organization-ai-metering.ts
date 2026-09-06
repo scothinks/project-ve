@@ -12,6 +12,8 @@ type AiMeteringClient = SupabaseClient<Database>;
 export type OrganizationAiOperationType =
   | "ai_course_draft"
   | "ai_lesson_extension"
+  | "ai_lesson_page_extension"
+  | "ai_quiz_question_generation"
   | "ai_course_text_revision"
   | "ai_course_media_assets"
   | "ai_lesson_media_assets"
@@ -70,6 +72,18 @@ export function estimateCourseTextUnits(
   const base = operationType === "ai_course_text_revision" ? 60 : 100;
 
   return base + lessonCount * 35 + lessonCount * questionsPerLesson * 6;
+}
+
+export function estimateLessonPageExtensionUnits() {
+  // A single page is a small fraction of a full lesson (~4 pages on average),
+  // so this is priced as a quarter of the base lesson-extension cost.
+  return 40;
+}
+
+export function estimateQuizQuestionGenerationUnits() {
+  // A single question is a small fraction of a full quiz (~8 questions on
+  // average), priced below a page since there's no block-level content.
+  return 20;
 }
 
 export function estimateMediaUnits(
@@ -191,4 +205,86 @@ export async function reconcileOrganizationAiUsage(
   });
 
   if (error) throw error;
+}
+
+export type OrganizationAiUsageSummary = {
+  allocatedUnits: number;
+  monthlyAllocation: number;
+  recentActivity: Array<{
+    createdAt: string;
+    finalChargedUnits: number | null;
+    id: string;
+    operationType: string;
+    reservedUnits: number;
+    status: string;
+  }>;
+  resetsAt: string;
+  temporaryAllocation: number;
+  topUpAllocation: number;
+  usedUnits: number;
+};
+
+export async function getOrganizationAiUsageSummary(
+  supabase: AiMeteringClient,
+  organizationId: string,
+  entitlements: {
+    aiHardLimit: number;
+    aiMonthlyAllocation: number;
+    aiTemporaryAllocation: number;
+    aiTopUpAllocation: number;
+  },
+): Promise<OrganizationAiUsageSummary> {
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+  const resetsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
+
+  const { data, error } = await supabase
+    .from("organization_ai_usage_records")
+    .select("id, operation_type, status, reserved_units, final_charged_units, created_at")
+    .eq("organization_id", organizationId)
+    .in("status", ["reserved", "charged"])
+    .gte("created_at", monthStart)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+
+  const records = (data ?? []) as Array<{
+    created_at: string;
+    final_charged_units: number | null;
+    id: string;
+    operation_type: string;
+    reserved_units: number;
+    status: string;
+  }>;
+
+  const usedUnits = records.reduce((total, record) => {
+    if (record.status === "charged") {
+      return total + (record.final_charged_units ?? record.reserved_units);
+    }
+    return total + record.reserved_units;
+  }, 0);
+
+  const rawAllocation =
+    entitlements.aiMonthlyAllocation + entitlements.aiTemporaryAllocation + entitlements.aiTopUpAllocation;
+  const allocatedUnits = entitlements.aiHardLimit > 0
+    ? Math.min(rawAllocation, entitlements.aiHardLimit)
+    : rawAllocation;
+
+  return {
+    allocatedUnits,
+    monthlyAllocation: entitlements.aiMonthlyAllocation,
+    recentActivity: records.slice(0, 10).map((record) => ({
+      createdAt: record.created_at,
+      finalChargedUnits: record.final_charged_units,
+      id: record.id,
+      operationType: record.operation_type,
+      reservedUnits: record.reserved_units,
+      status: record.status,
+    })),
+    resetsAt,
+    temporaryAllocation: entitlements.aiTemporaryAllocation,
+    topUpAllocation: entitlements.aiTopUpAllocation,
+    usedUnits,
+  };
 }

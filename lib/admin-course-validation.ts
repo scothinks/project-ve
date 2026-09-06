@@ -4,17 +4,11 @@ import type { ValidationIssue, ValidationResult } from "./request-validation.ts"
 type CourseStatus = "draft" | "published" | "archived";
 type ToggleStatus = "draft" | "published";
 type RetryMode = "anytime" | "cooldown" | "disabled";
-type LessonPageType = "primer" | "concept" | "example" | "reflection" | "summary";
-type BlockType = "text" | "callout" | "image" | "video" | "audio" | "table";
-type Direction = "up" | "down";
 type QuestionType = "single_choice" | "multiple_choice" | "true_false";
 
 const courseStatuses = ["draft", "published", "archived"] as const;
 const toggleStatuses = ["draft", "published"] as const;
 const retryModes = ["anytime", "cooldown", "disabled"] as const;
-const lessonPageTypes = ["primer", "concept", "example", "reflection", "summary"] as const;
-const blockTypes = ["text", "callout", "image", "video", "audio", "table"] as const;
-const directions = ["up", "down"] as const;
 const questionTypes = ["single_choice", "multiple_choice", "true_false"] as const;
 
 type StringOptions = {
@@ -212,7 +206,7 @@ function getBooleanFlag(formData: FormData, key: string) {
   return formData.get(key) === "on";
 }
 
-function imagePayloadFromForm(
+export function imagePayloadFromForm(
   formData: FormData,
   urlKey: string,
   altKey: string,
@@ -362,216 +356,6 @@ export function parseSetCourseStatusForm(formData: FormData) {
       maxLength: 400,
     }) || `/admin/courses/${courseId}`,
     status: getFormEnum(formData, "status", toggleStatuses, issues, "draft") as ToggleStatus,
-  });
-}
-
-export function parseSetLessonStatusForm(formData: FormData) {
-  const issues: ValidationIssue[] = [];
-  const courseId = getFormString(formData, "courseId", issues, { maxLength: 120 }) ?? "";
-  const lessonId = getFormString(formData, "lessonId", issues, { maxLength: 120 }) ?? "";
-
-  return returnResult(issues, {
-    courseId,
-    lessonId,
-    redirectTo: getOptionalFormString(formData, "redirectTo", issues, {
-      allowEmpty: true,
-      maxLength: 400,
-    }) || `/admin/courses/${courseId}`,
-    status: getFormEnum(formData, "status", toggleStatuses, issues, "draft") as ToggleStatus,
-  });
-}
-
-export function parseSaveLessonPageForm(formData: FormData) {
-  const issues: ValidationIssue[] = [];
-
-  return returnResult(issues, {
-    coverImage: imagePayloadFromForm(formData, "coverImageUrl", "coverImageAlt", issues),
-    lessonId: getFormString(formData, "lessonId", issues, { maxLength: 120 }) ?? "",
-    pageId: getOptionalFormString(formData, "pageId", issues, {
-      allowEmpty: true,
-      maxLength: 120,
-    }),
-    pageNumber: getFormInteger(formData, "pageNumber", issues, {
-      fallback: 1,
-      min: 1,
-    }) ?? 1,
-    pageType: getFormEnum(formData, "pageType", lessonPageTypes, issues, "concept") as LessonPageType,
-    subtitle: getOptionalFormString(formData, "subtitle", issues, {
-      allowEmpty: true,
-      maxLength: 300,
-    }),
-    title: getFormString(formData, "title", issues, { maxLength: 160 }) ?? "",
-  });
-}
-
-export function parseSaveLessonBlockForm(formData: FormData) {
-  const issues: ValidationIssue[] = [];
-  const blockType = getFormEnum(formData, "blockType", blockTypes, issues, "text") as BlockType;
-
-  return returnResult(issues, {
-    blockId: getOptionalFormString(formData, "blockId", issues, {
-      allowEmpty: true,
-      maxLength: 120,
-    }),
-    blockType,
-    lessonId: getFormString(formData, "lessonId", issues, { maxLength: 120 }) ?? "",
-    pageId: getFormString(formData, "pageId", issues, { maxLength: 120 }) ?? "",
-    payload: parseBlockPayload(formData, blockType, issues),
-    sortOrder: getFormInteger(formData, "sortOrder", issues, {
-      fallback: 0,
-      min: 0,
-    }) ?? 0,
-  });
-}
-
-function parseBlockPayload(formData: FormData, blockType: BlockType, issues: ValidationIssue[]) {
-  if (blockType === "callout") {
-    return {
-      variant: getOptionalFormString(formData, "variant", issues, {
-        allowEmpty: true,
-        maxLength: 40,
-      }) || "key_point",
-      label: getOptionalFormString(formData, "label", issues, {
-        allowEmpty: true,
-        maxLength: 80,
-      }),
-      title: getOptionalFormString(formData, "heading", issues, {
-        allowEmpty: true,
-        maxLength: 180,
-      }),
-      body: getOptionalFormString(formData, "body", issues, {
-        allowEmpty: true,
-        maxLength: 2000,
-      }),
-    };
-  }
-
-  if (blockType === "image") {
-    const payload: Record<string, unknown> = {
-      src: getFormUrl(formData, "src", issues, {
-        maxLength: 1000,
-        required: false,
-      }),
-      alt: getOptionalFormString(formData, "alt", issues, {
-        allowEmpty: true,
-        maxLength: 240,
-      }),
-      caption: getOptionalFormString(formData, "caption", issues, {
-        allowEmpty: true,
-        maxLength: 500,
-      }),
-    };
-    const fit = getFormEnum(formData, "fit", ["cover", "contain"] as const, issues, "cover");
-    const positionX = getOptionalFormInteger(formData, "positionX", issues, {
-      max: 100,
-      min: 0,
-    });
-    const positionY = getOptionalFormInteger(formData, "positionY", issues, {
-      max: 100,
-      min: 0,
-    });
-
-    const aiManagedByAssetId = getOptionalFormString(formData, "aiManagedByAssetId", issues, {
-      allowEmpty: true,
-      maxLength: 120,
-    });
-    const aiManagedKind = getOptionalFormString(formData, "aiManagedKind", issues, {
-      allowEmpty: true,
-      maxLength: 80,
-    });
-    const aiGenerated = getOptionalFormString(formData, "aiGenerated", issues, {
-      allowEmpty: true,
-      maxLength: 20,
-    }).toLowerCase();
-
-    if (aiManagedByAssetId) payload.aiManagedByAssetId = aiManagedByAssetId;
-    if (aiManagedKind) payload.aiManagedKind = aiManagedKind;
-    if (["true", "1", "yes", "on"].includes(aiGenerated)) payload.aiGenerated = true;
-    if (fit) payload.fit = fit;
-    if (positionX !== null) payload.positionX = positionX;
-    if (positionY !== null) payload.positionY = positionY;
-
-    return payload;
-  }
-
-  if (blockType === "video" || blockType === "audio") {
-    return {
-      src: getFormUrl(formData, "src", issues, {
-        maxLength: 1000,
-        required: false,
-      }),
-      title: getOptionalFormString(formData, "heading", issues, {
-        allowEmpty: true,
-        maxLength: 180,
-      }),
-      caption: getOptionalFormString(formData, "caption", issues, {
-        allowEmpty: true,
-        maxLength: 500,
-      }),
-      transcript: getOptionalFormString(formData, "body", issues, {
-        allowEmpty: true,
-        maxLength: 2000,
-      }),
-    };
-  }
-
-  if (blockType === "table") {
-    return {
-      title: getOptionalFormString(formData, "heading", issues, {
-        allowEmpty: true,
-        maxLength: 180,
-      }),
-      columns: getOptionalFormString(formData, "columns", issues, {
-        allowEmpty: true,
-        maxLength: 500,
-      })
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      rows: getOptionalFormString(formData, "rows", issues, {
-        allowEmpty: true,
-        maxLength: 2000,
-      })
-        .split("\n")
-        .map((row) => row.split(",").map((cell) => cell.trim()))
-        .filter((row) => row.length > 0 && row.some(Boolean)),
-      caption: getOptionalFormString(formData, "caption", issues, {
-        allowEmpty: true,
-        maxLength: 500,
-      }),
-    };
-  }
-
-  return {
-    heading: getOptionalFormString(formData, "heading", issues, {
-      allowEmpty: true,
-      maxLength: 180,
-    }),
-    body: getOptionalFormString(formData, "body", issues, {
-      allowEmpty: true,
-      maxLength: 4000,
-    }),
-  };
-}
-
-export function parseReorderLessonPageForm(formData: FormData) {
-  const issues: ValidationIssue[] = [];
-
-  return returnResult(issues, {
-    direction: getFormEnum(formData, "direction", directions, issues, "down") as Direction,
-    lessonId: getFormString(formData, "lessonId", issues, { maxLength: 120 }) ?? "",
-    pageId: getFormString(formData, "pageId", issues, { maxLength: 120 }) ?? "",
-  });
-}
-
-export function parseReorderLessonBlockForm(formData: FormData) {
-  const issues: ValidationIssue[] = [];
-
-  return returnResult(issues, {
-    blockId: getFormString(formData, "blockId", issues, { maxLength: 120 }) ?? "",
-    direction: getFormEnum(formData, "direction", directions, issues, "down") as Direction,
-    lessonId: getFormString(formData, "lessonId", issues, { maxLength: 120 }) ?? "",
-    pageId: getFormString(formData, "pageId", issues, { maxLength: 120 }) ?? "",
   });
 }
 

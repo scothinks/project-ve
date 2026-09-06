@@ -1,0 +1,168 @@
+{
+  "capturedAt": "2026-09-05T11:58:52.348Z",
+  "target": "127.0.0.1:54321",
+  "environment": "local",
+  "revision": {
+    "localBuildId": "BQ2MbyFaytImxw-1SzyQt",
+    "validationSha256": "1856e7207d1a947e5754393072cf122bb11a96da7c857575f86a37da3cea04c3",
+    "head": "ffcbffb80dd03dfd494619f5b7e3d2366cff31e9",
+    "branch": "codex-ai-course-workflow-polish",
+    "sourceSha256": "61a9e313644f033dfd414c6a2be2cf2defb0b1b949d020651f568a69ab80024c"
+  },
+  "migrations": [
+    {
+      "version": "20260904100000",
+      "name": "20260904100000_lesson_draft_publish.sql",
+      "sha256": "3dd321211833d02462d83ddda75dad7177a5ef886aee66ecd0676bca18cf54bd"
+    },
+    {
+      "version": "20260904110000",
+      "name": "20260904110000_lesson_published_read_boundary.sql",
+      "sha256": "e9d6a2968de668f7aa2110b490b67ff07f0988355b0019b8b2bf8c9781f80148"
+    },
+    {
+      "version": "20260904120000",
+      "name": "20260904120000_atomic_lesson_builder.sql",
+      "sha256": "8fb70129e1323b4a19f2e7a05ad9c0c8a44b75990feab55b35d0f7c4eefa6219"
+    },
+    {
+      "version": "20260905100000",
+      "name": "20260905100000_media_registry.sql",
+      "sha256": "e65af301515121e40c85cd9f89bd9cbdd8c7a1a6bf2c4693dc94eda74bcef8e7"
+    },
+    {
+      "version": "20260905110000",
+      "name": "20260905110000_media_placement_authorization.sql",
+      "sha256": "078a36b53b3b2699ca504df8f97601c7d41e092a4ab6095584772ea21127ad78"
+    },
+    {
+      "version": "20260905120000",
+      "name": "20260905120000_media_workflow_boundaries.sql",
+      "sha256": "e0b3c1aba7c8faa1219c23c3962403e42eeb0388d666bb5a43020f28556a37c0"
+    },
+    {
+      "version": "20260905130000",
+      "name": "20260905130000_media_review_and_release.sql",
+      "sha256": "3267a07e34e2c5e352c12f73c171a43dfafcafde36ca194114f47a53ad5a7c13"
+    },
+    {
+      "version": "20260905140000",
+      "name": "20260905140000_media_editorial_reuse.sql",
+      "sha256": "e4df7a0395eac679f1c1b5e25827909f2bc4b82bcc11a25e353c38e11095b885"
+    },
+    {
+      "version": "20260905150000",
+      "name": "20260905150000_media_publication_guard.sql",
+      "sha256": "d817c46a3deca8e7be55bcb0013c372fb581cb85298d5b92946117460416ff89"
+    },
+    {
+      "version": "20260905160000",
+      "name": "20260905160000_media_legacy_quota_compatibility.sql",
+      "sha256": "ad3dee4df57a52b6f65d8ad5eadecf12b95bc2fed63af98608d50b88c34e8081"
+    },
+    {
+      "version": "20260905170000",
+      "name": "20260905170000_media_library_course_filter.sql",
+      "sha256": "967752cd0b75ba1c4a699b94c0b0b5b5ed3059bcb75d17ffd170ef292b71e703"
+    },
+    {
+      "version": "20260905180000",
+      "name": "20260905180000_atomic_lesson_duplication.sql",
+      "sha256": "a651f1a8ea1a8837809a0d0126ca326b8cb43948252b85b7a8367e0c108a12d1"
+    }
+  ],
+  "checks": {
+    "inventory": {
+      "versions": 0,
+      "unverifiedVersions": 0,
+      "publicBuckets": [
+        "learning-media"
+      ],
+      "issueCount": 0,
+      "issuesByReason": {}
+    },
+    "buckets": [
+      {
+        "id": "learning-media",
+        "public": true,
+        "fileSizeLimit": 10485760,
+        "allowedMimeTypes": [
+          "image/png",
+          "image/jpeg",
+          "image/webp"
+        ]
+      },
+      {
+        "id": "learning-media-private",
+        "public": false,
+        "fileSizeLimit": null,
+        "allowedMimeTypes": null
+      }
+    ],
+    "database": {
+      "ledger": [
+        {
+          "version": "20260904100000",
+          "name": "lesson_draft_publish"
+        },
+        {
+          "version": "20260904110000",
+          "name": "lesson_published_read_boundary"
+        },
+        {
+          "version": "20260904120000",
+          "name": "atomic_lesson_builder"
+        },
+        {
+          "version": "20260905100000",
+          "name": "media_registry"
+        },
+        {
+          "version": "20260905110000",
+          "name": "media_placement_authorization"
+        },
+        {
+          "version": "20260905120000",
+          "name": "media_workflow_boundaries"
+        },
+        {
+          "version": "20260905130000",
+          "name": "media_review_and_release"
+        },
+        {
+          "version": "20260905140000",
+          "name": "media_editorial_reuse"
+        },
+        {
+          "version": "20260905150000",
+          "name": "media_publication_guard"
+        },
+        {
+          "version": "20260905160000",
+          "name": "media_legacy_quota_compatibility"
+        },
+        {
+          "version": "20260905170000",
+          "name": "media_library_course_filter"
+        },
+        {
+          "version": "20260905180000",
+          "name": "atomic_lesson_duplication"
+        }
+      ],
+      "registeredObjects": 0,
+      "missingObjects": 0,
+      "draftPlacements": 0,
+      "publishedPlacements": 0,
+      "orphanPlacements": 0,
+      "pendingNotifications": 0
+    },
+    "migrationsAbsentFromLedger": []
+  },
+  "limitations": [
+    "Source fingerprint identifies this local checkout, not a verified hosted app deployment.",
+    "Migration presence does not prove replay against a pre-migration copy of target data.",
+    "Storage metadata does not prove byte availability or CDN cache expiry.",
+    "No public-bucket cutover or hosted data mutations were performed."
+  ]
+}

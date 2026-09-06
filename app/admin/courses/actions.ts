@@ -4,16 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   formatValidationIssues,
-  parseReorderLessonBlockForm,
-  parseReorderLessonPageForm,
+  imagePayloadFromForm,
   parseSaveCourseForm,
-  parseSaveLessonBlockForm,
   parseSaveLessonForm,
-  parseSaveLessonPageForm,
   parseSaveQuizQuestionForm,
   parseSaveQuizSettingsForm,
   parseSetCourseStatusForm,
-  parseSetLessonStatusForm,
   type ImagePayload,
 } from "@/lib/admin-course-validation";
 import { getAssessmentIssues } from "@/features/learning/admin/assessment-builder-domain";
@@ -22,7 +18,7 @@ import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace
 import { requireAdmin } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { ValidationError } from "@/lib/app-errors";
-import type { ValidationResult } from "@/lib/request-validation";
+import type { ValidationIssue, ValidationResult } from "@/lib/request-validation";
 import { revalidatePublishedLearningCourseCards } from "@/app/admin/courses/learning-cache";
 
 type AiPublishGuardRow = {
@@ -57,16 +53,7 @@ function aiPublishReady(status: string | null | undefined) {
   return status === "ready" || status === "published";
 }
 
-function createCopyId(prefix: string, value: string) {
-  const slug = value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72) || "item";
 
-  return `${prefix}-${slug}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
-}
 
 function requireValidForm<T>(result: ValidationResult<T>) {
   if (!result.ok) {
@@ -251,6 +238,7 @@ async function syncLessonQuizStatus(
 export async function saveCourse(formData: FormData) {
   const input = requireValidForm(parseSaveCourseForm(formData));
   const courseId = input.courseId;
+  const returnToIndex = formData.get("returnTo") === "index";
   const { supabase, workspace } = await requireAdmin();
 
   if (input.status === "published") {
@@ -295,7 +283,7 @@ export async function saveCourse(formData: FormData) {
     revalidatePath("/admin/courses");
     redirect(
       appendAdminNotice(
-        `/admin/courses/${result?.courseId ?? ""}`,
+        returnToIndex ? "/admin/courses" : `/admin/courses/${result?.courseId ?? ""}`,
         "Organisation-private course created.",
       ),
     );
@@ -322,7 +310,7 @@ export async function saveCourse(formData: FormData) {
   revalidatePath("/admin/courses");
   redirect(
     appendAdminNotice(
-      `/admin/courses/${result?.courseId ?? courseId}`,
+      returnToIndex ? "/admin/courses" : `/admin/courses/${result?.courseId ?? courseId}`,
       "Course saved.",
     ),
   );
@@ -360,6 +348,13 @@ export async function saveLesson(formData: FormData) {
   if (error) throw error;
 
   const result = data as { lessonId?: string } | null;
+  if (requestedStatus === "published") {
+    const { error: publishError } = await supabase.rpc("admin_publish_lesson", {
+      p_lesson_id: result?.lessonId ?? lessonId,
+    });
+    if (publishError) throw publishError;
+  }
+
   const { error: syncError } = await supabase.rpc("admin_sync_course_estimated_minutes", {
     p_course_id: courseId,
   });
@@ -376,10 +371,79 @@ export async function saveLesson(formData: FormData) {
   revalidatePath("/dashboard");
   redirect(
     appendAdminNotice(
-      `/admin/courses/lessons/${result?.lessonId ?? lessonId}`,
+      `/admin/courses/lessons/${result?.lessonId ?? lessonId}${formData.get("returnTo") === "quiz" ? "/quiz" : ""}`,
       lessonId ? "Lesson saved." : "Lesson created.",
     ),
   );
+}
+
+export async function saveLessonCover(formData: FormData) {
+  const lessonId = String(formData.get("lessonId") ?? "").trim();
+  const courseId = String(formData.get("courseId") ?? "").trim();
+
+  if (!lessonId || !courseId) {
+    throw new ValidationError("Course and lesson are required.");
+  }
+
+  const { supabase } = await requireAdmin();
+  const { data: lessonData, error: lessonError } = await supabase
+    .from("lessons")
+    .select("title, description, status, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts")
+    .eq("id", lessonId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (lessonError) throw lessonError;
+
+  const lesson = lessonData as {
+    title: string;
+    description: string | null;
+    status: string;
+    sort_order: number;
+    estimated_minutes: number;
+    retry_mode: "anytime" | "cooldown" | "disabled";
+    retry_cooldown_seconds: number | null;
+    retry_requires_reread: boolean;
+    quiz_requires_lesson_completion: boolean;
+    max_earning_attempts: number | null;
+  } | null;
+
+  if (!lesson) {
+    throw new Error("Lesson not found.");
+  }
+
+  const issues: ValidationIssue[] = [];
+  const coverImage = imagePayloadFromForm(formData, "coverImageUrl", "coverImageAlt", issues);
+
+  if (issues.length > 0) {
+    throw new ValidationError(`Invalid cover image. ${formatValidationIssues(issues)}`);
+  }
+
+  const { error } = await supabase.rpc("admin_upsert_lesson", {
+    p_lesson_id: lessonId,
+    p_course_id: courseId,
+    p_title: lesson.title,
+    p_description: lesson.description ?? "",
+    p_cover_image: coverImage,
+    p_status: lesson.status,
+    p_sort_order: lesson.sort_order,
+    p_estimated_minutes: lesson.estimated_minutes,
+    p_retry_mode: lesson.retry_mode,
+    p_retry_cooldown_seconds: lesson.retry_cooldown_seconds,
+    p_retry_requires_reread: lesson.retry_requires_reread,
+    p_quiz_requires_lesson_completion: lesson.quiz_requires_lesson_completion,
+    p_max_earning_attempts: lesson.max_earning_attempts,
+  });
+
+  if (error) throw error;
+
+  revalidatePublishedLearningCourseCards();
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}`);
+  revalidatePath("/courses");
+  revalidatePath(`/courses/${courseId}`);
+  revalidatePath("/dashboard");
+  redirect(appendAdminNotice(`/admin/courses/${courseId}`, "Lesson cover updated."));
 }
 
 export async function createCurriculumLesson(formData: FormData) {
@@ -488,113 +552,6 @@ export async function duplicateCourseShell(formData: FormData) {
   );
 }
 
-export async function setLessonStatus(formData: FormData) {
-  const input = requireValidForm(parseSetLessonStatusForm(formData));
-  const { courseId, lessonId, redirectTo, status } = input;
-  const { supabase } = await requireAdmin();
-
-  if (status === "published") {
-    await assertLessonPublishAllowed(supabase, lessonId);
-  }
-
-  const { error } = await supabase.rpc("admin_set_lesson_status", {
-    p_lesson_id: lessonId,
-    p_status: status,
-  });
-
-  if (error) throw error;
-
-  await syncLessonQuizStatus(supabase, lessonId, status);
-
-  revalidatePublishedLearningCourseCards();
-  revalidatePath("/admin/courses");
-  if (courseId) revalidatePath(`/admin/courses/${courseId}`);
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  revalidatePath("/courses");
-  if (courseId) revalidatePath(`/courses/${courseId}`);
-  revalidatePath(`/lessons/${lessonId}`);
-  revalidatePath("/dashboard");
-  redirect(
-    appendAdminNotice(
-      redirectTo,
-      status === "published" ? "Lesson enabled." : "Lesson disabled.",
-    ),
-  );
-}
-
-export async function archiveLessonFromCurriculum(formData: FormData) {
-  const lessonId = String(formData.get("lessonId") ?? "").trim();
-  const courseId = String(formData.get("courseId") ?? "").trim();
-
-  if (!lessonId || !courseId) {
-    throw new ValidationError("Course and lesson are required.");
-  }
-
-  const { supabase } = await requireAdmin();
-  const { data: lessonData, error: lessonError } = await supabase
-    .from("lessons")
-    .select("id, course_id, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts")
-    .eq("id", lessonId)
-    .eq("course_id", courseId)
-    .maybeSingle();
-
-  if (lessonError) throw lessonError;
-
-  const lesson = lessonData as {
-    id: string;
-    course_id: string;
-    title: string;
-    description: string | null;
-    cover_image: StoredImagePayload;
-    sort_order: number;
-    estimated_minutes: number;
-    retry_mode: "anytime" | "cooldown" | "disabled";
-    retry_cooldown_seconds: number | null;
-    retry_requires_reread: boolean;
-    quiz_requires_lesson_completion: boolean;
-    max_earning_attempts: number | null;
-  } | null;
-
-  if (!lesson) {
-    throw new Error("Lesson not found.");
-  }
-
-  const { error } = await supabase.rpc("admin_upsert_lesson", {
-    p_lesson_id: lesson.id,
-    p_course_id: lesson.course_id,
-    p_title: lesson.title,
-    p_description: lesson.description ?? "",
-    p_cover_image: lesson.cover_image ?? {},
-    p_status: "archived",
-    p_sort_order: lesson.sort_order,
-    p_estimated_minutes: lesson.estimated_minutes,
-    p_retry_mode: lesson.retry_mode,
-    p_retry_cooldown_seconds: lesson.retry_cooldown_seconds,
-    p_retry_requires_reread: lesson.retry_requires_reread,
-    p_quiz_requires_lesson_completion: lesson.quiz_requires_lesson_completion,
-    p_max_earning_attempts: lesson.max_earning_attempts,
-  });
-
-  if (error) throw error;
-
-  await syncLessonQuizStatus(supabase, lesson.id, "archived");
-
-  revalidatePublishedLearningCourseCards();
-  revalidatePath("/admin/courses");
-  revalidatePath(`/admin/courses/${courseId}`);
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  revalidatePath("/courses");
-  revalidatePath(`/courses/${courseId}`);
-  revalidatePath(`/lessons/${lessonId}`);
-  revalidatePath("/dashboard");
-  redirect(
-    appendAdminNotice(
-      `/admin/courses/${courseId}?tab=curriculum`,
-      "Lesson archived.",
-    ),
-  );
-}
-
 export async function reorderCourseLessons(formData: FormData) {
   const courseId = String(formData.get("courseId") ?? "").trim();
   const rawLessonIds = String(formData.get("lessonIds") ?? "");
@@ -643,219 +600,12 @@ export async function duplicateLessonFromCurriculum(formData: FormData) {
   }
 
   const { supabase } = await requireAdmin();
-  const { data: lessonData, error: lessonError } = await supabase
-    .from("lessons")
-    .select("id, course_id, title, description, cover_image, sort_order, estimated_minutes, retry_mode, retry_cooldown_seconds, retry_requires_reread, quiz_requires_lesson_completion, max_earning_attempts")
-    .eq("id", lessonId)
-    .eq("course_id", courseId)
-    .maybeSingle();
-
-  if (lessonError) throw lessonError;
-
-  const lesson = lessonData as {
-    id: string;
-    course_id: string;
-    title: string;
-    description: string | null;
-    cover_image: StoredImagePayload;
-    sort_order: number;
-    estimated_minutes: number;
-    retry_mode: "anytime" | "cooldown" | "disabled";
-    retry_cooldown_seconds: number | null;
-    retry_requires_reread: boolean;
-    quiz_requires_lesson_completion: boolean;
-    max_earning_attempts: number | null;
-  } | null;
-
-  if (!lesson) {
-    throw new Error("Lesson not found.");
-  }
-
-  const { data: lessons, error: lessonsError } = await supabase
-    .from("lessons")
-    .select("sort_order")
-    .eq("course_id", courseId);
-
-  if (lessonsError) throw lessonsError;
-
-  const nextSortOrder = ((lessons ?? []) as Array<{ sort_order: number | null }>).reduce(
-    (highest, row) => Math.max(highest, row.sort_order ?? 0),
-    0,
-  ) + 1;
-
-  const { data: newLessonData, error: newLessonError } = await supabase.rpc("admin_upsert_lesson", {
-    p_lesson_id: "",
+  const { data, error } = await supabase.rpc("admin_duplicate_lesson", {
+    p_lesson_id: lessonId,
     p_course_id: courseId,
-    p_title: `Copy of ${lesson.title}`,
-    p_description: lesson.description ?? "",
-    p_cover_image: lesson.cover_image ?? {},
-    p_status: "draft",
-    p_sort_order: nextSortOrder,
-    p_estimated_minutes: lesson.estimated_minutes,
-    p_retry_mode: lesson.retry_mode,
-    p_retry_cooldown_seconds: lesson.retry_cooldown_seconds,
-    p_retry_requires_reread: lesson.retry_requires_reread,
-    p_quiz_requires_lesson_completion: lesson.quiz_requires_lesson_completion,
-    p_max_earning_attempts: lesson.max_earning_attempts,
   });
-
-  if (newLessonError) throw newLessonError;
-
-  const newLessonId = (newLessonData as { lessonId?: string } | null)?.lessonId;
-  if (!newLessonId) {
-    throw new Error("Could not create duplicated lesson.");
-  }
-
-  const [pagesResult, quizResult] = await Promise.all([
-    supabase
-      .from("lesson_pages")
-      .select("id, page_number, title, subtitle, page_type, cover_image")
-      .eq("lesson_id", lessonId)
-      .order("page_number", { ascending: true }),
-    supabase
-      .from("quizzes")
-      .select("id, title, version")
-      .eq("lesson_id", lessonId)
-      .maybeSingle(),
-  ]);
-
-  if (pagesResult.error) throw pagesResult.error;
-  if (quizResult.error) throw quizResult.error;
-
-  const sourcePages = (pagesResult.data ?? []) as Array<{
-    id: string;
-    page_number: number;
-    title: string;
-    subtitle: string | null;
-    page_type: "primer" | "concept" | "example" | "reflection" | "summary";
-    cover_image: StoredImagePayload;
-  }>;
-  const pageIdMap = new Map<string, string>();
-
-  for (const page of sourcePages) {
-    const newPageId = createCopyId("page", `${newLessonId}-${page.title}`);
-    pageIdMap.set(page.id, newPageId);
-    const { error: pageError } = await supabase.rpc("admin_upsert_lesson_page", {
-      p_page_id: newPageId,
-      p_lesson_id: newLessonId,
-      p_title: page.title,
-      p_subtitle: page.subtitle ?? "",
-      p_page_type: page.page_type,
-      p_page_number: page.page_number,
-      p_cover_image: page.cover_image ?? {},
-    });
-
-    if (pageError) throw pageError;
-  }
-
-  const sourcePageIds = sourcePages.map((page) => page.id);
-  const blocksResult = sourcePageIds.length > 0
-    ? await supabase
-      .from("lesson_content_blocks")
-      .select("page_id, block_type, sort_order, payload")
-      .in("page_id", sourcePageIds)
-      .order("sort_order", { ascending: true })
-    : { data: [], error: null };
-
-  if (blocksResult.error) throw blocksResult.error;
-
-  const sourceBlocks = (blocksResult.data ?? []) as Array<{
-    page_id: string;
-    block_type: "text" | "callout" | "image" | "video" | "audio" | "table";
-    sort_order: number;
-    payload: Record<string, unknown>;
-  }>;
-
-  for (const block of sourceBlocks) {
-    const newPageId = pageIdMap.get(block.page_id);
-    if (!newPageId) continue;
-
-    const { error: blockError } = await supabase.rpc("admin_upsert_lesson_block", {
-      p_block_id: null,
-      p_page_id: newPageId,
-      p_block_type: block.block_type,
-      p_sort_order: block.sort_order,
-      p_payload: block.payload,
-    });
-
-    if (blockError) throw blockError;
-  }
-
-  const sourceQuiz = quizResult.data as { id: string; title: string; version: number } | null;
-  if (sourceQuiz) {
-    const defaultQuizId = `quiz-${newLessonId.replace(/^lesson-/, "")}`;
-    const { data: newQuizData, error: quizInsertError } = await supabase
-      .from("quizzes")
-      .upsert({
-        id: defaultQuizId,
-        lesson_id: newLessonId,
-        title: sourceQuiz.title,
-        version: sourceQuiz.version,
-        status: "draft",
-      }, { onConflict: "lesson_id" })
-      .select("id")
-      .single();
-
-    if (quizInsertError) throw quizInsertError;
-    const newQuizId = (newQuizData as { id: string }).id;
-
-    const questionsResult = await supabase
-      .from("quiz_questions")
-      .select("id, question_order, question_type, prompt, explanation, xp")
-      .eq("quiz_id", sourceQuiz.id)
-      .order("question_order", { ascending: true });
-
-    if (questionsResult.error) throw questionsResult.error;
-
-    const sourceQuestions = (questionsResult.data ?? []) as Array<{
-      id: string;
-      question_order: number;
-      question_type: "single_choice" | "multiple_choice" | "true_false";
-      prompt: string;
-      explanation: string | null;
-      xp: number;
-    }>;
-    const sourceQuestionIds = sourceQuestions.map((question) => question.id);
-    const optionsResult = sourceQuestionIds.length > 0
-      ? await supabase
-        .from("quiz_options")
-        .select("question_id, option_order, label, is_correct")
-        .in("question_id", sourceQuestionIds)
-        .order("option_order", { ascending: true })
-      : { data: [], error: null };
-
-    if (optionsResult.error) throw optionsResult.error;
-
-    const sourceOptions = (optionsResult.data ?? []) as Array<{
-      question_id: string;
-      option_order: number;
-      label: string;
-      is_correct: boolean;
-    }>;
-
-    for (const question of sourceQuestions) {
-      const options = sourceOptions
-        .filter((option) => option.question_id === question.id)
-        .map((option) => ({
-          isCorrect: option.is_correct,
-          label: option.label,
-          order: option.option_order,
-        }));
-
-      const { error: questionError } = await supabase.rpc("admin_upsert_quiz_question", {
-        p_question_id: "",
-        p_quiz_id: newQuizId,
-        p_prompt: question.prompt,
-        p_question_type: question.question_type,
-        p_explanation: question.explanation ?? "",
-        p_xp: question.xp,
-        p_question_order: question.question_order,
-        p_options: options,
-      });
-
-      if (questionError) throw questionError;
-    }
-  }
+  if (error) throw error;
+  const newLessonId = (data as { lessonId: string }).lessonId;
 
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}`);
@@ -868,120 +618,6 @@ export async function duplicateLessonFromCurriculum(formData: FormData) {
       `/admin/courses/lessons/${newLessonId}`,
       "Lesson duplicated as a draft.",
     ),
-  );
-}
-
-export async function saveLessonPage(formData: FormData) {
-  const input = requireValidForm(parseSaveLessonPageForm(formData));
-  const lessonId = input.lessonId;
-  const { supabase } = await requireAdmin();
-  const { data, error } = await supabase.rpc("admin_upsert_lesson_page", {
-    p_page_id: input.pageId,
-    p_lesson_id: lessonId,
-    p_title: input.title,
-    p_subtitle: input.subtitle,
-    p_page_type: input.pageType,
-    p_page_number: input.pageNumber,
-    p_cover_image: input.coverImage,
-  });
-
-  if (error) throw error;
-
-  const result = data as { pageId?: string } | null;
-  const pageId = result?.pageId;
-
-  revalidatePublishedLearningCourseCards();
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(
-    appendAdminNotice(
-      `/admin/courses/lessons/${lessonId}${pageId ? `?page=${pageId}` : ""}`,
-      "Page saved.",
-    ),
-  );
-}
-
-export async function saveLessonBlock(formData: FormData) {
-  const input = requireValidForm(parseSaveLessonBlockForm(formData));
-  const { blockId, lessonId, pageId } = input;
-  const { supabase } = await requireAdmin();
-  let resolvedSortOrder = input.sortOrder;
-
-  if (blockId) {
-    const { data: existingBlock, error: existingBlockError } = await supabase
-      .from("lesson_content_blocks")
-      .select("sort_order")
-      .eq("id", blockId)
-      .maybeSingle();
-
-    if (existingBlockError) throw existingBlockError;
-    if (existingBlock) {
-      resolvedSortOrder = existingBlock.sort_order;
-    }
-  } else if (pageId) {
-    const { data: lastBlock, error: lastBlockError } = await supabase
-      .from("lesson_content_blocks")
-      .select("sort_order")
-      .eq("page_id", pageId)
-      .order("sort_order", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (lastBlockError) throw lastBlockError;
-    resolvedSortOrder = (lastBlock?.sort_order ?? 0) + 1;
-  }
-
-  const { error } = await supabase.rpc("admin_upsert_lesson_block", {
-    p_block_id: blockId || null,
-    p_page_id: pageId,
-    p_block_type: input.blockType,
-    p_sort_order: resolvedSortOrder,
-    p_payload: input.payload,
-  });
-
-  if (error?.code === "23505") {
-    throw new Error("This block could not be saved because the page order changed. Refresh and try again.");
-  }
-
-  if (error) throw error;
-
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Block saved."));
-}
-
-export async function reorderLessonPage(formData: FormData) {
-  const input = requireValidForm(parseReorderLessonPageForm(formData));
-  const { direction, lessonId, pageId } = input;
-  const { supabase } = await requireAdmin();
-  const { error } = await supabase.rpc("admin_reorder_lesson_page", {
-    p_lesson_id: lessonId,
-    p_page_id: pageId,
-    p_direction: direction,
-  });
-
-  if (error) throw error;
-
-  revalidatePublishedLearningCourseCards();
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(
-    appendAdminNotice(`/admin/courses/lessons/${lessonId}?page=${pageId}`, "Page reordered."),
-  );
-}
-
-export async function reorderLessonBlock(formData: FormData) {
-  const input = requireValidForm(parseReorderLessonBlockForm(formData));
-  const { blockId, direction, lessonId, pageId } = input;
-  const { supabase } = await requireAdmin();
-  const { error } = await supabase.rpc("admin_reorder_lesson_block", {
-    p_page_id: pageId,
-    p_block_id: blockId,
-    p_direction: direction,
-  });
-
-  if (error) throw error;
-
-  revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(
-    appendAdminNotice(`/admin/courses/lessons/${lessonId}?page=${pageId}`, "Block reordered."),
   );
 }
 
@@ -1007,7 +643,9 @@ export async function saveQuizSettings(formData: FormData) {
 
   revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Quiz settings saved."));
+  revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
+  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}/quiz`, "Quiz settings saved."));
 }
 
 export async function reorderQuizQuestions(formData: FormData) {
@@ -1042,6 +680,8 @@ export async function reorderQuizQuestions(formData: FormData) {
   if (error) throw error;
 
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
   revalidatePath(`/quiz/${lessonId}`);
 
   return { ok: true };
@@ -1066,8 +706,10 @@ export async function deleteQuizQuestion(formData: FormData) {
 
   revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
   revalidatePath(`/quiz/${lessonId}`);
-  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question deleted."));
+  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}/quiz`, "Question deleted."));
 }
 
 export async function duplicateQuizQuestion(formData: FormData) {
@@ -1147,8 +789,10 @@ export async function duplicateQuizQuestion(formData: FormData) {
 
   revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
   revalidatePath(`/quiz/${lessonId}`);
-  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question duplicated."));
+  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}/quiz`, "Question duplicated."));
 }
 
 export async function saveQuizQuestion(formData: FormData) {
@@ -1171,5 +815,9 @@ export async function saveQuizQuestion(formData: FormData) {
 
   revalidatePublishedLearningCourseCards();
   revalidatePath(`/admin/courses/lessons/${lessonId}`);
-  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}`, "Question saved."));
+  revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+  revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
+  if (formData.get("stayInEditor") !== "true") {
+  redirect(appendAdminNotice(`/admin/courses/lessons/${lessonId}/quiz`, "Question saved."));
+  }
 }

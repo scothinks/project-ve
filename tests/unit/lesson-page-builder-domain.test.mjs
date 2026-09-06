@@ -8,7 +8,7 @@ import {
   mergeDraftBlocks,
   reconcileBuilderStateFromSave,
   swapBlockOrder,
-  swapPageOrder,
+  reorderPagesById,
   toPreviewImageAsset,
   updateBlockPayload,
 } from "../../features/learning/admin/lesson-page-builder-domain.ts";
@@ -109,15 +109,15 @@ test("draft block merge keeps edited server rows and local-only draft blocks", (
   );
 });
 
-test("page and block reorder swaps only adjacent items in scope", () => {
+test("page drag reorder and block swaps stay in scope", () => {
   assert.deepEqual(
-    swapPageOrder(
+    reorderPagesById(
       [
         page({ id: "page-1", page_number: 1 }),
         page({ id: "page-2", page_number: 2 }),
       ],
       "page-2",
-      "up",
+      "page-1",
     ).map((item) => [item.id, item.page_number]),
     [
       ["page-1", 2],
@@ -189,4 +189,23 @@ test("image preview and block summary use explicit values with safe fallbacks", 
   );
   assert.equal(toPreviewImageAsset({}, "Fallback"), null);
   assert.equal(blockSummary(block({ payload: { heading: "  A short heading  " } })), "A short heading");
+});
+
+
+test("save reconciliation adopts sanitized fields without losing edits made in flight", () => {
+  const sentPage = page({ title: "  Submitted  ", cover_image: {} });
+  const sentBlock = block({ payload: { body: "Submitted" } });
+  const response = { status: "saved", pages: [{ clientId: sentPage.id, pageId: sentPage.id, pageNumber: 1, page: { title: "Submitted", cover_image: { positionX: 50 } } }],
+    blocks: [{ clientId: sentBlock.id, blockId: sentBlock.id, pageId: sentBlock.page_id, sortOrder: 1, block: { payload: { body: "Submitted", heading: "" } } }] };
+  const saved = reconcileBuilderStateFromSave([sentPage], [sentBlock], sentPage.id, response);
+  assert.equal(saved.pages[0].title, "Submitted");
+  assert.deepEqual(saved.blocks[0].payload, { body: "Submitted", heading: "" });
+  const current = reconcileBuilderStateFromSave([page({ ...sentPage, title: "Later edit", page_number: 2 })],
+    [block({ ...sentBlock, payload: { body: "Later body" }, sort_order: 2 })], sentPage.id, response, [sentPage], [sentBlock]);
+  assert.equal(current.pages[0].title, "Later edit");
+  assert.equal(current.pages[0].page_number, 2);
+  assert.deepEqual(current.pages[0].cover_image, { positionX: 50 });
+  assert.deepEqual(current.blocks[0].payload, { body: "Later body" });
+  assert.equal(current.blocks[0].sort_order, 2);
+  assert.notEqual(createBuilderSnapshotKey(current.pages, current.blocks), createBuilderSnapshotKey(saved.pages, saved.blocks));
 });

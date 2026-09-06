@@ -1,0 +1,7 @@
+{
+  "target": "xmqkrsmuokmuzcyivgbi.supabase.co",
+  "operation": "service_close_legacy_media_buckets",
+  "result": "refused",
+  "error": "Unconverted public media references remain in learning_media_assets.",
+  "resolution": "13 metadata.previousUrl fields preserved as metadata.previousStorageObject; no closure guard changes; successful retry recorded in closure.json"
+}

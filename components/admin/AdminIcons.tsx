@@ -196,3 +196,100 @@ export function AdminMonitoringIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function AdminDesignIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="m14.5 4.5 5 5-11 11H3.5v-5z" stroke="currentColor" />
+      <path d="m12.5 6.5 5 5" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminCopyIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <rect height="13" rx="2" stroke="currentColor" width="13" x="8" y="8" />
+      <path d="M5 16V5a1 1 0 0 1 1-1h11" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminArchiveIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <rect height="4" rx="1" stroke="currentColor" width="18" x="3" y="4" />
+      <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" stroke="currentColor" />
+      <path d="M10 13h4" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminDragHandleIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="currentColor" stroke="none" viewBox="0 0 24 24">
+      <circle cx="8" cy="6" r="1.6" />
+      <circle cx="16" cy="6" r="1.6" />
+      <circle cx="8" cy="12" r="1.6" />
+      <circle cx="16" cy="12" r="1.6" />
+      <circle cx="8" cy="18" r="1.6" />
+      <circle cx="16" cy="18" r="1.6" />
+    </svg>
+  );
+}
+
+export function AdminPendingActionsIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" />
+      <path d="M12 9v4M12 17h.01" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminGifIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <rect height="14" rx="2" stroke="currentColor" width="18" x="3" y="5" />
+      <path d="M7 10v4M12 10v4M17 10.5c-.8-.5-2-.5-2 .8v1.4c0 1.3 1.2 1.3 2 .8" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminCreditsIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" stroke="currentColor" />
+      <circle cx="12" cy="12" r="3.2" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminScopePlatformIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" />
+      <path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.3 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.3-3.6-8.5S9.6 5.8 12 3.5Z" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminScopePrivateIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <rect height="10" rx="2" stroke="currentColor" width="14" x="5" y="11" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" />
+    </svg>
+  );
+}
+
+export function AdminScopeAdaptedIcon({ className }: IconProps) {
+  return (
+    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
+      <path d="M17 2.1 21 6l-4 3.9" stroke="currentColor" />
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke="currentColor" />
+      <path d="m7 21.9-4-3.9 4-3.9" stroke="currentColor" />
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="currentColor" />
+    </svg>
+  );
+}

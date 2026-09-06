@@ -18,19 +18,23 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { AiAssistanceAuthoring } from "@/components/admin/ai/AiAssistanceAuthoring";
 import {
   deleteQuizQuestion,
   duplicateQuizQuestion,
   reorderQuizQuestions,
+  saveLesson,
   saveQuizQuestion,
   saveQuizSettings,
 } from "@/app/admin/courses/actions";
-import { AdminCard, AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
+import { AdminDragHandle } from "@/components/admin/AdminDragHandle";
+import { AdminStatusBadge, EmptyAdminState } from "@/components/admin/AdminPrimitives";
+import { PendingSubmitButton } from "@/components/admin/PendingSubmitButton";
+import { CheckIcon } from "@/components/ui/Icons";
 import {
   getAssessmentIssues,
   getAssessmentXp,
-  getCorrectOptionCount,
   getQuestionIssues,
   getSortedQuestionOptions,
 } from "@/features/learning/admin/assessment-builder-domain";
@@ -48,38 +52,56 @@ type EditableOption = {
   label: string;
 };
 
-const questionTypeLabels = {
-  multiple_choice: "Multiple choice",
-  single_choice: "Single choice",
-  true_false: "True/false",
-};
+type RetryMode = "anytime" | "cooldown" | "disabled";
 
-function buttonClasses(tone: "primary" | "secondary" | "danger" = "secondary") {
-  const base = "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60";
+const questionTypeOptions: Array<{ value: string; label: string }> = [
+  { value: "single_choice", label: "Single choice" },
+  { value: "multiple_choice", label: "Multiple choice" },
+  { value: "true_false", label: "True/false" },
+];
 
-  if (tone === "primary") {
-    return cn(base, "bg-[var(--ve-green)] text-white hover:brightness-95");
-  }
+const retryModeOptions: Array<{ value: RetryMode; label: string }> = [
+  { value: "anytime", label: "Anytime" },
+  { value: "cooldown", label: "Cooldown" },
+  { value: "disabled", label: "Disabled" },
+];
 
-  if (tone === "danger") {
-    return cn(
-      base,
-      "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_82%,var(--ve-card))] text-[var(--ve-danger)]",
-    );
-  }
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
 
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function pillButtonClasses(active: boolean) {
   return cn(
-    base,
-    "border border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]",
+    "inline-flex items-center justify-center rounded-full border px-[18px] py-[9px] text-[13px]",
+    active
+      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] font-extrabold text-[var(--admin-on-primary)]"
+      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface)]",
   );
 }
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary-container)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary-container)_12%,transparent)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
+}
+
+function getCoverImageValue(image: Record<string, unknown> | null | undefined, key: "src" | "alt") {
+  const value = image?.[key];
+  return typeof value === "string" ? value : "";
 }
 
 function normalizeQuestionOptions(question?: AdminQuizQuestionRow | null): EditableOption[] {
@@ -141,54 +163,16 @@ function buildPreviewQuestion({
   };
 }
 
-function QuestionPreview({ question }: { question: AdminQuizQuestionRow }) {
-  const options = getSortedQuestionOptions(question);
-
-  return (
-    <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <AdminStatusBadge tone="neutral">
-          {questionTypeLabels[question.question_type as keyof typeof questionTypeLabels] ?? question.question_type}
-        </AdminStatusBadge>
-        <AdminStatusBadge tone="store">{formatXpLabel(question.xp)}</AdminStatusBadge>
-      </div>
-      <h4 className="mt-3 text-sm font-black leading-6">{question.prompt || "Question prompt"}</h4>
-      <div className="mt-3 grid gap-2">
-        {options.length === 0 ? (
-          <p className="text-xs font-semibold text-[var(--ve-muted)]">No answer options yet.</p>
-        ) : (
-          options.map((option) => (
-            <div
-              className={cn(
-                "rounded-[12px] border px-3 py-2 text-sm font-bold",
-                option.is_correct
-                  ? "border-[color:color-mix(in_srgb,var(--ve-green)_34%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_74%,var(--ve-card))]"
-                  : "border-[var(--ve-line-soft)] bg-[var(--ve-card)]",
-              )}
-              key={option.id}
-            >
-              {option.label || "Untitled option"}
-            </div>
-          ))
-        )}
-      </div>
-      {question.explanation ? (
-        <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{question.explanation}</p>
-      ) : null}
-    </div>
-  );
-}
-
-function QuestionEditor({
+function QuestionCardFields({
   defaultQuestionOrder,
   lessonId,
-  onDeleteRequest,
   question,
   quizId,
+  onSaved,
 }: {
+  onSaved?: () => void;
   defaultQuestionOrder: number;
   lessonId: string;
-  onDeleteRequest?: (question: AdminQuizQuestionRow) => void;
   question?: AdminQuizQuestionRow | null;
   quizId: string;
 }) {
@@ -197,17 +181,11 @@ function QuestionEditor({
   const [xp, setXp] = useState(question?.xp ?? 10);
   const [explanation, setExplanation] = useState(question?.explanation ?? "");
   const [options, setOptions] = useState(() => normalizeQuestionOptions(question));
-  const previewQuestion = buildPreviewQuestion({
-    explanation,
-    options,
-    prompt,
-    question,
-    questionOrder: defaultQuestionOrder,
-    questionType,
-    xp,
-  });
-  const issues = getQuestionIssues(previewQuestion);
-  const correctCount = getCorrectOptionCount(previewQuestion);
+
+  const draft = JSON.stringify({ prompt, questionType, xp, explanation, options });
+  const [savedDraft, setSavedDraft] = useState(draft);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   function setType(nextType: string) {
     setQuestionType(nextType);
@@ -233,14 +211,14 @@ function QuestionEditor({
     });
   }
 
-  function markCorrect(index: number, checked: boolean) {
+  function markCorrect(index: number) {
     setOptions((current) =>
       current.map((option, optionIndex) => {
         if (questionType === "multiple_choice") {
-          return optionIndex === index ? { ...option, isCorrect: checked } : option;
+          return optionIndex === index ? { ...option, isCorrect: !option.isCorrect } : option;
         }
 
-        return { ...option, isCorrect: optionIndex === index ? checked : false };
+        return { ...option, isCorrect: optionIndex === index };
       }),
     );
   }
@@ -261,210 +239,174 @@ function QuestionEditor({
   }
 
   function removeOption(index: number) {
-    setOptions((current) => current.length <= 2 ? current : current.filter((_, optionIndex) => optionIndex !== index));
+    setOptions((current) => (current.length <= 2 ? current : current.filter((_, optionIndex) => optionIndex !== index)));
   }
 
+  const issues = getQuestionIssues(
+    buildPreviewQuestion({ explanation, options, prompt, question, questionOrder: defaultQuestionOrder, questionType, xp }),
+  );
+
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-      <form action={saveQuizQuestion} className="space-y-4">
-        <input name="lessonId" type="hidden" value={lessonId} />
-        <input name="quizId" type="hidden" value={quizId} />
-        <input name="questionId" type="hidden" value={question?.id ?? ""} />
-        <input name="questionOrder" type="hidden" value={question?.question_order ?? defaultQuestionOrder} />
+    <form data-unsaved={draft !== savedDraft || saving} action={async formData => {
+      const submitted = draft; setSaving(true); setSaveError("");
+      try { formData.set("stayInEditor", "true"); await saveQuizQuestion(formData); setSavedDraft(submitted); onSaved?.(); }
+      catch (error) { setSaveError(error instanceof Error ? error.message : "Question could not be saved."); }
+      finally { setSaving(false); }
+    }} className="mt-4 space-y-4">
+      {saveError && <p role="alert" className="text-sm text-[var(--admin-error)]">{saveError}</p>}
+      <fieldset disabled={saving} className="contents">
+      <input name="lessonId" type="hidden" value={lessonId} />
+      <input name="quizId" type="hidden" value={quizId} />
+      <input name="questionId" type="hidden" value={question?.id ?? ""} />
+      <input name="questionType" type="hidden" value={questionType} />
+      <input name="questionOrder" type="hidden" value={question?.question_order ?? defaultQuestionOrder} />
 
-        <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-          <p className={labelClasses()}>Content</p>
-          <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_13rem]">
-            <label>
-              <span className={labelClasses()}>Prompt</span>
-              <textarea
-                className={`${fieldClasses()} min-h-24 resize-none`}
-                name="prompt"
-                onChange={(event) => setPrompt(event.target.value)}
-                required
-                value={prompt}
-              />
-            </label>
-            <label>
-              <span className={labelClasses()}>Type</span>
-              <select
-                className={fieldClasses()}
-                name="questionType"
-                onChange={(event) => setType(event.target.value)}
-                value={questionType}
-              >
-                <option value="single_choice">Single choice</option>
-                <option value="multiple_choice">Multiple choice</option>
-                <option value="true_false">True/false</option>
-              </select>
-            </label>
-          </div>
-        </section>
+      <div className="flex flex-wrap gap-2">
+        {questionTypeOptions.map((option) => (
+          <button
+            className={pillButtonClasses(questionType === option.value)}
+            key={option.value}
+            onClick={() => setType(option.value)}
+            type="button"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
-        <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className={labelClasses()}>Correct answer</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
-                {options.length} options · {correctCount} marked correct
-              </p>
-            </div>
+      <input
+        className="w-full border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-2 text-base font-black text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary-container)]"
+        name="prompt"
+        onChange={(event) => setPrompt(event.target.value)}
+        placeholder="Write the question"
+        required
+        value={prompt}
+      />
+
+      <div className="grid gap-2">
+        {options.map((option, index) => (
+          <div className="flex items-center gap-2.5" key={option.id}>
             <button
-              className={buttonClasses()}
-              disabled={options.length >= 4 || questionType === "true_false"}
-              onClick={addOption}
+              aria-label={option.isCorrect ? "Marked correct" : "Mark as correct"}
+              className={cn(
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition",
+                option.isCorrect
+                  ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
+                  : "border-[var(--admin-border-warm)] text-transparent",
+              )}
+              onClick={() => markCorrect(index)}
               type="button"
             >
-              Add option
+              <CheckIcon className="h-3 w-3" />
             </button>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {options.map((option, index) => (
-              <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3" key={option.id}>
-                <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
-                  <label>
-                    <span className={labelClasses()}>Option {index + 1}</span>
-                    <input
-                      className={fieldClasses()}
-                      name={`option${index + 1}`}
-                      onChange={(event) =>
-                        setOptions((current) =>
-                          current.map((item, itemIndex) =>
-                            itemIndex === index ? { ...item, label: event.target.value } : item,
-                          ),
-                        )
-                      }
-                      readOnly={questionType === "true_false"}
-                      value={option.label}
-                    />
-                  </label>
-                  <label className="flex min-h-10 items-center gap-2 text-xs font-black">
-                    <input
-                      checked={option.isCorrect}
-                      name={`correct${index + 1}`}
-                      onChange={(event) => markCorrect(index, event.target.checked)}
-                      type="checkbox"
-                    />
-                    Correct
-                  </label>
-                  <button
-                    className={buttonClasses("danger")}
-                    disabled={options.length <= 2 || questionType === "true_false"}
-                    onClick={() => removeOption(index)}
-                    type="button"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-            <p className={labelClasses()}>Feedback</p>
-            <label className="mt-3 block">
-              <span className={labelClasses()}>Explanation</span>
-              <textarea
-                className={`${fieldClasses()} min-h-24 resize-none`}
-                name="explanation"
-                onChange={(event) => setExplanation(event.target.value)}
-                value={explanation}
-              />
-            </label>
-          </div>
-          <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-            <p className={labelClasses()}>Scoring</p>
-            <label className="mt-3 block">
-              <span className={labelClasses()}>Question XP</span>
+            {questionType === "true_false" ? (
+              <span className="flex-1 border-b border-[var(--admin-border-warm)] px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)]">
+                {option.label}
+              </span>
+            ) : (
               <input
-                className={fieldClasses()}
-                max={20}
-                min={1}
-                name="xp"
-                onChange={(event) => setXp(Number(event.target.value))}
-                required
-                type="number"
-                value={xp}
+                className="flex-1 border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary-container)]"
+                name={`option${index + 1}`}
+                onChange={(event) =>
+                  setOptions((current) =>
+                    current.map((item, itemIndex) => (itemIndex === index ? { ...item, label: event.target.value } : item)),
+                  )
+                }
+                placeholder="Answer option"
+                value={option.label}
               />
-            </label>
-            <details className="mt-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
-              <summary className="cursor-pointer text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
-                Reward behaviour
-              </summary>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                XP is awarded by the existing quiz attempt rules, daily cap and lesson retry policy.
-              </p>
-            </details>
-          </div>
-        </section>
-
-        {issues.length > 0 ? (
-          <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-store)_26%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_78%,var(--ve-card))] p-3">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[color:color-mix(in_srgb,var(--ve-store)_70%,var(--foreground))]">
-              Validation
-            </p>
-            <ul className="mt-2 space-y-1 text-xs font-semibold leading-5">
-              {issues.map((issue) => (
-                <li key={issue.message}>{issue.message}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
-        <button className={buttonClasses("primary")} type="submit">
-          {question ? "Save question" : "Create question"}
-        </button>
-      </form>
-
-      <aside className="space-y-3">
-        <QuestionPreview question={previewQuestion} />
-        {question ? (
-          <div className="flex flex-wrap gap-2">
-            <form action={duplicateQuizQuestion}>
-              <input name="lessonId" type="hidden" value={lessonId} />
-              <input name="quizId" type="hidden" value={quizId} />
-              <input name="questionId" type="hidden" value={question.id} />
-              <button className={buttonClasses()} type="submit">
-                Duplicate
-              </button>
-            </form>
-            {onDeleteRequest ? (
-              <button className={buttonClasses("danger")} onClick={() => onDeleteRequest(question)} type="button">
-                Delete
+            )}
+            {questionType === "true_false" ? <input name={`option${index + 1}`} type="hidden" value={option.label} /> : null}
+            <input name={`correct${index + 1}`} type="hidden" value={option.isCorrect ? "on" : ""} />
+            {options.length > 2 && questionType !== "true_false" ? (
+              <button
+                aria-label="Remove option"
+                className="shrink-0 text-[var(--admin-outline)] hover:text-[var(--admin-secondary)]"
+                onClick={() => removeOption(index)}
+                type="button"
+              >
+                <CloseIcon className="h-3.5 w-3.5" />
               </button>
             ) : null}
           </div>
+        ))}
+        {options.length < 4 && questionType !== "true_false" ? (
+          <button
+            className="self-start text-xs font-black text-[var(--admin-primary)]"
+            onClick={addOption}
+            type="button"
+          >
+            + Add option
+          </button>
         ) : null}
-      </aside>
-    </div>
+      </div>
+
+      <label className="block">
+        <span className={labelClasses()}>Explanation shown after answering</span>
+        <textarea
+          className={cn(fieldClasses(), "min-h-[52px] resize-none")}
+          name="explanation"
+          onChange={(event) => setExplanation(event.target.value)}
+          placeholder="Why is this the correct answer?"
+          value={explanation}
+        />
+      </label>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Worth</span>
+          <input
+            className="w-[70px] rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-2.5 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+            max={20}
+            min={1}
+            name="xp"
+            onChange={(event) => setXp(Number(event.target.value))}
+            required
+            type="number"
+            value={xp}
+          />
+          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">XP</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {issues.length > 0 ? <AdminStatusBadge tone="warning">{issues.length} issue{issues.length === 1 ? "" : "s"}</AdminStatusBadge> : null}
+          <PendingSubmitButton
+            className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+            label={question ? "Save question" : "Create question"}
+            pendingLabel="Saving question..."
+            type="submit"
+          />
+        </div>
+      </div>
+      {issues.length > 0 ? (
+        <ul className="space-y-1 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+          {issues.map((issue) => (
+            <li key={issue.message}>{issue.message}</li>
+          ))}
+        </ul>
+      ) : null}
+      </fieldset>
+    </form>
   );
 }
 
 function SortableQuestionCard({
   children,
-  issueCount,
   isFirst,
   isLast,
+  onDeleteRequest,
+  onDuplicate,
   onMove,
   question,
 }: {
   children: React.ReactNode;
-  issueCount: number;
   isFirst: boolean;
   isLast: boolean;
+  onDeleteRequest: (question: AdminQuizQuestionRow) => void;
+  onDuplicate: (question: AdminQuizQuestionRow) => void;
   onMove: (question: AdminQuizQuestionRow, direction: "up" | "down") => void;
   question: AdminQuizQuestionRow;
 }) {
-  const {
-    attributes,
-    isDragging,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: question.id });
+  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({ id: question.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -473,51 +415,52 @@ function SortableQuestionCard({
   return (
     <article
       className={cn(
-        "rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 shadow-sm",
+        "rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm",
         isDragging && "opacity-80 shadow-lg",
       )}
       ref={setNodeRef}
       style={style}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <button
-            aria-label={`Drag question ${question.question_order}`}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] touch-none"
-            type="button"
-            {...attributes}
-            {...listeners}
-          >
-            ::
-          </button>
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-              Question {question.question_order}
-            </p>
-            <h3 className="mt-1 text-base font-black">{question.prompt || "Untitled question"}</h3>
-          </div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <AdminDragHandle attributes={attributes} label={`question ${question.question_order}`} listeners={listeners} />
+          <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+            Question {question.question_order}
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            className={buttonClasses()}
+            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--admin-border-warm)] px-2.5 text-xs font-black text-[var(--admin-on-surface-variant)] disabled:cursor-not-allowed disabled:opacity-40"
             disabled={isFirst}
             onClick={() => onMove(question, "up")}
+            title="Move question up"
             type="button"
           >
-            Move question up
+            ↑
           </button>
           <button
-            className={buttonClasses()}
+            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--admin-border-warm)] px-2.5 text-xs font-black text-[var(--admin-on-surface-variant)] disabled:cursor-not-allowed disabled:opacity-40"
             disabled={isLast}
             onClick={() => onMove(question, "down")}
+            title="Move question down"
             type="button"
           >
-            Move question down
+            ↓
           </button>
-          <AdminStatusBadge tone={issueCount > 0 ? "warning" : "good"}>
-            {issueCount} issue{issueCount === 1 ? "" : "s"}
-          </AdminStatusBadge>
-          <AdminStatusBadge tone="store">{formatXpLabel(question.xp)}</AdminStatusBadge>
+          <button
+            className="text-xs font-black text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]"
+            onClick={() => onDuplicate(question)}
+            type="button"
+          >
+            Duplicate
+          </button>
+          <button
+            className="text-xs font-black text-[var(--admin-secondary)]"
+            onClick={() => onDeleteRequest(question)}
+            type="button"
+          >
+            Delete
+          </button>
         </div>
       </div>
       {children}
@@ -525,11 +468,115 @@ function SortableQuestionCard({
   );
 }
 
+function RetakeRulesCard({ courseId, lesson }: { courseId: string; lesson: AdminLessonRow }) {
+  const [retryMode, setRetryMode] = useState<RetryMode>((lesson.retry_mode as RetryMode) ?? "anytime");
+  const [cooldownHours, setCooldownHours] = useState(() =>
+    Math.max(1, Math.round((lesson.retry_cooldown_seconds ?? 3600) / 3600)),
+  );
+
+  return (
+    <form data-unsaved={retryMode !== (lesson.retry_mode ?? "anytime") || cooldownHours !== Math.max(1, Math.round((lesson.retry_cooldown_seconds ?? 3600) / 3600))} action={saveLesson} className="space-y-4 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
+      <input name="courseId" type="hidden" value={courseId} />
+      <input name="returnTo" type="hidden" value="quiz" />
+      <input name="lessonId" type="hidden" value={lesson.id} />
+      <input name="title" type="hidden" value={lesson.title} />
+      <input name="description" type="hidden" value={lesson.description ?? ""} />
+      <input name="coverImageUrl" type="hidden" value={getCoverImageValue(lesson.cover_image, "src")} />
+      <input name="coverImageAlt" type="hidden" value={getCoverImageValue(lesson.cover_image, "alt")} />
+      <input name="status" type="hidden" value={lesson.status} />
+      <input name="sortOrder" type="hidden" value={lesson.sort_order} />
+      <input name="estimatedMinutes" type="hidden" value={lesson.estimated_minutes} />
+      <input name="retryCooldownSeconds" type="hidden" value={cooldownHours * 3600} />
+
+      <span className={labelClasses()}>Retake rules</span>
+
+      <div className="space-y-2">
+        <span className="text-sm font-bold text-[var(--admin-on-surface)]">When can a learner retake this quiz?</span>
+        <div className="flex flex-wrap gap-2">
+          {retryModeOptions.map((option) => (
+            <button
+              className={pillButtonClasses(retryMode === option.value)}
+              key={option.value}
+              onClick={() => setRetryMode(option.value)}
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <input name="retryMode" type="hidden" value={retryMode} />
+      </div>
+
+      {retryMode === "cooldown" ? (
+        <div className="flex items-center gap-2.5">
+          <input
+            className="w-20 rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+            min={1}
+            onChange={(event) => setCooldownHours(Math.max(1, Number(event.target.value) || 1))}
+            type="number"
+            value={cooldownHours}
+          />
+          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">hours before they can try again</span>
+        </div>
+      ) : null}
+
+      <label className="flex items-start gap-2.5">
+        <input className="peer sr-only" defaultChecked={lesson.retry_requires_reread ?? true} name="retryRequiresReread" type="checkbox" />
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--admin-border-warm)] text-transparent peer-checked:border-[var(--admin-primary)] peer-checked:bg-[var(--admin-primary)] peer-checked:text-[var(--admin-on-primary)]">
+          <CheckIcon className="h-3 w-3" />
+        </span>
+        <span className="text-sm font-bold text-[var(--admin-on-surface)]">Require re-reading the lesson before a retry</span>
+      </label>
+
+      <div className="flex items-center gap-2.5">
+        <input
+          className="w-[100px] rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+          defaultValue={lesson.max_earning_attempts ?? ""}
+          min={0}
+          name="maxEarningAttempts"
+          placeholder="Unlimited"
+          type="number"
+        />
+        <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">attempts that can earn XP (blank = unlimited)</span>
+      </div>
+
+      <label className="flex items-start gap-2.5">
+        <input
+          className="peer sr-only"
+          defaultChecked={lesson.quiz_requires_lesson_completion ?? true}
+          name="quizRequiresLessonCompletion"
+          type="checkbox"
+        />
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--admin-border-warm)] text-transparent peer-checked:border-[var(--admin-primary)] peer-checked:bg-[var(--admin-primary)] peer-checked:text-[var(--admin-on-primary)]">
+          <CheckIcon className="h-3 w-3" />
+        </span>
+        <span className="text-sm font-bold text-[var(--admin-on-surface)]">
+          Quiz requires lesson completion
+          <span className="block text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+            Learners must read every page before the quiz becomes available.
+          </span>
+        </span>
+      </label>
+
+      <button
+        className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+        type="submit"
+      >
+        Save retake rules
+      </button>
+    </form>
+  );
+}
+
 export function AssessmentBuilder({
   lesson,
   questions,
   quiz,
+  aiEnabled = false,
+  initialResultId,
 }: {
+  aiEnabled?: boolean;
+  initialResultId?: string;
   lesson: AdminLessonRow;
   questions: AdminQuizQuestionRow[];
   quiz: AdminQuizRow;
@@ -540,13 +587,27 @@ export function AssessmentBuilder({
   const [deleteTarget, setDeleteTarget] = useState<AdminQuizQuestionRow | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
   const [orderMessage, setOrderMessage] = useState<string | null>(null);
+  const [showNewQuestion, setShowNewQuestion] = useState(false);
+  const editorRef = useRef<HTMLElement | null>(null);
+  async function beforeAiAction() {
+    const root = editorRef.current;
+    const changedInput = root && [...root.querySelectorAll<HTMLInputElement>("input")].some(input =>
+      input.type === "checkbox" ? input.checked !== input.defaultChecked : input.name === "quizTitle" && input.value !== input.defaultValue);
+    if (isPending || isDeletePending || root?.querySelector('[data-unsaved="true"]') || changedInput) {
+      throw new Error("Save your quiz changes before using AI. Your inputs are still in the editor.");
+    }
+  }
+  useEffect(() => {
+    setOrderedQuestions([...questions].sort((first, second) => first.question_order - second.question_order));
+    setDeleteTarget((current) => current && !questions.some((question) => question.id === current.id) ? null : current);
+  }, [questions]);
   const [isPending, startTransition] = useTransition();
   const [isDeletePending, startDeleteTransition] = useTransition();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  const issues = useMemo(() => getAssessmentIssues(orderedQuestions), [orderedQuestions]);
+  const issues = getAssessmentIssues(orderedQuestions);
   const errorCount = issues.filter((issue) => issue.severity === "error").length;
   const warningCount = issues.filter((issue) => issue.severity === "warning").length;
   const totalXp = getAssessmentXp(orderedQuestions);
@@ -628,53 +689,54 @@ export function AssessmentBuilder({
   }
 
   return (
-    <section className="mt-6 space-y-5">
-      <AdminCard>
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <section ref={editorRef} className="mt-6 space-y-5">
+      <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
           <form action={saveQuizSettings} className="space-y-4">
             <input name="lessonId" type="hidden" value={lesson.id} />
             <input name="quizId" type="hidden" value={quiz.id} />
+            {/* Quiz visibility follows the lesson's own status, not an independent
+                draft/published/archived toggle — pass the stored value through
+                unchanged rather than exposing a second status control here. */}
+            <input name="quizStatus" type="hidden" value={quiz.status} />
             <div>
-              <p className={labelClasses()}>Assessment</p>
-              <h2 className="mt-1 text-lg font-black">Quiz settings</h2>
+              <p className={labelClasses()}>Quiz</p>
+              <input
+                className="mt-1 w-full border-0 bg-transparent p-0 text-2xl font-black text-[var(--admin-brand-hero)] outline-none"
+                defaultValue={quiz.title}
+                name="quizTitle"
+                required
+              />
             </div>
-            <div className="grid gap-4 md:grid-cols-[1fr_12rem]">
-              <label>
-                <span className={labelClasses()}>Quiz title</span>
-                <input className={fieldClasses()} name="quizTitle" required defaultValue={quiz.title} />
-              </label>
-              <label>
-                <span className={labelClasses()}>Editorial status</span>
-                <select className={fieldClasses()} name="quizStatus" defaultValue={quiz.status}>
-                  <option value="draft">Draft</option>
-                  <option disabled={Boolean(errorCount > 0 || (quiz.ai_generated && quiz.status !== "published"))} value="published">
-                    Published
-                  </option>
-                  <option value="archived">Archived</option>
-                </select>
-              </label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button className={buttonClasses("primary")} type="submit">
-                Save quiz
-              </button>
-              <Link className={buttonClasses()} href={`/quiz/${lesson.id}`}>
-                Learner preview
+            <div className="flex flex-wrap items-center gap-3">
+              <PendingSubmitButton
+                className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+                label="Save quiz title"
+                pendingLabel="Saving title..."
+                type="submit"
+              />
+              <Link
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--admin-border-warm)] px-4 text-xs font-black text-[var(--admin-on-surface-variant)] transition hover:text-[var(--admin-primary)]"
+                href={`/admin/courses/lessons/${lesson.id}/preview?section=quiz`}
+              >
+                Preview quiz
               </Link>
             </div>
           </form>
 
-          <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
+          <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] p-4">
             <div className="flex flex-wrap gap-2">
+              <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-3 text-xs font-black text-[var(--admin-primary)]">
+                {formatXpLabel(totalXp)} total
+              </span>
               <AdminStatusBadge tone={errorCount > 0 ? "danger" : "good"}>
                 {errorCount} blocker{errorCount === 1 ? "" : "s"}
               </AdminStatusBadge>
               <AdminStatusBadge tone={warningCount > 0 ? "warning" : "good"}>
                 {warningCount} warning{warningCount === 1 ? "" : "s"}
               </AdminStatusBadge>
-              <AdminStatusBadge tone="store">{formatXpLabel(totalXp)}</AdminStatusBadge>
             </div>
-            <div className="mt-4 grid gap-2 text-sm font-semibold text-[var(--ve-muted)]">
+            <div className="mt-4 grid gap-2 text-sm font-semibold text-[var(--admin-on-surface-variant)]">
               <p>Passing score: scored by existing quiz attempt rules.</p>
               <p>Quiz access: {lesson.quiz_requires_lesson_completion ? "after all lesson pages are read" : "available without page completion gate"}.</p>
               <p>
@@ -685,7 +747,7 @@ export function AssessmentBuilder({
             {issues.length > 0 ? (
               <ul className="mt-4 space-y-2 text-xs font-bold leading-5">
                 {issues.slice(0, 6).map((issue, index) => (
-                  <li className="rounded-[10px] bg-[var(--ve-card)] px-3 py-2" key={`${issue.message}-${index}`}>
+                  <li className="rounded-[10px] bg-[var(--admin-surface-milk)] px-3 py-2" key={`${issue.message}-${index}`}>
                     {issue.message}
                   </li>
                 ))}
@@ -693,104 +755,120 @@ export function AssessmentBuilder({
             ) : null}
           </div>
         </div>
-      </AdminCard>
+      </div>
 
-      <AdminCard>
+      <RetakeRulesCard courseId={lesson.course_id} lesson={lesson} />
+
+      <div>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className={labelClasses()}>Question list</p>
             <h2 className="mt-1 text-lg font-black">{orderedQuestions.length} questions</h2>
             {orderMessage ? (
-              <p className="mt-2 text-xs font-black text-[var(--ve-muted-strong)]">{orderMessage}</p>
+              <p className="mt-2 text-xs font-black text-[var(--admin-on-surface-variant)]">{orderMessage}</p>
             ) : null}
           </div>
           <AdminStatusBadge tone={isPending ? "warning" : "neutral"}>
             {isPending ? "Saving order" : "Drag to reorder"}
           </AdminStatusBadge>
         </div>
-        {orderedQuestions.length === 0 ? (
-          <div className="mt-4">
+
+        <div className="mt-4 space-y-4">
+          {orderedQuestions.length === 0 && !showNewQuestion ? (
             <EmptyAdminState>No quiz questions yet.</EmptyAdminState>
-          </div>
-        ) : (
-          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
-            <SortableContext items={orderedQuestions.map((question) => question.id)} strategy={verticalListSortingStrategy}>
-              <div className="mt-4 space-y-4">
+          ) : (
+            <DndContext collisionDetection={closestCenter} id="quiz-questions-dnd" onDragEnd={handleDragEnd} sensors={sensors}>
+              <SortableContext items={orderedQuestions.map((question) => question.id)} strategy={verticalListSortingStrategy}>
                 {orderedQuestions.map((question, index) => (
                   <SortableQuestionCard
-                    issueCount={getQuestionIssues(question).length}
                     isFirst={index === 0}
                     isLast={index === orderedQuestions.length - 1}
                     key={question.id}
+                    onDeleteRequest={setDeleteTarget}
+                    onDuplicate={(target) => {
+                      const formData = new FormData();
+                      formData.set("lessonId", lesson.id);
+                      formData.set("quizId", quiz.id);
+                      formData.set("questionId", target.id);
+                      void duplicateQuizQuestion(formData);
+                    }}
                     onMove={moveQuestion}
                     question={question}
                   >
-                    <QuestionEditor
+                    <QuestionCardFields
                       defaultQuestionOrder={question.question_order}
                       lessonId={lesson.id}
-                      onDeleteRequest={setDeleteTarget}
                       question={question}
                       quizId={quiz.id}
                     />
                   </SortableQuestionCard>
                 ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
-      </AdminCard>
-
-      <AdminCard>
-        <p className={labelClasses()}>Create question</p>
-        <h2 className="mt-1 text-lg font-black">New assessment item</h2>
-        <div className="mt-4">
-          <QuestionEditor
-            defaultQuestionOrder={orderedQuestions.length + 1}
-            lessonId={lesson.id}
-            quizId={quiz.id}
-          />
-        </div>
-      </AdminCard>
-
-      <AdminCard>
-        <p className={labelClasses()}>Quiz preview</p>
-        <h2 className="mt-1 text-lg font-black">{quiz.title}</h2>
-        <div className="mt-4 grid gap-3 xl:grid-cols-2">
-          {orderedQuestions.length === 0 ? (
-            <EmptyAdminState>No questions to preview.</EmptyAdminState>
-          ) : (
-            orderedQuestions.map((question) => <QuestionPreview key={question.id} question={question} />)
+              </SortableContext>
+            </DndContext>
           )}
+
+          {showNewQuestion ? (
+            <article className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+                  New question
+                </span>
+                <button
+                  className="text-xs font-black text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-secondary)]"
+                  onClick={() => setShowNewQuestion(false)}
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+              <QuestionCardFields onSaved={() => setShowNewQuestion(false)} defaultQuestionOrder={orderedQuestions.length + 1} lessonId={lesson.id} quizId={quiz.id} />
+            </article>
+          ) : null}
         </div>
-      </AdminCard>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-3.5 text-xs font-bold text-[var(--admin-outline)] transition hover:border-[var(--admin-primary-container)] hover:text-[var(--admin-primary)]"
+            onClick={() => setShowNewQuestion(true)}
+            type="button"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add question
+          </button>
+        </div>
+        <AiAssistanceAuthoring courseId={lesson.course_id} lessonId={lesson.id} kind="quiz" enabled={aiEnabled} initialResultId={initialResultId} beforeAction={beforeAiAction} />
+      </div>
 
       <AlertDialog.Root
-        open={deleteTarget !== null}
         onOpenChange={(open) => {
           if (!open) {
             setDeleteTarget(null);
             setDeleteMessage(null);
           }
         }}
+        open={deleteTarget !== null}
       >
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Delete question?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
               This removes the question and its answer options when no learner attempt history references it.
             </AlertDialog.Description>
             {deleteMessage ? (
-              <p className="mt-3 rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-danger)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_78%,var(--ve-card))] px-3 py-2 text-sm font-bold text-[var(--ve-danger)]">
+              <p className="mt-3 rounded-[12px] border border-[var(--admin-error-container)] bg-[color:color-mix(in_srgb,var(--admin-error-container)_60%,var(--admin-surface-milk))] px-3 py-2 text-sm font-bold text-[var(--admin-error)]">
                 {deleteMessage}
               </p>
             ) : null}
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className={buttonClasses()} type="button">
+              <AlertDialog.Cancel
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]"
+                type="button"
+              >
                 Cancel
               </AlertDialog.Cancel>
               <button
-                className={buttonClasses("danger")}
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--admin-error)] px-4 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isDeletePending}
                 onClick={confirmDeleteQuestion}
                 type="button"

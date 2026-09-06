@@ -344,8 +344,8 @@ select extensions.is(
     from public.lesson_content_blocks
     where page_id = 'page-lms-catalog-platform'
   ),
-  1,
-  'published platform course child content remains readable through catalog-aware policies'
+  0,
+  'organisation editor cannot read raw platform lesson drafts'
 );
 
 select public.admin_create_organization_private_course(

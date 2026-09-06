@@ -156,8 +156,8 @@ export function buildCourseReadiness({
   quizzes,
 }: CourseReadinessInput): CourseReadinessResult {
   const courseHref = `/admin/courses/${course.id}`;
-  const mediaHref = `${courseHref}?tab=media`;
-  const reviewHref = `${courseHref}?tab=review-publish`;
+  const mediaHref = `${courseHref}/media`;
+  const reviewHref = `${courseHref}/review`;
   const activeLessons = lessons.filter((lesson) => lesson.status !== "archived");
   const pagesByLessonId = new Map<string, AdminLessonPageRow[]>();
   const blocksByPageId = new Map<string, AdminLessonBlockRow[]>();
@@ -195,7 +195,7 @@ export function buildCourseReadiness({
     condition: courseOverviewComplete,
     detail: "Title, category, learner-facing description, intended audience and learning outcomes are present.",
     failedDetail: "Add a title, category, learner-facing description, intended audience and learning outcomes.",
-    href: `${courseHref}?tab=overview`,
+    href: `${courseHref}/settings`,
     id: "course-overview",
     label: "Course overview complete",
     severity: "blocker",
@@ -209,7 +209,7 @@ export function buildCourseReadiness({
     condition: hasThumbnail && hasCover,
     detail: "Course thumbnail and cover image are present.",
     failedDetail: hasThumbnail ? "Add a course cover image." : hasCover ? "Add a course thumbnail." : "Add a course thumbnail and cover image.",
-    href: mediaHref,
+    href: `${reviewHref}#course-artwork`,
     id: "course-media",
     label: "Thumbnail and cover present",
     severity: "blocker",
@@ -219,7 +219,7 @@ export function buildCourseReadiness({
     condition: activeLessons.length > 0,
     detail: `${activeLessons.length} active lesson${activeLessons.length === 1 ? "" : "s"} present.`,
     failedDetail: "Add at least one active lesson.",
-    href: `${courseHref}?tab=curriculum`,
+    href: courseHref,
     id: "lessons-present",
     label: "Course has lessons",
     severity: "blocker",
@@ -229,7 +229,7 @@ export function buildCourseReadiness({
     condition: activeLessons.length >= 5,
     detail: `${activeLessons.length} active lessons are available.`,
     failedDetail: `${activeLessons.length} active lesson${activeLessons.length === 1 ? "" : "s"} available; five is the recommended baseline.`,
-    href: `${courseHref}?tab=curriculum`,
+    href: courseHref,
     id: "lesson-count",
     label: "Five-lesson baseline",
     severity: "warning",
@@ -244,7 +244,7 @@ export function buildCourseReadiness({
     condition: lessonsMissingPages.length === 0 && emptyPages.length === 0,
     detail: "All active lessons have authored pages and content blocks.",
     failedDetail: `${lessonsMissingPages.length} lesson${lessonsMissingPages.length === 1 ? "" : "s"} missing pages; ${emptyPages.length} page${emptyPages.length === 1 ? "" : "s"} missing blocks.`,
-    href: firstIncompleteLesson ? getLessonHref(firstIncompleteLesson.id) : `${courseHref}?tab=curriculum`,
+    href: firstIncompleteLesson ? getLessonHref(firstIncompleteLesson.id) : courseHref,
     id: "lesson-pages",
     label: "Required lesson pages complete",
     severity: "blocker",
@@ -255,7 +255,7 @@ export function buildCourseReadiness({
     condition: draftLessons === 0,
     detail: "All active lessons are published.",
     failedDetail: `${draftLessons} active lesson${draftLessons === 1 ? "" : "s"} not published yet.`,
-    href: `${courseHref}?tab=curriculum`,
+    href: courseHref,
     id: "lesson-statuses",
     label: "Lesson publication status",
     severity: "warning",
@@ -281,7 +281,7 @@ export function buildCourseReadiness({
     condition: quizBlockers.length === 0,
     detail: "Required quizzes have valid answer keys and questions.",
     failedDetail: quizBlockers[0]?.message ?? "One or more required quizzes are incomplete.",
-    href: quizBlockers[0]?.href ?? `${courseHref}?tab=curriculum`,
+    href: quizBlockers[0]?.href ?? courseHref,
     id: "assessments",
     label: "Assessments complete",
     severity: "blocker",
@@ -293,14 +293,16 @@ export function buildCourseReadiness({
     && Boolean(asset.url?.trim())
     && !asset.alt_text?.trim(),
   );
-  const missingAltBlockCount = blocks.filter((block) =>
+  const missingAltBlocks = blocks.filter((block) =>
     block.block_type === "image"
     && typeof block.payload.src === "string"
     && block.payload.src.trim().length > 0
     && (typeof block.payload.alt !== "string" || block.payload.alt.trim().length === 0),
-  ).length;
+  );
+  const missingAltBlock = missingAltBlocks[0];
+  const missingAltPage = missingAltBlock && pages.find((page) => page.id === missingAltBlock.page_id);
   const missingAltCourseImageCount = (hasImageSrc(course.thumbnail) && !hasImageAlt(course.thumbnail)) ? 1 : 0;
-  const missingAltCount = missingAltAssets.length + missingAltBlockCount + missingAltCourseImageCount;
+  const missingAltCount = missingAltAssets.length + missingAltBlocks.length + missingAltCourseImageCount;
   const requiredMediaIssues =
     mediaValidation.missingRequiredAssets.length
     + mediaValidation.failedRequiredAssets.length
@@ -318,7 +320,11 @@ export function buildCourseReadiness({
     condition: missingAltCount === 0,
     detail: "Media alt text is complete.",
     failedDetail: `${missingAltCount} image${missingAltCount === 1 ? "" : "s"} missing alt text.`,
-    href: missingAltAssets[0] ? `${mediaHref}#media-asset-${missingAltAssets[0].id}` : mediaHref,
+    href: missingAltAssets[0]
+      ? `${mediaHref}#brief-${missingAltAssets[0].id}`
+      : missingAltBlock && missingAltPage
+        ? `${getLessonHref(missingAltPage.lesson_id)}?page=${missingAltPage.id}#block-${missingAltBlock.id}`
+        : `${reviewHref}#course-artwork`,
     id: "media-alt",
     label: "Image alt text complete",
     severity: "blocker",
@@ -350,7 +356,7 @@ export function buildCourseReadiness({
     condition: aiMediaReady,
     detail: "AI-generated media has been reviewed and approved.",
     failedDetail: "AI-generated course or lesson media still needs editorial approval.",
-    href: mediaHref,
+    href: reviewHref,
     id: "ai-media",
     label: "AI-generated media reviewed",
     severity: "blocker",
@@ -373,7 +379,7 @@ export function buildCourseReadiness({
 
   return {
     blockers,
-    canApprove: blockers.filter((item) => item.id !== "editorial-lifecycle").length === 0,
+    canApprove: blockers.filter((item) => item.id !== "editorial-lifecycle" && !["ai-text", "ai-media"].includes(item.id) && !(item.id === "media-approval" && mediaValidation.missingRequiredAssets.length === 0 && mediaValidation.failedRequiredAssets.length === 0)).length === 0,
     canPublish: blockers.length === 0,
     checks,
     lifecycle,

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";

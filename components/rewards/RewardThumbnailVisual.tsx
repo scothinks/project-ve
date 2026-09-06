@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { useState } from "react";
 import { TablerRewardIcon } from "@/components/rewards/TablerRewardIcon";
 import { getRewardIconNameFromLegacy, type RewardIconName } from "@/lib/reward-icons";

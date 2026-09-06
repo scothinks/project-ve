@@ -1,0 +1,3167 @@
+{
+  "localBuildId": "eF6NvU_AOrTJkq6G7Vr6D",
+  "validationSha256": "fb0e3b7f0140a8104524e3c465b286b50521ffbaf92810df0c13c1e4e1b32ae8",
+  "head": "ffcbffb80dd03dfd494619f5b7e3d2366cff31e9",
+  "branch": "codex-ai-course-workflow-polish",
+  "sourceSha256": "daf35fe897e5247247b58657d42b56edd846343637b8de991b0db64ab784a54a",
+  "files": [
+    {
+      "path": "app/admin/activity/page.tsx",
+      "sha256": "f582e47b4002f47221d91354c4fd3e010d72600afdcf99c11fa471ec4384bdd7"
+    },
+    {
+      "path": "app/admin/ads/AdsShell.tsx",
+      "sha256": "8a07d5367f5ad815ec76eb8ee74a5085a87c2b9e49089c1ebba80456fae22323"
+    },
+    {
+      "path": "app/admin/ads/actions.ts",
+      "sha256": "56f7fd9f945df1c0bd96183cb764b83fc0a6aea307df6b205e55ace1dbdd61ba"
+    },
+    {
+      "path": "app/admin/ads/components.tsx",
+      "sha256": "092f6ad8fb18cb6ece9dfc98ac6acd7bdada39524602a670dfaf5236394e955f"
+    },
+    {
+      "path": "app/admin/ads/inventory/page.tsx",
+      "sha256": "dd3bcb00fd740dac9e29ca47f4d7112889dcf57346b1e063842a1aa7035ee283"
+    },
+    {
+      "path": "app/admin/ads/launch/page.tsx",
+      "sha256": "ecd07ad14f85d01697f32d250e16b4a6a03d7d99b8e7b34ad0146d7c1c041527"
+    },
+    {
+      "path": "app/admin/ads/page.tsx",
+      "sha256": "e6106090d33c7fe6465b2a15e1b129fe76183c5f7713557ae611314dafa7f9e8"
+    },
+    {
+      "path": "app/admin/ads/reporting/page.tsx",
+      "sha256": "5d8f00015f7cef2154bd463ea019d0dec089eb299c22dd69a10bd6609904c006"
+    },
+    {
+      "path": "app/admin/ads/review/page.tsx",
+      "sha256": "c692917b2d358c1f298b40f8382c10624b6bf151d2975aff3652e6b41305c530"
+    },
+    {
+      "path": "app/admin/ads/types.ts",
+      "sha256": "c47c39f3c65ad03140566791c3343a8a2e0354049098f30e0ddd6b8662522e76"
+    },
+    {
+      "path": "app/admin/assessments/[id]/page.tsx",
+      "sha256": "71112a15725722d9cc46ea5f859d8a4eb2831557300d9f5438c369b74082cd5c"
+    },
+    {
+      "path": "app/admin/assessments/actions.ts",
+      "sha256": "53806029921fbe4024ef69b27c4d78c9d27f91e6e3065437d03e5f785428d945"
+    },
+    {
+      "path": "app/admin/assessments/page.tsx",
+      "sha256": "dba266ff4a90928fa9d832feb28961f485701eeee6d8bd7663e67532d4c1b7fd"
+    },
+    {
+      "path": "app/admin/campaigns/[id]/page.tsx",
+      "sha256": "17bb3b9895c28cba0f5998e66287e7f4ae7cd3cca81d7d4552582a0581f667e6"
+    },
+    {
+      "path": "app/admin/campaigns/actions.ts",
+      "sha256": "6db67329da2ee35499a8e2608e8eeb00c10b0d94eaf3d26d9df6b7777332c47a"
+    },
+    {
+      "path": "app/admin/campaigns/new/page.tsx",
+      "sha256": "41436e444964e6fabd9924358f291e20c100a30e71ad3c65dab5b9881bf75c22"
+    },
+    {
+      "path": "app/admin/campaigns/page.tsx",
+      "sha256": "f522a6dd6903cea76f1c9de15baa4aee11dff6f101ac310f094044532314bf4f"
+    },
+    {
+      "path": "app/admin/catalog-people/actions.ts",
+      "sha256": "68c1bf117d846c48a2f4f2ca04fcf49b1314c137abbe31ff051772b7ec0f7b82"
+    },
+    {
+      "path": "app/admin/catalog-people/page.tsx",
+      "sha256": "aaf2b7add4fd0c1e9365daca21d10f6808b33af82e68f3b92afb21b20b75a539"
+    },
+    {
+      "path": "app/admin/cohorts/[id]/page.tsx",
+      "sha256": "1696ba2d60da6cd68b3ce020eecff7d672d552e4a0364c94b4b532db1cdd8807"
+    },
+    {
+      "path": "app/admin/cohorts/actions.ts",
+      "sha256": "99930ceed568d2cf28a1a3d0a9a0e89dc94d8c31fdc7476f8b4388d3e971b240"
+    },
+    {
+      "path": "app/admin/cohorts/new/page.tsx",
+      "sha256": "978d93ebaee4c06a50fcbb3844ad817fbadf7dc5bdf5a36567a89e2ef813ca5d"
+    },
+    {
+      "path": "app/admin/cohorts/page.tsx",
+      "sha256": "f5c08b0f02a463a29dfb57159adf5a69eaac30a773ebdc3ee19d9061ff9821a4"
+    },
+    {
+      "path": "app/admin/content-value-tags/actions.ts",
+      "sha256": "21436d34b1de44a78ccc8eb60e95f2677c547422f39553faebd5368e73a7af7f"
+    },
+    {
+      "path": "app/admin/content/actions.ts",
+      "sha256": "b4fdd2768cd91066c57d8b90b7c52b2a6cc1232e183c695ae04ff05f7a0f8192"
+    },
+    {
+      "path": "app/admin/content/page.tsx",
+      "sha256": "253edbd15e1c46d64a24eb37ff22aae374bf9f081c8fcf0f9a2d99b000160944"
+    },
+    {
+      "path": "app/admin/courses/[id]/expand-result/page.tsx",
+      "sha256": "cedc9fb1d008a53d7ed0b429cdd324cc746dd076bdf6088671dd005965e55a0b"
+    },
+    {
+      "path": "app/admin/courses/[id]/expand/page.tsx",
+      "sha256": "152fc4d74f962e5027e4709e438ef032c908c3c3fdfdf878990c2080de76b08f"
+    },
+    {
+      "path": "app/admin/courses/[id]/insights/page.tsx",
+      "sha256": "c9d0ad8bed5b8a918daa9c20a2b6134e0168667c5fd4ac7eb0f41c2381dd18f8"
+    },
+    {
+      "path": "app/admin/courses/[id]/page.tsx",
+      "sha256": "cac84be7f0690c4b96463fb2e1bdd19dfc1a235f5d8dd6d863d8c407ec89a3e9"
+    },
+    {
+      "path": "app/admin/courses/[id]/preview/page.tsx",
+      "sha256": "4398ebc393a05e8280f5c9e8a1014f8ce6b61e9d1161a752686bbbffd7994a4a"
+    },
+    {
+      "path": "app/admin/courses/[id]/review/page.tsx",
+      "sha256": "bf1cee5d87a350aebb6e877bdb6387fdd99ee0ccff74e75b04559c518bc2303e"
+    },
+    {
+      "path": "app/admin/courses/[id]/settings/page.tsx",
+      "sha256": "3a3d62701d43250f0fa66f3fa312b56ad67f0516b0c3be870a78c25ddc2d954b"
+    },
+    {
+      "path": "app/admin/courses/actions.ts",
+      "sha256": "03f6ada854a52194fdc7fb8e76cd2edd507047c66f8465f414baca5baa07184c"
+    },
+    {
+      "path": "app/admin/courses/ai-actions.ts",
+      "sha256": "fed2822fb0e9dd74cac0784e88e0b1475baef74989acf96313debf9fb6dbe572"
+    },
+    {
+      "path": "app/admin/courses/ai-credits/page.tsx",
+      "sha256": "7d48058115d0b52be28a18593d7ad458e707f75bfbd2be9e2bd3af4df333fef5"
+    },
+    {
+      "path": "app/admin/courses/ai/brief-actions.ts",
+      "sha256": "24dd8e3ef4f6eb6257d3ff7e46f0ce1d4e7065ec6dbb75db4b3b7d9b1947abc7"
+    },
+    {
+      "path": "app/admin/courses/ai/brief/page.tsx",
+      "sha256": "69103be561d366212fc9ac022fa8359ed9756645380be956c2fe3b7dd61da58b"
+    },
+    {
+      "path": "app/admin/courses/ai/new/page.tsx",
+      "sha256": "518e251fdbd376101122fe88465c33d3c0043da5fa1d3c4ffd9e339aabb7ccef"
+    },
+    {
+      "path": "app/admin/courses/ai/result/page.tsx",
+      "sha256": "63a64736f0122ad9f9500044324a05d1318f19b5ef829aa37212f0781ea90cb7"
+    },
+    {
+      "path": "app/admin/courses/choose/page.tsx",
+      "sha256": "feaac96b93cd5bc58044054e1b20b7c664163557c26b46865f42af0533b6fdae"
+    },
+    {
+      "path": "app/admin/courses/detail-page-actions.ts",
+      "sha256": "69d858dbef60d41e4ceaf9b2d167a677a0559e0a1cb5138e67914bd189824a62"
+    },
+    {
+      "path": "app/admin/courses/expand-actions.ts",
+      "sha256": "76295134fe759570e19f38da743059290e3b9bd71c4ae349244a67a6a17d9aac"
+    },
+    {
+      "path": "app/admin/courses/learning-cache.ts",
+      "sha256": "41a6ca67a08a112ef0cf4d3f6b92e530fee0495e9eae5b1678083ae619a9b3a8"
+    },
+    {
+      "path": "app/admin/courses/lesson-page-actions.ts",
+      "sha256": "8e06ef4412f3e2dca47df5111c57f07539abf696fbdfa9be1f224ae4634eb991"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/page.tsx",
+      "sha256": "714372bc1f34bfa0803c13a58f6ccc8d139cd12946c1f151a2bc6b02351a0b62"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/preview/page.tsx",
+      "sha256": "eecb0dbdfd8f95d25bd1f3f9842080fb6ba154f214d6f9ddae02043af209155e"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/quiz/page.tsx",
+      "sha256": "8be35ada44107fd9170d5d5cd83b0345c29477ac5a1a1747c2517a11c69690d8"
+    },
+    {
+      "path": "app/admin/courses/new/page.tsx",
+      "sha256": "dbc0b6f07b2861ba547e98aef2fe27edc9340f5952ff57624894bfc3f274f265"
+    },
+    {
+      "path": "app/admin/courses/page.tsx",
+      "sha256": "d539693c573f4afa742b11f168c4948f95135d678f3f84dbe549012dea4bd08a"
+    },
+    {
+      "path": "app/admin/courses/pending-actions/page.tsx",
+      "sha256": "88b58c6817a09791f5b6a837b16afcd02c0bb07be9b3e12c274b3c308ae42876"
+    },
+    {
+      "path": "app/admin/courses/planner-actions.ts",
+      "sha256": "0af8b56cf8a405fa2f3be4607a1d619da765b16576c604a6a271a5bb294a4730"
+    },
+    {
+      "path": "app/admin/courses/remix/page.tsx",
+      "sha256": "a308bdfe2b6343dc496dfec96fc91f3c9a2111b905ca6410632c71794e59550f"
+    },
+    {
+      "path": "app/admin/courses/review-actions.ts",
+      "sha256": "a0fd6bc787eb9f1d3e5da48607e5c9f3078c9a0d8e8b5939ed3da6bad377c8dd"
+    },
+    {
+      "path": "app/admin/instructor/actions.ts",
+      "sha256": "251f577490fcac80a2fc97bca6380092b0fad9dd042612cc18bd9d558905f4bd"
+    },
+    {
+      "path": "app/admin/instructor/page.tsx",
+      "sha256": "09fbbf0355239769491021a52a9de229f3ed594f7147fc0975464dedf830ae35"
+    },
+    {
+      "path": "app/admin/interventions/actions.ts",
+      "sha256": "64a0a60c48c4c176a1bfe48ba339eafd93a7812944dacd21e46d90fb3bbaf749"
+    },
+    {
+      "path": "app/admin/interventions/page.tsx",
+      "sha256": "86b3639e4b29d741b844748d1eb8122ad2df3deafcefb71ba5dca6b08798ff1b"
+    },
+    {
+      "path": "app/admin/inventory/actions.ts",
+      "sha256": "7b1634657d511c2aeac72db9d5e7a131b8e703a91a38e07ca43d4093a64a5a02"
+    },
+    {
+      "path": "app/admin/inventory/new/page.tsx",
+      "sha256": "0d1e49e515bafb25f9f77c6397a2c6a0c564021f78072837dd6f9bb82f89c884"
+    },
+    {
+      "path": "app/admin/inventory/reallocate/page.tsx",
+      "sha256": "2886866da485263efc0cd1af98159fb16bcc6a26efa0d79c00b784338a755e24"
+    },
+    {
+      "path": "app/admin/layout.tsx",
+      "sha256": "3853e9a6d7d8966ab6e1e73ed70b3e0b55f60d42b9ead78660409b54bcdf9c23"
+    },
+    {
+      "path": "app/admin/media/page.tsx",
+      "sha256": "d82cac715db758f47ad712238e8a02e96baccbbb39048c6c4e41fec7789d4202"
+    },
+    {
+      "path": "app/admin/missions/[id]/page.tsx",
+      "sha256": "5290628443a0b9f9548789de9578fe091ff71e37ebd4a63a13298b593ae3ea9c"
+    },
+    {
+      "path": "app/admin/missions/actions.ts",
+      "sha256": "c8855318d1c91b4354fb5060706da9bb3cc2e7343d801d3f18029c4ca973281c"
+    },
+    {
+      "path": "app/admin/missions/new/page.tsx",
+      "sha256": "5e72a7fd7f961f8c29be94e955b586cce7458b3fc3af73cb3f1e8c344e87c6db"
+    },
+    {
+      "path": "app/admin/missions/organization/new/page.tsx",
+      "sha256": "3ca1f989cad95f7e6d8df22824b01999c9526b1369f7da166b5dc39167161de0"
+    },
+    {
+      "path": "app/admin/missions/page.tsx",
+      "sha256": "fbe00cba8c6e87828beb3d389f024a59a8dca68d2d0dd170f93c0c2dcdac8a60"
+    },
+    {
+      "path": "app/admin/organizations/[id]/page.tsx",
+      "sha256": "176dbc20be9e2c36b408b0f7b5a267642a17a6ef349df7f2f24c2df7f99c36df"
+    },
+    {
+      "path": "app/admin/organizations/actions.ts",
+      "sha256": "d2e50440b05a2c199449f70681c086c55149de1f9e6d154216d577a8ba6ce0eb"
+    },
+    {
+      "path": "app/admin/organizations/page.tsx",
+      "sha256": "e248f9f36df39ae8c662fef5dc0739f480c5ca3120233cd015ecc71b3703c33c"
+    },
+    {
+      "path": "app/admin/page.tsx",
+      "sha256": "7434cf7be70e4e020ffeab23c5fa9ef5332e0b3d89fcfe14e1688c10646efd54"
+    },
+    {
+      "path": "app/admin/people/actions.ts",
+      "sha256": "c325ca1b992c28deee37026c9250778fad0e2f891ca4b5f7ecf4609e26661b81"
+    },
+    {
+      "path": "app/admin/people/page.tsx",
+      "sha256": "64ce1e379c5e7ac11755abd5e8606e06c4c5d80eee7ac577b263f7352ed0d355"
+    },
+    {
+      "path": "app/admin/programmes/[id]/page.tsx",
+      "sha256": "36931c30fc14781f93a3ef1ac1ec0760462cc0278e2f6465baa88f4bfa60f44d"
+    },
+    {
+      "path": "app/admin/programmes/actions.ts",
+      "sha256": "a794f6d2f2f04bb8d8e2a33706d7665baa9de163f769ed7d82120f3c4a2d2862"
+    },
+    {
+      "path": "app/admin/programmes/new/page.tsx",
+      "sha256": "da205b5abcad836b1ed3a3ab2272d198410f11d18fd99b382ad98048af5755a5"
+    },
+    {
+      "path": "app/admin/programmes/page.tsx",
+      "sha256": "3b4a53b94da6bb9b0859ef667d4142acb3c21ff416ab146474297829feb2fc3a"
+    },
+    {
+      "path": "app/admin/proofs/actions.ts",
+      "sha256": "ba68a764aa6e948539d885c940760d5db57479a38f4a58922405a8cf881a7063"
+    },
+    {
+      "path": "app/admin/proofs/page.tsx",
+      "sha256": "828ad0ed6e509ab389977d83b7e6cab4588f9f1d55ca5b94e67d0b8f2472e4a1"
+    },
+    {
+      "path": "app/admin/recommendations/actions.ts",
+      "sha256": "c535b57168fd6c1f82157be63e6640db20e05953c5ba42b8fd72bffa36f090a4"
+    },
+    {
+      "path": "app/admin/recommendations/page.tsx",
+      "sha256": "04da30652c41d57f82901faa3b3662de348da77d2b71f768f1bb97c63ef5b86c"
+    },
+    {
+      "path": "app/admin/redemptions/actions.ts",
+      "sha256": "9c8dadc05944d016987ed2ad2e14d7c0284bfd55b1fbceed55403e1304fd7d8b"
+    },
+    {
+      "path": "app/admin/redemptions/export/route.ts",
+      "sha256": "b7e4de07cf7963b557ed17efed875b47e8328ca9f7511d510fa37802b8d9ba8b"
+    },
+    {
+      "path": "app/admin/redemptions/page.tsx",
+      "sha256": "4657e44a7c1f724a192f90939bca7bab01f20f52bd24135c036953430c0b2408"
+    },
+    {
+      "path": "app/admin/reporting/export/route.ts",
+      "sha256": "da9fe141d727d7259747e0ed162a66b55a4a04eadd34411275dfe936a9062de8"
+    },
+    {
+      "path": "app/admin/reporting/page.tsx",
+      "sha256": "ba2eb58b787e3aa910bdf792c16ed57009b1509f31eda9e17aaf060af3631d45"
+    },
+    {
+      "path": "app/admin/rewards/[id]/actions.ts",
+      "sha256": "f404304fd84708f9aae12c13945a11bffaad28525ed10c47c368bd40c5554eea"
+    },
+    {
+      "path": "app/admin/rewards/[id]/page.tsx",
+      "sha256": "154a6b31139bdf9b95afc93f6d29c529a2a1db386d685f962eec240577165e50"
+    },
+    {
+      "path": "app/admin/rewards/new/page.tsx",
+      "sha256": "e676258ff9bb28cbad363465d7a7a295a8bddb1470a1bd6351f536ef63b913c3"
+    },
+    {
+      "path": "app/admin/rewards/page.tsx",
+      "sha256": "5373916cf14d717c9c053f8ee1b6f2262934129205dafbdfcde0a3508d2fbe43"
+    },
+    {
+      "path": "app/admin/rewards/perks/[id]/draws/page.tsx",
+      "sha256": "2a3686c259eb8072b2b8317cac4a0deca831cd46fbe530c9d1c6874b06ce34ed"
+    },
+    {
+      "path": "app/admin/rewards/perks/[id]/page.tsx",
+      "sha256": "ae9f54ca5f15465d093b3cca915e2487111163e3df546609496b417bc807d60b"
+    },
+    {
+      "path": "app/admin/rewards/perks/new/page.tsx",
+      "sha256": "6e52bcd96c717079b3d35f9c4aaff408d2ab2cc31faea691a6adeb5170fa796b"
+    },
+    {
+      "path": "app/admin/rewards/perks/page.tsx",
+      "sha256": "818a17372ac74a95ff07927094755ec999b45d0261df81795997c4ed28012831"
+    },
+    {
+      "path": "app/admin/users/actions.ts",
+      "sha256": "7fff36753c984d48210d826524b7da3075d4c2fcfcfd590adbd0da3dcdcecbc1"
+    },
+    {
+      "path": "app/admin/users/page.tsx",
+      "sha256": "e5f01547b7cd82db441c3e797bc96add0221b6b9aa162066fdc6d03ba8b0e7e1"
+    },
+    {
+      "path": "app/admin/xp-ledger/page.tsx",
+      "sha256": "dafd91afc5e90d9558051bcbd4045f88cf5560c83eaa35b2760b35fe2828424a"
+    },
+    {
+      "path": "app/admin/xp-settings/actions.ts",
+      "sha256": "5696014a36bf27c5e6b9d532d526e2df12c25d68bd6bfcfb50769e33c6eaa975"
+    },
+    {
+      "path": "app/admin/xp-settings/page.tsx",
+      "sha256": "30b0a7859ff01e805eb702741476868e55394ed8058a7bd4c14371b61aa5b3e3"
+    },
+    {
+      "path": "app/advertise/actions.ts",
+      "sha256": "33b5e58b96f3984092f96af448cd1ae0926d8719e897a799787ad2e7e5c77355"
+    },
+    {
+      "path": "app/advertise/inquiry/page.tsx",
+      "sha256": "7e371502dcf2b081dd578b18c7e23afacda15b4613f213d3d52e11a032bdbd3a"
+    },
+    {
+      "path": "app/advertise/page.tsx",
+      "sha256": "c2b73505a8cfae508c664b3e316529b3cef48c34250410634ef7a7e80eca9a76"
+    },
+    {
+      "path": "app/api/admin/ai/jobs/process/route.ts",
+      "sha256": "3d45c83f6639ccb4e1d86754f8c62ea5f3800b9007eb8879b0c7a5da20bab5db"
+    },
+    {
+      "path": "app/api/admin/learning/builder/route.ts",
+      "sha256": "8af6e31fc687190bfcb19499028923a5461a117a1ff7bb3c834be11d1f1deff2"
+    },
+    {
+      "path": "app/api/admin/learning/lessons/archive/route.ts",
+      "sha256": "699c841a52f875144ffa1d8003cc6cfbf75fb4cfd584e7ba0fb3dbf7a903836a"
+    },
+    {
+      "path": "app/api/admin/learning/lessons/duplicate/route.ts",
+      "sha256": "6b4ad129acdaf95284ed591f172d722e74a5f34b753e720a4c89301086ba681e"
+    },
+    {
+      "path": "app/api/admin/learning/lessons/route.ts",
+      "sha256": "dcc1e79dd68dd6d82e36bb684cb0be454e5baaf7671ca59b1da7a679215d4076"
+    },
+    {
+      "path": "app/api/admin/learning/media/upload/route.ts",
+      "sha256": "120a238832813296c2d6c0ad81baa38bf75ff2ea6b8146d67b6004536ff0f684"
+    },
+    {
+      "path": "app/api/admin/learning/publish-lesson/route.ts",
+      "sha256": "f5bd25c85dd6f8cd36954ac3f894ceabe66d72ea737d6ec8b4f63e3c55bcbfe3"
+    },
+    {
+      "path": "app/api/admin/learning/reorder/route.ts",
+      "sha256": "66260dda0046a299f0bc944a8410a46261fc6c0971a7aff8d1d5d74c335257eb"
+    },
+    {
+      "path": "app/api/admin/learning/revert-lesson/route.ts",
+      "sha256": "8a7e03715e06fee6bfb5d11b30f4d1be6b298edcdc046d7f5b16490dd4555717"
+    },
+    {
+      "path": "app/api/admin/media/assets/route.ts",
+      "sha256": "95282bcaad995a5ce36d52b78774c4fe300a6fcd4203a3638ed02d9be1224e98"
+    },
+    {
+      "path": "app/api/admin/media/issues/route.ts",
+      "sha256": "f4c49f27c273ea7f933eba48fd7e8e89c96ff2bd484bab192987f5630b5bb61a"
+    },
+    {
+      "path": "app/api/admin/media/library/route.ts",
+      "sha256": "0a530240ddd1e8bf9ead022ff1c80dbeb4b9e6ce88fc90cb6de81db11315ae40"
+    },
+    {
+      "path": "app/api/admin/media/organizations/route.ts",
+      "sha256": "23f3089e6d87bfe7a30d6f695df410db144147b2a432c026b8289d2b2694ee8b"
+    },
+    {
+      "path": "app/api/ads/click/[decisionId]/route.ts",
+      "sha256": "bc0511523bd45a69f12803667abf8f05800ede02f2db4602c7a2a1ea1716cc4a"
+    },
+    {
+      "path": "app/api/ads/event/route.ts",
+      "sha256": "e37acebf65a00c1f2bef7de7075dc238600955480cbc5833258fd041ad4353f2"
+    },
+    {
+      "path": "app/api/ads/house-event/route.ts",
+      "sha256": "836bd423ba9ad3102cc5c9f1d555de782263b4b037331f0726e3e1386313d8f6"
+    },
+    {
+      "path": "app/api/auth/oauth-signup/prepare/route.ts",
+      "sha256": "6329cab8cb621b9c93a116c3d49653a1782c4e6006f4ca7094168945a087abc4"
+    },
+    {
+      "path": "app/api/auth/signup/route.ts",
+      "sha256": "23ef554ec0bd3b902d7276ed9caad8622e99fae94e92dc412b9877dcab77efee"
+    },
+    {
+      "path": "app/api/lesson-progress/route.ts",
+      "sha256": "42a92380df926db05b4ed8686575a9471b5e7b08c5b410846df777384803bd81"
+    },
+    {
+      "path": "app/api/media/[versionId]/route.ts",
+      "sha256": "fe81f492ed7c4653aa7dad5835a4f2004ebe5106e0a2950ed98b323239cf2b36"
+    },
+    {
+      "path": "app/api/missions/[id]/claim/route.ts",
+      "sha256": "c78412c2404c82461e455440941f74b8008377388f73480d32324b46e7d56bf2"
+    },
+    {
+      "path": "app/api/missions/[id]/proof/media/route.ts",
+      "sha256": "d85745cd817aea360581ed0f29fb34bbc472884044a4b15669bfe0f0203d5c57"
+    },
+    {
+      "path": "app/api/missions/[id]/proof/route.ts",
+      "sha256": "accdd3bd702f22928745e5968482f0119fe57e9c491fb0bd84437fbd761e40aa"
+    },
+    {
+      "path": "app/api/missions/[id]/referral-link/route.ts",
+      "sha256": "b9cdb835fa8477db094bd2f9669c7740832a58f7e1428d7c1434f33d373d570d"
+    },
+    {
+      "path": "app/api/missions/route.ts",
+      "sha256": "cacabd7c530f1212ac49d68cc2a66dc31b39203815a818a3abc33b6975d28791"
+    },
+    {
+      "path": "app/api/notifications/dispatch/route.ts",
+      "sha256": "ca662df83ec0fc2a1129318594f9abc7e0c8694b743e3f6721e58b7c18a548cb"
+    },
+    {
+      "path": "app/api/notifications/push-subscription/route.ts",
+      "sha256": "8f4f4ac7add2b017c859cf74fa970c21658721d6b12ff2bb6c89fc6777932a47"
+    },
+    {
+      "path": "app/api/organizations/[organizationSlug]/missions/route.ts",
+      "sha256": "cfb7e26a75aa72683110d11b4e82991df007e87b619b697deb49cefbfbca8bb3"
+    },
+    {
+      "path": "app/api/organizations/[organizationSlug]/rewards/[id]/redeem/route.ts",
+      "sha256": "687673bceb63798eeb84b6d65948261a037c14c73f0131e7f17b30b7c9468ba6"
+    },
+    {
+      "path": "app/api/organizations/[organizationSlug]/rewards/route.ts",
+      "sha256": "aa065f332ff038b838d5b7905f1ab5c3341489319a2d320f9c7cf60d27c2ccd3"
+    },
+    {
+      "path": "app/api/quizzes/[id]/answer/route.ts",
+      "sha256": "7d81cd0e2c567e531e2d386466b304ab6a4ee4581dfe55194b27af8067fdeace"
+    },
+    {
+      "path": "app/api/quizzes/[id]/start/route.ts",
+      "sha256": "e66519c5b87472f9dbc812bc8086e43fdfa55f6f2c8d214d5ecbd1727c877319"
+    },
+    {
+      "path": "app/api/quizzes/[id]/submit/route.ts",
+      "sha256": "9cf739a211f8da93b8656890aad3f3fafa108c92c9d76bda1bdd69d58b2769f1"
+    },
+    {
+      "path": "app/api/redemptions/[id]/claim/route.ts",
+      "sha256": "b5d46488e2c18ad4bf07e064b944a973af116ef876efa92aa004ddadd6421216"
+    },
+    {
+      "path": "app/api/referrals/accept/route.ts",
+      "sha256": "1b8a050b76f1a4fe974cc846195882ee98d86da95959695b2c7ff99ad0c3bbc8"
+    },
+    {
+      "path": "app/api/referrals/visit/route.ts",
+      "sha256": "2c2b93205d67fe36cab166d92e3a05262f1188b71b55519bc8802d349d00e7bb"
+    },
+    {
+      "path": "app/api/rewards/[id]/redeem/route.ts",
+      "sha256": "1286ed1c7b0c285000fb7f46df206d6694d36e5951b7ce2ff43ddca4c3578da1"
+    },
+    {
+      "path": "app/api/rewards/route.ts",
+      "sha256": "ed7454dc49b10a1102bbed456a6cb85cce33fdf8503a7bef11378ca1c288a96e"
+    },
+    {
+      "path": "app/apple-icon.tsx",
+      "sha256": "28b437f6a32956bcf2314bb64e6e600e752b6e6e1fe8c1b653d4ae9afd7dc1f4"
+    },
+    {
+      "path": "app/auth/callback/route.ts",
+      "sha256": "7c9e81792a7d143908ebd732f31af88e2e0f50cddc53e78f89cb6f44ed0bc36b"
+    },
+    {
+      "path": "app/contact/page.tsx",
+      "sha256": "b402de34093ab25162958070bfc8fb2eb99bd06630b895ff1641f9d676d0ce16"
+    },
+    {
+      "path": "app/courses/[id]/page.tsx",
+      "sha256": "81b9295a28e1cb69d4da91a2011111836e2b3e0f633704ae3d01a17928061777"
+    },
+    {
+      "path": "app/courses/page.tsx",
+      "sha256": "acef2a5bb1925b3a1269cc83157a4aab1421954309d48656b043bebd785cd4be"
+    },
+    {
+      "path": "app/dashboard/page.tsx",
+      "sha256": "906ed4e5c856aa195640341df14fef1361a7cde4b3f9a0845f9cfcb4f15b0899"
+    },
+    {
+      "path": "app/faq/page.tsx",
+      "sha256": "65bd7bab8753cd0707d526166d9dc8b9afaaf27c27e99e172e2b6e6d80660046"
+    },
+    {
+      "path": "app/fonts/geist/Geist-Black.ttf",
+      "sha256": "33eafb809140b258737f1163b649580d4ebc3c17231d6ec409288192747c0be8"
+    },
+    {
+      "path": "app/fonts/geist/Geist-Bold.ttf",
+      "sha256": "1a9874b3be0fc168692a3d2327bccb4d28835653d3b91537a755296a467a83e3"
+    },
+    {
+      "path": "app/fonts/geist/Geist-Medium.ttf",
+      "sha256": "a8eefb873ba9c9020665f8a98302697ce1f3b79ab2deef6ee508c0ca6a82e876"
+    },
+    {
+      "path": "app/fonts/geist/Geist-Regular.ttf",
+      "sha256": "ccce59465ae5c61930ada5453834f60500fbd95084d85db63e0e65fad0125455"
+    },
+    {
+      "path": "app/globals.css",
+      "sha256": "f73ccbcbc1e4f20195408dbc13b5d386e1161b423900c45c80cf53e78996fe26"
+    },
+    {
+      "path": "app/icon.tsx",
+      "sha256": "4e7ab77c306a2e58848decd8de46ba7bbcd0b042789789c0a667428c20e22191"
+    },
+    {
+      "path": "app/invite/[code]/page.tsx",
+      "sha256": "a0e23f3f7411d9f0898d61a1978c5900e9ff5591bdf34186c39f75250992ffaa"
+    },
+    {
+      "path": "app/layout.tsx",
+      "sha256": "c6f9e980e1eb2db740994303d2e13724a18b4c0f8923a3fceba5f482bd2d1f51"
+    },
+    {
+      "path": "app/lessons/[id]/page.tsx",
+      "sha256": "44d476380d78880d2f7380b2120e2a0f176f104923f489a00a40a4559b04892a"
+    },
+    {
+      "path": "app/login/LoginForm.tsx",
+      "sha256": "2b3638212474ec5ccc8343693dc017379a6e49426b5d233cbf08e106a266b3ed"
+    },
+    {
+      "path": "app/login/LoginPageClient.tsx",
+      "sha256": "c410b324a5e72cb7cf1a2aa6659e78c3dfe4c54bad5e12d0ff3f2c6c54846ce9"
+    },
+    {
+      "path": "app/login/page.tsx",
+      "sha256": "fffe2f0d28ad2b937ed934534a190512c578d5c3ede8935ae85010c6eeaa39eb"
+    },
+    {
+      "path": "app/manifest.ts",
+      "sha256": "91246d2bf6dd1f25d6401209e62fa354de9c3da5b52b89215675332c3e9e18b4"
+    },
+    {
+      "path": "app/missions/page.tsx",
+      "sha256": "70015c8ff0e28e259b9ad5a4b646b6d0b808f66e567d0c6c90ef953aaff98277"
+    },
+    {
+      "path": "app/notifications/actions.ts",
+      "sha256": "f366dba45b4bac25f9636dc4c82287674480549f4d4c64202f9c6c1317d9e6ce"
+    },
+    {
+      "path": "app/notifications/page.tsx",
+      "sha256": "c474fed582595fbd81a96feee692b316a75b5e5ebd633d12c675596ad6f8fb23"
+    },
+    {
+      "path": "app/o/[organizationSlug]/assessments/[assessmentVersionId]/page.tsx",
+      "sha256": "fd35eb19df2dd81d23ae36a7bdef9b902a242a74a3c4e3222fc7a7b1b2d2d3c4"
+    },
+    {
+      "path": "app/o/[organizationSlug]/assessments/actions.ts",
+      "sha256": "144471a0991577587ae9a9695e23d757704a7c0eb2d7947048b94241f6c4895c"
+    },
+    {
+      "path": "app/o/[organizationSlug]/learn/[courseId]/lessons/[lessonId]/page.tsx",
+      "sha256": "b4ee3e33fd37ed4a6894018a35cd204e626470151cd9f5c1a89f38e9692f2d45"
+    },
+    {
+      "path": "app/o/[organizationSlug]/learn/[courseId]/page.tsx",
+      "sha256": "550176c895800cffa2dd9fa6b03b946524cbc593f6b60344085320213f4a256d"
+    },
+    {
+      "path": "app/o/[organizationSlug]/learn/[courseId]/quiz/[lessonId]/page.tsx",
+      "sha256": "a8c091d347151259be996b8a2c2936c52674d4a03ac5d3030c1c601aa86a3db6"
+    },
+    {
+      "path": "app/o/[organizationSlug]/learn/[courseId]/results/[lessonId]/page.tsx",
+      "sha256": "41e1c6531e76c6995c748d9c4c53febc45193da55a0bc45f9ba3320ea0f106b7"
+    },
+    {
+      "path": "app/o/[organizationSlug]/learn/page.tsx",
+      "sha256": "57cb00b97a0d09363d13ce5aafab46295fe0a48f16dd94d771947b7b37e812d8"
+    },
+    {
+      "path": "app/o/[organizationSlug]/missions/page.tsx",
+      "sha256": "226faa4a71cc271a291f9243ecccafe7644b8ef48e5d759603d2b3de2e905d3e"
+    },
+    {
+      "path": "app/o/[organizationSlug]/notifications/page.tsx",
+      "sha256": "e42707886f5bbf3de24cf9cd250a571b08b5513b01031b474805853c28ae1c09"
+    },
+    {
+      "path": "app/o/[organizationSlug]/page.tsx",
+      "sha256": "2234fe2108cfb8bea1f7f4c399b23c056cc69ba3a81fdd5bd74041dbdd46f23d"
+    },
+    {
+      "path": "app/o/[organizationSlug]/profile/page.tsx",
+      "sha256": "c214793d47c801bbcf57ec01187cbbc31e85e37cfa5c6c9ec6ce3432bed3cbe9"
+    },
+    {
+      "path": "app/o/[organizationSlug]/rewards/page.tsx",
+      "sha256": "ef675ebb3f69ac59c3f47f91f2d89effc14a86922938dcc1abdf352f4531e7c9"
+    },
+    {
+      "path": "app/o/[organizationSlug]/transcript/page.tsx",
+      "sha256": "a12f378cb6566a8a34895d5838fac488f9289c317b65137e90ac41c6e367e91a"
+    },
+    {
+      "path": "app/o/[organizationSlug]/workspace.ts",
+      "sha256": "97caa8d4133deac7b51334056e262d22e26e7b08565f9a08e8acd4ff758fc8a3"
+    },
+    {
+      "path": "app/onboarding/assessment/actions.ts",
+      "sha256": "98fabc1d4caa956594bc3eafb6d32063a648630099350dde43d0191b6703fbc3"
+    },
+    {
+      "path": "app/onboarding/assessment/page.tsx",
+      "sha256": "ca826b22c6468a1cc10d1c6548b3c2f1536a9dd1f0720c66a9e8c302c9be93ff"
+    },
+    {
+      "path": "app/org/create/actions.ts",
+      "sha256": "b39319f770d4ca5e1f77f4c46ada725ae5f5d684b362aa6be4cbba5837f8a70c"
+    },
+    {
+      "path": "app/org/create/page.tsx",
+      "sha256": "bd1e313a38b3b17493150701a83f4d5a17987f1f907fe71d161567c6b8cd8936"
+    },
+    {
+      "path": "app/org/my/actions.ts",
+      "sha256": "33cdfd91cc8fe081dffe6ec237c9f936f1c17ee90957d49895ad347dca0f37ae"
+    },
+    {
+      "path": "app/org/my/page.tsx",
+      "sha256": "a146d640eabfa686f4b8b6b058c24a73c998977cba60699451562fae15e89a11"
+    },
+    {
+      "path": "app/org/page.tsx",
+      "sha256": "13a31e5ec04556da0fb07b9e2758ad70ddc231903117d52985df143a46f86c67"
+    },
+    {
+      "path": "app/page.tsx",
+      "sha256": "31a62bc841ab776ca5ef1ef6aadecb64401e25eca3fa11d4b2b6648ee4e01a30"
+    },
+    {
+      "path": "app/privacy/page.tsx",
+      "sha256": "21acb3a7f4514b9ae84c3d909f44350d30525a5fc1b49cc32f8cb8f60fbc22b9"
+    },
+    {
+      "path": "app/profile/page.tsx",
+      "sha256": "5a282c1865898eba1b8e931563aa46a6c2cda5fbb57325779065af6059c12f12"
+    },
+    {
+      "path": "app/profile/transcript/page.tsx",
+      "sha256": "f3c8f88091851c1ce4794fa61735098b1dcf0aa7a4acc9f8520d728585368e7e"
+    },
+    {
+      "path": "app/quiz/[id]/page.tsx",
+      "sha256": "5a87e4102aa43b9d4053ab21263dd4cc03d3c0abe30be6dd6b0985ec0517461c"
+    },
+    {
+      "path": "app/results/[id]/page.tsx",
+      "sha256": "4f5eaefa14d8d944be48947065ec37e8767e5d34a94a1b3ee76c86f9f22493b4"
+    },
+    {
+      "path": "app/support/page.tsx",
+      "sha256": "a04ac027b49a1c7de5fce874947c6a06dab313c3f57072cf0dec305b3fac1fc1"
+    },
+    {
+      "path": "app/sw.js/route.ts",
+      "sha256": "b743eb1c5debe651fd5e764a21bcef760c70dd0288fbf517bbb882f54a4c491a"
+    },
+    {
+      "path": "app/terms/page.tsx",
+      "sha256": "bc81fc8e88811c38a276ec4160383bff22e7624f0f8fe4fff0e94fde319b0856"
+    },
+    {
+      "path": "app/xp-store/page.tsx",
+      "sha256": "385cb7e32f9c3d6ae43074b7b955c51fb91127df1b10d07c870bc5578879156a"
+    },
+    {
+      "path": "components/admin/AdminCourseCard.tsx",
+      "sha256": "e65c97b6f114d7c317c6f61033f08cf7aba0f15cdc53a9ec55da20864e9432af"
+    },
+    {
+      "path": "components/admin/AdminDialog.tsx",
+      "sha256": "67e4b1c2daaf929e620b2c4cc9382fbe8222b3a11be606a334afb72f693cc929"
+    },
+    {
+      "path": "components/admin/AdminDragHandle.tsx",
+      "sha256": "fb49ffd529a6c7c4f0d68eed66c76d4ae4c72b53c338269db08790cccdfe61c3"
+    },
+    {
+      "path": "components/admin/AdminIcons.tsx",
+      "sha256": "ab7c000d0ac35556fd1ee0b8b61ffe0e26e33ff87eab5d21ea9baf4db9d6bc48"
+    },
+    {
+      "path": "components/admin/AdminPrimitives.tsx",
+      "sha256": "8ce3ced9f4fde0f6121a090355fe9196e1cdcf6b2b5fc4a2f47599f51cd52f44"
+    },
+    {
+      "path": "components/admin/AdminSelect.tsx",
+      "sha256": "d51853487e86ed99bacb41b83c76b3686c14016dad89cebc86a5ed53da641336"
+    },
+    {
+      "path": "components/admin/AdminShell.tsx",
+      "sha256": "6bb2327a842561b602bb8a7559323694d3020a5efdc574c0f197d7ed6470b925"
+    },
+    {
+      "path": "components/admin/AdminWorkspaceTabs.tsx",
+      "sha256": "9c395d9c5c047d9e7c95c055ea2c856bec38d61bd410d6beebe36695ffa577aa"
+    },
+    {
+      "path": "components/admin/AssessmentBuilder.tsx",
+      "sha256": "2c9098730f3c1e2b33a220482a7c2c647c212e31f90aebccbbd91077c16cff52"
+    },
+    {
+      "path": "components/admin/AssessmentWorkspace.tsx",
+      "sha256": "1814b421edd4bf352b02cc7acefab8efe9b5d7cd061a961c8300ac598b817e3d"
+    },
+    {
+      "path": "components/admin/CampaignFilterSelect.tsx",
+      "sha256": "2d85572576be90c126f8185a699072e1f12c774529b0b1de92472d6e390258e0"
+    },
+    {
+      "path": "components/admin/CampaignForm.tsx",
+      "sha256": "68a00dcba0d8d8ee626c4f0f48f228a44c2cb10e04bdcc3f8a17573a81a3f80c"
+    },
+    {
+      "path": "components/admin/CatalogOverviewView.tsx",
+      "sha256": "81f1a6f2e2fa73392c9dbbccb06c08bb88f5614871e38aa0997ac83e1b913951"
+    },
+    {
+      "path": "components/admin/CatalogPeopleInvitationsTable.tsx",
+      "sha256": "26cec4a491718ab549d97abe99fa3a90a0cc3fd2024202f729ece3e92ff84040"
+    },
+    {
+      "path": "components/admin/CatalogPeopleInviteDrawer.tsx",
+      "sha256": "500987d59be6a67f09bba9c02a0a5409c56deb738b8e918f1af73ca3884807fd"
+    },
+    {
+      "path": "components/admin/CatalogPeopleMemberDetailDrawer.tsx",
+      "sha256": "3a1d7d6dbc53a54d18b1193bc8c057ffc797e0e82860f2387045c2593b83efc5"
+    },
+    {
+      "path": "components/admin/CatalogPeopleMembersTable.tsx",
+      "sha256": "e15cb03715f15c0765db33113a70deede94c1ffe110267f2db99517b50619195"
+    },
+    {
+      "path": "components/admin/CohortEditorForm.tsx",
+      "sha256": "0fda76e1d1da33d8a68e0872324a1e377aee7d906ee190e080906ccbf2bedaf5"
+    },
+    {
+      "path": "components/admin/ContentValueTagEditor.tsx",
+      "sha256": "69deae9a8353cfbe3e99db762a94aa09e1718c95eb3713145f11ceb28e81df9e"
+    },
+    {
+      "path": "components/admin/CourseAudienceField.tsx",
+      "sha256": "2c53f46175688f5e21c1813889ea7627dc80203ca54148941fbcbbbbbcac2597"
+    },
+    {
+      "path": "components/admin/CourseCategoryField.tsx",
+      "sha256": "14a5bd5c5d3ecabaf6034ff7797824affd1a740f74ce62c040be9ae47662b862"
+    },
+    {
+      "path": "components/admin/CourseIndexWorkspace.tsx",
+      "sha256": "0f9b3ece230b6d4d11530004020eab5dcf62144be27eb46caa61452d55119484"
+    },
+    {
+      "path": "components/admin/CourseOutcomesField.tsx",
+      "sha256": "0e629d0c347cd92340f3ee7eb3a04d94f76f4612562d6b8f6f2c8a35c65c1667"
+    },
+    {
+      "path": "components/admin/CourseTitleField.tsx",
+      "sha256": "a5387c5dabd8e365da59cac54eb8c3cd0ca5dd89118263122b81bd76af86faaa"
+    },
+    {
+      "path": "components/admin/CreateCourseForm.tsx",
+      "sha256": "6618d408d15d22f1258237a20c89506c63075ee9af61126fd1f7e99d3379306d"
+    },
+    {
+      "path": "components/admin/CurriculumOutlineEditor.tsx",
+      "sha256": "1355d522cec5ae14324bd26fd8b64421cbde76236bf5acc7ad4e7bc4aaf0c9cd"
+    },
+    {
+      "path": "components/admin/InventoryBatchUploadForm.tsx",
+      "sha256": "7e6e95e5a3b8b54a350c575395227bfdc56d35118c948c1d2bc3512087f002ca"
+    },
+    {
+      "path": "components/admin/LearningForms.tsx",
+      "sha256": "d429af24ca8bbd03cb3fc3610b348c4378e504d098479d4bf37ad2c75b73c89b"
+    },
+    {
+      "path": "components/admin/LessonPageBuilder.tsx",
+      "sha256": "105ae1f3a997bfe8be624263aea1f06605ac73d2b17d715855cb50b926e61c13"
+    },
+    {
+      "path": "components/admin/MediaLibrary.tsx",
+      "sha256": "9c9709a4fb7eca0615a5cf35283aaeae75b7f8275cbd931d9fe3a511c4e4353c"
+    },
+    {
+      "path": "components/admin/MediaManager.tsx",
+      "sha256": "e12f2816dc94ef3d1b38f19a26bd2e2abf42e483d11552b4d1f82344aba08826"
+    },
+    {
+      "path": "components/admin/MediaPicker.tsx",
+      "sha256": "7705bde6f0ea96657a90cd6261178aa972d0d6e1c23b19cedde78d2dcd08c685"
+    },
+    {
+      "path": "components/admin/MediaPickerProvider.tsx",
+      "sha256": "0cd34705683eee6ae8d0a06ba051acfd9ebf3f96426f615848fcd2c00e9080ff"
+    },
+    {
+      "path": "components/admin/MediaPickerScreen.tsx",
+      "sha256": "4fb7256e1c96e678633b502783985be657d3ea903ef6153ba84d3a735afcf55d"
+    },
+    {
+      "path": "components/admin/MissionEditorForm.tsx",
+      "sha256": "cb490e38bf7c1633c24487fb058f0f2da24e98f1ea53268a2bfe3ad06f786405"
+    },
+    {
+      "path": "components/admin/OrganizationMissionWorkflowForm.tsx",
+      "sha256": "2cfce6e6be105fc09e0dd0f6670018f7608509574ebd328754ff462dc1510c5d"
+    },
+    {
+      "path": "components/admin/OrganizationOverviewView.tsx",
+      "sha256": "3667c441e4a6ccaa0bbef82ca2f76bdae5a6f5c3c30a276042249e8b0a3e9b9a"
+    },
+    {
+      "path": "components/admin/PendingSubmitButton.tsx",
+      "sha256": "942475166c9fd8a5fa674cdab74522284b778b237ea0a87dbbbb5eb72423ee08"
+    },
+    {
+      "path": "components/admin/PeopleInvitationsTable.tsx",
+      "sha256": "e62e340d81aaeb7a035ca33317a5f4663272178e6554527465a9ad60cabc4dc3"
+    },
+    {
+      "path": "components/admin/PeopleInviteDrawer.tsx",
+      "sha256": "038458deb67264f875ee310469d554e379d58f214250ab7c678472b5819dd2b0"
+    },
+    {
+      "path": "components/admin/PeopleMemberDetailDrawer.tsx",
+      "sha256": "0c25fd6b3e8ab30a48f9f89a838b9e402c84449b78aa88df8b5c55f8e43bfd4e"
+    },
+    {
+      "path": "components/admin/PeopleMembersTable.tsx",
+      "sha256": "e61155cb6c253a251282a3e2722270aa6fb7a9271382fdf02d87dcf75ea59813"
+    },
+    {
+      "path": "components/admin/PeopleUnitsPanel.tsx",
+      "sha256": "5f209d7e99ad269185c38c663ab234295ddd1a624c5bbb9ad57dc70ebf63b327"
+    },
+    {
+      "path": "components/admin/PerkAnalyticsPanel.tsx",
+      "sha256": "828af41d04e29ebaa9a099046db9429a522e4f129382f8892300e08d1f8bfe44"
+    },
+    {
+      "path": "components/admin/PerkEditorForm.tsx",
+      "sha256": "c254cfb6bbd7f1180774ca7f03959f48af8f1870dc74214cb121c6267f514583"
+    },
+    {
+      "path": "components/admin/PerkPrizeManager.tsx",
+      "sha256": "9af861f577e047a765e186f7a989ad65a57c703fa4dc7b8b0155a5fbf36c4115"
+    },
+    {
+      "path": "components/admin/PlatformOverviewView.tsx",
+      "sha256": "f558f279e071d36b3b48d015f64a86532d7921726dea78a253f39c3322768712"
+    },
+    {
+      "path": "components/admin/ProgrammeEditorForm.tsx",
+      "sha256": "fccc37e14f7e46363e271ca9c79d01e7e5019e70f8b72dd6183f03377ff31aa0"
+    },
+    {
+      "path": "components/admin/RewardEditorForm.tsx",
+      "sha256": "62f5c029b0703c20ff9dde7bae073d6ab8ca89a50bd2a623bc1e706fbecdb90e"
+    },
+    {
+      "path": "components/admin/RewardThumbnailFields.tsx",
+      "sha256": "49d222b94e290308cd2883a0d87a592bbd840e3099718ce1081e1e533b850020"
+    },
+    {
+      "path": "components/admin/RichTextBlockEditor.tsx",
+      "sha256": "95dc20a80fb033bdd171d396ecf2b063361d00a0baee8188a47cb33f19a83c79"
+    },
+    {
+      "path": "components/admin/StaticContentEditor.tsx",
+      "sha256": "7e3d715f456744b118635949d1f7f72dad6a24e204d47a506d34cf1d7065ece4"
+    },
+    {
+      "path": "components/admin/media-picker-domain.ts",
+      "sha256": "5f6505fdea205d0adc37ad3c5f8380a410f44e532eb7cf7e0e28a205e15c2d90"
+    },
+    {
+      "path": "components/ads/AdEventTracker.tsx",
+      "sha256": "18c1435848f369f5a6091dc45d84443ec9e61b1453db1cf106fd738d598b8c40"
+    },
+    {
+      "path": "components/ads/DirectAdCard.tsx",
+      "sha256": "35ff23e631a3e3adff5a3955a1689a0bbfec0becd00bb37a57e63fdadc03b04a"
+    },
+    {
+      "path": "components/ads/HouseAdEventTracker.tsx",
+      "sha256": "ebe601df8ee41b67eaf5f07264782436bbed5372180ab56df6d93744e82fc29a"
+    },
+    {
+      "path": "components/advertise/BudgetRadioGroup.tsx",
+      "sha256": "ffa148ed094c6dd3f2e9e41b2d78dfa33d53a0916c3313e12943ad3ad41dd7ce"
+    },
+    {
+      "path": "components/course/CourseCard.tsx",
+      "sha256": "c852b333f827604cdd83cd7ac2549718d87acad49d8e5d20afb852457bc94d7f"
+    },
+    {
+      "path": "components/course/CourseDetailLessonList.tsx",
+      "sha256": "ca92047efd4443e0ca46f02d002d0e61018a8a23a816a3063f2937d1df13eee4"
+    },
+    {
+      "path": "components/course/CourseLibrary.tsx",
+      "sha256": "0f7eaf6e197f632001dd0a0cb8d2afae4ce9c68b813ee0c94f35bcf1380ca7fb"
+    },
+    {
+      "path": "components/lesson/LessonContent.tsx",
+      "sha256": "7b1dfb70dc684d9086b02a23f4a000c203b1a443cb5d96403de7d873d223fc23"
+    },
+    {
+      "path": "components/lesson/LessonMenu.tsx",
+      "sha256": "133e80ffb8f3ec3a72a4e93b4052390d1e4d50ef1a7138f7d0b2a801c4f9f064"
+    },
+    {
+      "path": "components/lesson/LessonModuleCard.tsx",
+      "sha256": "c3dd4fccd4805a3b0876e68f2333bf602beeda8c9fe88a9af0fa475acc3d36bb"
+    },
+    {
+      "path": "components/lesson/LessonPageLayout.tsx",
+      "sha256": "c2143e36c79ebf78fb104e2b187571eca749ca7715a14bc87fc0eea243b866b6"
+    },
+    {
+      "path": "components/lesson/LessonPageProgressMarker.tsx",
+      "sha256": "aace540db78e0ac1f9cecce43c6dff8da2a8890822bf597a1d32dc10ac8b3310"
+    },
+    {
+      "path": "components/media/MediaImage.tsx",
+      "sha256": "5573e5197e95ea5ff0262a0cb7e911ac6914f29b124b3bf55f7cabbeb50fcc32"
+    },
+    {
+      "path": "components/media/MediaPlayback.tsx",
+      "sha256": "cac76cebdbc929943c4f4c3f2c7d2dc2062caba42e0a35675d831233efa82635"
+    },
+    {
+      "path": "components/missions/MissionIcons.tsx",
+      "sha256": "c751486f67dfd5690cff964ede1f7030ed353ea74192e4da5e7a8970892f7ffa"
+    },
+    {
+      "path": "components/missions/MissionPanel.tsx",
+      "sha256": "c2a98533173cea7169e4738bd51781ca0e4d83a091cff1b55339aca88b2e369e"
+    },
+    {
+      "path": "components/navigation/AppHeader.tsx",
+      "sha256": "bdf30a648f9cce802ee5914683fdea7e09115404bf2972b091e777a85b818f4e"
+    },
+    {
+      "path": "components/navigation/BottomNav.tsx",
+      "sha256": "a68afde70e08fecaf319599312c9d57906e3d340ddb1033d9a5c3ca1cde4a16c"
+    },
+    {
+      "path": "components/navigation/LearnerTopChrome.tsx",
+      "sha256": "e6f5c9d9321e32a8f184b982d8276884d35603ec2e487fa05a22bde2c11aa870"
+    },
+    {
+      "path": "components/navigation/LearnerWorkspaceSwitcher.tsx",
+      "sha256": "e553fdcb46308cf17b1abcbe31bcc6a399146bbc70ddebed4f858324e9ac1be3"
+    },
+    {
+      "path": "components/navigation/PublicInfoShell.tsx",
+      "sha256": "ad3f75eab8c923a7380d5ecb13cd6b469720b28d94d332af89f910a06f4a65b4"
+    },
+    {
+      "path": "components/onboarding/ValuesAssessmentFlow.tsx",
+      "sha256": "8e4821445b4ef3d31ed62e1e463d741883a65f962b53131a1ddc122fc83a5715"
+    },
+    {
+      "path": "components/organizations/OrgIcons.tsx",
+      "sha256": "6a1673b396661811754438bf0d698320db102106b9f78a256b6a26fb1218a1d2"
+    },
+    {
+      "path": "components/organizations/OrgLearnerMobile.tsx",
+      "sha256": "ffef969c75f2b8c1d1fdb244668cc23e884dc3701b8aa94f6ad6e002b93a70ce"
+    },
+    {
+      "path": "components/organizations/OrgNotificationsList.tsx",
+      "sha256": "6432c9c7b827bf80f301dd5c3e883d7723c121c2e2f58b6fecd4b2f6e55e1dfc"
+    },
+    {
+      "path": "components/profile/Avatar.tsx",
+      "sha256": "91f60f8dea09d33c93e1b9b34a991eac92056a0aaa3de60813bf1565e88024b3"
+    },
+    {
+      "path": "components/profile/ProfileForm.tsx",
+      "sha256": "ec9c71d7aa90cf5ca20679ea49baebda90e52c1dee41be6b5a0252a5b1e6f9e4"
+    },
+    {
+      "path": "components/pwa/AppInstallPrompt.tsx",
+      "sha256": "ce0172726a7bd25c4b6902b75b45f7da5f7b1cc26c13eee055f9dfdc68858032"
+    },
+    {
+      "path": "components/pwa/BottomPromptCard.tsx",
+      "sha256": "0903e32e6d6b3feabbdea8b8847d43c0ab786e1e69bc55da71e60a6240b34f29"
+    },
+    {
+      "path": "components/pwa/PushEnablePrompt.tsx",
+      "sha256": "19a20b8b032453f7b30cb55d09b905ff7909fa6f412d74af1d6ba2ac52a94f25"
+    },
+    {
+      "path": "components/pwa/PwaBootstrap.tsx",
+      "sha256": "8082c6a72890fc02d83f0508835da9d90e74e9c4c357498905357d5e50fcd13f"
+    },
+    {
+      "path": "components/quiz/QuizOptions.tsx",
+      "sha256": "f331bb05d9c0c4a01dae5c56fba0771056c758fcf57f6de6f936c1db09e67eaf"
+    },
+    {
+      "path": "components/quiz/QuizResultDetails.tsx",
+      "sha256": "74dadebae1f4a3294dd0e2a6a2b03461572cb7f3244a1f0b01b3d0209bbf3848"
+    },
+    {
+      "path": "components/referrals/ReferralAttributionCapture.tsx",
+      "sha256": "60cd95dd4ae77e6370564aae989d4489ac516bc4ab065e7b626d191538d5d5aa"
+    },
+    {
+      "path": "components/referrals/ReferralCodeCapture.tsx",
+      "sha256": "ffc4c1794327dabd38f02d484d6a5e2a1067b50f040e1a7e73372c2d5280e9e6"
+    },
+    {
+      "path": "components/rewards/FeaturedRewardCard.tsx",
+      "sha256": "b49af0416af5ab590230ed82b39cc304cf9f47347ad420d554f84d2ac65ba755"
+    },
+    {
+      "path": "components/rewards/RewardCard.tsx",
+      "sha256": "b4fe1c83a149fc733f027284f5b4ef84560de38b08359735323444e585f53050"
+    },
+    {
+      "path": "components/rewards/RewardIcons.tsx",
+      "sha256": "3e50722e31ded8353292e96400c27d70fcfff46731f7a6ae118f41d452d8fafb"
+    },
+    {
+      "path": "components/rewards/RewardThumbnailVisual.tsx",
+      "sha256": "2c860355bccf48de2615d67be10560361e6e50cdd4a8aed89937bcc851ab3f2e"
+    },
+    {
+      "path": "components/rewards/TablerRewardIcon.tsx",
+      "sha256": "8298a460c3956cdc2a1ced592f4ba5e429b4e58b7752952726246a91395aa794"
+    },
+    {
+      "path": "components/rewards/XPStore.tsx",
+      "sha256": "2f11a8eece94daa7f9be49b8d7388e5dd4af8580847b5d987e36a9680cf14bf8"
+    },
+    {
+      "path": "components/support/SupportEmbed.tsx",
+      "sha256": "a1b202b3091c1b04f3292fe5c7d2d6602b23108184a42c36bcca91b81d735f41"
+    },
+    {
+      "path": "components/ui/Button.tsx",
+      "sha256": "2a7fa3915dce434158fb0198ef2b6c0bf233f352e6318a898e1c7865c6dde76c"
+    },
+    {
+      "path": "components/ui/Card.tsx",
+      "sha256": "0557559a4c25ffbb247fe797ab5855bfeea4bb4c15f5e933370ebd95afa2fc53"
+    },
+    {
+      "path": "components/ui/ExperienceHeader.tsx",
+      "sha256": "a30a2c1618ff205d410c1a776fa11349b8fa96357a280c505bd3a5363b790dfa"
+    },
+    {
+      "path": "components/ui/Icons.tsx",
+      "sha256": "2315f89ef99fec41e43498f31d6ae90c151fcbcd41073f1d3be07387c36da440"
+    },
+    {
+      "path": "components/ui/PaginationControls.tsx",
+      "sha256": "cf99610c316289732a0cd4b3c99855cba9f0e2c26964422b514768c016d6fcf8"
+    },
+    {
+      "path": "components/ui/SectionHeader.tsx",
+      "sha256": "68597a8133efc0616235dfaf07ac1ddd20e4dad53f6a7532134ce85be842c0e1"
+    },
+    {
+      "path": "components/ui/StatusBadge.tsx",
+      "sha256": "82b5739f2898332799bbad84b91a57d46cd97123d8ff47193f200acc42fe0161"
+    },
+    {
+      "path": "components/ui/XPBadge.tsx",
+      "sha256": "538f4835f7b430c7a2df30ad232be75976b966b8b232f38d2d3f53bc6a0930ae"
+    },
+    {
+      "path": "components/welcome/WelcomeCarousel.module.css",
+      "sha256": "8120349619fcdf5fe45dcc4c2fe92a39f0fa6dc407272fcf9fd7dbcf358389bd"
+    },
+    {
+      "path": "components/welcome/WelcomeCarousel.tsx",
+      "sha256": "0e7c4a7218bf705da451c64d0118d366aad0085c61afbf46ffa7809c522c69c3"
+    },
+    {
+      "path": "features/admin/application/catalog-overview.ts",
+      "sha256": "357177a27fd35c86ed549d113ff1252ee62dcceaa6d75b822e48f32fc8c25c3a"
+    },
+    {
+      "path": "features/admin/application/catalog-people-workspace.ts",
+      "sha256": "1c3b513c3f0daab667ea1ac98fed9ea0093c8eb39c0fb2055d50c7ebf2fcc3ea"
+    },
+    {
+      "path": "features/admin/application/context.ts",
+      "sha256": "adabc18ca979b9d0bcbb2e639e052c4a067e26c43d28bc5b8e88c7b60dc584f1"
+    },
+    {
+      "path": "features/admin/application/organization-oversight.ts",
+      "sha256": "c56c730587e86eff85546cf9f2902fb5fca62ef08b112b53511030bc4de22a01"
+    },
+    {
+      "path": "features/admin/application/organization-overview.ts",
+      "sha256": "bc73b46c30d00fa8f9ece0418da06dc417a5dc689d61629d11e02b3dca9c3440"
+    },
+    {
+      "path": "features/admin/application/people-workspace.ts",
+      "sha256": "e18abcc080d333a13eeedd0b71bc31ff15a8930219e17dc3344345a04c98041e"
+    },
+    {
+      "path": "features/admin/application/platform-overview.ts",
+      "sha256": "1f370644e5e55231e3cad15dce553f8659dedbb05467e7b574abc8f8b99623cb"
+    },
+    {
+      "path": "features/admin/shared/workspace.ts",
+      "sha256": "ee0064d2d8c33fc9f56f7a3b88627ec57c15ee9f25517873e2a3ae6d22213881"
+    },
+    {
+      "path": "features/ads/admin/commands.ts",
+      "sha256": "76bd60c186e381f47fc671f533e557039b7425c5c336ded2e5e9b64c5d50ffaa"
+    },
+    {
+      "path": "features/ads/admin/data.ts",
+      "sha256": "0520b13135a009afc608982721e8d81efb8890e714489c95831af6523c96de8a"
+    },
+    {
+      "path": "features/ads/admin/types.ts",
+      "sha256": "ccec52237af1261b6271ad3b9ed4803ba53b390b041a8b2098cb8d3c5b1b3e92"
+    },
+    {
+      "path": "features/ai-generation/application/course-finalization.ts",
+      "sha256": "141c75d543c652b113a91f1d7983c501fbb22f1230d6652a2bb1060c4a6b4a76"
+    },
+    {
+      "path": "features/ai-generation/application/course-text-jobs.ts",
+      "sha256": "e34a18cc6e26aa728cb14986b125208edd0c8aa7ea455bcb230633f24df8bae2"
+    },
+    {
+      "path": "features/ai-generation/application/form-input.ts",
+      "sha256": "c237852b5d8a793e8e48dc85564b9570d325aa82a8d104d39bf6de56dff41b8f"
+    },
+    {
+      "path": "features/ai-generation/application/generation-form.ts",
+      "sha256": "018086f7559307651e2035e6318ca365fc98a93c641f45e41cdfca272c9898e4"
+    },
+    {
+      "path": "features/ai-generation/application/job-orchestration.ts",
+      "sha256": "176f9c1508aca476b52c9be1540e499530b319e74ef3142d7f675418feee66fd"
+    },
+    {
+      "path": "features/ai-generation/application/job-prompts.ts",
+      "sha256": "58b2987f4cd17b21a560d3d7f2328ba9327bb05c67288de94be88318ea889de5"
+    },
+    {
+      "path": "features/ai-generation/application/job-requests.ts",
+      "sha256": "5859c057e6065bc2100045c61295cb60346dcbfa57b1400a6ed6e4842d64e322"
+    },
+    {
+      "path": "features/ai-generation/application/lesson-page-jobs.ts",
+      "sha256": "b2de5de90ed3e9116280610623c82bb3fdfd7810c19e9baf9c305ec3fa48ee6c"
+    },
+    {
+      "path": "features/ai-generation/application/media-asset-commands.ts",
+      "sha256": "59325f29c483e3916f562b825f22bae8792f72e53b325cc059ac952c1c1f0296"
+    },
+    {
+      "path": "features/ai-generation/application/media-jobs.ts",
+      "sha256": "6d8672849b14a9f1b922e33a233362fa5cf7f2d1f4ae6ec86585e84b5a55bdb2"
+    },
+    {
+      "path": "features/ai-generation/application/media-review.ts",
+      "sha256": "665e6fc5d0afcf11c9ae39c51f70559c1690c99f592334779e6c142685ba7dfd"
+    },
+    {
+      "path": "features/ai-generation/application/media-targets.ts",
+      "sha256": "72a8dd860f4d08b9896bd1eb924020ff207c798470cbf089c6453371017c850a"
+    },
+    {
+      "path": "features/ai-generation/application/media-work-items.ts",
+      "sha256": "ca9d09e1eef8de852896cb9e79afd1cecd178a4bb7960a72eb2febed4f6e45dd"
+    },
+    {
+      "path": "features/ai-generation/application/media-worker.ts",
+      "sha256": "4c49b378969557a52f498a43d67062ca2cfadbd9b12d0c0e61db100076e4496b"
+    },
+    {
+      "path": "features/ai-generation/application/organization-ai-metering.ts",
+      "sha256": "e771bd33d10dd81716b366e390867f486b4aec99ac868b0cc1e774b560fa80cf"
+    },
+    {
+      "path": "features/ai-generation/application/quiz-question-jobs.ts",
+      "sha256": "b616041961de6e5d170d880daca6c564c39cf6b138dda50d46ba313509e069f2"
+    },
+    {
+      "path": "features/ai-generation/application/text-review.ts",
+      "sha256": "5ad963669992c5edbaeb08b44606bb14cf4bb475d19749237d7234b5edcb96a8"
+    },
+    {
+      "path": "features/ai-generation/data/jobs.ts",
+      "sha256": "cf22ed7100ff16f53778608cbe05e55ebc8b3b88e0c155c1796cb7220b484e9c"
+    },
+    {
+      "path": "features/ai-generation/data/media-assets.ts",
+      "sha256": "6c135897c1f00440cbde66247d8b943c3a0e24d89852585410144a38ffbf53b0"
+    },
+    {
+      "path": "features/ai-generation/data/workflow.ts",
+      "sha256": "4994536f9ac45908f4e4c28922771868f0e175d63a9a46166e7e7322b601f7d8"
+    },
+    {
+      "path": "features/ai-generation/domain/generated-tree.ts",
+      "sha256": "21e34ff1d32cc18cd39162f4c22046cf3555dd5795df5965ece85dd209eebd2f"
+    },
+    {
+      "path": "features/ai-generation/domain/media-planning.ts",
+      "sha256": "7e3784679a49d8e081f6c73e087e94c123970d3fb2562b0e019e2d81522b21e6"
+    },
+    {
+      "path": "features/ai-generation/domain/revision.ts",
+      "sha256": "de6da8407f0931781441efe5fef364d67f9ed36d3805c55cd32be9dbad3aa415"
+    },
+    {
+      "path": "features/ai-generation/domain/workflow-status.ts",
+      "sha256": "4dfce8a27789da27199cc1e6cd7997082c03dc6c065f20b428c4f85467a66eaf"
+    },
+    {
+      "path": "features/app/repositories/contracts.ts",
+      "sha256": "f0f4f690f8bb1895332455b35ea1fbdbecbc4f9316d9db40a64c1ae4c19bf4d8"
+    },
+    {
+      "path": "features/app/repositories/learning-adapters.ts",
+      "sha256": "8674e25f59c353311de3789354a459f2f1b4b75178511d8e47b0c8720c6d5081"
+    },
+    {
+      "path": "features/app/repositories/learning.ts",
+      "sha256": "2faf90b87883d61e0742b3cd667cea7c5cda1101712cd771def18eb603d18c90"
+    },
+    {
+      "path": "features/app/repositories/mission-adapters.ts",
+      "sha256": "86b316b9150ab5c99b177a19dcdd28d9c029012a0e319e412a704070f216c86b"
+    },
+    {
+      "path": "features/app/repositories/missions.ts",
+      "sha256": "338987bc1ad75a849cc203bc389c804b310e33c70b14bb901ccf17d5638d472c"
+    },
+    {
+      "path": "features/app/repositories/progress-adapters.ts",
+      "sha256": "02b1ae5945b13b0de0a49bad77d2d3c402b223546227ff8978426266ddce9617"
+    },
+    {
+      "path": "features/app/repositories/progress.ts",
+      "sha256": "bdcaa12ec09253f1495166dfb6fc00933f01ca1e3dc155656d2bd446e6505189"
+    },
+    {
+      "path": "features/app/repositories/reward-adapters.ts",
+      "sha256": "614f11598ad6ea0d82bc99d6618872966b96992beeb98d7de972df7a980052e7"
+    },
+    {
+      "path": "features/app/repositories/rewards.ts",
+      "sha256": "c431155ccc77e46df034b5f730852a89b438e188185916e49be0bcbbeb50c2d3"
+    },
+    {
+      "path": "features/assessments/admin/data.ts",
+      "sha256": "ee60a5a61860eb3515c0db2efaed765a7457e08cf8d70c46942be0e2150be7ca"
+    },
+    {
+      "path": "features/assessments/learner/data.ts",
+      "sha256": "5a79e4f6613830f9df5535e330b0d129b4633950a3a9d71ac959a1a8c95f8f07"
+    },
+    {
+      "path": "features/campaigns/admin/access.ts",
+      "sha256": "140aa0d5d2b9d6b15a5017a416d13c7f29dc9c8c24ee9ef136c276f8409bbef0"
+    },
+    {
+      "path": "features/campaigns/admin/data.ts",
+      "sha256": "5ece8cbea2e3d8cf514bcc3a7963fbd302ef63f1a61b64a2f31fb51e499d72c9"
+    },
+    {
+      "path": "features/cohorts/admin/data.ts",
+      "sha256": "b21604e9bd935abd298659a8ba1ba4a2b72d176b01181cc83fbb8fc0fadc659e"
+    },
+    {
+      "path": "features/completions/learner/data.ts",
+      "sha256": "44d65fa61397bb5272de18ba346bd27e01f31b02a833794fd1d6efc613263ce5"
+    },
+    {
+      "path": "features/content-values/admin/data.ts",
+      "sha256": "de5a7eb87d66a2e8c3f8845b2fcf23576b63df83cf2186d91f98c37e20d031e7"
+    },
+    {
+      "path": "features/dashboard/application/secondary-data.ts",
+      "sha256": "a91f3c441d66a5fa6ede79291667f3a49b3ed5cd0e4db884fd527c3b5ccf8b1a"
+    },
+    {
+      "path": "features/instructors/admin/data.ts",
+      "sha256": "7edcda9eb9437c87d543059be8a110444168a27fdc4763419df6758e9869a287"
+    },
+    {
+      "path": "features/interventions/admin/data.ts",
+      "sha256": "d0cf5ec7f002ac07febe85b31e525cc17c54ec17f59d4f17ccfb3d5e055bee1b"
+    },
+    {
+      "path": "features/learning/admin/assessment-builder-domain.ts",
+      "sha256": "ffc193a2787b3e8d1794628383c5c3093f400a478f3df77d4851612e9d32adb2"
+    },
+    {
+      "path": "features/learning/admin/course-detail-completion-section.tsx",
+      "sha256": "372255c0f01fdcaceacf76a43a49ed003811297a9fcc186a7a4ced1002fafccb"
+    },
+    {
+      "path": "features/learning/admin/course-detail-data.ts",
+      "sha256": "a6ddda7fb1ba0217be18181aff505c60ddd4ff2279f568f73268a7f52ecb4e14"
+    },
+    {
+      "path": "features/learning/admin/course-media-workspace.tsx",
+      "sha256": "ce824ba79e02db9d4f6ef6a23b6f2bdadd49ceb76ec1a757eb8c1e5bb59c5cc9"
+    },
+    {
+      "path": "features/learning/admin/course-readiness-data.ts",
+      "sha256": "0d09a7c64fa268c02b3a8b479148e5ca87658135912d0ce810fdd486c37e3403"
+    },
+    {
+      "path": "features/learning/admin/course-readiness.ts",
+      "sha256": "2ccce29e261732c0e63edde0de77731c97c41f4b453726fb51acc34720ae7537"
+    },
+    {
+      "path": "features/learning/admin/data.ts",
+      "sha256": "85ff0e2e0f3b21757269b5efd7d69fa3a9de4064c12b5b826372f762a6bc0207"
+    },
+    {
+      "path": "features/learning/admin/lesson-detail-ai-media-section.tsx",
+      "sha256": "6f97a82a833d3f92910a37d59978c01aefd5585fa43f180d7da32712d42ed167"
+    },
+    {
+      "path": "features/learning/admin/lesson-detail-data.ts",
+      "sha256": "ef09b467a2ebb5d721a93e2a3a0ee70942ce4bc018f7153ae97a542e7c27e14c"
+    },
+    {
+      "path": "features/learning/admin/lesson-page-builder-domain.ts",
+      "sha256": "e73a53df835103ed1732c183ff3ae989d6f521bcd058dbeb694d8f4513f76e45"
+    },
+    {
+      "path": "features/learning/admin/lesson-page-builder-ui.tsx",
+      "sha256": "0227cc69bb2c5f742d5ecc6d51a20a310aec906773a7d2970611e443defbfcb0"
+    },
+    {
+      "path": "features/learning/admin/planner-commands.ts",
+      "sha256": "601a09901bc04d5ddd114114daa8af2a1634043b6aa2fc9599e6205e287ffa73"
+    },
+    {
+      "path": "features/learning/admin/planner-data.ts",
+      "sha256": "ffbc2301891bea283c3bb72ee9d16e3747fbf54f778d03bca0e104f650ede2de"
+    },
+    {
+      "path": "features/learning/admin/planner-domain.ts",
+      "sha256": "21391af9866916c2ae23aa9407d795154728489a48f6ad0ffc756cf5db5b5bbc"
+    },
+    {
+      "path": "features/learning/admin/planner-model.ts",
+      "sha256": "47e6d3d3c038b867b54be51c40d2b1de193502753733ab309b31e8fc443dc869"
+    },
+    {
+      "path": "features/learning/application/course-card-model.ts",
+      "sha256": "4cf00c20591d2f8416e63531cf7171fc94c854f8f1829771a2ec2fa6684ef40c"
+    },
+    {
+      "path": "features/learning/application/lesson-delivery-page.tsx",
+      "sha256": "2864c157b750e87fe4e28f0b0fd1113a746423d20c4a7a8d8e5b874d1890109e"
+    },
+    {
+      "path": "features/learning/application/published-lesson-content.ts",
+      "sha256": "1bb0790c46033f441f2a824087d8886c128a62e92f745ffa8fea7bd8a0c4a8e6"
+    },
+    {
+      "path": "features/learning/data/course-card-data.ts",
+      "sha256": "b0e85a795af201acaa71af7e6457422a03b8a57d35c67477ce8bb5d45a078b48"
+    },
+    {
+      "path": "features/learning/data/course-card-projections.ts",
+      "sha256": "a60f5d60ba9f307794470255fc73cf042ca48825313e6168fb661edc92f5e14e"
+    },
+    {
+      "path": "features/media/domain/byte-range.ts",
+      "sha256": "612b0f5dea06659549e84657ddefc417bd8158adb2b5b42d005c29317867bde2"
+    },
+    {
+      "path": "features/media/domain/editorial-adapter.ts",
+      "sha256": "d625c72889e62080853c0c365c8719b25a374270964b67bcf97ae418d62f0c6b"
+    },
+    {
+      "path": "features/media/domain/media-reference.ts",
+      "sha256": "8c30606ffe1356b272eb8c519785a9ce8e442ff75d4acdb76987c2d04513eaf9"
+    },
+    {
+      "path": "features/media/server/context.ts",
+      "sha256": "9c714881fbb08a2da513b12a624e6a8061fec37c9894f6f00ab7367b68faec83"
+    },
+    {
+      "path": "features/media/server/upload.ts",
+      "sha256": "ca4d7ecf8b75f80c2006843cf74017650658d7cf914115e78898fb2e238c0d0d"
+    },
+    {
+      "path": "features/missions/admin/data.ts",
+      "sha256": "235b1f5312c80ed6e0e614eac7c007c0c3632256b895d5aa59767ef50c89b1f5"
+    },
+    {
+      "path": "features/organizations/admin/activity.ts",
+      "sha256": "83f7f77e8685fb152c1d299aa3eebdf9010ca9f2f7cedcdbc7cf3fff1631a91e"
+    },
+    {
+      "path": "features/organizations/admin/data.ts",
+      "sha256": "0f85f41b01962b569dbe1005680d116ea53edf8be0a7c911cbaf8e56cf603219"
+    },
+    {
+      "path": "features/organizations/admin/entitlement-guards.ts",
+      "sha256": "0a36bdf7432eec63257488ffd777f139395b1e8766520d4fec8a3e345868f230"
+    },
+    {
+      "path": "features/organizations/admin/membership-commands.ts",
+      "sha256": "cb31f123ca45a62f857345722c7f00fc4b2104f2a293e95cbe5c680f6344c5d5"
+    },
+    {
+      "path": "features/organizations/application/entitlements.ts",
+      "sha256": "a6e280ed2a143d9581ee9418bebd28ee1e34eda854994274aaa39eb14fd2bf52"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-context.ts",
+      "sha256": "344eff3c81414c18613dfb7daf352ebfa4000a5cc0259aa3b4fb6d1ea609d873"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-domain.ts",
+      "sha256": "fd6c55485389d2adb5e36a747144c89ed16f94c622f6a60e641a3904599dfd94"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace.ts",
+      "sha256": "087e76d8ffb96c1a4074fd716987e481eb186be324752c7853f475ae40118ed5"
+    },
+    {
+      "path": "features/organizations/application/my-orgs.ts",
+      "sha256": "7b26eeb8132e3b8ec336ad2293ca6b85611e46016c52a0a416e67eb639426cd6"
+    },
+    {
+      "path": "features/organizations/application/self-service.ts",
+      "sha256": "c0285854896a3df03f952164befa1742e7ce87004c214cfe17a3e5f0ce34b802"
+    },
+    {
+      "path": "features/organizations/entitlements.ts",
+      "sha256": "d4ff76f2267071f16643be38c3eb0b88db24fd17b2a13775eb696cd2e1a1b528"
+    },
+    {
+      "path": "features/organizations/identity.ts",
+      "sha256": "f6eb855e891748f6b6eeabecf783cb05fb9699b899bb29fee78a428e41b8a1ca"
+    },
+    {
+      "path": "features/organizations/shared/roles.ts",
+      "sha256": "6a507ff0419cddc526d6424a953ee0072722f1378db6322c46c79ef6930d5e26"
+    },
+    {
+      "path": "features/programmes/admin/data.ts",
+      "sha256": "d0e84b65382e933dcaeea0b7e43121e04eb81c20c0745e922fe0b345995803fc"
+    },
+    {
+      "path": "features/progress/demo/mission-policy.ts",
+      "sha256": "656d81e6a174f5b43880ae71b9e10844db7650746cd566b78076bb306d63ee11"
+    },
+    {
+      "path": "features/progress/demo/store.ts",
+      "sha256": "2f6c1608afa1c88b38a874d5f24d486d302d9abeb248839cbeb9a0be097010a6"
+    },
+    {
+      "path": "features/progress/demo/xp-policy.ts",
+      "sha256": "7d0fb53308ddffaf9e4a89111eabde79b1d1e0258b033f692e0dd0751ee376dc"
+    },
+    {
+      "path": "features/recommendations/admin/data.ts",
+      "sha256": "4dc4d532518625cf467b5485da18ad031ca4c84c1008a48f298268e7fe99c8f0"
+    },
+    {
+      "path": "features/recommendations/data/editorial-cache.ts",
+      "sha256": "89a471b00be36d2369497f85960b1b551e46049052ea4d7cdae8843d83b9106c"
+    },
+    {
+      "path": "features/recommendations/domain/scoring.ts",
+      "sha256": "ec33c27d78606abfe2f22801e43222ad4055b7800a8789208eb701089161b3d8"
+    },
+    {
+      "path": "features/reporting/admin/course-insights.ts",
+      "sha256": "e38389b40000f5a61c3006144583f86300434cd274d3bb71e8e5ff6d73d42893"
+    },
+    {
+      "path": "features/reporting/admin/data.ts",
+      "sha256": "dabdef4ea719aea627534dbdc9b3efabd94338e2c7140468f59a2cd024ea98f8"
+    },
+    {
+      "path": "features/rewards/admin/data.ts",
+      "sha256": "bd1254b333cafc078e3e05b3432c2fec5bf455d633a0c43a1361fa8e04af6b8d"
+    },
+    {
+      "path": "features/rewards/admin/perk-prize-manager-domain.ts",
+      "sha256": "26b657b27a20a54192f0cea37de5d4fd6a112477d6cd2eacfb4454163e0cb83e"
+    },
+    {
+      "path": "features/rewards/admin/perk-prize-manager-ui.tsx",
+      "sha256": "fbf1fa26b1a321819ccbacbd9f51600fd62361b3721351935ccdf5e7bea39afc"
+    },
+    {
+      "path": "features/rewards/admin/perks.ts",
+      "sha256": "c4ec3c7f046cd96d3dbb0a2dfb89b98ba16a3a673b09b7ad32af6ef354cf8763"
+    },
+    {
+      "path": "features/rewards/learner/xp-store-domain.ts",
+      "sha256": "049fcc0c6d2da493d02f6bb7b18be19cc5b4de3b7edc8eccafffe604553dc7b0"
+    },
+    {
+      "path": "features/rewards/learner/xp-store-ui.tsx",
+      "sha256": "b71e9af5dbb42f24e267d7941eaf483c5f1dce2599c52482642d9ff3d093072f"
+    },
+    {
+      "path": "features/users/admin/data.ts",
+      "sha256": "8f50d62dbe508b3c10ea1e8797504eeaa22c6daff799618b13ebaec1d6c4ea0b"
+    },
+    {
+      "path": "features/xp/admin/data.ts",
+      "sha256": "386437628a1e72f364aa35c109e4928f4ca91892144001762427f61754fd01f6"
+    },
+    {
+      "path": "lib/admin-ad-validation.ts",
+      "sha256": "e127c65fcf5944a4b129b53fcc109fb2a7c42a04e458ad7fd322d5de218c4ed5"
+    },
+    {
+      "path": "lib/admin-ai-validation.ts",
+      "sha256": "c69d0592a7553b7d02b1669e67060a3974e3134c25ac9e5322341fb8d7888b27"
+    },
+    {
+      "path": "lib/admin-course-validation.ts",
+      "sha256": "a9b4a8badc36e0c0700740f0c8ea2aade622a28e98a89dd3265b2f58fcab10a4"
+    },
+    {
+      "path": "lib/admin-feedback.ts",
+      "sha256": "9d647ef5fe920c2618b6fbf844a6eeb01cc70e3002e6bffd69bdd63dcc558131"
+    },
+    {
+      "path": "lib/admin-inventory-validation.ts",
+      "sha256": "f4e76877c2c533dab8d2120c1326e1349aa6d94d3f76732e349c76ac0997e7b6"
+    },
+    {
+      "path": "lib/admin-media-upload.ts",
+      "sha256": "36fe75e1c839aa79d3f95c0eba99aebae7b26949bbe129c7402f73a275b0f21c"
+    },
+    {
+      "path": "lib/admin-reward-validation.ts",
+      "sha256": "198e05e7659e90b40c09f7e5141fb4c8f89559ef441234525e49937ac4165063"
+    },
+    {
+      "path": "lib/admin.ts",
+      "sha256": "495b416d467e78f53321748a3dd60c46bceb70473496e8d633e58b55a5d8dfc0"
+    },
+    {
+      "path": "lib/ads.ts",
+      "sha256": "bc8f9e7d05693674c1bafaf131b433ac0a0121313228f55f1cbf5d615d4741b6"
+    },
+    {
+      "path": "lib/ai-course-planner.ts",
+      "sha256": "bccf33ac6bfa15767a3e9a4460eda607dc1a81d42649fd56d11afc54a9ec94d5"
+    },
+    {
+      "path": "lib/ai-learning-generator.ts",
+      "sha256": "a8f60e9fba087912390b291b4dab9a76614073e5d478096646cb38c4a5629915"
+    },
+    {
+      "path": "lib/ai-media-generator.ts",
+      "sha256": "310049b4c835bec6ae70277ac4be5b1d4c538da930ba31528c0608780c4abefa"
+    },
+    {
+      "path": "lib/ai-media-workflow.ts",
+      "sha256": "27e0c332dc503f208f10a73dc940bc09e33266091d173761ce0f9f3db88b4509"
+    },
+    {
+      "path": "lib/app-errors.ts",
+      "sha256": "6b9ded4865a482673a68c58f8a2b86066bc925358450c841fb68585b8bf8d17b"
+    },
+    {
+      "path": "lib/app-mode.ts",
+      "sha256": "ea6674fa4f3ef274e188b26a697daaf9e5f58cc2a2dc38605c728540367cdb7c"
+    },
+    {
+      "path": "lib/auth-confirmation.ts",
+      "sha256": "693c7d4631b13cf1af4035b9604b288b54d3cb11c48f238f1233b4d7d059c59c"
+    },
+    {
+      "path": "lib/auth-redirect.ts",
+      "sha256": "852c91ec4461f399eb571be40c1d69928f5b7c4aae42061696690cd58a5a904f"
+    },
+    {
+      "path": "lib/auth-risk.ts",
+      "sha256": "0529d7d1febacc8a9979bf8fe5acc01d54917f90eca98f1bda703fbbd850ec98"
+    },
+    {
+      "path": "lib/demo-progress-store.ts",
+      "sha256": "ccf8339fed14ece9e258350fae600dfc411a9a58951a02ed46c28a6ba1f0d315"
+    },
+    {
+      "path": "lib/form-data-validation.ts",
+      "sha256": "2eb22d9dcef19ff20147a973455f3e4ee7e8514828364a6266c40ed67fa81289"
+    },
+    {
+      "path": "lib/gradient-accent.ts",
+      "sha256": "25f7d6f27bc6a20339eb7061fbc8fd625cb967ca2c4b02ed1ddb1a8300d10e33"
+    },
+    {
+      "path": "lib/image-presentation.ts",
+      "sha256": "2abecd18b73e731a44aa70dc6c50958dade01c56f190c4a2051547b0d4bfcd7c"
+    },
+    {
+      "path": "lib/input-safety.ts",
+      "sha256": "283613b769007adf583b14a89e9fcaaf648e9bca6cfc9c31edf37017f6155636"
+    },
+    {
+      "path": "lib/lessons.ts",
+      "sha256": "80770a31d7cf9bb74940965e32891ead952649a086939dfdc4bdc89c25d51dac"
+    },
+    {
+      "path": "lib/missions.ts",
+      "sha256": "7931bad1746bdd298782c28415031d2a42cf0620755f4ee83fdc70c12bad81a9"
+    },
+    {
+      "path": "lib/notifications.ts",
+      "sha256": "576858c196bb8c1b93b4e102b7fd4b5461c48bcdca881aaa84769f6b9617966a"
+    },
+    {
+      "path": "lib/oauth-signup-proof.ts",
+      "sha256": "8a8f1d7f8d3c4b18c687b5eca5578ab23521ced9847f044b069120eb288f46ec"
+    },
+    {
+      "path": "lib/observability.ts",
+      "sha256": "9033a7d2c0141ce11f0e192b179f83ad5c6777d730d30038067a72dcae5fae47"
+    },
+    {
+      "path": "lib/pagination.ts",
+      "sha256": "b993ef40df8c6256ffb6877a50df25c710c969d57a09158feb23eb343c883430"
+    },
+    {
+      "path": "lib/performance.ts",
+      "sha256": "aad65f2e10107638be0319eaaaecf3edbfd276ebfdf2b8df149303ac88bc84e2"
+    },
+    {
+      "path": "lib/personalized-recommendations.ts",
+      "sha256": "69fd13aa12782bef6d706911ddce83fdb2bab0f895514d3f1f01d16c0f554e26"
+    },
+    {
+      "path": "lib/progress.ts",
+      "sha256": "5ff5e49c9beab00366994176dc4c6fccd7e7281c603795591e0a9e4bceebf381"
+    },
+    {
+      "path": "lib/push-client.ts",
+      "sha256": "fab2c3472ed4b4f77997d0fb7147c1e476f6f8bb3d3680e2941b6b7b743a129f"
+    },
+    {
+      "path": "lib/referral-invites.ts",
+      "sha256": "2bdc68e16421fa388918e0ad84d6414e1794c68d635bc08e6e3ce2bb0fe2fd1f"
+    },
+    {
+      "path": "lib/request-validation.ts",
+      "sha256": "c174eb83743e0cf1bc9ce68bfbbd2ae75c2dfe6b2c77d40bbcb90a302a335a89"
+    },
+    {
+      "path": "lib/reward-icons.ts",
+      "sha256": "9966d24f277bdbdbe8a9c2c81aa96ac398bbbba00312baa3898ed6341d2d2e22"
+    },
+    {
+      "path": "lib/rewards.ts",
+      "sha256": "67abb13ac5e30e20bbd582a7359d0c6ec74dcd6f21d3ba31139977fc72cd61dc"
+    },
+    {
+      "path": "lib/rich-text.ts",
+      "sha256": "8b71600f47cbd1d93f8bb40e46df5360bccde162987c1e8de88eb8db142daf35"
+    },
+    {
+      "path": "lib/route-auth-policy.ts",
+      "sha256": "132f86a83324a3f963febb7effc5f73f7719888e32ee0358b3da3251db33f1ab"
+    },
+    {
+      "path": "lib/security-env.ts",
+      "sha256": "da3fcd01a8019f4989256554ba3fa4bdae3ad08fab7edf062e9f75f0227d41d4"
+    },
+    {
+      "path": "lib/static-content.ts",
+      "sha256": "12947f17720455fdde543f907e9ef0d8cd09eb98ac93315b2d64e408b7f3b48e"
+    },
+    {
+      "path": "lib/supabase-admin.ts",
+      "sha256": "7af633f99f20528bce839c62edb9a73d7ea2dc2941e4bed3ec25f8d74ecc14d9"
+    },
+    {
+      "path": "lib/supabase-learning.ts",
+      "sha256": "ae6d183fab491b7429bf8695734fca030750eb4f9f1eb72d35679ea44573e470"
+    },
+    {
+      "path": "lib/supabase-missions.ts",
+      "sha256": "cf356250897159d2a55457bad231d5a89bb737e6c2295cd7649468a6070b3e8b"
+    },
+    {
+      "path": "lib/supabase-quiz.ts",
+      "sha256": "c7d570d4e88d316b431a3a1d2800a44cc427a1b16772f70384dc9abdbd763e91"
+    },
+    {
+      "path": "lib/supabase-recommendations.ts",
+      "sha256": "31b7cae68e137ec578b0da2ea72101d7906a67f92a4e8b3317323c20b921b361"
+    },
+    {
+      "path": "lib/supabase-rewards.ts",
+      "sha256": "f5b8b75e9084a00655a834812d5ab23e828193b8a18428a6156e0858c3b28671"
+    },
+    {
+      "path": "lib/supabase-rpc.ts",
+      "sha256": "d898598eca4daa5aa18fa2d8db64c7ad98266e16c8fb3030c254c0a896a3dbdd"
+    },
+    {
+      "path": "lib/supabase-server.ts",
+      "sha256": "3d022606e4f9e72de380d3e61c800da1865d7cf280731e470465b0f515701430"
+    },
+    {
+      "path": "lib/supabase.ts",
+      "sha256": "60525328efa38d79b16c790a3e80a8d305d30ac1e350134404a1db6b6b708b10"
+    },
+    {
+      "path": "lib/tabler-icon-catalog.ts",
+      "sha256": "499112a63dd7be797187a080f7c287d6894dd9c0b24a9ca15ba60f983b49edaf"
+    },
+    {
+      "path": "lib/utils.ts",
+      "sha256": "d07602373bc557f25aaea1678f328da89db77eda7429bcac49283b6547e6c9b0"
+    },
+    {
+      "path": "lib/values-assessment.ts",
+      "sha256": "2fb4a1072d9ea25f6c9a9a336cad65240fa9c7c016dcbba9e5192a6f00b1732e"
+    },
+    {
+      "path": "lib/web-push.ts",
+      "sha256": "ff7fc372537e10e47e8606e7acdee2677ffb1557c93a6919e5a38fa2decb9c17"
+    },
+    {
+      "path": "lib/xp-constants.ts",
+      "sha256": "97ab3de603efa2b201d74468fbb2639a1f5aea7f84559df6050f365d45b9a38c"
+    },
+    {
+      "path": "lib/xp-format.ts",
+      "sha256": "32ce11d3aeb8a6d2092a22e78f7963b250968a26b5ddf564ffe17d5ade00f088"
+    },
+    {
+      "path": "lib/xp-settings.ts",
+      "sha256": "58ce0748fff891dedbe88ea65b26a2e65d5e72d9f936eed53a9b242a109d5fbd"
+    },
+    {
+      "path": "middleware.ts",
+      "sha256": "1a21577d8a565c79c841c4f48956ea5ed472a67bb3db47903e07f10fb606a273"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "a0c25f3c3ce3485af2413d016e354b33d09d2d20bbdf313e7869a2214e0e3916"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "808271cf888604f9680d6f77b1dc62ce8d15e2263ce71ff2c7b152821ef3f88f"
+    },
+    {
+      "path": "package.json",
+      "sha256": "8ef3e2e8a87dd0723d8373c421b77b234ddf4fd595553b8bfc22607e2e399ede"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde"
+    },
+    {
+      "path": "public/images/advertise-hero.jpg",
+      "sha256": "9117908792ebef839fdae67463ebdc607f8968baa8d368dffb69d844f4af8526"
+    },
+    {
+      "path": "public/images/org-landing-community-v2.jpg",
+      "sha256": "57d8eae0e1405e57a7961b377d97eab9052a5833532f5e06ea093a6ecc6f6290"
+    },
+    {
+      "path": "public/images/org-landing-community.jpg",
+      "sha256": "57d8eae0e1405e57a7961b377d97eab9052a5833532f5e06ea093a6ecc6f6290"
+    },
+    {
+      "path": "public/images/org-landing-montage.png",
+      "sha256": "49ddd6afaaf342d3897e523d2bf7535fec5c966259ae8dc2ccbcc9210bd5c97b"
+    },
+    {
+      "path": "public/images/org-landing-stitch-design-team.jpg",
+      "sha256": "6b1376bb878a1616c2610b071413ee94480d31efaa63367bc14cc15ee708048c"
+    },
+    {
+      "path": "public/images/org-landing-team-photo.jpg",
+      "sha256": "2712abb90d2ca2ff6b0609471f37447fba40a82beec1bd33bf2082dcea3121a6"
+    },
+    {
+      "path": "public/images/org-landing-team-workshop.jpg",
+      "sha256": "510a9b8ee56d64735c1217eb86807c08101fd43208d385762626377587c0b37a"
+    },
+    {
+      "path": "public/images/welcome-carousel-earn.jpg",
+      "sha256": "f72590f9fe7082a54aaa3e326104ca23a1da6abe263aa52ad8b2f7fcfc664491"
+    },
+    {
+      "path": "public/images/welcome-carousel-learn.jpg",
+      "sha256": "e3eebeae56956cadfdf41e89f66e6059b79a249e934940cc01a359dbb7667e88"
+    },
+    {
+      "path": "public/images/welcome-carousel-unlock.jpg",
+      "sha256": "a906b1569636bf1d05a920fc0d34d03cd14c03b41ca64dd36f9bdeb0c98885bf"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "df29cf364680c1adc013df0d918586d92a0256b7f50c4d6ad00c17c4f4335c4d"
+    },
+    {
+      "path": "types/database.ts",
+      "sha256": "44683860b9ec4a53e9acb4398a27ce34c6487808a02953d9232ee0b85790de1c"
+    },
+    {
+      "path": "types/tabler-icons-json.d.ts",
+      "sha256": "e9c936b595197cc7dc2755103974279476039a929bc13992c8ef266cf197f41f"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "bfd3bc1729ab16c735f91351d2183f2469bda6ef573b0e32ad28d1118d5cb8b0"
+    }
+  ],
+  "validationFiles": [
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "2195a9242454977fd0f324f0b02ff4d3b1d6ae5a5a91932967b1a65fa02fe623"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "5a2f78b81cc84be8d90a2f71bd503b65cd88ff79e6f907e960295ae99bf4739d"
+    },
+    {
+      "path": "scripts/agent/inject-project-guardrails.py",
+      "sha256": "c9b54b096a85c012c32ba17223459a3b16647d4bc568de6a085ebbd7b0cb7590"
+    },
+    {
+      "path": "scripts/check-database-types.mjs",
+      "sha256": "44b322b598efa684dea458d80d3fc915d3e010fb0f1e67c83653d3da5912c8d4"
+    },
+    {
+      "path": "scripts/clean-next-build.mjs",
+      "sha256": "5a0ff98d933033e00121cf746b34437221e57b48cb31338de8fb02208c004302"
+    },
+    {
+      "path": "scripts/dev-demo.sh",
+      "sha256": "5676196910e937f59f870df7927978361ff2051d32715e1a9d7218b812d50019"
+    },
+    {
+      "path": "scripts/media-cutover-verify.mjs",
+      "sha256": "234f964b97f9c24864424ff75c2171ad97174156dba24056b21902f0549299fc"
+    },
+    {
+      "path": "scripts/media-release-evidence.mjs",
+      "sha256": "72c14d5abff6373a6b3095c8e235fc498da46a9882e3d5612f1a91ab5e0e5178"
+    },
+    {
+      "path": "scripts/media-repair-legacy-provenance.mjs",
+      "sha256": "1c444f133b34e05d791b64e3888e491679912c62c27725f7e1e77926f6c6b92a"
+    },
+    {
+      "path": "scripts/media-storage-release.mjs",
+      "sha256": "e93fb9a5d66f2562bce5cd9e5b078a2600ab776a7b73975a94d7f28e008c8138"
+    },
+    {
+      "path": "scripts/supabase-cli.mjs",
+      "sha256": "ed28cbb5f693611c89a1633fdb3d61d59c2662a216991058ad320d4e6428f4f1"
+    },
+    {
+      "path": "scripts/test-e2e-local.mjs",
+      "sha256": "acaff90e20dba039ae2579b9927264e892b7cbd635975711f1380780e0bdd71b"
+    },
+    {
+      "path": "scripts/test-economic-integrity-local.mjs",
+      "sha256": "e9c51e2e25b1ae67b6f1dc8f7a81e4fe168e991348c7c3e94ea36f7576d37201"
+    },
+    {
+      "path": "scripts/test-organization-ai-concurrency-local.mjs",
+      "sha256": "3c8d8cf09841eb5b22948c63d0b268ac63b9589cebe508fe421969125b21f400"
+    },
+    {
+      "path": "scripts/test-performance-guardrails.mjs",
+      "sha256": "bfa234e0b72b322df94795164be61bf3fd26c9d84bdc543f8ca254936059ad04"
+    },
+    {
+      "path": "scripts/test-quiz-xp-concurrency-local.mjs",
+      "sha256": "2e76bbcbed5a5e9221043cfcd88e18701eddf838317e96db6da45072713425a7"
+    },
+    {
+      "path": "scripts/test-repository-contracts-local.mjs",
+      "sha256": "5458dbaa56ff90595aa745b71d49f9e9f68777384736d2b01fa6812c5f3cbea9"
+    },
+    {
+      "path": "supabase/migrations/20260512170000_product_model.sql",
+      "sha256": "81fddc617a2a64af0a65db443aac1568f9baafa7c0f56dc5ece6cedf9d1643b9"
+    },
+    {
+      "path": "supabase/migrations/20260512183000_referral_acceptance_rpc.sql",
+      "sha256": "92b09782910ec3fe7424cdc5c99eef8385c2eacec24a482221927ae06ea84ff1"
+    },
+    {
+      "path": "supabase/migrations/20260512190000_seed_learning_catalog.sql",
+      "sha256": "e78fde1ace58cb900b1e8f6270b9fb15f3325ae572d0f1d306c45c5f354603ba"
+    },
+    {
+      "path": "supabase/migrations/20260512193000_seed_quizzes_and_answer_rpc.sql",
+      "sha256": "4b964b92078bd0944ff6f77cdff1eb5dd9ab989a81f1c16c54fac0a75c109a5e"
+    },
+    {
+      "path": "supabase/migrations/20260512200000_seed_missions.sql",
+      "sha256": "a34f7a7a3a25387d52db420265a66c4e067bbfd3f0b5ed24ddbc8df514a82da3"
+    },
+    {
+      "path": "supabase/migrations/20260512201000_increment_profile_xp.sql",
+      "sha256": "009c61b9c9f87dfaeef0c8f5c14a2ebe739411ce1ce1e1bfe3e85e9da54ab5d1"
+    },
+    {
+      "path": "supabase/migrations/20260512202000_award_valid_mission_xp_rpc.sql",
+      "sha256": "ecf93f430f4a77f0cd08142f3c10be93c71022163c72517bb71a685ea14f26fb"
+    },
+    {
+      "path": "supabase/migrations/20260512210000_xp_store_redemptions.sql",
+      "sha256": "7cf9d8cb463482294c60a72d2542c6c4a664016a4ea97a81cb841e51ad6a6ef7"
+    },
+    {
+      "path": "supabase/migrations/20260513090000_reward_edge_case_hardening.sql",
+      "sha256": "f9f5231ccdbbc8466b3636d8ad31d0c309d415559f05af19d275cc1169386c3e"
+    },
+    {
+      "path": "supabase/migrations/20260513100000_input_sanitization.sql",
+      "sha256": "76af450eb5c7c9d22a882d81a7ce46893c58884c0e134f6b98a16568c876bbf1"
+    },
+    {
+      "path": "supabase/migrations/20260513101003_admin_operations.sql",
+      "sha256": "83a4d7bba8eab5f0245cefab431c21b639ba548cf56645b6603061797d00b6b3"
+    },
+    {
+      "path": "supabase/migrations/20260513104346_admin_reward_operations.sql",
+      "sha256": "ade2ab69c0427ecc5094caaf557f24a91763a3f5c0dc63ab3eacd93882e11389"
+    },
+    {
+      "path": "supabase/migrations/20260513110000_initial_fraud_controls.sql",
+      "sha256": "5751520875b997c20f20f356f9f7e95f5fda4dcafce9b47954b3396e00ad4dd4"
+    },
+    {
+      "path": "supabase/migrations/20260513120000_risk_events_and_signup_controls.sql",
+      "sha256": "7352a522b6f1e93b19cdeae348e9a32e7f67d2ba014bb043a5b25217d1beea3c"
+    },
+    {
+      "path": "supabase/migrations/20260513130000_profile_management.sql",
+      "sha256": "c8bd108e6f648b9eebd6f3d7442220a8c9dfd8eaf75538068cf456722a1088ce"
+    },
+    {
+      "path": "supabase/migrations/20260513131413_admin_reward_cleanup.sql",
+      "sha256": "a00fff1fca5a93915b9fb1fce665d351576e9ded5a341310ffd8dbc1c737e622"
+    },
+    {
+      "path": "supabase/migrations/20260513143000_redeem_language.sql",
+      "sha256": "54ef46783131462772e66c8883fb4b200acda076ea08a4311e9c82841063ac50"
+    },
+    {
+      "path": "supabase/migrations/20260513150000_values_education_language.sql",
+      "sha256": "fb0ef2e1ac563c9d2ea83ad70da2314240ef26e530372ce02b3de392516bfc59"
+    },
+    {
+      "path": "supabase/migrations/20260513153000_civic_values_seed_content.sql",
+      "sha256": "55b15519beeb3145fd347ad6784b4ecae556faa4612c06bf37190363b15f2246"
+    },
+    {
+      "path": "supabase/migrations/20260513200038_admin_campaigns_inventory.sql",
+      "sha256": "1bf34a309dc7ca64aef4ae18b7a27996f3a3f63c02efd0ab424d191439ab1497"
+    },
+    {
+      "path": "supabase/migrations/20260513212000_inventory_release_windows.sql",
+      "sha256": "88233ea23f48e05d726724086041e6361b7e84f9f79052e52405fe841fc1e1aa"
+    },
+    {
+      "path": "supabase/migrations/20260514103000_inventory_batches.sql",
+      "sha256": "0d2340965fbb4752a72e61f4a3edec00c3ee350184293f736501de880bec6f21"
+    },
+    {
+      "path": "supabase/migrations/20260514112000_quantity_inventory_windows.sql",
+      "sha256": "56835642083a01331873e9944085c363916daae370f9fa61086945fb14533ec5"
+    },
+    {
+      "path": "supabase/migrations/20260514124000_campaign_lifecycle_controls.sql",
+      "sha256": "14d2976ae8b541c156c2a823dbf0a955c65037ccf892fbba0ee04572c5299b47"
+    },
+    {
+      "path": "supabase/migrations/20260514133000_redemption_inventory_reporting.sql",
+      "sha256": "486e205a227d08a9e9ea4abb602288d07d7dcbb73dc4229a2f8c06829f0fd6ae"
+    },
+    {
+      "path": "supabase/migrations/20260514143000_admin_learning_content.sql",
+      "sha256": "932ee9945da8928983834c79c3fe890293477c079749a60b6178d24dd7cc777e"
+    },
+    {
+      "path": "supabase/migrations/20260514152000_learning_catalog_read_policies.sql",
+      "sha256": "b9450651bfce51ba85608ffefbc651fb5663e8d883124b683d3774a20e1c8341"
+    },
+    {
+      "path": "supabase/migrations/20260514165000_learning_builder_reorder.sql",
+      "sha256": "0df33ed0ec3850cc523f324583cafe276f44f2bc4fe19a94af3c93c53f5b1504"
+    },
+    {
+      "path": "supabase/migrations/20260514172000_learning_builder_delete_block.sql",
+      "sha256": "2e64dc5f8d73ee4cc9aa07d65252762b1b28da078d0be57fefd03671f13430b0"
+    },
+    {
+      "path": "supabase/migrations/20260514213000_learning_visibility_toggles.sql",
+      "sha256": "72529b8b738fd5b54b3383adbfb73bbe3f46a644272fae3655ea32048113ef93"
+    },
+    {
+      "path": "supabase/migrations/20260514223000_course_minutes_from_lessons.sql",
+      "sha256": "6732ae18aef9331e50c4fd1a02c021142cf419621b8a9d13daae5c62ca0dee96"
+    },
+    {
+      "path": "supabase/migrations/20260515090000_editorial_recommendations.sql",
+      "sha256": "52372381dce2b169011c050db13d0a61a93b94951ba682c91eaa396f21257313"
+    },
+    {
+      "path": "supabase/migrations/20260515193000_lesson_page_completion_update_policy.sql",
+      "sha256": "6bcb6f37a1dd957a74e9a1a1e2e57b6a8e503875582e52d5daedc36656f58bee"
+    },
+    {
+      "path": "supabase/migrations/20260516083500_manual_claim_idempotent.sql",
+      "sha256": "8556ba1381fbf2d5976447c6e4253112e68b1d794ec29960682fb094bc79dce8"
+    },
+    {
+      "path": "supabase/migrations/20260516093000_xp_settings_and_ledger_filters.sql",
+      "sha256": "5821f4ba570223119883fe433938b2f848f9a84663a69e276a0e31ae46f6910e"
+    },
+    {
+      "path": "supabase/migrations/20260516212706_fix_reward_inventory_redemption_fk.sql",
+      "sha256": "f3ea6b036b1d64b0d963df933a1fe5624c4d9292cb0d5c48b83b7850c6acebb4"
+    },
+    {
+      "path": "supabase/migrations/20260516214500_reward_visibility_modes.sql",
+      "sha256": "521c12d0d0b9047deb8ccff81173713f927b93235e5c822225762d40c7e37381"
+    },
+    {
+      "path": "supabase/migrations/20260518093000_low_xp_perk_bundles.sql",
+      "sha256": "87948e94a9d7b075689f477b1108c72674d9649518764cf462989ae0895db256"
+    },
+    {
+      "path": "supabase/migrations/20260518193000_reward_distribution_mode_refactor.sql",
+      "sha256": "9645fc483ee305a7d0e22bcded2d6d06dc91eb6ac36948bbc09bfc7d832d6793"
+    },
+    {
+      "path": "supabase/migrations/20260518195500_perk_release_buckets_and_draws.sql",
+      "sha256": "aa6aac6b0053917c225f5f93b59731976cb2ee6fb32cf99aba70247747d1feb5"
+    },
+    {
+      "path": "supabase/migrations/20260518223000_perk_prize_inventory_allocations.sql",
+      "sha256": "451271cc39f722573f88974fdd62c7c63ceac0b7ae7b8b925914ac9e8ab1eee6"
+    },
+    {
+      "path": "supabase/migrations/20260519001500_perk_reward_prize_idempotency.sql",
+      "sha256": "5a81c5e806e32b2fd1eea31c67467cf3e28b1d0853204183b6413f4ec483df79"
+    },
+    {
+      "path": "supabase/migrations/20260520153000_perk_bundle_availability_from_prize_pool.sql",
+      "sha256": "400203d6144fe8419de94d57a02b99b31424489b21d93268a795971691a344a5"
+    },
+    {
+      "path": "supabase/migrations/20260520161500_admin_user_xp_grants.sql",
+      "sha256": "1634a9d69e4243689086a9e93525460cde33fa253108b5e342077b84b358d0d1"
+    },
+    {
+      "path": "supabase/migrations/20260520184500_fix_perk_bundle_xp_direction.sql",
+      "sha256": "624520e606bb41c40d5695bb2952eed528acd5f2574b5e06b677a7cb9e8b135f"
+    },
+    {
+      "path": "supabase/migrations/20260521140000_admin_mission_management.sql",
+      "sha256": "2674978a1b1fad6470ab03aa99a3527096a3c078f6f439b7c29b10f7836a1dd1"
+    },
+    {
+      "path": "supabase/migrations/20260521183000_fix_mission_completion_from_page_progress.sql",
+      "sha256": "b4a61ae9d196443b3b1756dfbe788acbb1fbe64320446c2b9e26b2064c7070c4"
+    },
+    {
+      "path": "supabase/migrations/20260521193000_static_content_pages.sql",
+      "sha256": "309e62b13090fc98305d4d151fdaff37483ec1faa8db321cac84a9629953fc76"
+    },
+    {
+      "path": "supabase/migrations/20260521200000_fix_redeem_reward_xp_boost_column.sql",
+      "sha256": "f5217dcad9a25c82cba45378965a0b18831ed1c48a8a9aa4b95ba7a907294e4c"
+    },
+    {
+      "path": "supabase/migrations/20260521213000_mission_reward_types.sql",
+      "sha256": "3d31644cb71a52949165b3391b4f3d01ad216166421d0da51418ca6324952758"
+    },
+    {
+      "path": "supabase/migrations/20260521233000_proof_mission_requirement_modes.sql",
+      "sha256": "4445706c2520a1792129d81f039e82efd217410387b7be51a9452a9cf690d115"
+    },
+    {
+      "path": "supabase/migrations/20260522000500_remove_demo_mission_proofs.sql",
+      "sha256": "64687852f129c25f19a673e635712021392037bce53bef90f5e26137f668d241"
+    },
+    {
+      "path": "supabase/migrations/20260522003000_allow_zero_xp_cost_redemptions.sql",
+      "sha256": "8bfc806c479d109a64779efc4721cfe12ad878b70e99de81d2bbe10b9c3be8dc"
+    },
+    {
+      "path": "supabase/migrations/20260522110000_ai_learning_workflow.sql",
+      "sha256": "6bbd28d960fee5dfb6157936aab6d2ccd68f818c8caac82e4c8f71b8075aa73d"
+    },
+    {
+      "path": "supabase/migrations/20260523101500_ai_media_image_assets.sql",
+      "sha256": "e3e4aa0ff02eab14e4ee8c129a71373a99d003e432ac239d7371df1274e6a420"
+    },
+    {
+      "path": "supabase/migrations/20260523124500_ai_course_plans.sql",
+      "sha256": "e7821df356e0eca824a26c0c1052ed37d89fc6d3282e7952dae03cafc7c38896"
+    },
+    {
+      "path": "supabase/migrations/20260523190000_relax_ai_course_visibility.sql",
+      "sha256": "a64968fad3fe91ed22f8309c714a1eef53fb041fe38f7e90dc901afc817a84df"
+    },
+    {
+      "path": "supabase/migrations/20260523193000_fix_relaxed_visibility_slugify.sql",
+      "sha256": "06efc453755b87c540346e86481db7df72311cd084e102242a9aa7d973da389d"
+    },
+    {
+      "path": "supabase/migrations/20260524120000_oauth_signup_verification.sql",
+      "sha256": "e00e595dcc203ec2d2306a1bd1c8e542539368bf80fdd1f2bd9909f734fe8101"
+    },
+    {
+      "path": "supabase/migrations/20260524203617_user_notifications.sql",
+      "sha256": "42f848fac56507be3b39e086c76504299e4f2ebc4fe90135f304009242e9b69e"
+    },
+    {
+      "path": "supabase/migrations/20260524205743_notification_preference_controls.sql",
+      "sha256": "af2a9039a7fc36cd1967bf0fe8e18460be2dfc2b769aa385833f779b8f3ebd29"
+    },
+    {
+      "path": "supabase/migrations/20260524211759_notification_push_delivery_and_events.sql",
+      "sha256": "7ffc67d471d6d8495ded0666eec6d41aa9ef5456a5fbc03b5d65dd89114af141"
+    },
+    {
+      "path": "supabase/migrations/20260524224500_notification_reminders_and_broadcasts.sql",
+      "sha256": "dc32dc2c9d2870a265c6198d6608da7a9b295e09ade1a670a5cc2c1de3b3c3a2"
+    },
+    {
+      "path": "supabase/migrations/20260524235500_push_delivery_policy.sql",
+      "sha256": "123e1f4db2c3d3be141a323cc0470aa600af01b461f5e279d918a353765da836"
+    },
+    {
+      "path": "supabase/migrations/20260525003000_referral_visit_push_prompt_signal.sql",
+      "sha256": "aa52054625d8a206011a0c76e4ff2eff3ce3436ad8a5afc35f919ebe07eed832"
+    },
+    {
+      "path": "supabase/migrations/20260525004500_first_earned_xp_prompt_signal.sql",
+      "sha256": "2fb795bca099e074fa7d1ea5c271c6c88f7bb0f786f0523e6cba239d45d7c9d0"
+    },
+    {
+      "path": "supabase/migrations/20260525143000_values_starter_check_phase1.sql",
+      "sha256": "e7beff953d6d58af70b92b80b7b26953e34f03a4a7ee69460815c069401c78c2"
+    },
+    {
+      "path": "supabase/migrations/20260525162000_content_value_tags_phase2.sql",
+      "sha256": "3c6aaa9c5af736e621002ceb8d60cf62c953027365a0f56b7c065805e24b9458"
+    },
+    {
+      "path": "supabase/migrations/20260525203000_sync_quiz_status_with_lesson.sql",
+      "sha256": "117acbd04f27f14c28f0ad511b2be2f233c607b498a40e79addf5b59d9e3b0a4"
+    },
+    {
+      "path": "supabase/migrations/20260525212000_harden_lesson_block_upsert.sql",
+      "sha256": "3af0304dbf44657333e0d8c4776f1b4d5bad89aac6ef01a743adcd85cd44ee3c"
+    },
+    {
+      "path": "supabase/migrations/20260525234500_stop_builder_edits_from_staling_ai_media.sql",
+      "sha256": "23bb9a6e8669cf0dbf508cdc16889f388e2705aff27d89811150282271da9bbf"
+    },
+    {
+      "path": "supabase/migrations/20260525235500_remove_automatic_stale_media_state.sql",
+      "sha256": "207a195450dae7f5a0a59228b11585582734916a4836a19653a7467411401d85"
+    },
+    {
+      "path": "supabase/migrations/20260726120000_direct_ads_system.sql",
+      "sha256": "1a4ea9e0edf98607d407a770ba9488bccb68a83abfcdea92308fba2f289e268d"
+    },
+    {
+      "path": "supabase/migrations/20260726133000_ad_recent_lesson_decision.sql",
+      "sha256": "9de4d2231ba5d6bf84ac34996604d16e7fccbd3f0743039e1c60bdf16c466f87"
+    },
+    {
+      "path": "supabase/migrations/20260726134500_advertise_here_fallbacks.sql",
+      "sha256": "2b99e95cfc69e416be737f7741e55645c72621917aebaf0b96ea38c388d31bdb"
+    },
+    {
+      "path": "supabase/migrations/20260726140500_house_fallback_tracking_and_inquiries.sql",
+      "sha256": "df9090b77490455e6e16765d3193c241e89d4b4ac3ff278ee703a1c9fd136109"
+    },
+    {
+      "path": "supabase/migrations/20260728120000_rpc_security_default_deny.sql",
+      "sha256": "81ddd88425e9c8890961079e3589bb8a190f47511f5ac169a1d83248a72c41aa"
+    },
+    {
+      "path": "supabase/migrations/20260728121500_secure_notification_primitives.sql",
+      "sha256": "71279b1661ad1ddd00e5c1b574440e0c997d06112a7c0cd75108aa5c026d6720"
+    },
+    {
+      "path": "supabase/migrations/20260728123000_xp_ledger_owned_primitives.sql",
+      "sha256": "f14eb4707c1dec07e8f9ebd3fb14f75a4c4f59cedecc1ca16e87e14444ae776e"
+    },
+    {
+      "path": "supabase/migrations/20260728124500_quiz_answer_keys_and_server_attempts.sql",
+      "sha256": "d400872710dd26718e965b66613ce4c896a96484e1f2566a790870d2f5a31258"
+    },
+    {
+      "path": "supabase/migrations/20260728194831_grant_pgtap_extensions_usage.sql",
+      "sha256": "9c11292985e9e05f3b8f5bebe944edfc17793a61b943e5a0952082e0193e1403"
+    },
+    {
+      "path": "supabase/migrations/20260728202602_grant_private_schema_test_access.sql",
+      "sha256": "9ac1eaf33afabf8986b4e981ceec80acdbac5c018aa09f835f2927b6f9cd7fa2"
+    },
+    {
+      "path": "supabase/migrations/20260728221812_grant_profiles_and_notification_test_access.sql",
+      "sha256": "3fcd650bede1ed9678cbdd22b26c6ec077bbf42a5ba276fb86357b0bfc3de9c4"
+    },
+    {
+      "path": "supabase/migrations/20260728232012_grant_cli_test_role_classification_read.sql",
+      "sha256": "13ad5d5b9e454e891b118095b8d4a293490dc4c00a7387704e4e666fa2fe8dec"
+    },
+    {
+      "path": "supabase/migrations/20260728233235_grant_current_user_is_admin_execute.sql",
+      "sha256": "8f951e52d82a60b57eb492c04cefb7f62031f99d60e95536b15a2943e73d5d33"
+    },
+    {
+      "path": "supabase/migrations/20260729190327_harden_sensitive_rpc_client_denials.sql",
+      "sha256": "b288f516684bc86fa25629170db830aac0158f583790937cc2e2f35c6819d3e4"
+    },
+    {
+      "path": "supabase/migrations/20260729201500_restrict_notification_read_mutations.sql",
+      "sha256": "d6c11e7a185f0daf6dd4d43ca4c85c93eb830c63cd37d717ae3b8f8e9a1a990d"
+    },
+    {
+      "path": "supabase/migrations/20260729203000_harden_signup_trust_boundaries.sql",
+      "sha256": "57d2b96919be974960e950718fb9e8824fc08ffd1ab5beee3675e1cfbf105bc2"
+    },
+    {
+      "path": "supabase/migrations/20260729210000_complete_lesson_page_rpc.sql",
+      "sha256": "22d25927bb482ddaebcf6ba6765b98f7078f6e6033a450957984ef7ca2331f6e"
+    },
+    {
+      "path": "supabase/migrations/20260730110000_durable_ai_generation_jobs.sql",
+      "sha256": "303d47e8688c71e0c01e8cfaf8586d41075d695466787f83fe7e1d26ea40e17a"
+    },
+    {
+      "path": "supabase/migrations/20260730123000_durable_ai_course_text_revisions.sql",
+      "sha256": "ab5b5252715da5441e83b796bc0b8b098cee0d8dd53fb780b93bc35ffc3bcb31"
+    },
+    {
+      "path": "supabase/migrations/20260801100000_secure_residual_privileged_rpcs.sql",
+      "sha256": "2dbd42737a35ab776dadd9cb4ba097ee49a71f2ba7d316b4da50ef9a5dbaafdc"
+    },
+    {
+      "path": "supabase/migrations/20260801103000_review_remaining_rpc_classifications.sql",
+      "sha256": "b4a3c504dfe6d2f6db03b5c71e5c31d19f195db7f3333b275c9a3329ad59864a"
+    },
+    {
+      "path": "supabase/migrations/20260801110000_refine_public_rpc_classifications.sql",
+      "sha256": "e1845336e1c1d82b922ea548b679e44e846c29b8e57677c4cc822b3e7694d551"
+    },
+    {
+      "path": "supabase/migrations/20260801113000_serialize_daily_quiz_xp_allocation.sql",
+      "sha256": "ed63c7e8ad11c477142c32c5b4ffe356bbf4175c4044277ce8ec1f311489cec6"
+    },
+    {
+      "path": "supabase/migrations/20260801132845_fence_ai_generation_worker_leases.sql",
+      "sha256": "30a4aa3b6c318c81ea7acd41d8faee7e4274035bd3c2712252adf85cd3a5b3c6"
+    },
+    {
+      "path": "supabase/migrations/20260801143000_complete_ai_lease_ownership.sql",
+      "sha256": "acf4145dd2416a20395862c835fa723250709f24b27d528152581cea730df47c"
+    },
+    {
+      "path": "supabase/migrations/20260801172803_align_rpc_classification_service_role_acl.sql",
+      "sha256": "0e1f299308421b93b3429ea3021311b104f951a94272b8efed9d4bce72bcca3e"
+    },
+    {
+      "path": "supabase/migrations/20260801190000_admin_reorder_course_lessons.sql",
+      "sha256": "3c59f7ddf3f91c000a9415f107c1923bba0eab4a5f67b5fa473a7fabbe7d6b6d"
+    },
+    {
+      "path": "supabase/migrations/20260801193000_admin_manage_quiz_questions.sql",
+      "sha256": "484e9f4f76239f76b1eaebbed549731f80241180bcc4f9c04ab72e911c1f29ba"
+    },
+    {
+      "path": "supabase/migrations/20260802090000_classify_admin_cms_rpcs.sql",
+      "sha256": "7fc32d202728858daf8d7ad3bab1c701c83821502d5a1d5a831a3e4dbadab312"
+    },
+    {
+      "path": "supabase/migrations/20260802100000_admin_template_duplication_and_media_upload.sql",
+      "sha256": "b050f4595f18ad4610880011c4f49d5ada98ace3bfeee8c074aa8f950aeaea9a"
+    },
+    {
+      "path": "supabase/migrations/20260802110000_canonical_course_audience_outcomes.sql",
+      "sha256": "32146ddc9c001a8c2125caa143ea96bfae9df655286836ffd51acbe082f2d1fc"
+    },
+    {
+      "path": "supabase/migrations/20260802120000_lms_organizations_memberships.sql",
+      "sha256": "0a3913ab214baf79f12bbed79b399f18799d9877e313317ef68c9788e85b7365"
+    },
+    {
+      "path": "supabase/migrations/20260802130000_lms_course_catalog_model.sql",
+      "sha256": "487bf4712143784e2f5e8ed8b12e033cc2fcc70695625e35767ea2c46727ef7b"
+    },
+    {
+      "path": "supabase/migrations/20260802140000_lms_programme_builder.sql",
+      "sha256": "0b6ae7b9282982f4007f4416f2cefb3d477c34ac2afbb7ad882e78a15276833a"
+    },
+    {
+      "path": "supabase/migrations/20260802150000_lms_cohorts_assignments.sql",
+      "sha256": "f560d680ce4e603c65ccbb30415c80137ceb5fd20837fa3ccbef09c4fec191a7"
+    },
+    {
+      "path": "supabase/migrations/20260803090000_lms_completion_transcripts.sql",
+      "sha256": "77318055bcb3361ee8603262d252abee099975dee76ec6ffda78dc8ac56293ca"
+    },
+    {
+      "path": "supabase/migrations/20260803100000_lms_programme_engagement.sql",
+      "sha256": "c9359adeabbcf31df11f6caf9a779d8ededfaa66d13e5c57599ad994c99b9fbb"
+    },
+    {
+      "path": "supabase/migrations/20260803110000_lms_reporting.sql",
+      "sha256": "e3d6de14526aeb288a947a92a0d4d3145c780bd057ec43bfaab4dc2c08e18c33"
+    },
+    {
+      "path": "supabase/migrations/20260803120000_lms_programme_notifications.sql",
+      "sha256": "e52041ec717559abf92e3c22b01d26fedfd970d34342e04e0d7005c952ff2b2c"
+    },
+    {
+      "path": "supabase/migrations/20260804100000_lms_p1_closure.sql",
+      "sha256": "74406187b4f030f41156110988da683b3b445180f915e597dd0e75928763fb61"
+    },
+    {
+      "path": "supabase/migrations/20260804103000_lms_organization_profile_visibility.sql",
+      "sha256": "823c3db3147c5f90073f2807d2350ef3126c61bb8204ae1fbbb89c0e1726aa56"
+    },
+    {
+      "path": "supabase/migrations/20260804110000_organization_plans_entitlements.sql",
+      "sha256": "44b493cb4a743ab3326cdcac0b10000e3c5c8a7b216bd8e2975df6b9038eecef"
+    },
+    {
+      "path": "supabase/migrations/20260805100000_organization_profile_lifecycle.sql",
+      "sha256": "457e0efed278de71228949b9b4d50f6650601e79c7fcca021c758f29aa3f35df"
+    },
+    {
+      "path": "supabase/migrations/20260805110000_self_service_organization_creation.sql",
+      "sha256": "a378b300661c9a45c11e4d067b5fd7faa36c6e6cfe6d82de04371f885207eac3"
+    },
+    {
+      "path": "supabase/migrations/20260805120000_organization_invitations_my_orgs.sql",
+      "sha256": "cf7fc011abb88632b58a9a2b78b58fde918646fde1e64674a0e418d6e8d044ce"
+    },
+    {
+      "path": "supabase/migrations/20260805130000_starter_organization_content_limits.sql",
+      "sha256": "77b3d79a8703d13f4b9daef4991adf6c7bba834c5a2243a1febecda54d749ea7"
+    },
+    {
+      "path": "supabase/migrations/20260808160000_p15a_self_service_org_cms_closure.sql",
+      "sha256": "d04baaa50b4b1da8078e6b7a4901bcc02eb66b9a2648b2b2d4fb4c93ba83cb15"
+    },
+    {
+      "path": "supabase/migrations/20260809100000_p15b_organization_configurable_missions.sql",
+      "sha256": "23ce0b03e2ed2666d54f4234f5bc2bbda84cbeb373b1f334ae3fdd0d79fc8c30"
+    },
+    {
+      "path": "supabase/migrations/20260810100000_p15b_focused_closure.sql",
+      "sha256": "8bfcac9d37c9ba738c2676c43d75829a02227fb2bbc9067aac6e3dc5b637bfcd"
+    },
+    {
+      "path": "supabase/migrations/20260812110000_p15b_final_ui_closure.sql",
+      "sha256": "c9c3fd64501b1a8f8f5d556657fe3fbb92c18c3be5b43ba2b93662d7559e3e4f"
+    },
+    {
+      "path": "supabase/migrations/20260812130000_p15c_xp_account_model.sql",
+      "sha256": "ffe0c0f51c8e81105c29155f08a47156d8c89174b30f1d24737b74782eabfeeb"
+    },
+    {
+      "path": "supabase/migrations/20260812140000_p15c_xp_account_balances.sql",
+      "sha256": "9879e855e56a32d6710288c8783adeda59a8f6e6ecdfb516b769cbdff3e077b1"
+    },
+    {
+      "path": "supabase/migrations/20260812150000_p15c_account_aware_learning_earning.sql",
+      "sha256": "9848cd7acdc8b65bfb04fe97358107f957e9abd6cb04828333bcd2acc02bfa00"
+    },
+    {
+      "path": "supabase/migrations/20260812160000_p15c_account_aware_rewards.sql",
+      "sha256": "61fe68019f1201ee33f11cccba3906bb2e7db9aa014f77f18642a31ea153d36b"
+    },
+    {
+      "path": "supabase/migrations/20260812170000_p15c_xp_account_presentation.sql",
+      "sha256": "28fe8a0e269e0de3bc4299b5036f4cd358fe9baac7798ae3fca9a737c6e73660"
+    },
+    {
+      "path": "supabase/migrations/20260812180000_p15c_starter_reward_claim_quotas.sql",
+      "sha256": "e028ca38a87eda84a2968a1b72a4f5237fe468047c1522175f7a0c7a153eaa55"
+    },
+    {
+      "path": "supabase/migrations/20260812190000_p15c_ticket_gap_closure.sql",
+      "sha256": "522ff1c51f58b1738bb6b6445c69e3e866e15d63fe08a4a9de5435395d1ecc15"
+    },
+    {
+      "path": "supabase/migrations/20260812200000_p15c_xp_issuance_exposure_controls.sql",
+      "sha256": "c59fbf90c2c71d1df508270dd999066e592117b228efe64a365b0a5c98b2d883"
+    },
+    {
+      "path": "supabase/migrations/20260812210000_p15c_focused_closure.sql",
+      "sha256": "49c09f730c182b82426a9d70b160f0888f4af5a57b6859ad08f40ef86385da92"
+    },
+    {
+      "path": "supabase/migrations/20260812220000_p15c_delivery_context_completion_issuance_closure.sql",
+      "sha256": "48c8747e099af7aea362f44ff2410fe1a960163dd760ae5e4e672c1a060d8eff"
+    },
+    {
+      "path": "supabase/migrations/20260812230000_p15c_final_app_closure.sql",
+      "sha256": "a930d91883e25a9607cf4e38dfbec906c69fe61e3d53c179e7a926dc407a1581"
+    },
+    {
+      "path": "supabase/migrations/20260812231000_p15d_contextual_assessment_onboarding.sql",
+      "sha256": "c3073f658db03151c26904559bee46801dc908d6d8c57e03b9f796c1a3e4823e"
+    },
+    {
+      "path": "supabase/migrations/20260812232000_p15d_contextual_recommendation_profiles.sql",
+      "sha256": "1028264974a6417b7d5311fdb79c0430b1382df88a1872b4f352f39a7f5613df"
+    },
+    {
+      "path": "supabase/migrations/20260812233000_p15d_plan_based_assessment_capability.sql",
+      "sha256": "a861041f95215ed9c7345fda7a945c982a8ed4c998a859c607df0c74a3c16f17"
+    },
+    {
+      "path": "supabase/migrations/20260812234000_p15d_assessment_authoring_workspace.sql",
+      "sha256": "0a610d0265f21167ee63df20b5fc285ed1de17aa2c52757c47a47d022be546d8"
+    },
+    {
+      "path": "supabase/migrations/20260813090000_p15d_focused_closure.sql",
+      "sha256": "da976d828746443e5b3d0329e87da08fe82c656f3cdc73733b4e2a90d9b01d8e"
+    },
+    {
+      "path": "supabase/migrations/20260813100000_p15d_assessment_authoring_role_alignment.sql",
+      "sha256": "83357756e97dc24a2168c714daf29315c0b4000517c54c0cf501a486b5ea0bf7"
+    },
+    {
+      "path": "supabase/migrations/20260813110000_p15_ops_001_organization_units.sql",
+      "sha256": "986f8376255b2ada94c9a74f11dd3f542562ca227c617aafba267b3a9b943c21"
+    },
+    {
+      "path": "supabase/migrations/20260813120000_p15_ops_002_instructor_workspace.sql",
+      "sha256": "d6a77a1254e0c506271442141bef3706c95af489c67fb3f570951fb9e6c0543e"
+    },
+    {
+      "path": "supabase/migrations/20260813130000_p15_ops_003_organization_activity_history.sql",
+      "sha256": "a2095567fb2d7e29f6d53efea87b97239a71906ffd5ab35fbf709457cf1718d3"
+    },
+    {
+      "path": "supabase/migrations/20260813140000_p15_ent_002_temporary_entitlement_grants.sql",
+      "sha256": "5b53837df720ad139dc8470a56d96f86bc8558adac85905143f3d85c5f82808d"
+    },
+    {
+      "path": "supabase/migrations/20260814100000_p15_ai_001_organization_ai_metering.sql",
+      "sha256": "463eafdef987903bf5fd679d5918aad8e19a4012b1d8d640495ad416d57e1787"
+    },
+    {
+      "path": "supabase/migrations/20260814101000_p15_ai_001_course_text_usage_reconciliation.sql",
+      "sha256": "8ac3026a570bd8a19bdb7385e83f71b5946f78e63a4aeb0e700ec02f2f5ba393"
+    },
+    {
+      "path": "supabase/migrations/20260814102000_p15_ai_001_nullable_new_course_attribution.sql",
+      "sha256": "3d1265511f8d97e5d5a9025e1519f0a8c407ecf8299a56b1be2e317ce44703e5"
+    },
+    {
+      "path": "supabase/migrations/20260814103000_p15_ai_001_service_role_detection.sql",
+      "sha256": "0ae9a40f223376828d29aa35bc31f78bcd6855116c622142637127526ac9df63"
+    },
+    {
+      "path": "supabase/migrations/20260814104000_p15_ai_001_service_role_session_detection.sql",
+      "sha256": "420eb60d0e4a535ec1ed67e96ef61fab6524352b118e3b33e01c88dd5f0154c1"
+    },
+    {
+      "path": "supabase/migrations/20260814105000_p15_ai_001_service_role_setting_detection.sql",
+      "sha256": "b1adcd203b52dafcf58796d27c4cdd40e17398a6d0decfc989ec2fe0bd010413"
+    },
+    {
+      "path": "supabase/migrations/20260814110000_p15_ai_001_service_role_reconciliation.sql",
+      "sha256": "b75e542d6b7bdd576bb005a3fa4f98384db0885851637cd2f74bad9ec3cf7cf4"
+    },
+    {
+      "path": "supabase/migrations/20260814120000_p15e_remediation_gate_closure.sql",
+      "sha256": "96bccfa03d47698f43ebfe4ad5b0f5913f15b3ffe703d158fb18f7d6840aeacd"
+    },
+    {
+      "path": "supabase/migrations/20260815100000_p15e_focused_boundary_closure.sql",
+      "sha256": "d805e8a515309d199a24e3ca72fbb8327781baad89ecfd619158b97f832030ee"
+    },
+    {
+      "path": "supabase/migrations/20260815110000_hotfix_p15c_currency_accounting.sql",
+      "sha256": "cbccb4570ae9ee92c7571ceb777534fba11a2f1cc79e8f393636373f8f9756ea"
+    },
+    {
+      "path": "supabase/migrations/20260820120000_mission_proof_media_storage.sql",
+      "sha256": "bd5e7ce4a3b5e764e787ec0b2e5752fccdb40e11bef6a1393b8f48561bd1b21e"
+    },
+    {
+      "path": "supabase/migrations/20260826120000_my_pending_organization_invitations_rpc.sql",
+      "sha256": "3769ab060f5ab78cde77270d2419f469949be51d50b322b2cc4c50003efabcaf"
+    },
+    {
+      "path": "supabase/migrations/20260827120000_fix_reward_lms_ownership_xp_account_transfer.sql",
+      "sha256": "df21e9847898733e958c84310d39fcf3677f0a29737313920cfdc2514426aed9"
+    },
+    {
+      "path": "supabase/migrations/20260828100000_p15_org_reward_staff_visibility.sql",
+      "sha256": "e33b88e1f132fb16b76bd387b44772de90511e538f532742dddf672bd67b7d52"
+    },
+    {
+      "path": "supabase/migrations/20260828110000_p15_org_reward_redemption_visibility_and_actions.sql",
+      "sha256": "739dd09f6f56d3bf6e47e8d1ce64c514892ede1fd2f00c243b86abf718abb8f1"
+    },
+    {
+      "path": "supabase/migrations/20260828120000_p15_org_reward_inventory_actions.sql",
+      "sha256": "27984d0c763c4f5c1b80f561d9e9e22214594ff43818a979e931cf3354f6e4fe"
+    },
+    {
+      "path": "supabase/migrations/20260828130000_p15_org_xp_ledger_transactions_rpc.sql",
+      "sha256": "15dc30d5a0df3d4a13321634930c6e0a7f9572eb410764cf2390f580a899e208"
+    },
+    {
+      "path": "supabase/migrations/20260828140000_p15_org_recommendation_sections.sql",
+      "sha256": "b7669e515328e73f0315b7a0af0c6ff730776c90fef83e17ac8619a7ac349750"
+    },
+    {
+      "path": "supabase/migrations/20260829100000_platform_catalog_staffing.sql",
+      "sha256": "0edf387321399f041310478435f5f8448f5585705bfa212a4992242aa931291d"
+    },
+    {
+      "path": "supabase/migrations/20260829110000_platform_catalog_content_authorization.sql",
+      "sha256": "c5b70adc799f4aefbbf311cfff4a880231b85bfaf5b58f8ae284657aea7c66be"
+    },
+    {
+      "path": "supabase/migrations/20260829120000_p03_organization_learner_workspace_context.sql",
+      "sha256": "541e626ae82dcf75f650e71938cd1db7896b4fd320a8cf3dfc613a0d6b143aa3"
+    },
+    {
+      "path": "supabase/migrations/20260829130000_p11_set_wise_mission_state.sql",
+      "sha256": "a6da3968e77937acdcb6a04a70e564bfca72d3fcc2ec49f6d5e047d0111152ec"
+    },
+    {
+      "path": "supabase/migrations/20260830110000_workspace_xp_settings.sql",
+      "sha256": "bce4ca16b9e4690c1f9a7cd5a75febb81c831396725ad4e739d77ee01b50db69"
+    },
+    {
+      "path": "supabase/migrations/20260830120000_platform_catalog_boundary_closure.sql",
+      "sha256": "bf6d6f81585dcb127fab5613cecd9da1a7d10c9d94e1aa536a65b92ff47f8ff6"
+    },
+    {
+      "path": "supabase/migrations/20260831100000_platform_catalog_invitation_email_acl_fix.sql",
+      "sha256": "b742e3e09d7e015aafe268351887548deec2502cc18e20b972454ba2be7d0135"
+    },
+    {
+      "path": "supabase/migrations/20260831110000_organization_invitation_email_acl_fix.sql",
+      "sha256": "94e777c927085235086150685d52fc1d79da3a1b6fb53ac9f051690fc2ce74d7"
+    },
+    {
+      "path": "supabase/migrations/20260901010000_platform_catalog_invitation_policy_acl_fix.sql",
+      "sha256": "ab6c5233dd7e7c98d2a491e9ebc2f12071637fded86dc0591a6d0ad9481fc69a"
+    },
+    {
+      "path": "supabase/migrations/20260901020000_repair_ai_generation_next_redirect_errors.sql",
+      "sha256": "096087f94248eb9ca506ec3181342f4b937152b03e25069b60a87736a1aa62b8"
+    },
+    {
+      "path": "supabase/migrations/20260904100000_lesson_draft_publish.sql",
+      "sha256": "3dd321211833d02462d83ddda75dad7177a5ef886aee66ecd0676bca18cf54bd"
+    },
+    {
+      "path": "supabase/migrations/20260904110000_lesson_published_read_boundary.sql",
+      "sha256": "e9d6a2968de668f7aa2110b490b67ff07f0988355b0019b8b2bf8c9781f80148"
+    },
+    {
+      "path": "supabase/migrations/20260904120000_atomic_lesson_builder.sql",
+      "sha256": "8fb70129e1323b4a19f2e7a05ad9c0c8a44b75990feab55b35d0f7c4eefa6219"
+    },
+    {
+      "path": "supabase/migrations/20260905100000_media_registry.sql",
+      "sha256": "e65af301515121e40c85cd9f89bd9cbdd8c7a1a6bf2c4693dc94eda74bcef8e7"
+    },
+    {
+      "path": "supabase/migrations/20260905110000_media_placement_authorization.sql",
+      "sha256": "078a36b53b3b2699ca504df8f97601c7d41e092a4ab6095584772ea21127ad78"
+    },
+    {
+      "path": "supabase/migrations/20260905120000_media_workflow_boundaries.sql",
+      "sha256": "e0b3c1aba7c8faa1219c23c3962403e42eeb0388d666bb5a43020f28556a37c0"
+    },
+    {
+      "path": "supabase/migrations/20260905130000_media_review_and_release.sql",
+      "sha256": "3267a07e34e2c5e352c12f73c171a43dfafcafde36ca194114f47a53ad5a7c13"
+    },
+    {
+      "path": "supabase/migrations/20260905140000_media_editorial_reuse.sql",
+      "sha256": "e4df7a0395eac679f1c1b5e25827909f2bc4b82bcc11a25e353c38e11095b885"
+    },
+    {
+      "path": "supabase/migrations/20260905150000_media_publication_guard.sql",
+      "sha256": "d817c46a3deca8e7be55bcb0013c372fb581cb85298d5b92946117460416ff89"
+    },
+    {
+      "path": "supabase/migrations/20260905160000_media_legacy_quota_compatibility.sql",
+      "sha256": "ad3dee4df57a52b6f65d8ad5eadecf12b95bc2fed63af98608d50b88c34e8081"
+    },
+    {
+      "path": "supabase/migrations/20260905170000_media_library_course_filter.sql",
+      "sha256": "967752cd0b75ba1c4a699b94c0b0b5b5ed3059bcb75d17ffd170ef292b71e703"
+    },
+    {
+      "path": "supabase/migrations/20260905180000_atomic_lesson_duplication.sql",
+      "sha256": "a651f1a8ea1a8837809a0d0126ca326b8cb43948252b85b7a8367e0c108a12d1"
+    },
+    {
+      "path": "supabase/tests/database/_test_constants.psql",
+      "sha256": "bd3105395dd5726e901b28b09842a5367b16988a2ffedf2e3fe6836bb19433ed"
+    },
+    {
+      "path": "supabase/tests/database/ai_generation_worker.sql",
+      "sha256": "18c3d139e598663e6ddab8736473c9c48b6cbf5454a32796d7e81734d7dfeb6d"
+    },
+    {
+      "path": "supabase/tests/database/cms_template_duplication.sql",
+      "sha256": "038c2254e4a7b0d0d78365886eeba624ae1e426d78600dddec1b6d460ec963d6"
+    },
+    {
+      "path": "supabase/tests/database/lesson_draft_publish.sql",
+      "sha256": "63cc5bc8da67db5939827ecf6639f0f4396ee8500a4d2c5deabe9756d910732a"
+    },
+    {
+      "path": "supabase/tests/database/lesson_published_read_boundary.sql",
+      "sha256": "6db8554e9e865e2f57ef0baa1dfd70375e7a8dd42102f7a2422c763c70e3f44b"
+    },
+    {
+      "path": "supabase/tests/database/lms_assessment_plan_capabilities.sql",
+      "sha256": "b5ce840c206d437161ffa1d521284de36a0f89819944504218b387a51e4585ff"
+    },
+    {
+      "path": "supabase/tests/database/lms_cohorts_assignments.sql",
+      "sha256": "cbcd99a58469596bb007f79332603d8ee957ab99bf80a2fa93d0e9384c3f963f"
+    },
+    {
+      "path": "supabase/tests/database/lms_completion_transcripts.sql",
+      "sha256": "7075d16eac5036550f844a8307bf2df52b6de693682fcd273cf829f9acf9391b"
+    },
+    {
+      "path": "supabase/tests/database/lms_course_catalog_model.sql",
+      "sha256": "9a027684f333348c768b8e42db031622ba3f5a8f7018c441dc810b3998a7287d"
+    },
+    {
+      "path": "supabase/tests/database/lms_organization_content_limits.sql",
+      "sha256": "e86c4aa8ffc076eb4b0053f82dd09f5dfd6ca541a70476e8fef56f86765b5d83"
+    },
+    {
+      "path": "supabase/tests/database/lms_organization_entitlements.sql",
+      "sha256": "22e62b6ebf8cbb4cc0771c517d979965f4b0d21fdfd20487cf0b60b28653db72"
+    },
+    {
+      "path": "supabase/tests/database/lms_organization_invitations.sql",
+      "sha256": "1ed960c03b1e1996fc6a390022c05b5450d8f62f814e7e2001aa10d6a13c648f"
+    },
+    {
+      "path": "supabase/tests/database/lms_organization_missions.sql",
+      "sha256": "a12563b06823fe999832c719ab67548e9996df23553a0a7d248b6f90c39c77bf"
+    },
+    {
+      "path": "supabase/tests/database/lms_organization_profile_lifecycle.sql",
+      "sha256": "9a1c96b1a8cdb4972bc8a74b92775bd2989be3f3515e6794885ca7b0c1b372aa"
+    },
+    {
+      "path": "supabase/tests/database/lms_organizations_memberships.sql",
+      "sha256": "11f16534e0d48703a8d7f6bf886160d412fe8a70762c5c17306bd334f5014c93"
+    },
+    {
+      "path": "supabase/tests/database/lms_p1_release_gate.sql",
+      "sha256": "98ba43bb18fc748b64346ff37f004a4c210fa401db1182bd3b7963ac86b95419"
+    },
+    {
+      "path": "supabase/tests/database/lms_programme_builder.sql",
+      "sha256": "1125bf73f7e86a6a0afc270f3bd4ecb02a43c4114016b71ac05d4b8076a241a3"
+    },
+    {
+      "path": "supabase/tests/database/lms_programme_engagement.sql",
+      "sha256": "7a2289105c4ce0f24b8eb9b600b8022f62a0e57fd0cf811353af13369c561e12"
+    },
+    {
+      "path": "supabase/tests/database/lms_programme_notifications.sql",
+      "sha256": "4cc310c2d2dd3536be7dbc18373d5d6762954803bc3578623e436da7446b3265"
+    },
+    {
+      "path": "supabase/tests/database/lms_reporting.sql",
+      "sha256": "024f558cdc1aa608f51bf02ec30d9a35f8a5bfce3ec4f79bd66e875a1f536023"
+    },
+    {
+      "path": "supabase/tests/database/lms_self_service_organizations.sql",
+      "sha256": "971b33cd0fb328b8fac45c81d8cdfd2d6cd906198850e12f18e152e5d4b83773"
+    },
+    {
+      "path": "supabase/tests/database/media_library.sql",
+      "sha256": "de8e1c80b09d4f90d3ffe800b21c0307f927a3d427fbb89bb057bb6ae35ee242"
+    },
+    {
+      "path": "supabase/tests/database/media_release_regressions.sql",
+      "sha256": "872fe44c2b7025938f36d2919873d1cc4b465445c36156678c185d08bfa9565d"
+    },
+    {
+      "path": "supabase/tests/database/notification_security.sql",
+      "sha256": "e4b4a44fc180bd2d00139f4e330d8d9c3924b678b662ecc2aceee9bf1b60eacb"
+    },
+    {
+      "path": "supabase/tests/database/organization_activity_history.sql",
+      "sha256": "d30ff3c9bcb17617af254535f739888e187ade56614cae6edd268bf67ec55050"
+    },
+    {
+      "path": "supabase/tests/database/organization_ai_metering.sql",
+      "sha256": "71afec047acf021db322fa38c669cf958108abd642b1a35f88332cdc0125ff15"
+    },
+    {
+      "path": "supabase/tests/database/p03_organization_learner_workspace_context.sql",
+      "sha256": "5c2b946f4fb026e8a7fd0606ffc59326aaeaa762afb614565d0f88b2d8245032"
+    },
+    {
+      "path": "supabase/tests/database/p0_release_gate.sql",
+      "sha256": "5efe865f7340f62ece9d0dc683fd34669844c5fccf7c008c7a0d7a90e6fd4f0f"
+    },
+    {
+      "path": "supabase/tests/database/p11_dashboard_mission_state.sql",
+      "sha256": "79a3dfe31eaf8443d2f707dd8f2d6becbf5428b32a44215cddf3289e3dad5d5e"
+    },
+    {
+      "path": "supabase/tests/database/p15_rwd_starter_rewards.sql",
+      "sha256": "7c30eababe7000c76c806b9d4f4ec86cc82feccf0c5be088b1a39180ec17d5c7"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_accounts.sql",
+      "sha256": "39596323a89be0b3415e721af967cd33f582fcca3e15c40472a261f3651c6549"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_balances.sql",
+      "sha256": "4552d38926641ebf65822f88838233b6026c6855f921e20753af70a55e7acabf"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_issuance_controls.sql",
+      "sha256": "128f90a0a104e314201f910d9dbdc14c541f441496490d51710b7282c3330d07"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_learning_earning.sql",
+      "sha256": "8c2194de9de220e279007b3753415d2d4f51d911424d53325d02913c596605a9"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_presentation.sql",
+      "sha256": "5e384ee1db8ee6c181654d02a8f639a599b29cf071038b4e0bdd40a25d97e64b"
+    },
+    {
+      "path": "supabase/tests/database/p15_xp_rewards.sql",
+      "sha256": "5050026739f78229dad3666d10e956a79fa1326666378d87787045094ec1eaf8"
+    },
+    {
+      "path": "supabase/tests/database/platform_catalog_boundary_closure.sql",
+      "sha256": "555ff3d67b281ffeceda15983712818795a242f860a3bb9f9dc1f6db630bf6d3"
+    },
+    {
+      "path": "supabase/tests/database/platform_catalog_invitation_email_acl_fix.sql",
+      "sha256": "d6ee5e7929b962090f039e65acbc2f0cb189ec53a9fe8e98b1d04320e327cc13"
+    },
+    {
+      "path": "supabase/tests/database/progress_security.sql",
+      "sha256": "c3eeab12fe8312a5e4b1753cb56d7fd6c4e3445943098a9cfcd52a0043ed857f"
+    },
+    {
+      "path": "supabase/tests/database/quiz_security.sql",
+      "sha256": "dc62e2eb8f3ed162971499b19a5b38636e0d098b2c48fdab949b1ca81dbc72aa"
+    },
+    {
+      "path": "supabase/tests/database/rpc_security.sql",
+      "sha256": "88552ec7995b49ecf03d02d440968a2a22a5b58c2caae62a0aecbc128c98b21e"
+    },
+    {
+      "path": "supabase/tests/database/workspace_xp_settings.sql",
+      "sha256": "052124de06715e59d3ef7fde4d4f0cd44c8ece86fdebcc51d1b6cdf931dd2f04"
+    },
+    {
+      "path": "supabase/tests/database/xp_ledger_security.sql",
+      "sha256": "cd9e6824478bf0dc0eae3e71503e0d44ae4c0a459e70dffad48041067aa4892c"
+    },
+    {
+      "path": "tests/e2e/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "tests/e2e/admin-workspace-release.spec.ts",
+      "sha256": "1e0bc6092264635d7b14f00ee1f871723ab4deb8847698436be528ab20cd856d"
+    },
+    {
+      "path": "tests/e2e/auth-route-boundary.spec.ts",
+      "sha256": "9f1b0bfcceb164ff978435e9e67b900b829ddb38d396549b01a87aac2bf23c07"
+    },
+    {
+      "path": "tests/e2e/learning-card-read-models.spec.ts",
+      "sha256": "d3752de47b7f3fe4a92f1f24bf847a6519814a2342be41d37f5f31fa50f7b7d2"
+    },
+    {
+      "path": "tests/e2e/lesson-publication.spec.ts",
+      "sha256": "50d8317910ddd198f488c4fd14988fc43e95c86a6dae068846fca252fbbe45b2"
+    },
+    {
+      "path": "tests/e2e/media-library.spec.ts",
+      "sha256": "290b1d033345ecbf347a7bcdc14219ea49910ae55e6b8a842bdda36d4040aacb"
+    },
+    {
+      "path": "tests/e2e/media-picker-navigation.spec.ts",
+      "sha256": "b2fde2dcf3a88b6078ff5ad605556541f9fc06e0597efc110160c0a748e0e91c"
+    },
+    {
+      "path": "tests/e2e/media-release.spec.ts",
+      "sha256": "82f4fc569f93c2bef54aea6d68319ce72508133d688dab0d3e1263163834725f"
+    },
+    {
+      "path": "tests/e2e/organization-missions.spec.ts",
+      "sha256": "0c35ff16d870522e7017370e727d6b20e524ac34cf53ea40e185be24931c53c0"
+    },
+    {
+      "path": "tests/e2e/remediation-flows.spec.ts",
+      "sha256": "0955d6089d2c332d37c611d793cb0641445271c756d4ae30ff69bf729c6dd685"
+    },
+    {
+      "path": "tests/fixtures/cms-upload-image.png",
+      "sha256": "1dde331fb770b721b67279a18ac4ff8200c07c7261f368956b66f35d7cc62052"
+    },
+    {
+      "path": "tests/integration/lesson-publication.live.mjs",
+      "sha256": "e59c452a7023cb38bef54144cf180a92cdf0945c808cfbc3c5211ebda3ee68da"
+    },
+    {
+      "path": "tests/integration/media-authorization.live.mjs",
+      "sha256": "ecf761a9794b22e87b23891d652df15f469577848c067931c39b14b45db57951"
+    },
+    {
+      "path": "tests/integration/repository-contracts.demo.mjs",
+      "sha256": "ec1827e62e7e165b5cb13977e78fcc9fdbf62785e8bb6c57f10c9259f017791e"
+    },
+    {
+      "path": "tests/integration/repository-contracts.live.mjs",
+      "sha256": "b2d2adb25d7fb30d61ff774c5356fddb192909e42842919870090b6765154e9f"
+    },
+    {
+      "path": "tests/support/empty-server-only.mjs",
+      "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+    },
+    {
+      "path": "tests/support/media-browser.ts",
+      "sha256": "1fa42f3a640666eabd68c2e0d955ed478303ec5ec22a1f1328abba92da8a68c2"
+    },
+    {
+      "path": "tests/support/next-test-loader.mjs",
+      "sha256": "e24e1732f053b44f9d342279f48a41aeddbd962b2c9b44523c13515f510616a6"
+    },
+    {
+      "path": "tests/unit/admin-ad-validation.test.mjs",
+      "sha256": "2f2290cb2fa16d3209e644f6e2b3c83f86db4dd2088ce30fd2cb26a0edb79ee9"
+    },
+    {
+      "path": "tests/unit/admin-ai-validation.test.mjs",
+      "sha256": "5b23aa8c5833ea4bd58141dacbb804b80fed5f3e9edba0b92bc59925f089ecb7"
+    },
+    {
+      "path": "tests/unit/admin-course-validation.test.mjs",
+      "sha256": "405539465fbe04d600213c4865098a54ce891975645896c1b8cc742d9acc4604"
+    },
+    {
+      "path": "tests/unit/admin-inventory-validation.test.mjs",
+      "sha256": "3139d7f72bc206c6ae1069d21bd46295acbb59b36f3740592779b0457545f22c"
+    },
+    {
+      "path": "tests/unit/admin-media-upload.test.mjs",
+      "sha256": "01a233a204a66ccfa2f424413ec318714c15a01a9f59b8b4b8796d584eea0cb6"
+    },
+    {
+      "path": "tests/unit/admin-reward-validation.test.mjs",
+      "sha256": "5d68130126aade09bc8c449dcc78e789a74fc4ec1941b068ef8b5e81e751bae6"
+    },
+    {
+      "path": "tests/unit/ai-generation-form-input.test.mjs",
+      "sha256": "61a947f5d6569845b03c9bd6ace387799c7dc042293ab9b58af7180975e6966f"
+    },
+    {
+      "path": "tests/unit/ai-generation-generated-tree.test.mjs",
+      "sha256": "ddeab2053c20464ab5b57246fbc65c1eb0b4942309359cfa83bf1fe373dd4822"
+    },
+    {
+      "path": "tests/unit/ai-generation-generation-form.test.mjs",
+      "sha256": "da678f818affedbe8f689ecc3c49fa42c286e49dee0b54c545fa19e326ed2b58"
+    },
+    {
+      "path": "tests/unit/ai-generation-job-prompts.test.mjs",
+      "sha256": "e2fb6036ad22fcc0c8510719e16d27f8d8e6fec5ec353658b4150b67966e4510"
+    },
+    {
+      "path": "tests/unit/ai-generation-media-planning.test.mjs",
+      "sha256": "335bbd2078ffcc684ea747d783204d6374a2668b96f877795a9c17f25ec36ad8"
+    },
+    {
+      "path": "tests/unit/ai-generation-media-targets.test.mjs",
+      "sha256": "4baa12e2613022a726e28aed4d4013102420af011b5b3e1b8dcd9235be852b88"
+    },
+    {
+      "path": "tests/unit/ai-generation-media-worker.test.mjs",
+      "sha256": "ed3ae48befa81d3fac25a9c9798d528fedbff0aa937ba3c7368503e8f469f709"
+    },
+    {
+      "path": "tests/unit/ai-generation-revision.test.mjs",
+      "sha256": "322c54d8aa82301b3ad9d61b444b9024a0379a15ebfe1e48b5b93f42a5acdb48"
+    },
+    {
+      "path": "tests/unit/ai-generation-worker-boundary.test.mjs",
+      "sha256": "62edcad2f1b3986429f6855704334209139fee1c5c1d47d8aba732a7efeda338"
+    },
+    {
+      "path": "tests/unit/ai-generation-workflow-status.test.mjs",
+      "sha256": "648a995eb4a3607d106b2fe06cb91e82f37e5ca025a570bc6d821009cb545685"
+    },
+    {
+      "path": "tests/unit/app-errors.test.mjs",
+      "sha256": "19ce28718416137337c59483965e53be39c49964cef459f0c8abf223ce32212f"
+    },
+    {
+      "path": "tests/unit/app-mode-contract.test.mjs",
+      "sha256": "1659ab89d3010ee2327e1ae5322ccb4791d99e92f66ab02dd446bdb529af95f7"
+    },
+    {
+      "path": "tests/unit/auth-confirmation.test.mjs",
+      "sha256": "41a3487da95341325a171da8e0d865740c760000585314a79b8b94f9b8020ef2"
+    },
+    {
+      "path": "tests/unit/auth-redirect.test.mjs",
+      "sha256": "84d5a02f12fd7449a0160cb1f86073aacefda5c4de26ebb108bf26baef867968"
+    },
+    {
+      "path": "tests/unit/cms-product-regressions.test.mjs",
+      "sha256": "698402c8f58cec3956d6edc31382ac7918c596365f4ed10bdc605c0f316177cb"
+    },
+    {
+      "path": "tests/unit/dashboard-first-useful-html.test.mjs",
+      "sha256": "2ed8033d1e872eb3d032b5f9b4d8e5c185ac1e89b159726484bc1cdb34f9d093"
+    },
+    {
+      "path": "tests/unit/demo-progress-policy.test.mjs",
+      "sha256": "0483bfdd4dfcf4d064ba319667ab3db919e0458f1252512f4497d8477826bdf7"
+    },
+    {
+      "path": "tests/unit/learner-workspace-context.test.mjs",
+      "sha256": "aa8800902f3014ce5ef7fa643a633ab0c12f2a655e244765bfbf4b57e7964009"
+    },
+    {
+      "path": "tests/unit/learner-workspace-domain.test.mjs",
+      "sha256": "3e12d619643b8bf5ffca861e9193ae58db2515654333c9ba4414fa8c5ed7727a"
+    },
+    {
+      "path": "tests/unit/learning-course-card-model.test.mjs",
+      "sha256": "c2fb7bc1ee9d7147fc83eb39adc82797066c7284e5f6a69d79d3b4f54ac738ee"
+    },
+    {
+      "path": "tests/unit/lesson-page-builder-domain.test.mjs",
+      "sha256": "0dde0ed14d88d3846bd6abba74a9bdf3d32abe6947772f69afed0c7d994f616f"
+    },
+    {
+      "path": "tests/unit/media-access-boundary.test.mjs",
+      "sha256": "22c855880d0674411a9e49df5b480d24c896646d904f554b36f82af242a7b978"
+    },
+    {
+      "path": "tests/unit/media-route-failures.test.mjs",
+      "sha256": "2daa6e4f60cc9dbfdde6e6b658e7c3fffaccde3a057a152d4ab9c80332321ef0"
+    },
+    {
+      "path": "tests/unit/mission-state-read-model.test.mjs",
+      "sha256": "23cb41d0797c8512f5a1be510409edcd7b6084a929932a281722c4ad11b1c82b"
+    },
+    {
+      "path": "tests/unit/observability.test.mjs",
+      "sha256": "e8a0115bc5450bd4df60fd2d604748c9abd7eac2248dface8eb8cd627cecd82e"
+    },
+    {
+      "path": "tests/unit/organization-entitlements.test.mjs",
+      "sha256": "17d0e9b20adc29563d30d00515df22da1e6904df578994b4c1f356b6db51fa5c"
+    },
+    {
+      "path": "tests/unit/organization-identity.test.mjs",
+      "sha256": "3374ed13bcc9b50ae9d681adbd105a0b76947f98d796b26f293bf1718199661a"
+    },
+    {
+      "path": "tests/unit/perk-prize-manager-domain.test.mjs",
+      "sha256": "25e8110a16667e63f2df9495b3a625715bbfc77af076f8081f3f326a8b23a1a8"
+    },
+    {
+      "path": "tests/unit/planner-domain.test.mjs",
+      "sha256": "fab0eddcac52e3ecd63f329bf5f5aa6b3345bb4cd368c5a92a07b65a8721dbf4"
+    },
+    {
+      "path": "tests/unit/published-lesson-content.test.mjs",
+      "sha256": "9d14b51a99d87fbd583dee36c48ee9339829011a9867f3ff819f39a8c652ac93"
+    },
+    {
+      "path": "tests/unit/recommendation-scoring.test.mjs",
+      "sha256": "e8a2c432badcd82b3136057b57cf82693550fd0874987c1ef3f0f705eac79b13"
+    },
+    {
+      "path": "tests/unit/request-validation.test.mjs",
+      "sha256": "a80c32379c9d3d935ce695461bd8df732e3444479e65c48a8af83e2a6dbf7b89"
+    },
+    {
+      "path": "tests/unit/rich-text.test.mjs",
+      "sha256": "51c6b46d58a6d14a7dac25f7a00dbf386870ae020ab3a0a4564cfa9939c825b2"
+    },
+    {
+      "path": "tests/unit/route-auth-policy.test.mjs",
+      "sha256": "2976fd6286488bc41ff0d16904563388b5d7a49843f8f6ee1433978b51589548"
+    },
+    {
+      "path": "tests/unit/security-env.test.mjs",
+      "sha256": "7725a28e7321036e4ef719c94b1b04f7b145de79530644270fe9eb54e96b2c75"
+    },
+    {
+      "path": "tests/unit/xp-store-domain.test.mjs",
+      "sha256": "827937bc7ee2ca1c75d31c0b1f05eb779b2cdfe271f1a6c1d5fca646b9985170"
+    }
+  ]
+}

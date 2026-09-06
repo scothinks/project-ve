@@ -1,0 +1,44 @@
+Phase 4 delta versus the hash-verified Phase 3 source snapshot.
+Evidence screenshots and this manifest are additional artifacts.
+
+M app/api/admin/ai/authoring/route.ts
+M app/api/admin/learning/builder/route.ts
+M components/admin/LearningForms.tsx
+M components/admin/LessonPageBuilder.tsx
+M components/admin/MediaLibrary.tsx
+M components/admin/MediaManager.tsx
+M components/admin/MediaPicker.tsx
+M components/admin/MediaPickerProvider.tsx
+M components/admin/MediaPickerScreen.tsx
+A components/admin/ai/AiImageAuthoring.tsx
+A components/admin/ai/AiImageResult.tsx
+M components/admin/ai/AiPageAuthoring.tsx
+A components/admin/ai/ImageStyleSample.tsx
+M docs/ai-authoring-experience-redesign-plan.md
+A docs/ai-authoring-phase-4.md
+M docs/project-ve-cms-lms-phase-1-5-org-mode-institutional-pilot-readiness.md
+M docs/project-ve-cms-lms-product-remediation-plan.md
+M docs/project-ve-engineering-remediation-plan.md
+M features/ai-generation/application/job-orchestration.ts
+M features/ai-generation/authoring/contracts.ts
+A features/ai-generation/authoring/image-contracts.ts
+A features/ai-generation/authoring/image-requests.ts
+A features/ai-generation/authoring/image-style.ts
+A features/ai-generation/authoring/image-worker.ts
+M features/ai-generation/authoring/worker.ts
+M features/ai-generation/domain/media-planning.ts
+M features/learning/admin/lesson-page-builder-ui.tsx
+M lib/ai-media-generator.ts
+A supabase/migrations/20260906230000_ai_image_authoring.sql
+A supabase/migrations/20260906231000_ai_image_library.sql
+A supabase/migrations/20260906232000_ai_image_job_type.sql
+A supabase/migrations/20260906233000_ai_image_recovery_read.sql
+A supabase/migrations/20260906234000_ai_image_apply_columns.sql
+A supabase/migrations/20260906235000_ai_image_lesson_cover.sql
+A supabase/migrations/20260906235500_ai_image_cover_compatibility.sql
+A supabase/tests/database/ai_image_authoring.sql
+A tests/e2e/ai-image-authoring.spec.ts
+M tests/e2e/ai-page-authoring.spec.ts
+M tests/unit/ai-authoring-routes.test.mjs
+A tests/unit/ai-image-authoring.test.mjs
+M types/database.ts

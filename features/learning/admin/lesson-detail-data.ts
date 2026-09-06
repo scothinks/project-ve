@@ -2,7 +2,6 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  isImageMediaAsset,
   isRequiredMediaAsset,
   validateMediaApproval,
 } from "@/lib/ai-media-workflow";
@@ -73,21 +72,9 @@ export async function getAdminLessonDetailPageData(
   }
 
   const { lesson, pages, blocks, quiz, questions } = detail;
-  const [mediaAssets, courseMediaAssets] = await Promise.all([
-    getAdminLearningMediaAssets(supabase, {
-      courseId: lesson.course_id,
-      lessonId: lesson.id,
-    }),
-    getAdminLearningMediaAssets(supabase, {
-      courseId: lesson.course_id,
-    }),
-  ]);
-
-  const mediaLibraryAssets = courseMediaAssets.filter(
-    (asset) => typeof asset.url === "string"
-      && asset.url.trim().length > 0
-      && isImageMediaAsset(asset),
-  );
+  const mediaAssets = await getAdminLearningMediaAssets(supabase, { courseId: lesson.course_id, lessonId: lesson.id });
+  // The picker loads its paginated workspace library when opened.
+  const mediaLibraryAssets: typeof mediaAssets = [];
   const totalXp = questions.reduce((total, question) => total + question.xp, 0);
   const mediaValidation = validateMediaApproval(mediaAssets);
   const hasRequiredImageAssets = mediaAssets.some(isRequiredMediaAsset);
@@ -99,8 +86,7 @@ export async function getAdminLessonDetailPageData(
     lesson.ai_generated
     && lesson.ai_text_status === "approved"
     && (
-      !hasRequiredImageAssets
-      || mediaValidation.missingRequiredAssets.length > 0
+      mediaValidation.missingRequiredAssets.length > 0
       || mediaValidation.failedRequiredAssets.length > 0
     );
 

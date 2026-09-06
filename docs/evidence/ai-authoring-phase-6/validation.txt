@@ -1,0 +1,114 @@
+Local validation, 2026-09-06. No provider spending or hosted rollout.
+
+phase6-unit
+> project-ve-mvp@0.1.0 test:unit
+> node --experimental-strip-types --test "tests/unit/**/*.test.mjs"
+# tests 230
+# pass 230
+# fail 0
+
+phase6-guardrails
+> project-ve-mvp@0.1.0 test:guardrails
+> node scripts/test-performance-guardrails.mjs
+# tests 35
+# pass 35
+# fail 0
+
+phase6-db
+> project-ve-mvp@0.1.0 test:db
+> node scripts/supabase-cli.mjs test db supabase/tests/database
+Files=48, Tests=1388,  7 wallclock secs ( 0.41 usr  0.12 sys +  0.39 cusr  0.38 csys =  1.30 CPU)
+Result: PASS
+
+phase6-final-recovery-db
+Files=1, Tests=27,  0 wallclock secs ( 0.03 usr  0.02 sys +  0.02 cusr  0.04 csys =  0.11 CPU)
+Result: PASS
+
+phase6-worker-route-unit
+# tests 1
+# pass 1
+# fail 0
+
+phase6-final-component-unit
+# tests 13
+# pass 13
+# fail 0
+
+phase6-repositories-final
+> project-ve-mvp@0.1.0 test:repositories:local
+> node scripts/test-repository-contracts-local.mjs
+# tests 2
+# pass 2
+# fail 0
+# tests 1
+# pass 1
+# fail 0
+# tests 1
+# pass 1
+# fail 0
+# tests 2
+# pass 2
+# fail 0
+
+phase6-ai-concurrency
+> project-ve-mvp@0.1.0 test:organization-ai-concurrency:local
+> node scripts/test-organization-ai-concurrency-local.mjs
+
+phase6-xp-concurrency
+> project-ve-mvp@0.1.0 test:quiz-xp-concurrency:local
+> node scripts/test-quiz-xp-concurrency-local.mjs
+quiz XP concurrency regression passed
+
+phase6-economic-integrity
+> project-ve-mvp@0.1.0 test:economic-integrity:local
+> node scripts/test-economic-integrity-local.mjs
+economic integrity regression passed
+
+phase6-types-parity
+> project-ve-mvp@0.1.0 db:types:local:check
+> node scripts/supabase-cli.mjs gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public | node scripts/check-database-types.mjs
+
+phase6-typecheck
+> project-ve-mvp@0.1.0 typecheck
+> tsc --noEmit
+
+phase6-lint
+> project-ve-mvp@0.1.0 lint
+> eslint .
+
+phase6-final-ui-lint
+
+
+phase6-final-focused-lint
+
+
+Initial production matrix: 14 passed, 1 failed (page picker after navigation).
+  ✓   1 [chromium] › tests/e2e/ai-assistance-authoring.spec.ts:15:5 › quiz assistance preserves manual drafts, selects questions and recovers a lost save response (5.2s)
+  ✓   2 [chromium] › tests/e2e/ai-assistance-authoring.spec.ts:76:5 › lesson suggestions quote drafting separately, retain refinements and add a reviewable draft (2.8s)
+  ✓   3 [chromium] › tests/e2e/ai-assistance-authoring.spec.ts:140:5 › a lesson without a quiz can add its first reviewed AI question (1.2s)
+  ✓   4 [chromium] › tests/e2e/ai-authoring-release.spec.ts:4:5 › silent worker shows a timed delay; keyboard cancellation releases unstarted work on mobile (707ms)
+  ✓   5 [chromium] › tests/e2e/ai-course-authoring.spec.ts:11:39 › editable outline, separate quote, explicit course save, review and publish (12.3s)
+  ✓   6 [chromium] › tests/e2e/ai-course-authoring.spec.ts:11:39 › partial course recovery keeps completed lessons and retries only unfinished work (8.0s)
+  ✓   7 [chromium] › tests/e2e/ai-image-authoring.spec.ts:6:5 › contextual image styles, retained preview and explicit use survive navigation (24.8s)
+  ✓   8 [chromium] › tests/e2e/ai-legacy-cutover.spec.ts:5:5 › legacy media maps in context, keeps published content and reviews without a seed batch (3.5s)
+  ✓  10 [chromium] › tests/e2e/ai-page-authoring.spec.ts:121:5 › ready results recover a lost save response and retain failed refinements (2.7s)
+  ✓  11 [chromium] › tests/e2e/ai-page-authoring.spec.ts:181:5 › assistant can suggest reviewing the quiz without adding a page (1.7s)
+  ✓  12 [chromium] › tests/e2e/lesson-publication.spec.ts:10:5 › editor publishes saved drafts, reverts changes and rejects stale tabs (2.5s)
+  ✓  13 [chromium] › tests/e2e/media-release.spec.ts:5:47 › replacement preserves bytes and rights in catalog workspace (643ms)
+  ✓  14 [chromium] › tests/e2e/media-release.spec.ts:5:47 › replacement preserves bytes and rights in org workspace (903ms)
+  ✓  15 [chromium] › tests/e2e/media-release.spec.ts:64:5 › real audio/video play and seek in 16:9 frames; revocation renders unavailable states without blocking lesson (7.3s)
+
+Final affected production browser checks:
+Running 7 tests using 1 worker
+
+(node:50978) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/ai-authoring-release.spec.ts:4:5 › silent worker shows a timed delay; keyboard cancellation releases unstarted work on mobile (1.2s)
+  ✓  2 [chromium] › tests/e2e/ai-course-authoring.spec.ts:11:39 › editable outline, separate quote, explicit course save, review and publish (12.2s)
+  ✓  3 [chromium] › tests/e2e/ai-course-authoring.spec.ts:11:39 › partial course recovery keeps completed lessons and retries only unfinished work (7.5s)
+  ✓  4 [chromium] › tests/e2e/ai-page-authoring.spec.ts:8:5 › page generation retains candidates, recovers navigation and saves once (21.0s)
+  ✓  5 [chromium] › tests/e2e/ai-page-authoring.spec.ts:121:5 › ready results recover a lost save response and retain failed refinements (1.8s)
+  ✓  6 [chromium] › tests/e2e/ai-page-authoring.spec.ts:181:5 › assistant can suggest reviewing the quiz without adding a page (1.8s)
+  ✓  7 [chromium] › tests/e2e/media-picker-navigation.spec.ts:6:5 › media picker drawer retains the editor and reopens cleanly (691ms)
+
+  7 passed (1.6m)

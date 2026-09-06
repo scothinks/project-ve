@@ -224,47 +224,11 @@ export async function applyLibraryMediaAssetCommand(
     throw new Error("Choose a library media asset first.");
   }
 
-  const [targetAsset, libraryAsset] = await Promise.all([
-    getLearningMediaAssetById(supabase, assetId),
-    getLearningMediaAssetById(supabase, libraryAssetId),
-  ]);
-
-  if (targetAsset.course_id !== courseId || libraryAsset.course_id !== courseId) {
-    throw new Error("Library media must belong to this course.");
-  }
-
-  if (!assetHasUsablePreview(libraryAsset)) {
-    throw new Error("The selected library media does not have a usable preview.");
-  }
-
-  if (!isImageMediaAsset(libraryAsset)) {
-    throw new Error("Only image media can be reused from the library.");
-  }
-
-  const metadata = asRecord(targetAsset.metadata);
-  const { error } = await supabase
-    .from("learning_media_assets")
-    .update({
-      url: libraryAsset.url,
-      storage_path: libraryAsset.storage_path,
-      source: "library",
-      provider: libraryAsset.provider,
-      model: libraryAsset.model,
-      alt_text: libraryAsset.alt_text || targetAsset.alt_text,
-      caption: libraryAsset.caption || targetAsset.caption,
-      review_status: "draft",
-      generation_status: "completed",
-      generation_error: null,
-      metadata: {
-        ...metadata,
-        previousUrl: targetAsset.url,
-        librarySourceAssetId: libraryAsset.id,
-        librarySourcePlacement: libraryAsset.placement,
-        librarySelectedAt: new Date().toISOString(),
-        librarySelectedBy: actorUserId,
-      } as Json,
-    })
-    .eq("id", assetId);
+  const targetAsset = await getLearningMediaAssetById(supabase, assetId);
+  if (targetAsset.course_id !== courseId) throw new Error("Media placement does not belong to this course.");
+  const { error } = await supabase.rpc("admin_apply_registered_media", {
+    p_media_id: assetId, p_version_id: libraryAssetId, p_course_id: courseId,
+  });
 
   if (error) throw error;
 

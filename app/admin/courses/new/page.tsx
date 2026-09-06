@@ -1,5 +1,4 @@
-import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
-import { CourseForm } from "@/components/admin/LearningForms";
+import { CreateCourseForm } from "@/components/admin/CreateCourseForm";
 import { getAdminCourseCategories, getAdminCourses, requireAdmin } from "@/lib/admin";
 import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
 import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
@@ -20,21 +19,11 @@ export default async function NewCoursePage() {
     courses.reduce((highest, course) => Math.max(highest, course.sort_order), 0) + 1;
 
   return (
-    <>
-      <AdminPageHeader
-        backHref="/admin/courses"
-        backLabel="Courses"
-        eyebrow="Learning"
-        title="Add course"
-        subtitle="Create a course setup before adding lessons and quizzes."
-      />
-      <AdminCard>
-        <CourseForm
-          aiGenerationAvailable={aiGenerationAvailable}
-          categories={categories}
-          nextSortOrder={nextSortOrder}
-        />
-      </AdminCard>
-    </>
+    <CreateCourseForm
+      aiGenerationAvailable={aiGenerationAvailable}
+      categories={categories}
+      mediaLibraryAssets={[]}
+      nextSortOrder={nextSortOrder}
+    />
   );
 }

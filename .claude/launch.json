@@ -5,7 +5,8 @@
       "name": "demo-dev",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["scripts/dev-demo.sh"],
-      "port": 3000
+      "port": 3000,
+      "autoPort": true
     },
     {
       "name": "live-dev",

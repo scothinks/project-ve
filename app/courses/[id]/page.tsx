@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { CourseDetailLessonList } from "@/components/course/CourseDetailLessonList";
 import { AppHeader } from "@/components/navigation/AppHeader";

@@ -1,13 +1,12 @@
 import { notFound } from "next/navigation";
 import { DirectAdCard } from "@/components/ads/DirectAdCard";
 import { LessonMenu } from "@/components/lesson/LessonMenu";
-import { LessonPageLayout } from "@/components/lesson/LessonPageLayout";
+import { LessonPageCard } from "@/components/lesson/LessonPageLayout";
 import { LessonPageProgressMarker } from "@/components/lesson/LessonPageProgressMarker";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { createLearningRepository } from "@/features/app/repositories/learning";
 import { withLoggedFallback } from "@/lib/app-errors";
@@ -150,19 +149,15 @@ export async function LessonDeliveryPage({
         title={lesson.title}
       />
       <section className="learner-page learner-page--spacious">
-        <Card className="learner-readable overflow-hidden">
-          <div className="px-6 py-7 lg:px-10 lg:py-10">
-            <LessonPageLayout
-              blocks={page.blocks}
-              coverImage={pageCover}
-              pageNumber={currentPageNumber}
-              pageType={page.type}
-              subtitle={page.subtitle}
-              title={page.title}
-              totalPages={lesson.pages.length}
-            />
-          </div>
-        </Card>
+        <LessonPageCard
+          blocks={page.blocks}
+          coverImage={pageCover}
+          pageNumber={currentPageNumber}
+          pageType={page.type}
+          subtitle={page.subtitle}
+          title={page.title}
+          totalPages={lesson.pages.length}
+        />
 
         <div className="mx-auto mt-7 max-w-3xl">
           <div className="flex items-center justify-between text-xs font-bold text-[var(--ve-muted-strong)]">

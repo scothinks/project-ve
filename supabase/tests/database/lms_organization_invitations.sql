@@ -6,7 +6,31 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = extensions, public, private;
 
-select extensions.plan(21);
+select extensions.plan(26);
+
+select extensions.ok(
+  position(
+    'private.authenticated_user_email'
+    in pg_get_functiondef('public.current_user_can_read_organization_invitation(uuid)'::regprocedure)
+  ) = 0,
+  'the organisation invitation read boundary does not depend on the private email helper ACL'
+);
+
+select extensions.ok(
+  position(
+    'private.authenticated_user_email'
+    in pg_get_functiondef('public.get_my_pending_organization_invitations()'::regprocedure)
+  ) = 0,
+  'the pending invitation read model does not depend on the private email helper ACL'
+);
+
+select extensions.ok(
+  position(
+    'private.authenticated_user_email'
+    in pg_get_functiondef('public.respond_organization_invitation(uuid,text)'::regprocedure)
+  ) = 0,
+  'the organisation invitation response boundary does not depend on the private email helper ACL'
+);
 
 insert into auth.users (
   id,
@@ -357,7 +381,36 @@ grant select on test_programme_invite_result to authenticated, service_role;
 
 reset role;
 select set_config('request.jwt.claim.sub', '84848484-8484-4848-8848-484848484804', true);
+select set_config(
+  'request.jwt.claims',
+  jsonb_build_object(
+    'sub', '84848484-8484-4848-8848-484848484804',
+    'email', 'PGTAP-INVITE-EMAIL@EXAMPLE.TEST',
+    'role', 'authenticated'
+  )::text,
+  true
+);
 set local role authenticated;
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.get_my_pending_organization_invitations()
+    where id = (select (result ->> 'invitationId')::uuid from test_programme_invite_result)
+  ),
+  1,
+  'an email-only invitee can list their pending invitation using the normalized signed JWT email claim'
+);
+
+select extensions.is(
+  (
+    select count(*)::integer
+    from public.organization_invitations
+    where id = (select (result ->> 'invitationId')::uuid from test_programme_invite_result)
+  ),
+  1,
+  'an email-only invitee can read their invitation through RLS without the private helper'
+);
 
 select public.respond_organization_invitation(
   (select (result ->> 'invitationId')::uuid from test_programme_invite_result),
@@ -401,6 +454,7 @@ select extensions.ok(
 );
 
 reset role;
+select set_config('request.jwt.claims', '{}', true);
 select set_config('request.jwt.claim.sub', '81818181-8181-4818-8818-181818181801', true);
 set local role authenticated;
 

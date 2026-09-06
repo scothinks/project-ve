@@ -30,6 +30,8 @@ join public.lessons l
 join public.courses c
   on c.id = l.course_id
  and c.status = 'published'
+ and c.catalog_scope = 'platform'
+ and l.published_snapshot is not null
 join public.quiz_questions qq
   on qq.quiz_id = q.id
 where q.status = 'published'
@@ -78,7 +80,7 @@ select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
 select public.complete_lesson_page(lp.lesson_id, lp.id)
-from public.lesson_pages lp
+from public.learner_lesson_page_references lp
 where lp.lesson_id = (select lesson_id from test_quiz_fixture)
 order by lp.page_number;
 

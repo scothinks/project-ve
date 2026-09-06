@@ -16,6 +16,9 @@ export function revalidateLearningPaths(courseId: string, lessonIds: string[]) {
   revalidatePath("/dashboard");
   for (const lessonId of lessonIds) {
     revalidatePath(`/admin/courses/lessons/${lessonId}`);
+    revalidatePath(`/admin/courses/lessons/${lessonId}/quiz`);
+    revalidatePath(`/admin/courses/lessons/${lessonId}/values`);
+    revalidatePath(`/admin/courses/lessons/${lessonId}/preview`);
     revalidatePath(`/lessons/${lessonId}`);
     revalidatePath(`/quiz/${lessonId}`);
   }

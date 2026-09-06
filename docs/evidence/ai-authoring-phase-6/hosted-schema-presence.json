@@ -1,0 +1,46 @@
+{
+  "capturedAt": "2026-09-06T13:44:28.387Z",
+  "target": "xmqkrsmuokmuzcyivgbi.supabase.co",
+  "recoveryRpcVisible": true,
+  "operation": {
+    "post": {
+      "parameters": [
+        {
+          "in": "body",
+          "name": "args",
+          "required": true,
+          "schema": {
+            "properties": {
+              "p_limit": {
+                "format": "integer",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "$ref": "#/parameters/preferParams"
+        }
+      ],
+      "produces": [
+        "application/json",
+        "application/vnd.pgrst.object+json;nulls=stripped",
+        "application/vnd.pgrst.object+json"
+      ],
+      "responses": {
+        "200": {
+          "description": "OK"
+        }
+      },
+      "tags": [
+        "(rpc) service_recover_ai_authoring_jobs"
+      ]
+    }
+  },
+  "scope": "Read-only hosted REST schema. Does not prove migration ledger, function body or application deployment.",
+  "migrationLedgerVerification": "Unavailable: CLI platform authentication missing; configured direct database password rejected.",
+  "anonymousSchemaHttpStatus": 401,
+  "anonymousAclVerification": "Not established: anonymous schema request was rejected before a schema could be read.",
+  "userReport": "User reports migration pushed."
+}

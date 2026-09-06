@@ -321,11 +321,14 @@ set validation_config = excluded.validation_config,
 
 reset role;
 
+-- Publish the transaction-local fixture before exercising learner completion.
+update public.lessons set published_snapshot = private.lesson_draft_snapshot(id), published_at = now() where id = 'lesson-ve-sec-002-mission-flow';
+
 select set_config('request.jwt.claim.sub', :'TEST_LEARNER_USER_ID', true);
 set local role authenticated;
 
 select public.complete_lesson_page('lesson-ve-sec-002-mission-flow', lesson_pages.id)
-from public.lesson_pages
+from public.learner_lesson_page_references lesson_pages
 where lesson_pages.lesson_id = 'lesson-ve-sec-002-mission-flow'
 order by lesson_pages.page_number;
 

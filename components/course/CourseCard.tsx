@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import type { LearningCourseCard } from "@/features/learning/application/course-card-model";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
 import { getCourseProgress } from "@/lib/progress";

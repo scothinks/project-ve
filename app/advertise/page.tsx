@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import Link from "next/link";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { LearnerTopChrome } from "@/components/navigation/LearnerTopChrome";

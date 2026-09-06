@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/media/MediaImage";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChevronRightIcon } from "@/components/ui/Icons";

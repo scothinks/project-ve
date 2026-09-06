@@ -12,7 +12,6 @@ import {
   type NewCoursePlanInput,
   type NewCoursePlanOption,
 } from "@/features/learning/admin/planner-model";
-import { getAiLearningConfig } from "@/lib/ai-learning-generator";
 import { logAppError } from "@/lib/app-errors";
 import type { AdminContext } from "@/features/admin/application/context";
 import {
@@ -34,16 +33,13 @@ import {
   buildSelectedPlanSelection,
   buildUrl,
   clampInteger,
-  createTextId,
   getRecommendedQuestionCount,
   getSelectedNewCourseOptionFromForm,
   getSelectedNewCoursePlanSelection,
   logInvalidPlannerRecord,
-  mergeNewCourseOptionEdits,
   parseInteger,
   parseNewCoursePlanInput,
   requireValidPlannerForm,
-  slugify,
 } from "./planner-domain";
 import { getCourseExpansionContext, getPlannerPlan } from "./planner-data";
 
@@ -59,33 +55,6 @@ export type PlannerAiGenerationHandoff = {
 };
 
 export type PlannerMaybeHandoffResult = PlannerCommandResult | PlannerAiGenerationHandoff;
-
-function buildCourseShellGenerationNotes(
-  input: NewCoursePlanInput,
-  option: NewCoursePlanOption,
-  planId: string,
-) {
-  const config = getAiLearningConfig();
-
-  return {
-    source: "openai",
-    mode: "planner_course_shell",
-    plannerPlanId: planId,
-    plannerStage: "course_shell",
-    textModel: config.textModel,
-    reviewModel: config.reviewModel,
-    generatedFrom: {
-      topic: option.title || input.roughIdea,
-      audience: option.targetAudience || input.audience,
-      region: input.region,
-      difficulty: option.level,
-      tone: option.tone || input.tone,
-      notes: buildSelectedCourseNotes(input, option),
-    },
-    selectedBrief: option,
-    lessonCount: option.lessonOutline.length,
-  };
-}
 
 function buildSelectedCourseDraftFormData(
   input: NewCoursePlanInput,
@@ -127,6 +96,7 @@ function buildPlannedLessonsDraftFormData(
 export async function generateNewCoursePlanOptionsCommand(
   admin: AdminContext,
   formData: FormData,
+  returnBasePath = "/admin/courses/ai/planner",
 ): Promise<PlannerCommandResult> {
   const { supabase, profile } = admin;
   const input = parseNewCoursePlanInput(formData);
@@ -215,7 +185,7 @@ export async function generateNewCoursePlanOptionsCommand(
 
   return {
     courseId: null,
-    returnPath: buildUrl("/admin/courses/ai/planner", { plan: plan.id }),
+    returnPath: buildUrl(returnBasePath, { plan: plan.id }),
     notice: "Three AI course brief options are ready.",
   };
 }
@@ -223,6 +193,7 @@ export async function generateNewCoursePlanOptionsCommand(
 export async function generateCourseExpansionPlanCommand(
   admin: AdminContext,
   formData: FormData,
+  returnBasePath = "/admin/courses/ai/planner",
 ): Promise<PlannerCommandResult> {
   const { supabase, profile } = admin;
   const {
@@ -325,117 +296,8 @@ export async function generateCourseExpansionPlanCommand(
 
   return {
     courseId,
-    returnPath: buildUrl("/admin/courses/ai/planner", { courseId, plan: plan.id }),
+    returnPath: buildUrl(returnBasePath, { courseId, plan: plan.id }),
     notice: "AI expansion suggestions are ready.",
-  };
-}
-
-export async function selectCoursePlanOptionCommand(
-  supabase: SupabaseClient,
-  formData: FormData,
-): Promise<PlannerCommandResult> {
-  const planId = asString(formData.get("planId"), 120);
-  const optionIndex = parseInteger(formData.get("optionIndex"), 0);
-  const suggestionIndex = parseInteger(formData.get("suggestionIndex"), -1);
-  const returnPath = asString(
-    formData.get("redirectTo"),
-    400,
-    "/admin/courses/ai/planner",
-  );
-
-  const plan = await getPlannerPlan(supabase, planId);
-
-  if (plan.mode === "new_course") {
-    const stored = parseStoredNewCoursePlan(plan.generated_plan);
-    if (!stored) {
-      logInvalidPlannerRecord("admin.course_planner.new_course_plan.parse", plan);
-      throw new Error("The saved course brief is invalid.");
-    }
-
-    const baseOption = stored.result.options[optionIndex];
-    if (!baseOption) {
-      throw new Error("Selected brief option not found.");
-    }
-
-    const selectedOption = mergeNewCourseOptionEdits(formData, baseOption);
-    const { error } = await supabase
-      .from("ai_course_plans")
-      .update({
-        status: "selected",
-        selected_items: [selectedOption],
-      })
-      .eq("id", planId);
-
-    if (error) throw error;
-
-    return {
-      courseId: plan.course_id,
-      returnPath,
-      notice: "Course brief saved for drafting.",
-    };
-  }
-
-  const stored = parseStoredCourseExpansionPlan(plan.generated_plan);
-  if (!stored) {
-    logInvalidPlannerRecord("admin.course_planner.expansion_plan.parse", plan);
-    throw new Error("The saved expansion plan is invalid.");
-  }
-
-  const suggestion = stored.result.lessonSuggestions[suggestionIndex];
-  if (!suggestion) {
-    throw new Error("Selected lesson suggestion not found.");
-  }
-
-  const existingSelections = Array.isArray(plan.selected_items) ? plan.selected_items : [];
-  const nextSelections = [...existingSelections, suggestion];
-  const { error } = await supabase
-    .from("ai_course_plans")
-    .update({
-      status: "selected",
-      selected_items: nextSelections,
-    })
-    .eq("id", planId);
-
-  if (error) throw error;
-
-  return {
-    courseId: plan.course_id,
-    returnPath,
-    notice: "Lesson suggestion saved.",
-  };
-}
-
-export async function saveSelectedNewCourseBriefCommand(
-  supabase: SupabaseClient,
-  formData: FormData,
-): Promise<PlannerCommandResult> {
-  const planId = asString(formData.get("planId"), 120);
-  const returnPath = asString(
-    formData.get("redirectTo"),
-    400,
-    "/admin/courses/ai/planner",
-  );
-  const plan = await getPlannerPlan(supabase, planId);
-
-  if (plan.mode !== "new_course") {
-    throw new Error("This action only supports new course plans.");
-  }
-
-  const { selectedOption } = getSelectedNewCourseOptionFromForm(plan, formData);
-  const { error } = await supabase
-    .from("ai_course_plans")
-    .update({
-      status: "selected",
-      selected_items: [selectedOption],
-    })
-    .eq("id", planId);
-
-  if (error) throw error;
-
-  return {
-    courseId: plan.course_id,
-    returnPath,
-    notice: "Course brief saved for drafting.",
   };
 }
 
@@ -459,157 +321,6 @@ export async function generateCourseFromSelectedPlanCommand(
   return {
     courseId: null,
     draftFormData: buildSelectedCourseDraftFormData(stored.input, selectedOption),
-  };
-}
-
-export async function generateCourseShellFromSelectedPlanCommand(
-  { supabase, profile }: AdminContext,
-  formData: FormData,
-): Promise<PlannerCommandResult> {
-  const planId = asString(formData.get("planId"), 120);
-  const plan = await getPlannerPlan(supabase, planId);
-
-  if (plan.mode !== "new_course") {
-    throw new Error("This action only supports new course plans.");
-  }
-
-  const { stored, selectedOption } = getSelectedNewCourseOptionFromForm(plan, formData);
-  const existingSelection = getSelectedNewCoursePlanSelection(plan);
-
-  if (existingSelection?.generatedCourseId) {
-    return {
-      courseId: existingSelection.generatedCourseId,
-      returnPath: `/admin/courses/${existingSelection.generatedCourseId}`,
-      notice: "This planner brief already has a generated course setup.",
-    };
-  }
-
-  const courseId = createTextId("course", selectedOption.title || stored.input.roughIdea);
-  const courseSlug = `${slugify(selectedOption.title || stored.input.roughIdea)}-${crypto.randomUUID().replaceAll("-", "").slice(0, 4)}`;
-  const now = new Date().toISOString();
-  const courseRow = {
-    id: courseId,
-    slug: courseSlug,
-    title: selectedOption.title,
-    description: selectedOption.description,
-    intended_audience: selectedOption.targetAudience || stored.input.audience,
-    learning_outcomes: selectedOption.learningObjectives,
-    category: "Values Education",
-    level: selectedOption.level,
-    thumbnail: {},
-    status: "draft",
-    sort_order: 0,
-    estimated_minutes: 0,
-    ai_text_status: "draft",
-    ai_media_status: "not_started",
-    ai_publish_status: "not_ready",
-    ai_generated: true,
-    ai_generation_notes: buildCourseShellGenerationNotes(stored.input, selectedOption, planId),
-  };
-
-  const mediaRows = [
-    {
-      course_id: courseId,
-      lesson_id: null,
-      asset_type: "cover",
-      placement: "course_cover",
-      source: "ai_generated",
-      prompt: `${selectedOption.mediaStyle}. Course cover for "${selectedOption.title}". ${selectedOption.description}`,
-      script: "",
-      url: null,
-      storage_path: null,
-      provider: null,
-      model: null,
-      alt_text: `${selectedOption.title} course cover illustration`,
-      caption: selectedOption.title,
-      metadata: {
-        plannerPlanId: planId,
-        required: false,
-        targetKind: "course_cover",
-      },
-      review_status: "draft",
-      generation_status: "pending",
-      generation_error: null,
-      sort_order: 0,
-    },
-    {
-      course_id: courseId,
-      lesson_id: null,
-      asset_type: "thumbnail",
-      placement: "course_thumbnail",
-      source: "ai_generated",
-      prompt: `${selectedOption.mediaStyle}. Mobile-friendly course thumbnail for "${selectedOption.title}". ${selectedOption.description}`,
-      script: "",
-      url: null,
-      storage_path: null,
-      provider: null,
-      model: null,
-      alt_text: `${selectedOption.title} course thumbnail`,
-      caption: selectedOption.title,
-      metadata: {
-        plannerPlanId: planId,
-        required: true,
-        targetKind: "course_thumbnail",
-      },
-      review_status: "draft",
-      generation_status: "pending",
-      generation_error: null,
-      sort_order: 1,
-    },
-  ];
-
-  try {
-    const { error: courseError } = await supabase.from("courses").insert(courseRow);
-    if (courseError) throw courseError;
-
-    const { error: mediaError } = await supabase.from("learning_media_assets").insert(mediaRows);
-    if (mediaError) throw mediaError;
-
-    const { error: auditError } = await supabase.from("audit_events").insert({
-      actor_user_id: profile.id,
-      event_type: "ai_course_shell_generated",
-      entity_type: "course",
-      entity_id: courseId,
-      metadata: {
-        plannerPlanId: planId,
-        selectedBriefTitle: selectedOption.title,
-        lessonCountPlanned: selectedOption.lessonOutline.length,
-      },
-    });
-    if (auditError) throw auditError;
-
-    const nextSelection = buildSelectedPlanSelection(selectedOption, {
-      generatedCourseId: courseId,
-      courseShellCreatedAt: now,
-    });
-    const { error: planError } = await supabase
-      .from("ai_course_plans")
-      .update({
-        status: "selected",
-        course_id: courseId,
-        selected_items: [nextSelection],
-      })
-      .eq("id", planId);
-
-    if (planError) throw planError;
-  } catch (error) {
-    try {
-      await supabase.from("courses").delete().eq("id", courseId);
-    } catch (cleanupError) {
-      logAppError(cleanupError, {
-        operation: "admin.course_planner.shell_generation.cleanup",
-        resourceId: courseId,
-        metadata: { planId },
-      });
-    }
-    throw error;
-  }
-
-  return {
-    courseId,
-    returnPath: `/admin/courses/${courseId}`,
-    notice:
-      "AI course setup created. Review the course, generate course media, and enable it when ready. Create lessons later from the planner.",
   };
 }
 
@@ -734,34 +445,5 @@ export async function generateLessonFromExpansionSuggestionCommand(
   return {
     courseId: stored.input.courseId,
     draftFormData,
-  };
-}
-
-export async function dismissCoursePlanCommand(
-  supabase: SupabaseClient,
-  formData: FormData,
-): Promise<PlannerCommandResult> {
-  const planId = asString(formData.get("planId"), 120);
-  const returnPath = asString(
-    formData.get("redirectTo"),
-    400,
-    "/admin/courses/ai/planner",
-  );
-  const plan = await getPlannerPlan(supabase, planId);
-
-  const { error } = await supabase
-    .from("ai_course_plans")
-    .update({
-      status: "dismissed",
-      selected_items: [],
-    })
-    .eq("id", planId);
-
-  if (error) throw error;
-
-  return {
-    courseId: plan.course_id,
-    returnPath,
-    notice: "Planner result dismissed.",
   };
 }

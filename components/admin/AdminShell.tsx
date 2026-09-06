@@ -1,12 +1,21 @@
 "use client";
 
 import * as Collapsible from "@radix-ui/react-collapsible";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon, HelpCircleIcon, MenuIcon } from "@/components/ui/Icons";
+import {
+  BellIcon,
+  BookOpenIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  HelpCircleIcon,
+  LogoutIcon,
+  MenuIcon,
+} from "@/components/ui/Icons";
 import {
   AdminActivityIcon,
   AdminAddBoxIcon,
@@ -30,6 +39,7 @@ import {
 } from "@/components/admin/AdminIcons";
 import { PLATFORM_CATALOG_WORKSPACE_ID, workspaceHasAnyRole } from "@/features/admin/shared/workspace";
 import type { AdminOrganizationContext, AdminWorkspace as ResolvedAdminWorkspace } from "@/lib/admin";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 import type { UserProfile } from "@/lib/supabase-server";
 import { cn } from "@/lib/utils";
 
@@ -45,34 +55,6 @@ function OverviewIcon({ className }: IconProps) {
   return (
     <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
       <path d="M4 5h7v6H4zM13 5h7v10h-7zM4 13h7v6H4zM13 17h7v2h-7z" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function CoursesIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 0z" stroke="currentColor" />
-      <path d="M5 4v16" stroke="currentColor" />
-      <path d="M9 8h6M9 11h6" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function ProgrammesIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M5 5h14v5H5zM5 14h6v5H5zM15 14h4v5h-4z" stroke="currentColor" />
-      <path d="M12 7.5h3M8 16.5h1M17 16.5h.5" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function CohortsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M8.5 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM15.5 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" />
-      <path d="M4.5 18a4 4 0 0 1 8 0M11.5 18a4 4 0 0 1 8 0" stroke="currentColor" />
     </svg>
   );
 }
@@ -96,23 +78,6 @@ function InterventionsIcon({ className }: IconProps) {
   );
 }
 
-function RecommendationsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="m12 4 2.2 4.45 4.8.7-3.5 3.4.83 4.8L12 15.1 7.67 17.35l.83-4.8L5 9.15l4.8-.7z" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function CampaignsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M5 7h10l4 4-4 4H5z" stroke="currentColor" />
-      <path d="M5 7v10" stroke="currentColor" />
-    </svg>
-  );
-}
-
 function AdsIcon({ className }: IconProps) {
   return (
     <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
@@ -123,67 +88,11 @@ function AdsIcon({ className }: IconProps) {
   );
 }
 
-function RewardsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M7 7h10v10H7z" stroke="currentColor" />
-      <path d="M12 7v10M7 12h10" stroke="currentColor" />
-      <path d="M8.5 7A1.5 1.5 0 1 1 10 5.5V7M15.5 7A1.5 1.5 0 1 0 14 5.5V7" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function PerksIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M12 3 19 7v10l-7 4-7-4V7z" stroke="currentColor" />
-      <path d="m9 12 2 2 4-4" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function InventoryIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M4 8h16v11H4zM7 8V5h10v3" stroke="currentColor" />
-      <path d="M10 13h4" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function RedemptionsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M6 6h12v12H6z" stroke="currentColor" />
-      <path d="M9 10h6M9 14h4" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function MissionsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M12 4a8 8 0 1 0 8 8" stroke="currentColor" />
-      <path d="m15 5 4 1-1 4" stroke="currentColor" />
-      <path d="M12 12 19 6" stroke="currentColor" />
-    </svg>
-  );
-}
-
 function ContentIcon({ className }: IconProps) {
   return (
     <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
       <path d="M6 5h12v14H6z" stroke="currentColor" />
       <path d="M9 9h6M9 12h6M9 15h4" stroke="currentColor" />
-    </svg>
-  );
-}
-
-function ProofsIcon({ className }: IconProps) {
-  return (
-    <svg className={iconStroke(className)} fill="none" viewBox="0 0 24 24">
-      <path d="M7 4h7l5 5v11H7z" stroke="currentColor" />
-      <path d="M14 4v5h5M10 14l1.5 1.5L15 12" stroke="currentColor" />
     </svg>
   );
 }
@@ -242,6 +151,14 @@ type AdminLinkGroup = {
   links: AdminLink[];
 };
 
+// Platform-only nav: genuine cross-organisation tools (a real org-picker of
+// their own, or no org concept at all). Content Project VE itself authors
+// (courses, missions, rewards, etc.) lives exclusively in the Platform
+// Catalog workspace nav (orgPrimaryLinks, below) — it is never duplicated
+// here, since an unscoped "every org's courses in one list" view is noise,
+// not oversight. Content belonging to one specific organisation (programmes,
+// cohorts, instructor workspace) is reached by entering that organisation's
+// workspace from Organisations, not from a platform-wide list.
 const adminLinkGroups: AdminLinkGroup[] = [
   {
     id: "home",
@@ -250,145 +167,43 @@ const adminLinkGroups: AdminLinkGroup[] = [
     links: [{ href: "/admin", label: "Overview", icon: OverviewIcon }],
   },
   {
-    id: "learning",
-    label: "Learning",
-    summary: "Courses and learning content",
+    id: "oversight",
+    label: "Oversight",
+    summary: "Cross-organisation reporting and audit",
     links: [
-      { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
-      { href: "/admin/programmes", label: "Programmes", icon: ProgrammesIcon },
-      { href: "/admin/assessments", label: "Assessments", icon: RecommendationsIcon },
-      { href: "/admin/cohorts", label: "Cohorts", icon: CohortsIcon },
-      { href: "/admin/instructor", label: "Instructor workspace", icon: CohortsIcon },
       { href: "/admin/reporting", label: "Reporting", icon: ReportingIcon },
       { href: "/admin/interventions", label: "Interventions", icon: InterventionsIcon },
-      { href: "/admin/recommendations", label: "Recommendations", icon: RecommendationsIcon },
-      { href: "/admin/content", label: "Content", icon: ContentIcon },
-    ],
-  },
-  {
-    id: "engagement",
-    label: "Engagement",
-    summary: "Missions, campaigns, and rewards",
-    links: [
-      { href: "/admin/missions", label: "Missions", icon: MissionsIcon },
-      { href: "/admin/campaigns", label: "Campaigns", icon: CampaignsIcon },
-      { href: "/admin/ads", label: "Ads", icon: AdsIcon },
-      { href: "/admin/rewards", label: "Rewards", icon: RewardsIcon },
-      { href: "/admin/rewards/perks", label: "Perks", icon: PerksIcon },
-      { href: "/admin/inventory/new", label: "Inventory", icon: InventoryIcon },
-    ],
-  },
-  {
-    id: "operations",
-    label: "Operations",
-    summary: "Moderation and admin activity",
-    links: [
-      { href: "/admin/redemptions", label: "Redemptions", icon: RedemptionsIcon },
-      { href: "/admin/proofs", label: "Proof reviews", icon: ProofsIcon },
-      { href: "/admin/xp-ledger", label: "XP activity", icon: XpLedgerIcon },
+      { href: "/admin/activity", label: "Activity history", icon: XpLedgerIcon },
     ],
   },
   {
     id: "governance",
     label: "Governance",
-    summary: "Organisation oversight and audit",
+    summary: "Organisation and user administration",
     links: [
       { href: "/admin/organizations", label: "Organisations", icon: UsersIcon },
       { href: "/admin/users", label: "Users", icon: UsersIcon },
-      { href: "/admin/activity", label: "Activity history", icon: XpLedgerIcon },
     ],
   },
   {
-    id: "settings",
-    label: "Platform Settings",
-    summary: "Platform configuration",
-    links: [{ href: "/admin/xp-settings", label: "XP settings", icon: XpSettingsIcon }],
+    id: "monetisation",
+    label: "Monetisation",
+    summary: "Platform-run advertising",
+    links: [{ href: "/admin/ads", label: "Ads", icon: AdsIcon }],
+  },
+  {
+    id: "platform",
+    label: "Platform",
+    summary: "Global configuration and static pages",
+    links: [
+      { href: "/admin/content", label: "Content", icon: ContentIcon },
+      { href: "/admin/xp-settings", label: "XP settings", icon: XpSettingsIcon },
+    ],
   },
 ];
 
-function canUseAdminLink(link: AdminLink, workspace: ResolvedAdminWorkspace) {
-  if (workspace.type === "platform") {
-    return true;
-  }
-
-  if (link.href === "/admin") return true;
-  if (link.href.startsWith("/admin/courses")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-      "content_editor",
-      "reviewer",
-    ]);
-  }
-  if (link.href.startsWith("/admin/programmes")) {
-    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
-  }
-  if (link.href.startsWith("/admin/assessments")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-      "content_editor",
-    ]);
-  }
-  if (link.href.startsWith("/admin/cohorts")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-    ]);
-  }
-  if (link.href.startsWith("/admin/instructor")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-      "reviewer",
-      "instructor",
-      "report_viewer",
-    ]);
-  }
-  if (link.href.startsWith("/admin/reporting")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-      "report_viewer",
-    ]);
-  }
-  if (link.href.startsWith("/admin/interventions")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-    ]);
-  }
-  if (link.href.startsWith("/admin/rewards")) {
-    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin", "programme_manager"]);
-  }
-  if (link.href.startsWith("/admin/missions")) {
-    return workspaceHasAnyRole(workspace, [
-      "organisation_owner",
-      "organisation_admin",
-      "programme_manager",
-      "content_editor",
-    ]);
-  }
-  if (link.href.startsWith("/admin/activity")) {
-    return workspaceHasAnyRole(workspace, ["organisation_owner", "organisation_admin"]);
-  }
-
-  return false;
-}
-
-function filterAdminLinkGroups(groups: AdminLinkGroup[], workspace: ResolvedAdminWorkspace) {
-  return groups
-    .map((group) => ({
-      ...group,
-      links: group.links.filter((link) => canUseAdminLink(link, workspace)),
-    }))
-    .filter((group) => group.links.length > 0);
+function filterAdminLinkGroups(groups: AdminLinkGroup[]) {
+  return groups.filter((group) => group.links.length > 0);
 }
 
 const adminLinks = adminLinkGroups.flatMap((group) => group.links);
@@ -412,7 +227,11 @@ function getActiveGroupId(pathname: string) {
 }
 
 function getDeepestActiveLink(pathname: string) {
-  return [...adminLinks]
+  // Some routes (courses, missions, rewards, etc.) only appear in
+  // orgPrimaryLinks now, not in the platform-only adminLinkGroups — fall
+  // back to it so breadcrumbs still resolve a label when those pages are
+  // viewed from an organisation or the Platform Catalog workspace.
+  return [...adminLinks, ...orgPrimaryLinks]
     .sort((left, right) => right.href.length - left.href.length)
     .find((link) => isActivePath(pathname, link.href));
 }
@@ -434,10 +253,10 @@ function getBreadcrumbs(pathname: string) {
 
   crumbs.push({ href: activeLink.href, label: activeLink.label });
 
-  if (pathname.startsWith("/admin/courses/ai/new")) {
+  if (pathname.startsWith("/admin/courses/ai/new") || pathname.startsWith("/admin/courses/ai/brief") || pathname.startsWith("/admin/courses/ai/result")) {
     crumbs.push({ href: pathname, label: "Create with AI" });
-  } else if (pathname.startsWith("/admin/courses/ai/planner")) {
-    crumbs.push({ href: pathname, label: "AI planner" });
+  } else if (pathname.endsWith("/expand") || pathname.endsWith("/expand-result")) {
+    crumbs.push({ href: pathname, label: "Suggest lessons with AI" });
   } else if (pathname.startsWith("/admin/courses/lessons/")) {
     crumbs.push({ href: pathname, label: "Lesson editor" });
   } else if (pathname.startsWith("/admin/courses/new")) {
@@ -655,7 +474,9 @@ function WorkspaceSwitcher({
       <Select.Root value={selectedContext?.id ?? "platform"} onValueChange={handleChange}>
         <Select.Trigger className="mt-2 flex min-h-11 w-full items-center justify-between rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-left text-sm font-black outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
           <Select.Value />
-          <Select.Icon className="text-[var(--ve-muted)]">v</Select.Icon>
+          <Select.Icon className="text-[var(--ve-muted)]">
+            <ChevronRightIcon className="h-4 w-4 rotate-90" />
+          </Select.Icon>
         </Select.Trigger>
         <Select.Portal>
           <Select.Content
@@ -731,6 +552,12 @@ const orgPrimaryLinks: AdminLink[] = [
     label: "Courses",
     icon: AdminCoursesIcon,
     roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor", "reviewer"],
+  },
+  {
+    href: "/admin/media",
+    label: "Media library",
+    icon: AdminCoursesIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
   },
   {
     href: "/admin/missions",
@@ -818,10 +645,10 @@ const orgPrimaryLinks: AdminLink[] = [
 
 const orgSettingsLink: AdminLink = { href: "/admin/xp-settings", label: "Settings", icon: AdminSettingsIcon };
 
-function visibleOrgLinks(workspace: ResolvedAdminWorkspace) {
+function filterLinksForWorkspace(links: AdminLink[], workspace: ResolvedAdminWorkspace) {
   const isCatalogWorkspace = workspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
 
-  return orgPrimaryLinks.filter((link) => {
+  return links.filter((link) => {
     if (isCatalogWorkspace && link.hiddenForCatalog) {
       return false;
     }
@@ -832,6 +659,115 @@ function visibleOrgLinks(workspace: ResolvedAdminWorkspace) {
 
     return !link.roles || workspaceHasAnyRole(workspace, link.roles);
   });
+}
+
+function visibleOrgLinks(workspace: ResolvedAdminWorkspace) {
+  return filterLinksForWorkspace(orgPrimaryLinks, workspace);
+}
+
+// Workspace Create shortcuts — reuses the same real "/new" creation routes
+// surfaced elsewhere in Admin (Programmes, Courses, Missions, etc.) rather
+// than inventing a separate creation flow. Gated by the same roles as the
+// matching nav link.
+const createMenuLinks: AdminLink[] = [
+  {
+    href: "/admin/programmes/new",
+    label: "New Programme",
+    icon: AdminProgrammesIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/courses/new",
+    label: "New Course",
+    icon: AdminCoursesIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
+  },
+  {
+    href: "/admin/missions/new",
+    label: "New Mission",
+    icon: AdminMissionsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
+  },
+  {
+    href: "/admin/cohorts/new",
+    label: "New Cohort",
+    icon: AdminCohortsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    hiddenForCatalog: true,
+  },
+  {
+    href: "/admin/campaigns/new",
+    label: "New Campaign",
+    icon: AdminFlagIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+    catalogOnly: true,
+  },
+  {
+    href: "/admin/rewards/new",
+    label: "New Reward",
+    icon: AdminRewardsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
+    href: "/admin/people?invite=1",
+    label: "Invite People",
+    icon: AdminPeopleIcon,
+    roles: ["organisation_owner", "organisation_admin"],
+    hiddenForCatalog: true,
+  },
+];
+
+function CreateMenu({ collapsed = false, workspace }: { collapsed?: boolean; workspace: ResolvedAdminWorkspace }) {
+  const items = filterLinksForWorkspace(createMenuLinks, workspace);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        {collapsed ? (
+          <button
+            aria-label="Create"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--admin-primary)] text-[var(--admin-on-primary)] shadow-[0_12px_24px_rgba(8,127,91,0.22)] transition hover:bg-[var(--admin-primary-container)]"
+            type="button"
+          >
+            <AdminAddBoxIcon className="h-5 w-5" />
+          </button>
+        ) : (
+          <button
+            className="mb-6 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--admin-primary-container)] px-4 py-2 text-sm font-black text-[var(--admin-on-primary)] shadow-[0_12px_24px_rgba(8,127,91,0.22)] transition hover:bg-[var(--admin-primary)]"
+            type="button"
+          >
+            <AdminAddBoxIcon className="h-5 w-5" />
+            Create
+          </button>
+        )}
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="start"
+          className="z-50 min-w-[15rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          side={collapsed ? "right" : "bottom"}
+          sideOffset={8}
+        >
+          {items.map((item) => (
+            <DropdownMenu.Item asChild key={item.href}>
+              <Link
+                className="flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                href={item.href}
+              >
+                <item.icon className="h-[18px] w-[18px] text-[var(--admin-on-surface-variant)]" />
+                {item.label}
+              </Link>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
 }
 
 function OrgWorkspaceIdentity({
@@ -980,6 +916,9 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
         >
           <orgSettingsLink.icon />
         </Link>
+      <div className="mt-4">
+        <CreateMenu collapsed workspace={workspace} />
+      </div>
     </nav>
   );
 }
@@ -998,6 +937,7 @@ function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspa
           </p>
         </div>
       </div>
+      <CreateMenu workspace={workspace} />
       <ul className="flex flex-1 flex-col gap-1">
         {visibleOrgLinks(workspace).map((link) => (
           <li key={link.href}>
@@ -1012,24 +952,143 @@ function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspa
   );
 }
 
+function ResourcesMenu() {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+          type="button"
+        >
+          <BookOpenIcon className="h-5 w-5" />
+          Resources
+          <ChevronRightIcon className="h-3.5 w-3.5 rotate-90" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          sideOffset={8}
+        >
+          <DropdownMenu.Item asChild>
+            <Link
+              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              href="/support"
+            >
+              Support
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild>
+            <Link
+              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              href="/contact"
+            >
+              Contact
+            </Link>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
+function AdminAvatarMenu({ profile }: { profile: UserProfile }) {
+  const router = useRouter();
+  const initials = (profile.display_name ?? "Admin").slice(0, 2).toUpperCase();
+
+  async function handleSignOut() {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) {
+      return;
+    }
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          aria-label="Account menu"
+          className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--admin-border-warm)] transition hover:border-[var(--admin-primary)]"
+          type="button"
+        >
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="h-full w-full object-cover" src={profile.avatar_url} />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center bg-[var(--admin-surface-container-low)] text-xs font-black text-[var(--admin-on-surface-variant)]">
+              {initials}
+            </span>
+          )}
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          sideOffset={8}
+        >
+          <div className="px-3 py-2">
+            <p className="truncate text-sm font-black text-[var(--admin-on-surface)]">
+              {profile.display_name ?? "Admin"}
+            </p>
+          </div>
+          <div className="my-1 h-px bg-[var(--admin-border-warm)]" role="separator" />
+          <DropdownMenu.Item asChild>
+            <Link
+              className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              href="/profile"
+            >
+              View profile
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-secondary)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+            onSelect={handleSignOut}
+          >
+            <LogoutIcon className="h-4 w-4" />
+            Sign out
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
 function OrgTopBar({
   currentWorkspace,
   organizationContexts,
+  profile,
 }: {
   currentWorkspace: ResolvedAdminWorkspace;
   organizationContexts: AdminOrganizationContext[];
+  profile: UserProfile;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6">
+    <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-2 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 md:h-20 md:flex-nowrap md:px-6 md:py-0">
       <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
       <div className="flex items-center gap-3">
-        <Link
-          aria-label="Help and support"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
-          href="/support"
-        >
-          <HelpCircleIcon className="h-5 w-5" />
-        </Link>
+        <ResourcesMenu />
+        <div className="flex items-center gap-1 border-l border-[var(--admin-border-warm)] pl-3">
+          <Link
+            aria-label="Recent activity and notifications"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+            href="/admin/activity"
+          >
+            <BellIcon className="h-5 w-5" />
+          </Link>
+          <Link
+            aria-label="Help and support"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+            href="/support"
+          >
+            <HelpCircleIcon className="h-5 w-5" />
+          </Link>
+          <AdminAvatarMenu profile={profile} />
+        </div>
       </div>
     </header>
   );
@@ -1049,10 +1108,7 @@ export function AdminShell({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const visibleLinkGroups = useMemo(
-    () => filterAdminLinkGroups(adminLinkGroups, currentWorkspace),
-    [currentWorkspace],
-  );
+  const visibleLinkGroups = useMemo(() => filterAdminLinkGroups(adminLinkGroups), []);
   const activeGroupId = getActiveGroupId(pathname);
 
   if (currentWorkspace.type === "organization") {
@@ -1061,7 +1117,7 @@ export function AdminShell({
         <OrgSideNav pathname={pathname} workspace={currentWorkspace} />
         <OrgSideNavExpanded pathname={pathname} workspace={currentWorkspace} />
         <div className="flex min-h-screen flex-col md:pl-20 xl:pl-72">
-          <OrgTopBar currentWorkspace={currentWorkspace} organizationContexts={organizationContexts} />
+          <OrgTopBar currentWorkspace={currentWorkspace} organizationContexts={organizationContexts} profile={profile} />
           <header className="sticky top-0 z-20 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]/95 px-5 py-4 backdrop-blur md:hidden">
             <div className="flex items-center justify-between">
               <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />

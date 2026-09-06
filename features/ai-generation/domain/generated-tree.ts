@@ -2,6 +2,8 @@ import { sanitizePlainTextInput } from "../../../lib/input-safety.ts";
 import type {
   AiGeneratedBlock,
   AiGeneratedCourseDraft,
+  AiGeneratedPage,
+  AiGeneratedQuestion,
 } from "../../../lib/ai-learning-generator.ts";
 import type { WorkflowLessonRow } from "../data/workflow.ts";
 
@@ -19,7 +21,7 @@ export function createTextId(prefix: string, value: string) {
   return `${prefix}-${base}-${crypto.randomUUID().replaceAll("-", "").slice(0, 6)}`;
 }
 
-function mapAiPageTypeToDb(pageType: string) {
+export function mapAiPageTypeToDb(pageType: string) {
   return pageType === "scenario" ? "example" : pageType;
 }
 
@@ -326,4 +328,113 @@ export function buildGeneratedLessonTreeRows({
     mediaRows,
     lessonIds,
   };
+}
+
+export function ensureNoDuplicateLessonPageTitles(
+  existingPages: Array<{ title: string }>,
+  generatedTitle: string,
+) {
+  const existingSlugs = new Set(existingPages.map((page) => slugify(page.title)));
+  const normalizedTitle = slugify(generatedTitle);
+
+  if (!normalizedTitle) {
+    throw new Error("The AI-generated page is missing a valid title.");
+  }
+
+  if (existingSlugs.has(normalizedTitle)) {
+    throw new Error(`The AI tried to create a duplicate page title: "${generatedTitle}". Adjust the focus and try again.`);
+  }
+}
+
+export function ensureNoDuplicateQuizQuestionPrompt(
+  existingQuestions: Array<{ prompt: string }>,
+  generatedPrompt: string,
+) {
+  const existingSlugs = new Set(existingQuestions.map((question) => slugify(question.prompt)));
+  const normalizedPrompt = slugify(generatedPrompt);
+
+  if (!normalizedPrompt) {
+    throw new Error("The AI-generated question is missing a valid prompt.");
+  }
+
+  if (existingSlugs.has(normalizedPrompt)) {
+    throw new Error("The AI tried to create a duplicate question. Try generating again.");
+  }
+}
+
+export function buildGeneratedQuizQuestionRows({
+  quizId,
+  question,
+  questionOrder,
+}: {
+  quizId: string;
+  question: AiGeneratedQuestion;
+  questionOrder: number;
+}) {
+  const questionId = createTextId("question", `${quizId}-${question.prompt}`);
+
+  const questionRows: Array<Record<string, unknown>> = [
+    {
+      id: questionId,
+      quiz_id: quizId,
+      question_order: questionOrder,
+      question_type: question.questionType,
+      prompt: question.prompt,
+      explanation: question.explanation,
+      xp: question.xp,
+    },
+  ];
+
+  const optionRows: Array<Record<string, unknown>> = question.options.map((option, optionIndex) => ({
+    id: `${questionId}-option-${optionIndex + 1}`,
+    question_id: questionId,
+    option_order: optionIndex + 1,
+    label: option.label,
+    is_correct: option.isCorrect,
+  }));
+
+  return { questionId, questionRows, optionRows };
+}
+
+/**
+ * Builds page + block rows for ONE AI-generated page appended to an
+ * EXISTING lesson — the lesson/quiz-level rows stay empty since nothing
+ * about the lesson itself is being created or changed.
+ */
+export function buildGeneratedLessonPageRows({
+  lessonId,
+  page,
+  pageNumber,
+}: {
+  lessonId: string;
+  page: AiGeneratedPage;
+  pageNumber: number;
+}) {
+  const pageId = createTextId("page", `${lessonId}-${page.title}`);
+  const pageType = mapAiPageTypeToDb(page.pageType);
+
+  const pageRows: Array<Record<string, unknown>> = [
+    {
+      id: pageId,
+      lesson_id: lessonId,
+      page_number: pageNumber,
+      title: page.title,
+      subtitle: page.subtitle,
+      page_type: pageType,
+      cover_image: {},
+    },
+  ];
+
+  const blockRows: Array<Record<string, unknown>> = page.blocks.map((block, blockIndex) => {
+    const mapped = mapAiBlockToDb(block);
+    return {
+      id: crypto.randomUUID(),
+      page_id: pageId,
+      block_type: mapped.block_type,
+      sort_order: blockIndex + 1,
+      payload: mapped.payload,
+    };
+  });
+
+  return { pageId, pageRows, blockRows };
 }

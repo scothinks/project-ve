@@ -25,7 +25,7 @@ function getMetadataString(metadata: Record<string, unknown>, key: string) {
 }
 
 export function buildCourseCoverPrompt(course: Pick<WorkflowCourseRow, "title" | "description" | "category">) {
-  return `Warm, modern educational illustration for the course "${course.title}" in ${course.category}. ${course.description}`;
+  return `Educational image supporting the course "${course.title}" in ${course.category}. ${course.description}`;
 }
 
 export function buildCourseThumbnailPrompt(course: Pick<WorkflowCourseRow, "title" | "description" | "category">) {

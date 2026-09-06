@@ -94,7 +94,7 @@ export function CourseDetailCompletionSection({
 
         <form action={action} className="border-t border-[var(--ve-line-soft)] px-5 pb-5">
           <input name="courseId" type="hidden" value={course.id} />
-          <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}?tab=overview`} />
+          <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}/settings`} />
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label>

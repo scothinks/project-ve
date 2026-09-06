@@ -392,8 +392,8 @@ async function getScopedPublishedLessons(
   }
 
   let query = supabase
-    .from("lessons")
-    .select("id, course_id, lesson_pages!lesson_pages_lesson_id_fkey(id)")
+    .from("learner_lessons")
+    .select("id, course_id, page_ids")
     .eq("status", "published");
 
   if (programmeCourseIds) {
@@ -417,8 +417,8 @@ async function getScopedPublishedLessons(
   return (data ?? []).map((lesson) => ({
     id: String(lesson.id),
     courseId: String((lesson as { course_id: string }).course_id),
-    pages: ((lesson as { lesson_pages?: Array<{ id: string }> }).lesson_pages ?? []).map((page, index) => ({
-      id: String(page.id),
+    pages: ((lesson as { page_ids?: string[] }).page_ids ?? []).map((pageId, index) => ({
+      id: pageId,
       order: index + 1,
     })),
   }));

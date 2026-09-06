@@ -1,5 +1,275 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## AI authoring Phase 6, 2026-09-06
+
+Phase 6 implementation and local validation are complete. The integrated
+Phase 1–5 implementation now includes
+bounded worker-outage recovery, retained-image registration repair, conservative
+partial-work settlement and delay notices that work even when streams stay
+silent. Existing tenant, lease, credit, media and publication boundaries remain.
+See [Phase 6 evidence](ai-authoring-phase-6.md) for the release acceptance matrix,
+exact local checks and remaining hosted/provider qualification. Full release is
+not closed: deployment/runtime evidence and explicitly capped real-output review
+are still required. This does not open engineering P2 or authorize deployment.
+
+## AI authoring Phase 5, 2026-09-06
+
+Review and legacy cutover are implemented and locally validated. Exact, auditable
+brief mapping preserves selected assets, approvals and published snapshots;
+ambiguous briefs require an explicit destination. Earlier queued media requests
+require Continue or Cancel with existing credit accounting, while active work
+keeps its worker compatibility. Legacy drafts use explicit Review and Publish
+without inline-media quotas. Cover and attached-asset protections remain.
+The settings media grid and obsolete bulk-media actions are retired; resolution
+links lead to current controls. See [Phase 5 evidence](ai-authoring-phase-5.md).
+Phase 6 release hardening is now authorized; hosted activation and capped
+real-output qualification remain release gates. Closed P1.5 architecture and the engineering P2 boundary are unchanged.
+
+## AI authoring Phase 4, 2026-09-06
+
+Contextual individual images are implemented and locally validated: explicit
+style/brief and cost acceptance, durable private versions, retained recovery,
+Generated/Unused discovery and atomic Use image. Course defaults and block
+style overrides persist without charging; existing leases, metering, registry
+permissions, cover requirements and discretionary inline media remain enforced.
+See [Phase 4 evidence](ai-authoring-phase-4.md) for migrations and exact validation.
+Hosted activation and capped real-output qualification remain separate release
+gates. Phase 5 was subsequently completed locally; Phase 6 is now authorized; see the current evidence above; the closed P1.5 architecture and engineering P2
+boundary are unchanged.
+
+## AI authoring Phase 3, 2026-09-06
+
+Editable course outlines, separately quoted staged lesson drafting and retained
+partial recovery are implemented. Authors choose quiz scope, explicitly save the
+course, resolve artwork requirements in Review and approve/publish separately.
+Generation uses audience/outcome/progression guidance and bounded prior teaching
+context to support intentional compositions with the existing structured blocks.
+Optional inline media remains discretionary; cover and attached-asset security
+checks remain enforced. The shared job, credit, lease and atomic receipt boundaries
+are preserved. Implementation and local validation are complete; see
+[Phase 3 evidence](ai-authoring-phase-3.md).
+
+This bounded product extension does not reopen engineering P2 or the closed P1.5
+architecture. Phases 4–6, hosted activation and paid model-quality evaluation remain
+outside this implementation.
+
+
+## AI authoring Phase 2, 2026-09-06
+
+Quiz and additional-lesson assistance are implemented with separately quoted,
+retained candidates and explicit selection/application. The shared job, lease,
+credit and receipt boundaries remain authoritative. Local closure evidence is
+recorded in [Phase 2 evidence](ai-authoring-phase-2.md).
+
+The user confirmed inline media is entirely discretionary: missing image/audio/
+video blocks and legacy required inline seeds no longer gate review or publishing.
+Existing cover requirements and attached-asset ownership, placement and revocation
+checks remain. This bounded authoring extension does not open engineering P2 or
+change the closed P1.5 architecture. Hosted activation is still pending.
+
+## AI authoring Phase 1 local closure, 2026-09-06
+
+The suggestion setup now uses concise copy and collapsed cost details, keeping
+the amount and any no-page charge visible before starting.
+
+Phase 1 implementation is locally closed. Hosted activation and live-provider
+verification remain separate rollout steps. The page pilot now starts with **Suggest next page**, without mandatory topic,
+page-type or placement decisions. One quoted request uses actual lesson teaching
+content to recommend and draft a useful page, or suggest reviewing the quiz.
+Editors can optionally steer it; inferred placement is revision-checked, and a
+quiz-review recommendation cannot be applied as a page. The old sidebar form is
+removed. The pilot also implements contextual cost review, durable progress and candidate
+recovery, and explicit revision-checked application. Courses and the lesson Pages
+step expose AI results; the pilot generates text/callouts/tables and purposeful
+optional media placeholders. Empty placeholders are omitted from learner views;
+inline placeholders are discretionary, including legacy required flags (Phase 2 clarification). Image placeholders prefill
+the media picker with a lesson-aware brief; edits autosave with the block.
+Live picker generation remains Phase 4. No media files are generated. Existing
+jobs, reservations, worker leases and publication boundaries remain authoritative.
+See [Phase 1 implementation and rollout](ai-authoring-phase-1.md) for migrations,
+the default-off rollout switch and verification evidence. Phases 4–6 remain planned. No hosted deployment or paid provider call has been made.
+
+## Planned AI authoring redesign, 2026-09-05
+
+The agreed product direction and phased implementation plan are recorded in
+[AI authoring experience redesign](ai-authoring-experience-redesign-plan.md).
+It covers visible, contextual generation for courses, lessons, pages, quizzes and
+images; text-first drafts with optional media placeholders; user-selected image
+style; explicit credit estimates; and retirement of the old bulk-media settings
+workflow. Existing durable jobs, P1.5E metering, permissions, media registry and
+publication boundaries remain the foundation. Phase 1 implementation is recorded
+above; Phase 2 and Phase 3 status is recorded above, and Phases 4–6 remain planned. The original planning work made no
+provider calls or database changes.
+
+The plan makes minimum placeholder/readiness/publication compatibility a Phase 3
+release gate, alongside course drafting. Phase 1 establishes durable results and
+application receipts: editors rediscover unapplied work through AI results, with
+no automatic expiry in the initial release; Phase 4 also exposes generated images
+in the media library. Stopping generation, closing a result and saving it have
+separate outcomes. Navigation during application preserves a recoverable saved,
+not-saved or checking-save status and never implies a refund.
+
+## Values screen refinement, 2026-09-05
+
+The Values step now uses a short introduction, selectable cards with visible
+value descriptions, compact focus choices and optional learner guidance.
+Individual add/save forms are replaced by a single local draft. Continue to
+Review, Back to quiz and internal navigation save the choices before leaving.
+Failed saves retain the draft and offer a retry; reload/close warns about unsaved
+changes. Saved guidance and nonstandard emphasis scores remain intact unless
+explicitly edited.
+
+The authenticated save action validates the full selection, checks lesson and
+value visibility through the existing RLS client, upserts selected values in one
+operation and removes only explicitly deselected values in a scoped operation.
+The two writes are idempotent; a partial failure invalidates affected caches,
+reports that some changes saved, and keeps the browser draft for retry. Concurrent
+additions are not deleted. No database policies, grants or publication checks
+change. Course and mission value editors retain their existing behavior.
+
+Validation: production build, typecheck, lint, all 20 guardrails and three focused
+domain tests pass. The connected production browser workflow passes with grouped
+saves, save-on-step-navigation, explicit removal, legacy score/guidance retention,
+and recovery from a simulated failed save. Values screenshots were inspected at
+1280px and 390px. The existing wider admin header remains outside this change.
+
+## Lesson values and review cleanup, 2026-09-05
+
+Lesson authoring now follows Pages → Quiz → Values → Review. Quiz and
+Preview are no longer duplicated in the lesson toolbar, and the separate value-tag
+panel and purple AI approval banner are removed. Values are an optional, visible
+step with descriptions, main/supporting/brief emphasis choices, and optional
+plain-language learner guidance. The refinement above replaces its initial
+per-value save controls. Stored scores and guidance are retained unless
+an editor changes them; recommendation behavior and existing save actions are
+unchanged. Values save when continuing, separately from lesson publication.
+
+Preview ends with a review summary linking to incomplete pages, quiz issues and
+values. Required text/image reviews use the existing explicit approval actions;
+viewing preview never approves or publishes. Publishing an AI lesson that still
+needs review saves the draft and takes the editor to that summary. Missing image
+assets link to course settings. Approval, media validation, audit, authentication,
+and checked publication boundaries remain intact. The values screen reads only
+lesson identity, aggregate page/question counts, dimensions and saved choices.
+
+Validation: production build, typecheck, lint and all 20 guardrails pass. Both
+focused browser cases pass: connected authoring/preview and publication/revert/
+stale-tab rejection. The connected case also verifies value creation, legacy
+score preservation, emphasis changes, accurate step counts, explicit text review
+with reviewer attribution, and blocked image approval when assets are missing.
+The final connected-flow rerun passes after correcting the aggregate quiz count.
+
+## Connected lesson authoring and preview, 2026-09-05
+
+Lesson editing now shows Pages → Quiz → Preview with page/question counts and
+explicit next steps. Continuing to quiz setup saves page edits first; the existing
+unsaved-navigation dialog now waits for a successful save before continuing.
+Quiz title/question saves, duplicates, deletes and AI requests return to quiz
+editing. Question lists refresh after saves while other form edits remain in
+place, and action notices confirm completion.
+Question forms submit the selected type and True/false labels, and save buttons
+show a pending state while their action completes.
+
+Lesson preview uses the learner's shared outer card and spacing for every page
+type, including Primer and Concept. Navigation includes the quiz after the last
+page, direct page/quiz links and actionable empty states. The former answer-key
+grid below quiz authoring is removed; quiz preview opens inside lesson preview.
+It uses the learner question card with local answer selection, feedback and a
+restart flow. Only the authorized admin route supplies answer keys; preview does
+not invoke learner attempt, progress or XP APIs. Quiz publication retains its
+existing lifecycle. No database or security policy change is included.
+
+Validation: production build, typecheck, lint, scoped whitespace checks and all
+20 guardrails pass. Three production browser cases pass: the connected authoring
+and preview workflow (all five page types at 1280px/390px and all three question
+types without learner API calls), draft publication/revert/stale-tab rejection,
+and real learner completion/quiz XP. The learner fixture now publishes through
+the supported RPC rather than relying on a raw status flag. Preview card bounds
+and content were checked at mobile width; the existing admin header's mobile
+overflow is outside this change.
+
+## Lesson save control placement, 2026-09-05
+
+The page settings card no longer duplicates the lesson toolbar's Save action.
+Manual save and autosave persist the full lesson draft, including all pages and
+blocks; publishing remains a separate action. Existing browser save helpers now
+use the toolbar control.
+
+Validation: typecheck, lint, scoped whitespace checks, the isolated production
+build and the focused publication browser workflow pass (save, publish, revert
+and stale-tab rejection).
+
+## Organisation media and permitted Platform Catalog assets, 2026-09-05
+
+The user authorised the reviewed media plan in `docs/org-media-platform-library-plan.md`.
+The local implementation adds organisation-owned reusable media, explicitly
+permitted platform stock, immutable versions and saved-placement authorisations.
+Org-to-org media sharing remains unavailable. Private upload/delivery paths and
+owner/admin controls preserve published references during withdrawal and flag
+revoked media for replacement.
+
+This is a bounded product extension with a cross-cutting ownership/storage
+migration. The user reports migrations through `20260905180000` pushed.
+The [regression report](media-release-evidence-2026-09-05.md) records the earlier
+1,078 database assertions, 171 unit tests, repository contracts and local gates.
+The subsequent [cutover report](media-cutover-evidence-2026-09-05.md) records the
+completed linked-database privacy cutover against the local Project VE app on
+port 3001: zero public media buckets, all 16 legacy public URLs denied, all 16
+stored files retained, and all 16 anonymous app delivery decisions preserved.
+Thirteen historical `metadata.previousUrl` values were preserved as bucket/path
+provenance before the unmodified closure guard passed. No new rights approvals,
+object deletions, schema changes, database resets or P2 work were performed.
+
+The shared video frame and empty video blocks are now 16:9. Three production
+browser cases pass, including reader/preview/editor dimensions at desktop and
+mobile widths, playback, seeking and revocation. Typecheck, lint and 20 guardrails
+also pass on the exact source/build recorded in the cutover report. Removing an
+org’s stock permission still follows ordinary withdrawal for saved placements.
+
+Hosted app deployment, migration-ledger parity, forward replay against a target
+snapshot, private-registry/reference reconciliation and every CDN edge remain
+outside the evidence captured here. Bucket closure is complete; full hosted
+production readiness is not claimed.
+
+
+## Admin router development follow-up, 2026-09-05
+
+The media picker now uses the current `AdminDrawer` implementation. The browser
+regression test covers opening, closing, reopening and retention of unsaved editor
+state. The publication test follows the current “More lesson actions” revert menu.
+Local browser builds continue to use `.next-e2e`, isolated from the running dev
+server's `.next`. The earlier exact `initialTree is not iterable` stale-tab error
+was not reproduced; the former parallel-route picker and its pathname lifecycle
+are no longer the current implementation.
+
+## Lesson draft/publication cutover, 2026-09-05
+
+`LESSON-DRAFT-PUBLISH-001` now includes both the database prerequisites and
+application cutover in `docs/lesson-draft-publish-spec.md`. Learners read published
+lesson metadata and content through tenant-scoped views; raw drafts remain
+editor-only. Durable page identities preserve ordinary and programme completion
+history when draft pages are deleted. Completion, quiz policy and mission readers
+use the published page set; historical pages do not inflate current completion.
+
+The builder saves its full draft in one transaction. Revision-checked save,
+publish and revert reject stale tabs with HTTP 409. Canonical saved values are
+reconciled without discarding edits made during an in-flight save. Admin previews
+remain draft previews; quiz content and tags retain their separate lifecycle.
+
+Local gates: 40 database files / 946 assertions, 163 unit tests, 17 guardrails,
+demo/live/publication repository contracts, quiz XP concurrency, economic
+integrity, and the focused publication Playwright workflow. Type parity,
+typecheck, lint and production build pass. The existing database, repository,
+guardrail and browser CI commands include the new coverage. The only full-tree
+whitespace finding is the pre-existing trailing blank line in
+`features/learning/admin/planner-commands.ts:450`.
+
+The user reported deploying the original `20260904100000` snapshot migration.
+The `20260904110000` published-read boundary and `20260904120000` atomic-builder
+migrations are applied locally; deploy them with the matching application as a
+coordinated release. Hosted rollout/smoke checks remain pending. No P2 work or
+local database reset was performed.
+
 ## Purpose
 
 Project Ve’s engineering remediation is complete.
@@ -57,6 +327,31 @@ Platform Admin retains superuser oversight, while scoped RPC/RLS checks prevent
 Catalog roles from mutating any organisation-owned record. The set-wise
 campaign operation explicitly leaves linked organisation rewards unchanged.
 This is a P1.5 ownership correction, not P2 work.
+
+Narrow follow-up `HOTFIX-P15F-CATALOG-INVITE-ACL-001` is implemented and
+locally validated. Platform Catalog invitation reads and self-service responses
+now use the signed caller JWT email within their existing public
+security-definer boundaries instead of calling the ACL-revoked private email
+helper. The private helper remains inaccessible to API roles, tenant and
+outsider denial remains intact, and the Catalog Staff server render is covered
+with a seeded pending invitation. This is a P1.5 boundary correction and does
+not authorise P2 work.
+
+The linked hosted project retained the legacy inline private-helper call in the
+invitation SELECT policy even after the boundary function was repaired.
+Migration `20260901010000_platform_catalog_invitation_policy_acl_fix.sql`
+rebinds that policy to the public security-definer predicate and reloads the
+PostgREST schema cache without broadening RLS or grants. The linked hosted
+deployment and public-schema read-back confirmed the repaired policy and zero
+remaining `authenticated_user_email` references.
+
+Hosted follow-up `HOTFIX-P15F-ORG-INVITE-ACL-001` completes the same repair for
+organisation invitation RLS, the `/org/my` pending-invitation read model and
+self-service invitation responses. Those organisation invitation boundaries
+now use the signed caller JWT email and no longer invoke the private helper.
+The linked hosted function definitions and private ACL were verified after
+deployment; the separate Catalog policy drift is addressed above. This does
+not reopen P1.5 or authorise P2 work.
 
 ---
 

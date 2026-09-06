@@ -1,40 +1,28 @@
+"use client";
+
+import Image from "@/components/media/MediaImage";
 import type { ReactNode } from "react";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { AdminSelect } from "@/components/admin/AdminSelect";
+import { CourseAudienceField } from "@/components/admin/CourseAudienceField";
 import { CourseCategoryField } from "@/components/admin/CourseCategoryField";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import { CourseOutcomesField } from "@/components/admin/CourseOutcomesField";
+import { CourseTitleField } from "@/components/admin/CourseTitleField";
+import { useMediaPicker } from "@/components/admin/MediaPickerProvider";
 import { getImageFitClass, getImagePresentationStyle } from "@/lib/image-presentation";
+import { cn } from "@/lib/utils";
 import type {
   AdminCourseRow,
   AdminLearningMediaAssetRow,
-  AdminLessonBlockRow,
-  AdminLessonPageRow,
-  AdminLessonRow,
-  AdminQuizQuestionRow,
-  AdminQuizRow,
 } from "@/lib/admin";
-import {
-  saveCourse,
-  saveLesson,
-  saveLessonBlock,
-  saveLessonPage,
-  saveQuizQuestion,
-  saveQuizSettings,
-} from "@/app/admin/courses/actions";
+import { saveCourse } from "@/app/admin/courses/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
-}
-
-function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-bold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
-}
-
-function helperTextClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
 }
 
 function getImageValue(image: Record<string, unknown> | null | undefined, key: "src" | "alt") {
@@ -42,139 +30,22 @@ function getImageValue(image: Record<string, unknown> | null | undefined, key: "
   return typeof value === "string" ? value : "";
 }
 
-function getImageNumber(image: Record<string, unknown> | null | undefined, key: "positionX" | "positionY", fallback: number) {
-  const value = Number(image?.[key]);
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function getLearningOutcomesValue(course?: AdminCourseRow | null) {
-  return Array.isArray(course?.learning_outcomes)
-    ? course.learning_outcomes.join("\n")
-    : "";
-}
-
-function FormSection({
-  title,
-  subtitle,
-  children,
-  collapsible = false,
-  defaultOpen = true,
-}: {
-  title: string;
-  subtitle?: string;
-  children: ReactNode;
-  collapsible?: boolean;
-  defaultOpen?: boolean;
-}) {
-  if (collapsible) {
-    return (
-      <details className="group rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-5" open={defaultOpen}>
-        <summary className="cursor-pointer list-none">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h3 className="text-base font-black">{title}</h3>
-              {subtitle ? (
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
-              ) : null}
-            </div>
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ve-panel)] text-sm font-black text-[var(--ve-muted-strong)] transition group-open:rotate-180">
-              ˅
-            </span>
-          </div>
-        </summary>
-        <div className="mt-4">{children}</div>
-      </details>
-    );
-  }
-
-  return (
-    <section className="rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-5">
-      <div className="mb-4">
-        <h3 className="text-base font-black">{title}</h3>
-        {subtitle ? (
-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function TutorNote({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] px-4 py-3 text-xs font-bold leading-5 text-[var(--ve-muted-strong)]">
-      {children}
-    </div>
-  );
-}
-
 function SubmitButton({ children }: { children: ReactNode }) {
   return (
-    <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+    <button className="rounded-[14px] bg-[var(--admin-primary)] px-5 py-3 text-sm font-black text-white" type="submit">
       {children}
     </button>
   );
 }
 
-function HiddenBlockFields({
-  lessonId,
-  block,
-}: {
-  lessonId: string;
-  block: AdminLessonBlockRow;
-}) {
+function FlatCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <>
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="blockId" type="hidden" value={block.id} />
-      <input name="pageId" type="hidden" value={block.page_id} />
-      <input name="blockType" type="hidden" value={block.block_type} />
-      <input name="sortOrder" type="hidden" value={block.sort_order} />
-    </>
-  );
-}
-
-function CoursePreview({
-  course,
-  estimatedMinutes,
-}: {
-  course?: AdminCourseRow | null;
-  estimatedMinutes: number;
-}) {
-  return (
-    <aside className="rounded-[22px] border border-[color:color-mix(in_srgb,var(--ve-green)_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_70%,var(--ve-card))] p-5">
-      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-        Learner card preview
-      </p>
-      <div className="mt-4 overflow-hidden rounded-[18px] bg-[var(--ve-card)] shadow-sm">
-        <div className="relative h-28 bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))]">
-          {getImageValue(course?.thumbnail, "src") ? (
-            <Image
-              alt=""
-              className={getImageFitClass(course?.thumbnail ?? null)}
-              fill
-              sizes="320px"
-              src={getImageValue(course?.thumbnail, "src")}
-              style={getImagePresentationStyle(course?.thumbnail ?? null)}
-            />
-          ) : null}
-        </div>
-        <div className="p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
-            {course?.category ?? "Values Education"}
-          </p>
-          <h4 className="mt-2 text-lg font-black leading-6">
-            {course?.title ?? "Course title"}
-          </h4>
-          <p className="mt-2 line-clamp-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-            {course?.description ?? "Short learner-facing course description."}
-          </p>
-          <p className="mt-3 text-[11px] font-black text-[var(--ve-muted)]">
-            {estimatedMinutes} min from lessons
-          </p>
-        </div>
-      </div>
-    </aside>
+    <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-6 shadow-sm">
+      <h3 className="mb-4 border-b border-[var(--admin-border-warm)] pb-3 text-base font-black text-[var(--admin-brand-hero)]">
+        {title}
+      </h3>
+      {children}
+    </div>
   );
 }
 
@@ -185,6 +56,7 @@ export function CourseForm({
   derivedMinutes,
   mediaLibraryAssets = [],
   nextSortOrder = 0,
+  stickyFooter = false,
 }: {
   aiGenerationAvailable?: boolean;
   categories?: string[];
@@ -192,739 +64,193 @@ export function CourseForm({
   derivedMinutes?: number;
   mediaLibraryAssets?: AdminLearningMediaAssetRow[];
   nextSortOrder?: number;
+  stickyFooter?: boolean;
 }) {
   const estimatedMinutes = derivedMinutes ?? course?.estimated_minutes ?? 0;
   const sortOrder = course?.sort_order ?? nextSortOrder;
   const currentCategory = (course?.category ?? "Values Education").trim() || "Values Education";
+  const isNewCourse = !course?.id;
+  const thumbnail = course?.thumbnail ?? null;
+  const { requestMedia } = useMediaPicker();
+  const formRef = useRef<HTMLFormElement>(null);
+  const savedFieldsRef = useRef("");
+  useEffect(() => { if (formRef.current) savedFieldsRef.current = JSON.stringify([...new FormData(formRef.current).entries()]); }, [course?.id]);
+  const [cover, setCover] = useState({
+    altText: getImageValue(thumbnail, "alt"),
+    fit: typeof thumbnail?.fit === "string" ? thumbnail.fit : "cover",
+    positionX: typeof thumbnail?.positionX === "number" ? thumbnail.positionX : 50,
+    positionY: typeof thumbnail?.positionY === "number" ? thumbnail.positionY : 50,
+    url: getImageValue(thumbnail, "src"),
+  });
+
+  async function pickCover() {
+    const picked = await requestMedia({
+      aiGenerationAvailable,
+      assetTypeFilter: ["cover", "image", "thumbnail"],
+      initialAltText: cover.altText,
+      initialFit: cover.fit,
+      initialPositionX: cover.positionX,
+      initialPositionY: cover.positionY,
+      initialUrl: cover.url,
+      libraryAssets: mediaLibraryAssets,
+      imageDraft: {
+        beforeAction: async () => {
+          if (formRef.current && JSON.stringify([...new FormData(formRef.current).entries()]) !== savedFieldsRef.current) throw new Error("Save your course changes before generating an image. Your edits are still here.");
+          return 0;
+        },
+        onApplied: () => {},
+      },
+      placementLabel: "Course thumbnail",
+      title: "Choose a cover image",
+      uploadContext: course?.id ? {
+        assetType: "thumbnail",
+        courseId: course.id,
+        placement: "course_thumbnail",
+      } : undefined,
+    });
+
+    if (picked) setCover(picked);
+  }
 
   return (
-    <form action={saveCourse} className="space-y-5">
+    <form ref={formRef} action={saveCourse} className="flex flex-col gap-6">
       <input name="courseId" type="hidden" value={course?.id ?? ""} />
       <input name="sortOrder" type="hidden" value={sortOrder} />
       <input name="estimatedMinutes" type="hidden" value={estimatedMinutes} />
-      <div className="grid gap-5 xl:grid-cols-[1fr_20rem]">
-        <div className="space-y-5">
-          <FormSection
-            collapsible
-            defaultOpen={!course?.id}
-            title="Course identity"
-            subtitle="Title, category, and card summary."
-          >
-            <div className="grid gap-4 xl:grid-cols-2">
+      {isNewCourse ? <input name="status" type="hidden" value="draft" /> : null}
+      <div className={cn("grid gap-6 md:grid-cols-12", stickyFooter && "pb-24")}>
+        <div className="flex flex-col gap-6 md:col-span-8">
+          <FlatCard title="Course Title &amp; Category">
+            <CourseTitleField defaultValue={course?.title ?? ""} />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <CourseCategoryField categories={categories} currentCategory={currentCategory} />
               <label>
-                <span className={labelClasses()}>Title</span>
-                <input className={fieldClasses()} name="title" required defaultValue={course?.title ?? ""} />
+                <span className={labelClasses()}>Difficulty Level</span>
+                <AdminSelect
+                  className="mt-2"
+                  defaultValue={course?.level ?? "beginner"}
+                  name="level"
+                  options={[
+                    { label: "Beginner", value: "beginner" },
+                    { label: "Intermediate", value: "intermediate" },
+                    { label: "Advanced", value: "advanced" },
+                  ]}
+                />
               </label>
             </div>
-            <CourseCategoryField categories={categories} currentCategory={currentCategory} />
             <label className="mt-4 block">
-              <span className={labelClasses()}>Description</span>
-              <textarea className={`${fieldClasses()} min-h-28 resize-none`} name="description" required defaultValue={course?.description ?? ""} />
-            </label>
-            <label className="mt-4 block">
-              <span className={labelClasses()}>Intended audience</span>
+              <span className={labelClasses()}>Brief Description</span>
               <textarea
-                className={`${fieldClasses()} min-h-24 resize-none`}
-                name="intendedAudience"
-                placeholder="Young adults, community learners, first-time civic education learners"
-                defaultValue={course?.intended_audience ?? ""}
+                className={`${fieldClasses()} min-h-28 resize-none`}
+                name="description"
+                placeholder="Summarize the core value of this course..."
+                required
+                defaultValue={course?.description ?? ""}
               />
             </label>
-            <label className="mt-4 block">
-              <span className={labelClasses()}>Learning outcomes</span>
-              <textarea
-                className={`${fieldClasses()} min-h-32 resize-none`}
-                name="learningOutcomes"
-                placeholder={"Explain one practical civic habit\nApply the habit in a daily scenario\nReflect on the effect of the choice"}
-                defaultValue={getLearningOutcomesValue(course)}
-              />
-              <p className={helperTextClasses()}>One outcome per line. These are canonical course fields used by manual and assisted courses.</p>
-            </label>
-          </FormSection>
+          </FlatCard>
 
-          <FormSection
-            collapsible
-            defaultOpen={!course?.id}
-            title="Publishing and pacing"
-            subtitle="Minutes come from lesson estimates."
-          >
-            <div className="grid gap-4 xl:grid-cols-3">
-              <label>
-                <span className={labelClasses()}>Level</span>
-                <select className={fieldClasses()} name="level" defaultValue={course?.level ?? "beginner"}>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </label>
-              <label>
-                <span className={labelClasses()}>Status</span>
-                <select className={fieldClasses()} name="status" defaultValue={course?.status ?? "draft"}>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-                {course?.ai_generated ? (
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]" title="Learners can see the course before all lessons are published.">
-                    The course can go live before all lessons are published.
-                  </p>
-                ) : null}
-              </label>
-              <div className="rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3">
-                <span className={labelClasses()}>Minutes</span>
-                <p className="mt-2 text-sm font-black tabular-nums">{estimatedMinutes}</p>
-                <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">From lessons</p>
+          <FlatCard title="Pedagogy &amp; Targeting">
+            <CourseAudienceField defaultValue={course?.intended_audience ?? ""} />
+            <div className="mt-5">
+              <CourseOutcomesField defaultValue={course?.learning_outcomes ?? []} />
+            </div>
+          </FlatCard>
+
+          {!isNewCourse ? (
+            <FlatCard title="Publishing and pacing">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label>
+                  <span className={labelClasses()}>Status</span>
+                  <AdminSelect
+                    className="mt-2"
+                    defaultValue={course?.status ?? "draft"}
+                    name="status"
+                    options={[
+                      { label: "Draft", value: "draft" },
+                      { label: "Published", value: "published" },
+                      { label: "Archived", value: "archived" },
+                    ]}
+                  />
+                  {course?.ai_generated ? (
+                    <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                      Learners can see the course before all lessons are published.
+                    </p>
+                  ) : null}
+                </label>
+                <div className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-4 py-3">
+                  <span className={labelClasses()}>Minutes</span>
+                  <p className="mt-2 text-sm font-black tabular-nums">{estimatedMinutes}</p>
+                  <p className="mt-1 text-[11px] font-bold text-[var(--admin-on-surface-variant)]">From lessons</p>
+                </div>
               </div>
-            </div>
-          </FormSection>
+            </FlatCard>
+          ) : null}
+        </div>
 
-          <FormSection
-            collapsible
-            defaultOpen={!course?.id}
-            title="Course thumbnail"
-            subtitle="Learner card image. Choose from media already approved for this course, or use an external URL."
-          >
-            <MediaPicker
-              aiGenerationAvailable={aiGenerationAvailable}
-              assetTypeFilter={["cover", "image", "thumbnail"]}
-              fieldNames={{
-                altText: "thumbnailAlt",
-                url: "thumbnailUrl",
+        <div className="flex flex-col gap-6 md:col-span-4">
+          <FlatCard title="Course Cover">
+            <input name="thumbnailUrl" type="hidden" value={cover.url} />
+            <input name="thumbnailAlt" type="hidden" value={cover.altText} />
+            <input name="imageFit" type="hidden" value={cover.fit} />
+            <input name="imagePositionX" type="hidden" value={cover.positionX} />
+            <input name="imagePositionY" type="hidden" value={cover.positionY} />
+            <button
+              className="relative block h-40 w-full overflow-hidden rounded-[14px] text-left"
+              onClick={() => {
+                void pickCover();
               }}
-              initialAltText={getImageValue(course?.thumbnail, "alt")}
-              initialUrl={getImageValue(course?.thumbnail, "src")}
-              libraryAssets={mediaLibraryAssets}
-              onPickAsset={undefined}
-              placementLabel="Course thumbnail"
-              previewDescription={course?.description}
-              previewEyebrow={course?.category}
-              previewMinutes={estimatedMinutes}
-              previewTitle={course?.title}
-              previewVariant="course-thumbnail"
-              uploadContext={course?.id ? {
-                assetType: "thumbnail",
-                courseId: course.id,
-                placement: "course_thumbnail",
-              } : undefined}
-            />
-          </FormSection>
+              type="button"
+            >
+              {cover.url ? (
+                <>
+                  <Image
+                    alt={cover.altText}
+                    className={getImageFitClass(cover)}
+                    fill
+                    sizes="320px"
+                    src={cover.url}
+                    style={getImagePresentationStyle(cover)}
+                  />
+                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/55 to-transparent p-3">
+                    <span className="text-xs font-bold text-white/90">Cover image &middot; click to change</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]">
+                  <svg aria-hidden="true" className="h-6 w-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
+                    <rect height="14" rx="2" width="18" x="3" y="5" />
+                    <circle cx="9" cy="10" r="1.5" />
+                    <path d="m21 16-5-4-4 3-3-2-6 5" />
+                  </svg>
+                  <span className="text-xs font-bold">Add a cover image</span>
+                </div>
+              )}
+            </button>
+          </FlatCard>
         </div>
-        <CoursePreview course={course} estimatedMinutes={estimatedMinutes} />
       </div>
-      <SubmitButton>Save course</SubmitButton>
-    </form>
-  );
-}
 
-export function LessonForm({
-  aiGenerationAvailable = true,
-  lesson,
-  courseId,
-  mediaLibraryAssets = [],
-}: {
-  aiGenerationAvailable?: boolean;
-  lesson?: AdminLessonRow | null;
-  courseId: string;
-  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
-}) {
-  return (
-    <form action={saveLesson} className="space-y-5">
-      <input name="lessonId" type="hidden" value={lesson?.id ?? ""} />
-      <input name="courseId" type="hidden" value={lesson?.course_id ?? courseId} />
-
-      <FormSection
-        title="Lesson setup"
-        subtitle="A lesson is the teachable unit. Pages carry the actual sub-lessons, examples, media, and reflection prompts."
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Title</span>
-            <input className={fieldClasses()} name="title" required defaultValue={lesson?.title ?? ""} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Status</span>
-            <select className={fieldClasses()} name="status" defaultValue={lesson?.status ?? "draft"}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-            {lesson?.ai_generated ? (
-              <p className={helperTextClasses()}>
-                AI-generated lessons can publish one by one after that lesson&apos;s text and media are approved.
-              </p>
-            ) : null}
-          </label>
-        </div>
-        <label className="mt-4 block">
-          <span className={labelClasses()}>Learner summary</span>
-          <textarea className={`${fieldClasses()} min-h-24 resize-none`} name="description" defaultValue={lesson?.description ?? ""} />
-        </label>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Sort order</span>
-            <input className={fieldClasses()} name="sortOrder" type="number" defaultValue={lesson?.sort_order ?? 0} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Minutes</span>
-            <input className={fieldClasses()} min={0} name="estimatedMinutes" type="number" defaultValue={lesson?.estimated_minutes ?? 0} />
-          </label>
-        </div>
-      </FormSection>
-
-      <FormSection title="Cover image">
-        <MediaPicker
-          aiGenerationAvailable={aiGenerationAvailable}
-          assetTypeFilter={["cover", "image", "thumbnail"]}
-          fieldNames={{
-            altText: "coverImageAlt",
-            url: "coverImageUrl",
-          }}
-          initialAltText={getImageValue(lesson?.cover_image, "alt")}
-          initialUrl={getImageValue(lesson?.cover_image, "src")}
-          libraryAssets={mediaLibraryAssets}
-          placementLabel="Lesson cover"
-          uploadContext={lesson?.id ? {
-            assetType: "cover",
-            courseId,
-            lessonId: lesson.id,
-            placement: "lesson_cover",
-          } : undefined}
-        />
-      </FormSection>
-
-      <FormSection
-        title="Quiz access and retry rules"
-        subtitle="These rules protect XP earning while still allowing practice and rereading."
-      >
-        <div className="grid gap-4 md:grid-cols-4">
-          <label>
-            <span className={labelClasses()}>Retry mode</span>
-            <select className={fieldClasses()} name="retryMode" defaultValue={lesson?.retry_mode ?? "anytime"}>
-              <option value="anytime">Anytime</option>
-              <option value="cooldown">Cooldown</option>
-              <option value="disabled">Disabled</option>
-            </select>
-          </label>
-          <label>
-            <span className={labelClasses()}>Cooldown seconds</span>
-            <input className={fieldClasses()} min={0} name="retryCooldownSeconds" type="number" defaultValue={lesson?.retry_cooldown_seconds ?? ""} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Rewarded attempts</span>
-            <input className={fieldClasses()} min={1} name="maxEarningAttempts" type="number" defaultValue={lesson?.max_earning_attempts ?? ""} />
-          </label>
-          <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-            <label className="flex items-start gap-3 text-sm font-black">
-              <input className="mt-1" name="retryRequiresReread" type="checkbox" defaultChecked={lesson?.retry_requires_reread ?? true} />
-              <span>
-                Must reread
-                <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-                  Retrying requires all pages again.
-                </span>
-              </span>
-            </label>
-          </div>
-        </div>
-        <label className="mt-4 flex items-start gap-3 rounded-[16px] bg-[var(--ve-panel)] p-4 text-sm font-black">
-          <input className="mt-1" name="quizRequiresLessonCompletion" type="checkbox" defaultChecked={lesson?.quiz_requires_lesson_completion ?? true} />
-          <span>
-            Quiz requires lesson completion
-            <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
-              Learners must read every page before the quiz becomes available.
-            </span>
-          </span>
-        </label>
-      </FormSection>
-
-      <SubmitButton>Save lesson</SubmitButton>
-    </form>
-  );
-}
-
-export function LessonPageForm({
-  lessonId,
-  mediaLibraryAssets = [],
-  page,
-  defaultPageNumber,
-}: {
-  lessonId: string;
-  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
-  page?: AdminLessonPageRow | null;
-  defaultPageNumber?: number;
-}) {
-  return (
-    <form action={saveLessonPage} className="space-y-4">
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="pageId" type="hidden" value={page?.id ?? ""} />
-      <div className="grid gap-3 md:grid-cols-[1fr_8rem]">
-        <label>
-          <span className={labelClasses()}>Page title</span>
-          <input className={compactFieldClasses()} name="title" required defaultValue={page?.title ?? ""} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Number</span>
-          <input className={compactFieldClasses()} min={1} name="pageNumber" required type="number" defaultValue={page?.page_number ?? defaultPageNumber ?? 1} />
-        </label>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label>
-          <span className={labelClasses()}>Subtitle</span>
-          <input className={compactFieldClasses()} name="subtitle" defaultValue={page?.subtitle ?? ""} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Page type</span>
-          <select className={compactFieldClasses()} name="pageType" defaultValue={page?.page_type ?? "concept"}>
-            <option value="primer">Primer</option>
-            <option value="concept">Concept</option>
-            <option value="example">Example</option>
-            <option value="reflection">Reflection</option>
-            <option value="summary">Summary</option>
-          </select>
-        </label>
-      </div>
-      <MediaPicker
-        assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
-        fieldNames={{
-          altText: "coverImageAlt",
-          url: "coverImageUrl",
-        }}
-        initialAltText={getImageValue(page?.cover_image, "alt")}
-        initialFit={String(page?.cover_image?.fit ?? "cover")}
-        initialPositionX={getImageNumber(page?.cover_image, "positionX", 50)}
-        initialPositionY={getImageNumber(page?.cover_image, "positionY", 50)}
-        initialUrl={getImageValue(page?.cover_image, "src")}
-        libraryAssets={mediaLibraryAssets}
-        placementLabel="Page cover"
-        uploadContext={{
-          assetType: "cover",
-          lessonId,
-          placement: "page_cover",
-        }}
-      />
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save page
-      </button>
-    </form>
-  );
-}
-
-export function LessonBlockForm({
-  lessonId,
-  pages,
-  block,
-  defaultSortOrder,
-}: {
-  lessonId: string;
-  pages: AdminLessonPageRow[];
-  block?: AdminLessonBlockRow | null;
-  defaultSortOrder?: number;
-}) {
-  return (
-    <form action={saveLessonBlock} className="space-y-4">
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="blockId" type="hidden" value={block?.id ?? ""} />
-      <TutorNote>
-        Choose the block type first, then fill only the fields that apply. Table rows use one row per line and comma-separated cells.
-      </TutorNote>
-      <div className="grid gap-3 md:grid-cols-4">
-        <label>
-          <span className={labelClasses()}>Page</span>
-          <select className={compactFieldClasses()} name="pageId" required defaultValue={block?.page_id ?? ""}>
-            <option value="">Select page</option>
-            {pages.map((page) => (
-              <option key={page.id} value={page.id}>{page.page_number}. {page.title}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className={labelClasses()}>Type</span>
-          <select className={compactFieldClasses()} name="blockType" defaultValue={block?.block_type ?? "text"}>
-            <option value="text">Text</option>
-            <option value="callout">Callout</option>
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-            <option value="table">Table</option>
-          </select>
-        </label>
-        <label>
-          <span className={labelClasses()}>Sort order</span>
-          <input className={compactFieldClasses()} name="sortOrder" type="number" defaultValue={block?.sort_order ?? defaultSortOrder ?? 1} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Variant</span>
-          <input className={compactFieldClasses()} name="variant" placeholder="key_point" defaultValue={String(block?.payload.variant ?? "")} />
-        </label>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label>
-          <span className={labelClasses()}>Heading / title</span>
-          <input className={compactFieldClasses()} name="heading" defaultValue={String(block?.payload.heading ?? block?.payload.title ?? "")} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Media URL</span>
-          <input className={compactFieldClasses()} name="src" defaultValue={String(block?.payload.src ?? "")} />
-        </label>
-      </div>
-      <label className="block">
-        <span className={labelClasses()}>Body / transcript</span>
-        <textarea className={`${compactFieldClasses()} min-h-24 resize-none`} name="body" defaultValue={String(block?.payload.body ?? block?.payload.transcript ?? "")} />
-      </label>
-      <div className="grid gap-3 md:grid-cols-3">
-        <label>
-          <span className={labelClasses()}>Alt text</span>
-          <input className={compactFieldClasses()} name="alt" defaultValue={String(block?.payload.alt ?? "")} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Caption</span>
-          <input className={compactFieldClasses()} name="caption" defaultValue={String(block?.payload.caption ?? "")} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Table columns</span>
-          <input className={compactFieldClasses()} name="columns" placeholder="Column 1, Column 2" defaultValue={Array.isArray(block?.payload.columns) ? block?.payload.columns.join(", ") : ""} />
-        </label>
-      </div>
-      <label className="block">
-        <span className={labelClasses()}>Table rows</span>
-        <textarea
-          className={`${compactFieldClasses()} min-h-24 resize-none font-mono text-xs`}
-          name="rows"
-          placeholder={"Value one, Value two\nAnother value, Another value"}
-          defaultValue={Array.isArray(block?.payload.rows) ? block.payload.rows.map((row) => Array.isArray(row) ? row.join(", ") : String(row)).join("\n") : ""}
-        />
-      </label>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save block
-      </button>
-    </form>
-  );
-}
-
-const blockToolbarItems = [
-  { type: "text", label: "Text" },
-  { type: "callout", label: "Callout" },
-  { type: "image", label: "Image" },
-  { type: "video", label: "Video" },
-  { type: "audio", label: "Audio" },
-  { type: "table", label: "Table" },
-];
-
-export function AddBlockToolbar({
-  lessonId,
-  pageId,
-  nextSortOrder,
-}: {
-  lessonId: string;
-  pageId: string;
-  nextSortOrder: number;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-2">
-      {blockToolbarItems.map((item) => (
-        <form action={saveLessonBlock} key={item.type}>
-          <input name="lessonId" type="hidden" value={lessonId} />
-          <input name="blockId" type="hidden" value="" />
-          <input name="pageId" type="hidden" value={pageId} />
-          <input name="blockType" type="hidden" value={item.type} />
-          <input name="sortOrder" type="hidden" value={nextSortOrder} />
-          <input name="variant" type="hidden" value="key_point" />
-          <input name="heading" type="hidden" value="" />
-          <input name="body" type="hidden" value="" />
-          <input name="src" type="hidden" value="" />
-          <input name="alt" type="hidden" value="" />
-          <input name="caption" type="hidden" value="" />
-          <input name="columns" type="hidden" value="" />
-          <input name="rows" type="hidden" value="" />
+      {stickyFooter ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-end gap-3 border-t border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]/95 p-4 backdrop-blur md:left-72">
           <button
-            className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black transition hover:bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-panel))] hover:text-[var(--ve-green)]"
+            className="rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-3 text-sm font-bold text-[var(--admin-primary)] transition hover:bg-[var(--admin-surface-container-low)]"
+            name="returnTo"
+            type="submit"
+            value="index"
+          >
+            Save as Draft
+          </button>
+          <button
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--admin-primary)] px-8 py-3 text-sm font-bold text-white transition hover:brightness-95"
             type="submit"
           >
-            + {item.label}
+            Create Workspace →
           </button>
-        </form>
-      ))}
-    </div>
-  );
-}
-
-export function ContentBlockEditor({
-  lessonId,
-  mediaLibraryAssets = [],
-  block,
-}: {
-  lessonId: string;
-  mediaLibraryAssets?: AdminLearningMediaAssetRow[];
-  block: AdminLessonBlockRow;
-}) {
-  const payload = block.payload ?? {};
-  const title = String(payload.title ?? payload.heading ?? "");
-  const body = String(payload.body ?? payload.transcript ?? "");
-
-  if (block.block_type === "image") {
-    return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
-        <div className="flex items-center justify-between gap-3">
-          <p className={labelClasses()}>Image block</p>
-          <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
         </div>
-        <MediaPicker
-          assetTypeFilter={["cover", "image", "infographic", "thumbnail"]}
-          caption={String(payload.caption ?? "")}
-          fieldNames={{
-            altText: "alt",
-            caption: "caption",
-            fit: "fit",
-            positionX: "positionX",
-            positionY: "positionY",
-            url: "src",
-          }}
-          initialAltText={String(payload.alt ?? "")}
-          initialFit={String(payload.fit ?? "cover")}
-          initialPositionX={Number(payload.positionX ?? 50)}
-          initialPositionY={Number(payload.positionY ?? 50)}
-          initialUrl={String(payload.src ?? "")}
-          libraryAssets={mediaLibraryAssets}
-          placementLabel="Image block"
-          showCaption
-          uploadContext={{
-            assetType: "image",
-            lessonId,
-            placement: "image_block",
-          }}
-        />
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save image
-        </button>
-      </form>
-    );
-  }
-
-  if (block.block_type === "video" || block.block_type === "audio") {
-    const mediaLabel = block.block_type === "video" ? "Video" : "Audio";
-
-    return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
-        <div className="flex items-center justify-between gap-3">
-          <p className={labelClasses()}>{mediaLabel} block</p>
-          <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>{mediaLabel} title</span>
-            <input className={compactFieldClasses()} name="heading" defaultValue={title} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Media URL</span>
-            <input className={compactFieldClasses()} name="src" defaultValue={String(payload.src ?? "")} />
-          </label>
-        </div>
-        <label className="block">
-          <span className={labelClasses()}>Transcript / notes</span>
-          <textarea className={`${compactFieldClasses()} min-h-24 resize-none`} name="body" defaultValue={body} />
-        </label>
-        <label className="block">
-          <span className={labelClasses()}>Caption</span>
-          <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save {mediaLabel.toLowerCase()}
-        </button>
-      </form>
-    );
-  }
-
-  if (block.block_type === "table") {
-    return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
-        <div className="flex items-center justify-between gap-3">
-          <p className={labelClasses()}>Table block</p>
-          <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label>
-            <span className={labelClasses()}>Table title</span>
-            <input className={compactFieldClasses()} name="heading" defaultValue={title} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Columns</span>
-            <input className={compactFieldClasses()} name="columns" placeholder="Situation, Fair action" defaultValue={Array.isArray(payload.columns) ? payload.columns.join(", ") : ""} />
-          </label>
-        </div>
-        <label className="block">
-          <span className={labelClasses()}>Rows</span>
-          <textarea
-            className={`${compactFieldClasses()} min-h-28 resize-none font-mono text-xs`}
-            name="rows"
-            placeholder={"A queue is long, Wait your turn\nA teammate made a mistake, Correct kindly"}
-            defaultValue={Array.isArray(payload.rows) ? payload.rows.map((row) => Array.isArray(row) ? row.join(", ") : String(row)).join("\n") : ""}
-          />
-        </label>
-        <label className="block">
-          <span className={labelClasses()}>Caption</span>
-          <input className={compactFieldClasses()} name="caption" defaultValue={String(payload.caption ?? "")} />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save table
-        </button>
-      </form>
-    );
-  }
-
-  if (block.block_type === "callout") {
-    return (
-      <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-        <HiddenBlockFields block={block} lessonId={lessonId} />
-        <div className="flex items-center justify-between gap-3">
-          <p className={labelClasses()}>Callout block</p>
-          <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-[10rem_1fr]">
-          <label>
-            <span className={labelClasses()}>Variant</span>
-            <select className={compactFieldClasses()} name="variant" defaultValue={String(payload.variant ?? "key_point")}>
-              <option value="key_point">Key point</option>
-              <option value="tip">Tip</option>
-              <option value="warning">Warning</option>
-              <option value="example">Example</option>
-            </select>
-          </label>
-          <label>
-            <span className={labelClasses()}>Title</span>
-            <input className={compactFieldClasses()} name="heading" defaultValue={title} />
-          </label>
-        </div>
-        <label className="block">
-          <span className={labelClasses()}>Body</span>
-          <textarea className={`${compactFieldClasses()} min-h-24 resize-none`} name="body" defaultValue={body} />
-        </label>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-          Save callout
-        </button>
-      </form>
-    );
-  }
-
-  return (
-    <form action={saveLessonBlock} className="space-y-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-      <HiddenBlockFields block={block} lessonId={lessonId} />
-      <div className="flex items-center justify-between gap-3">
-        <p className={labelClasses()}>Text block</p>
-        <span className="text-xs font-black text-[var(--ve-muted)]">#{block.sort_order}</span>
-      </div>
-      <label className="block">
-        <span className={labelClasses()}>Heading</span>
-        <input className={compactFieldClasses()} name="heading" defaultValue={title} />
-      </label>
-      <label className="block">
-        <span className={labelClasses()}>Text</span>
-        <textarea className={`${compactFieldClasses()} min-h-36 resize-none text-base leading-7`} name="body" defaultValue={body} />
-      </label>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save text
-      </button>
-    </form>
-  );
-}
-
-export function QuizSettingsForm({
-  lessonId,
-  quiz,
-}: {
-  lessonId: string;
-  quiz: AdminQuizRow;
-}) {
-  return (
-    <form action={saveQuizSettings} className="space-y-4">
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="quizId" type="hidden" value={quiz.id} />
-      <FormSection
-        title="Quiz publishing"
-        subtitle="Publish the quiz only when the lesson pages and scored questions are ready for learners."
-      >
-        <div className="grid gap-4 md:grid-cols-[1fr_12rem]">
-          <label>
-            <span className={labelClasses()}>Quiz title</span>
-            <input className={fieldClasses()} name="quizTitle" required defaultValue={quiz.title} />
-          </label>
-          <label>
-            <span className={labelClasses()}>Quiz status</span>
-            <select className={fieldClasses()} name="quizStatus" defaultValue={quiz.status}>
-              <option value="draft">Draft</option>
-              <option disabled={Boolean(quiz.ai_generated && quiz.status !== "published")} value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-          </label>
-        </div>
-        <p className={helperTextClasses()}>Current version: {quiz.version}. Editing questions increments the version for future attempts.</p>
-      </FormSection>
-      <SubmitButton>Save quiz</SubmitButton>
-    </form>
-  );
-}
-
-export function QuizQuestionForm({
-  lessonId,
-  quiz,
-  question,
-  defaultQuestionOrder,
-}: {
-  lessonId: string;
-  quiz: AdminQuizRow;
-  question?: AdminQuizQuestionRow | null;
-  defaultQuestionOrder?: number;
-}) {
-  const options = question?.options ?? [];
-
-  return (
-    <form action={saveQuizQuestion} className="space-y-4">
-      <input name="lessonId" type="hidden" value={lessonId} />
-      <input name="quizId" type="hidden" value={quiz.id} />
-      <input name="questionId" type="hidden" value={question?.id ?? ""} />
-      <div className="grid gap-3 md:grid-cols-[1fr_11rem_7rem_7rem]">
-        <label>
-          <span className={labelClasses()}>Question</span>
-          <input className={compactFieldClasses()} name="prompt" required defaultValue={question?.prompt ?? ""} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Type</span>
-          <select className={compactFieldClasses()} name="questionType" defaultValue={question?.question_type ?? "single_choice"}>
-            <option value="single_choice">Single choice</option>
-            <option value="multiple_choice">Multiple choice</option>
-            <option value="true_false">True/false</option>
-          </select>
-        </label>
-        <label>
-          <span className={labelClasses()}>XP</span>
-          <input className={compactFieldClasses()} min={1} name="xp" required type="number" defaultValue={question?.xp ?? 10} />
-        </label>
-        <label>
-          <span className={labelClasses()}>Order</span>
-          <input className={compactFieldClasses()} min={1} name="questionOrder" required type="number" defaultValue={question?.question_order ?? defaultQuestionOrder ?? 1} />
-        </label>
-      </div>
-      <label className="block">
-        <span className={labelClasses()}>Explanation</span>
-        <input className={compactFieldClasses()} name="explanation" defaultValue={question?.explanation ?? ""} />
-        <p className={helperTextClasses()}>Used internally for review and future feedback. We do not expose the correct answer on the result screen.</p>
-      </label>
-      <div className="grid gap-3 md:grid-cols-2">
-        {[1, 2, 3, 4].map((index) => (
-          <label className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4" key={index}>
-            <span className={labelClasses()}>Option {index}</span>
-            <input className={compactFieldClasses()} name={`option${index}`} defaultValue={options[index - 1]?.label ?? ""} />
-            <span className="mt-3 flex items-center gap-2 text-xs font-bold">
-              <input name={`correct${index}`} type="checkbox" defaultChecked={options[index - 1]?.is_correct ?? false} />
-              Correct answer
-            </span>
-          </label>
-        ))}
-      </div>
-      <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
-        Save question
-      </button>
+      ) : (
+        <SubmitButton>Save course</SubmitButton>
+      )}
     </form>
   );
 }
