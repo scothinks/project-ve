@@ -70,8 +70,9 @@ Remaining fixes before activation:
    first-result and completion times without imposing a provider-latency fiction.
 5. Supply isolated admin and outsider tenant fixtures, then run denial, private
    media delivery, public denial and storage/reference reconciliation. The optional
-   workflow media step needs the hosted Supabase URL, publishable key and service
-   role key in the `staging` environment.
+   workflow media step now needs the hosted Supabase URL, publishable key, access
+   token, and project ref; keep the media smoke disabled until hosted auth and
+   fixture readiness are confirmed.
 6. Reconcile jobs, credits and media after the measured runs. Investigate any
    nonzero recovery `deferred` count before release.
 7. Exercise `AI_AUTHORING_PAGE_PILOT_ENABLED=false` against the deployed schema,
