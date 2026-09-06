@@ -1,22 +1,32 @@
 # AI authoring Phase 6: release hardening
 
-Status, 2026-09-06: Local implementation and validation are complete; the full release gate remains open.
-Hosted activation and representative provider-output qualification are pending a
-deployment target and an explicitly authorized spending cap. This is AI Authoring
-Phase 6, not authorization for engineering P2. Tracking: [AI Authoring #71](https://github.com/scothinks/project-ve/issues/71).
+Status, 2026-09-06: commit `369d3723807b715f2e49c27e02d23759b0b7411c`
+is deployed to the named staging branch and its immutable Vercel deployment. The
+full release gate remains open for protected hosted qualification, maintenance
+cadence, measured operation timings, tenant/media and reconciliation smoke,
+rollback, and capped provider-output review. This is AI Authoring Phase 6, not
+authorization for engineering P2. Tracking: [AI Authoring #71](https://github.com/scothinks/project-ve/issues/71).
 
-## Pre-deploy blocker audit
+## Deployment and blocker audit
 
-The named staging alias is
+Before deployment, the named staging alias was
 `https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app`.
-On 2026-09-06 it redirected unauthenticated requests to Vercel SSO. GitHub's public
+It redirected unauthenticated requests to Vercel SSO. GitHub's public
 deployment record identifies Preview deployment `6163386672`, immutable URL
 `https://project-l8805cm9e-oby-douglas-projects.vercel.app`, at commit
 `ffcbffb80dd03dfd494619f5b7e3d2366cff31e9`. That commit is the local branch base;
-the Phase 1–6 work is still in the local working tree and is therefore absent from
-the named deployment.
+the Phase 1–6 work was absent from that deployment.
 The machine-readable result is retained in
 [pre-deploy qualification evidence](evidence/ai-authoring-phase-6/predeploy-qualification-2026-09-06.json).
+
+After deployment, GitHub deployment `6296015634` identifies immutable URL
+`https://project-c5oquntf3-oby-douglas-projects.vercel.app` and exactly matches
+commit `369d3723807b715f2e49c27e02d23759b0b7411c`. The branch alias loads the
+Project VE application through an authenticated Vercel browser session. Automated
+HTTP probes still receive the expected Vercel SSO redirect, so the worker denial
+probe and all authenticated hosted measurements remain blocked until the staging
+environment exposes its automation bypass secret to the manual qualification
+workflow. See the [post-deploy qualification evidence](evidence/ai-authoring-phase-6/hosted-qualification-2026-09-06.json).
 
 The ordinary CI workflow now runs `npm run test:release-readiness`. This
 secret-free merge gate checks the coordinated migration files, `after()` dispatch,
@@ -34,34 +44,31 @@ requests remain behind the separately approved spending cap and must be recorded
 in a completed copy of
 `docs/evidence/ai-authoring-phase-6/hosted-qualification.template.json`.
 
-Required fixes before activation:
+Remaining fixes before activation:
 
-1. Commit and deploy the complete coordinated application and migration revision,
-   then run the hosted workflow with that full SHA. A branch alias alone is not
-   revision evidence.
-2. Add `VERCEL_AUTOMATION_BYPASS_SECRET` to the GitHub `staging` environment so CI
+1. Add `VERCEL_AUTOMATION_BYPASS_SECRET` to the GitHub `staging` environment so CI
    can reach the protected Preview without weakening Deployment Protection.
-3. Provide read-only migration-ledger access and capture forward replay against a
+2. Provide read-only migration-ledger access and capture forward replay against a
    target snapshot. RPC presence alone does not establish ledger parity or function
    body compatibility.
-4. Replace the daily 08:30 UTC worker fallback with an observed maintenance path
+3. Replace the daily 08:30 UTC worker fallback with an observed maintenance path
    no slower than every five minutes. Vercel Hobby accepts only daily cron; use a
    Pro/Enterprise cron or an authenticated external scheduler if the project stays
    on Hobby. Keep `CRON_SECRET` configured and record one actual invocation.
-5. On the exact deployment, measure acknowledgement at or below two seconds and
+4. On the exact deployment, measure acknowledgement at or below two seconds and
    persisted dispatch visibility at or below five seconds for course outline,
    course draft, lesson plan, lesson draft, page, quiz and image operations. Record
    first-result and completion times without imposing a provider-latency fiction.
-6. Supply isolated admin and outsider tenant fixtures, then run denial, private
+5. Supply isolated admin and outsider tenant fixtures, then run denial, private
    media delivery, public denial and storage/reference reconciliation. The optional
    workflow media step needs the hosted Supabase URL, publishable key and service
    role key in the `staging` environment.
-7. Reconcile jobs, credits and media after the measured runs. Investigate any
+6. Reconcile jobs, credits and media after the measured runs. Investigate any
    nonzero recovery `deferred` count before release.
-8. Exercise `AI_AUTHORING_PAGE_PILOT_ENABLED=false` against the deployed schema,
+7. Exercise `AI_AUTHORING_PAGE_PILOT_ENABLED=false` against the deployed schema,
    confirm legacy review and accepted history remain available, then restore the
    intended staging value. This is the rollback smoke; it must not delete results.
-9. Approve and record a provider spending cap before representative text/image
+8. Approve and record a provider spending cap before representative text/image
    quality review. The CI workflow must remain read-only with respect to paid work.
 
 ## Integrated implementation
@@ -124,9 +131,9 @@ were retained while correcting the loading layout.
 
 ## Validation
 
-Tests use local Supabase and deterministic provider/worker fixtures. No paid model
-calls, hosted migrations, deployment, commit or push were performed. Local schema
-migrations were applied incrementally; the database was not reset.
+Tests use local Supabase and deterministic provider/worker fixtures. This gate
+refresh made no paid model calls and changed no hosted data or configuration. The
+application revision was deployed separately before this post-deploy audit.
 
 | Command / scope | Result |
 | --- | --- |
@@ -141,12 +148,16 @@ migrations were applied incrementally; the database was not reset.
 | `npm run db:types:local:check` | Passed after local type regeneration |
 | `npm run typecheck`, `npm run lint` | Passed; focused lint covers subsequent test edits |
 | `npm run test:release-readiness` | 9/9 deployable source and workflow contracts passed |
+| `PROJECT_VE_E2E_KEEP_BUILD_CACHE=1 npm run test:e2e` | 39/39 browser scenarios passed in 3.8 minutes after aligning the CMS and institutional fixtures with the current routed UI, media-placement flow and immutable published lesson snapshots |
+| `npm run ci` | Passed: typecheck, lint, 35 guardrail tests, 9/9 release-readiness checks, 231 unit tests and production build |
 | Updated CI memory boundary | Repeated full-tree checks exhausted Node's default heap in build and typecheck; both commands now use a bounded 4 GB heap, and the production build completed successfully |
 | Production Playwright release matrix | 14/15 passed initially; after the reproduced layout fix, all 7 affected course/page/recovery/picker cases passed. Sixteen distinct browser scenarios have passing evidence across the initial run and affected reruns. |
 
 The final production build, including type and lint validation, passed through the
 Playwright harness. Screenshots and exact validation excerpts are retained in
 [evidence](evidence/ai-authoring-phase-6/validation.txt); the
+[post-deploy CI gate refresh](evidence/ai-authoring-phase-6/ci-gate-refresh-2026-09-06.json)
+records the current full-suite results and remaining hosted blockers. The
 [working-tree manifest](evidence/ai-authoring-phase-6/working-tree-manifest.json)
 records the baseline commit and hashes of integrated/Phase 6 paths, not a deployed
 revision. The mobile stopped state and contextual image drawer were visually
@@ -158,10 +169,11 @@ and quiz questions, then checks projections by its real ID. The complete
 repository wrapper passed after this correction.
 
 Existing CI discovers the added unit, database and browser tests through its
-current commands. No second test platform or new manual-only automated gate was
-introduced. The all-application E2E suite and `test:remediation:local` reset chain
-were not claimed as run; validation used the affected release journeys and the
-individual relevant integration gates without a local database reset.
+current commands. No second test platform was introduced. The complete
+application E2E suite now has current passing evidence. The
+`test:remediation:local` reset chain was not repeated locally after that full E2E
+run; its component checks are represented by the earlier database/repository/
+concurrency evidence and the current application and browser gates.
 
 ## Hosted release evidence still required
 

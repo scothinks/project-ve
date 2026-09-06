@@ -53,16 +53,16 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     await page.getByPlaceholder("Write the question").fill("The quiz follows the lesson pages.");
     await page.getByPlaceholder("Why is this the correct answer?").fill("The quiz checks what you learned.");
     await page.getByRole("button", { name: "Create question", exact: true }).click();
-    await expect(page).toHaveURL(new RegExp(`${base}/quiz\\?notice=`));
     await expect(page.getByRole("heading", { name: "1 questions", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Create question", exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(`${baseURL}${base}/quiz`);
     expect(checked(await f.editor.from("quiz_questions").select("question_type").eq("quiz_id", quiz.id).single()).question_type).toBe("true_false");
     await page.getByPlaceholder("Write the question").fill("A saved question stays in the quiz editor.");
     await page.getByRole("button", { name: "Save question", exact: true }).click();
     await expect.poll(async () => checked(await f.editor.from("quiz_questions").select("prompt").eq("quiz_id", quiz.id).single()).prompt).toBe("A saved question stays in the quiz editor.");
     await expect(page.getByRole("button", { name: "Save question", exact: true })).toBeEnabled();
     await expect(page.getByPlaceholder("Write the question")).toHaveValue("A saved question stays in the quiz editor.");
-    await expect(page).toHaveURL(new RegExp(`${base}/quiz\\?notice=`));
+    await expect(page).toHaveURL(`${baseURL}${base}/quiz`);
     await page.locator('input[name="quizTitle"]').fill("Check your understanding");
     await page.getByRole("button", { name: "Save quiz title", exact: true }).click();
     await expect(page.getByText("Quiz settings saved.", { exact: true })).toBeVisible();
@@ -158,7 +158,7 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     await page.getByRole("navigation", { name: "Preview contents" }).getByRole("link", { name: "Review", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Before you publish" })).toBeVisible();
     await expect(page.getByText("1 value chosen to help learners discover this lesson.", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark text reviewed", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Mark lesson reviewed", exact: true })).toHaveCount(0);
     // Approval remains an explicit action, reached through review rather than the old banner.
     checked(await f.service.from("courses").update({ ai_generated: true, ai_text_status: "draft" }).eq("id", parent.course));
     checked(await f.service.from("lessons").update({ ai_generated: true, ai_text_status: "draft", ai_publish_status: "not_ready" }).eq("id", lessonId));
@@ -170,16 +170,14 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     await expect(page.getByRole("button", { name: "Approve", exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "Publish", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Before you publish" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark text reviewed", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark images reviewed", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Mark lesson reviewed", exact: true })).toBeVisible();
     expect(checked(await f.editor.from("lessons").select("ai_text_status, status").eq("id", lessonId).single())).toEqual({ ai_text_status: "draft", status: "draft" });
-    await page.getByRole("checkbox", { name: "I have reviewed the lesson text and quiz.", exact: true }).check();
-    await page.getByRole("button", { name: "Mark text reviewed", exact: true }).click();
-    await expect(page.getByText("Text review complete.", { exact: true })).toBeVisible();
+    await page.getByRole("checkbox", { name: /I have reviewed the lesson text, quiz and any media/ }).check();
+    await page.getByRole("button", { name: "Mark lesson reviewed", exact: true }).click();
+    await expect(page.getByText("Lesson review complete.", { exact: true })).toBeVisible();
     await expect(page).toHaveURL(/section=review/);
-    expect(checked(await f.editor.from("lessons").select("ai_text_status, status, text_approved_by").eq("id", lessonId).single())).toEqual({ ai_text_status: "approved", status: "draft", text_approved_by: f.userId });
-    await expect(page.getByRole("button", { name: "Mark images reviewed", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Review lesson images", exact: true })).toBeVisible();
+    expect(checked(await f.editor.from("lessons").select("ai_text_status, ai_media_status, ai_publish_status, status, text_approved_by").eq("id", lessonId).single())).toEqual({ ai_text_status: "approved", ai_media_status: "approved", ai_publish_status: "ready", status: "draft", text_approved_by: f.userId });
+    await expect(page.getByRole("link", { name: "Review earlier media and lesson covers", exact: true })).toBeVisible();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: testInfo.outputPath("lesson-review.png"), fullPage: true });
 

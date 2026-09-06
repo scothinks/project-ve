@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-09-06T18:42:55.903Z",
+  "appUrl": "https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app",
+  "repository": "scothinks/project-ve",
+  "ref": "codex-ai-course-workflow-polish",
+  "expectedSha": "369d3723807b715f2e49c27e02d23759b0b7411c",
+  "overall": "blocked",
+  "results": [
+    {
+      "deploymentId": 6296015634,
+      "deployedSha": "369d3723807b715f2e49c27e02d23759b0b7411c",
+      "expectedSha": "369d3723807b715f2e49c27e02d23759b0b7411c",
+      "immutableUrl": "https://project-c5oquntf3-oby-douglas-projects.vercel.app",
+      "branchUrl": "https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app",
+      "id": "deployment.identity",
+      "status": "pass",
+      "detail": "GitHub deployment 6296015634 matches 369d3723807b715f2e49c27e02d23759b0b7411c."
+    },
+    {
+      "httpStatus": 302,
+      "durationMs": 247,
+      "id": "runtime.protection",
+      "status": "blocked",
+      "detail": "Vercel Deployment Protection intercepted the app. Configure the automation bypass secret for this environment."
+    },
+    {
+      "httpStatus": 302,
+      "durationMs": 217,
+      "id": "security.worker",
+      "status": "blocked",
+      "detail": "Deployment Protection prevented the worker authorization probe."
+    },
+    {
+      "id": "evidence.measurements",
+      "status": "blocked",
+      "detail": "No hosted evidence file was supplied. Record migration, runtime, timing, tenant/media, reconciliation, and rollback results."
+    }
+  ]
+}
