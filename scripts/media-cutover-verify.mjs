@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { classifyMediaSmoke, evaluateMediaInventory } from './media-cutover-contract.mjs';
 
 // Read-only operational smoke check. No fixtures, impersonation or bucket writes.
 const args = process.argv.slice(2);
@@ -17,6 +18,8 @@ const qualificationReport = qualificationReportPath
   ? JSON.parse(readFileSync(qualificationReportPath, 'utf8'))
   : null;
 const app = qualificationReport?.qualifiedAppUrl ?? requestedApp;
+const runtimeProtection = qualificationReport?.results?.find((result) => result.id === 'runtime.protection');
+const deliveryBlockedByProtection = runtimeProtection?.status === 'blocked';
 if (new URL(app).protocol !== 'https:') throw new Error('The qualified app URL must use HTTPS.');
 
 const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -111,31 +114,33 @@ const bucketPublicById = bucketRows.reduce((acc, row) => {
 }, {});
 
 const delivery = [];
-for (const reference of versions) {
-  const versionId = reference.split('/').at(-1);
-  const decision = checked(await anonymous.rpc('media_delivery', { p_version_id: versionId }));
-  const response = await fetch(new URL(reference, app), {
-    headers: { ...appHeaders, Range: 'bytes=0-63' },
-    signal: AbortSignal.timeout(60000),
-  });
-  const bytes = Buffer.from(await response.arrayBuffer());
-  let matchesStorage = null;
-  if (decision) {
-    const objectKey = `${decision.bucket}/${decision.storagePath}`;
-    const objectSize = objectsByLocation.get(objectKey);
-    matchesStorage = typeof objectSize === 'number' && objectSize > 0 && objectSize >= bytes.length;
+if (!deliveryBlockedByProtection) {
+  for (const reference of versions) {
+    const versionId = reference.split('/').at(-1);
+    const decision = checked(await anonymous.rpc('media_delivery', { p_version_id: versionId }));
+    const response = await fetch(new URL(reference, app), {
+      headers: { ...appHeaders, Range: 'bytes=0-63' },
+      signal: AbortSignal.timeout(60000),
+    });
+    const bytes = Buffer.from(await response.arrayBuffer());
+    let matchesStorage = null;
+    if (decision) {
+      const objectKey = `${decision.bucket}/${decision.storagePath}`;
+      const objectSize = objectsByLocation.get(objectKey);
+      matchesStorage = typeof objectSize === 'number' && objectSize > 0 && objectSize >= bytes.length;
+    }
+    delivery.push({
+      versionId,
+      expectedAnonymousAccess: Boolean(decision),
+      status: response.status,
+      bytes: bytes.length,
+      matchesStorage,
+      contentRange: response.headers.get('content-range'),
+      cacheControl: response.headers.get('cache-control'),
+      csp: response.headers.get('content-security-policy'),
+      passed: decision ? response.status === 206 && matchesStorage : response.status === 404 && bytes.length === 0,
+    });
   }
-  delivery.push({
-    versionId,
-    expectedAnonymousAccess: Boolean(decision),
-    status: response.status,
-    bytes: bytes.length,
-    matchesStorage,
-    contentRange: response.headers.get('content-range'),
-    cacheControl: response.headers.get('cache-control'),
-    csp: response.headers.get('content-security-policy'),
-    passed: decision ? response.status === 206 && matchesStorage : response.status === 404 && bytes.length === 0,
-  });
 }
 
 const objects = [];
@@ -166,11 +171,7 @@ const referencedVersions = versions.map((reference) => {
     objectExists: version?.object_exists === true,
   };
 });
-const inventoryResolved = Array.isArray(inventory.issues)
-  && inventory.issues.length === 0
-  && Array.isArray(inventory.publicBuckets)
-  && inventory.publicBuckets.length === 0
-  && Number(inventory.unverifiedVersions) === 0;
+const { inventoryResolved, rightsInventoryRecorded } = evaluateMediaInventory(inventory);
 const referencesReconciled = referencedVersions.length > 0
   && referencedVersions.every((row) => row.registered && !row.revoked && row.objectExists);
 const activeRegistryReconciled = registryVersions.length > 0
@@ -183,17 +184,23 @@ const allListedObjectsNonEmpty = objects.length > 0
 const allListedPublicUrlsDenied = objects.length > 0
   && objects.every((row) => row.publicStatus >= 400 && row.publicStatus < 500);
 const fixtureReady = versions.length > 0 && registryVersions.length > 0 && objects.length > 0;
-const assertionsPassed = inventoryResolved
+const managementAssertionsPassed = inventoryResolved
+  && rightsInventoryRecorded
   && referencesReconciled
   && activeRegistryReconciled
   && privateBucketsConfirmed
-  && allDeliveryChecksPassed
   && allListedObjectsNonEmpty
   && allListedPublicUrlsDenied;
+const status = classifyMediaSmoke({
+  fixtureReady,
+  managementAssertionsPassed,
+  deliveryBlockedByProtection,
+  allDeliveryChecksPassed,
+});
 
 const report = {
   capturedAt: new Date().toISOString(),
-  status: !fixtureReady ? 'blocked' : assertionsPassed ? 'pass' : 'fail',
+  status,
   target: new URL(apiUrl).host,
   appUrl: app,
   inventory,
@@ -203,12 +210,16 @@ const report = {
   checks: {
     fixtureReady,
     inventoryResolved,
+    rightsInventoryRecorded,
     referencesReconciled,
     activeRegistryReconciled,
     privateBucketsConfirmed,
     allDeliveryChecksPassed,
     allListedObjectsNonEmpty,
     allListedPublicUrlsDenied,
+    delivery: deliveryBlockedByProtection
+      ? { status: 'blocked', reason: runtimeProtection.detail }
+      : { status: allDeliveryChecksPassed ? 'pass' : 'fail' },
   },
   limitations: [
     'Anonymous delivery checks do not exercise editor sessions or org membership.',
