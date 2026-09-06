@@ -49,8 +49,14 @@ even when an earlier gate fails, emit specific failed assertions, and upload all
 artifacts. Completed non-secret evidence can be supplied directly at dispatch, so
 recording evidence does not change the SHA being qualified.
 
-The read-only media smoke now distinguishes missing fixtures from failed assertions.
-It checks unresolved migration inventory, public bucket state, reference-to-registry
+The read-only media smoke now distinguishes missing fixtures, deployment-protection
+blocks and failed assertions. The 16 retained legacy versions intentionally keep
+their recorded `unverified` rights profile, as documented by the accepted privacy
+cutover; that inventory is visible evidence and does not reopen the completed bucket
+closure. Unverified versions remain ineligible for platform stock sharing under the
+database delivery and permission rules.
+It uses access-token Management queries, rather than invoking the service-only
+inventory RPC, to check unresolved migration inventory, public bucket state, reference-to-registry
 and active-registry-to-object reconciliation, non-empty objects, anonymous delivery,
 and direct public-URL denial. Tenant role denial remains a separate authenticated
 fixture check and is not claimed by the anonymous media probe.

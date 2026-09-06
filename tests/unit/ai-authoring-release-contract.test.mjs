@@ -2,12 +2,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
+  deploymentRefMatches,
   hostedEvidenceSchemaVersion,
   hostedOperationKinds,
   recoveryFunctionMarkers,
   recoveryMigration,
   validateHostedEvidence,
 } from "../../scripts/ai-authoring-release-contract.mjs";
+
+test("deployment identity accepts Vercel branch and exact-SHA references", () => {
+  const sha = "0123456789012345678901234567890123456789";
+  assert.equal(deploymentRefMatches("main", "main", sha), true);
+  assert.equal(deploymentRefMatches(sha, "main", sha), true);
+  assert.equal(deploymentRefMatches("another-branch", "main", sha), false);
+});
 
 function completeEvidence(sha) {
   return {
