@@ -92,14 +92,17 @@ const references = (await managementQuery('select url from public.learning_media
 const versions = [...new Set(references.filter((value) => /^\/api\/media\/[a-f0-9-]{36}$/.test(value)))];
 
 const mediaObjects = await managementQuery(
-  "select bucket_id, name, coalesce(size,0) as size from storage.objects where bucket_id in ('learning-media','learning-media-private') order by bucket_id, name",
+  `select bucket_id, name,
+    case when metadata->>'size' ~ '^[0-9]+$' then (metadata->>'size')::bigint else 0 end as byte_size
+   from storage.objects where bucket_id in ('learning-media','learning-media-private') order by bucket_id, name`,
 );
 const registryVersions = await managementQuery(
   `select id::text, bucket, storage_path, revoked_at is not null as revoked,
-    exists(select 1 from storage.objects o where o.bucket_id=v.bucket and o.name=v.storage_path and coalesce(o.size,0)>0) as object_exists
+    exists(select 1 from storage.objects o where o.bucket_id=v.bucket and o.name=v.storage_path
+      and case when o.metadata->>'size' ~ '^[0-9]+$' then (o.metadata->>'size')::bigint else 0 end > 0) as object_exists
    from private.media_versions v order by id`,
 );
-const objectsByLocation = new Map(mediaObjects.map((row) => [`${row.bucket_id}/${row.name}`, Number(row.size)]));
+const objectsByLocation = new Map(mediaObjects.map((row) => [`${row.bucket_id}/${row.name}`, Number(row.byte_size)]));
 const registryById = new Map(registryVersions.map((row) => [row.id, row]));
 const bucketRows = await managementQuery("select id, public from storage.buckets where id in ('learning-media','learning-media-private')");
 const bucketPublicById = bucketRows.reduce((acc, row) => {
@@ -145,7 +148,7 @@ for (const row of mediaObjects) {
     bucket: row.bucket_id,
     pathSha256: hash(objectPath),
     metadataPresent: true,
-    byteLength: Number(row.size),
+    byteLength: Number(row.byte_size),
     publicStatus: publicResponse.status,
     publicCacheControl: publicResponse.headers.get('cache-control'),
     cacheStatus: publicResponse.headers.get('cf-cache-status'),
