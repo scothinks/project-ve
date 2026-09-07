@@ -36,14 +36,14 @@ export function AiCourseAuthoring({ availability, initialId }: { availability: C
     {!enabled && <AdminCard><div role="status" className="space-y-3"><h2 className="font-bold">{availability.reason || 'Switch to this result’s workspace to generate more.'}</h2><p className="text-sm">You can still open saved results or create a course yourself.</p><div className="flex flex-wrap gap-3"><Link className={aiPrimary} href="/admin/courses/new">Start from scratch</Link><Link className={aiButton} href="/admin/courses/ai-results">Open AI results</Link></div></div></AdminCard>}
     {error && <p role="alert" className="rounded-xl border p-4 text-sm">{error}</p>}
     {journey.reconnecting && <p role="status">Reconnecting to your saved progress…</p>}
-    {!initialId && availability.enabled && <div hidden={!!result || !!id}>
-      <AiCourseDiscovery brief={brief} onChange={journey.setBrief} disabled={busy} guidanceEnabled={availability.guidanceEnabled}>
+    {availability.enabled && <div hidden={!!result || !!id}>
+      <AiCourseDiscovery brief={brief} onChange={journey.setBrief} disabled={busy} guidanceEnabled={availability.guidanceEnabled} initialMode={initialId ? 'direct' : 'start'}>
         <CourseGenerateAction kind="course_outline" lessons={brief.lessonCount} enabled={!id && enabled} busy={busy} valid={!!brief.need.trim() && !!brief.audience.trim()} label="Generate outline" onGenerate={price => void run(() => journey.generateOutline(price))} />
       </AiCourseDiscovery>
     </div>}
     {!result && id && <p role="status">Loading your saved result…</p>}
     {result?.deleted ? <p>This result was deleted. Any saved course remains in Courses.</p> : result && <>
-      {result.stage === 'quote' ? <CourseQuoteReview result={result} enabled={enabled} busy={busy} onStart={() => void run(() => journey.request({ action: 'start', id: result.id }))} onRefresh={() => void run(journey.refreshQuote)} onEdit={!initialId && !result.parentId && result.kind === 'course_outline' ? journey.editBrief : undefined} /> : <p className="text-sm">{creditLabel(result as unknown as AuthoringResult)}</p>}
+      {result.stage === 'quote' ? <CourseQuoteReview result={result} enabled={enabled} busy={busy} onStart={() => void run(() => journey.request({ action: 'start', id: result.id }))} onRefresh={() => void run(journey.refreshQuote)} onEdit={enabled && !result.parentId && result.kind === 'course_outline' ? journey.editBrief : undefined} /> : <p className="text-sm">{creditLabel(result as unknown as AuthoringResult)}</p>}
       {(active || result.stage === 'stopped') && <AdminCard><div ref={progressRef} tabIndex={-1} role="status" aria-live="polite"><strong>{result.stage === 'stopped' ? 'Generation stopped' : result.stopRequested ? 'Stopping…' : result.kind === 'course_outline' ? 'Planning your course' : `${result.completedCount} of ${result.totalCount} lessons ready`}</strong><p className="mt-2 text-sm leading-6">{result.stage === 'stopped' ? 'Completed work remains available below and in AI results.' : delayed ? 'This is taking longer than expected. Your saved checkpoints remain available.' : result.stage === 'starting' ? 'Your request was accepted. Waiting for the writer to start.' : 'Each finished lesson appears after it has been checked and saved.'}</p></div></AdminCard>}
       {result.failure && <p role="status" className="text-sm">{result.failure}</p>}
       {result.kind === 'course_outline' && result.stage === 'ready' && outline && <AdminCard className="space-y-5">

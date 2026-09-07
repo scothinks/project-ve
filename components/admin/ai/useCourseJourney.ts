@@ -17,7 +17,7 @@ export function useCourseJourney(initialId?: string) {
   const loaded = useRef<string | undefined>(undefined), target = useRef(initialId), lock = useRef(false), editRevision = useRef(0);
   const receive = useCallback((raw: AuthoringResult) => {
     const r = raw as unknown as CourseResult;
-    if (target.current && r.id !== target.current) return;
+    if (r.id !== target.current) return;
     setResult(r); setId(r.id);
     if (loaded.current !== r.id) {
       loaded.current = r.id; editRevision.current = r.outlineRevision;
@@ -96,6 +96,6 @@ export function useCourseJourney(initialId?: string) {
   const reloadOutline = () => { if (result) { setOutline(result.outline); setSavedOutline(JSON.stringify(result.outline)); editRevision.current = result.outlineRevision; setError(''); } };
   const editBrief = () => { target.current = undefined; loaded.current = undefined; setResult(null); setId(undefined); setOutline(null); setError(''); window.history.replaceState(null, '', window.location.pathname); };
   return { id, result, brief, setBrief, outline, setOutline, questions, setQuestions, busy, error, checking, reconnecting, editRevision,
-    dirty: !id ? !!brief.need.trim() : result?.kind === 'course_outline' && result.stage === 'ready' && JSON.stringify(outline) !== savedOutline,
+    dirty: !id ? !!brief.need.trim() || !!brief.audience.trim() : result?.kind === 'course_outline' && result.stage === 'ready' && JSON.stringify(outline) !== savedOutline,
     run, read, request, saveOutline, generateOutline, generateDraft, refine, retry, refreshQuote, apply, reloadOutline, editBrief };
 }

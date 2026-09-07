@@ -18,6 +18,8 @@ Issue labels and Project columns hold live status.
    Suggested fields are labelled, author corrections take precedence, and late
    responses cannot overwrite newer edits. Tone and lesson count are secondary
    options. In-flow Back preserves state; setup is not persisted across reloads.
+   Changing the topic or choosing another starter retains an author-written
+   learner description and prompts them to review its relevance.
 2. **Price and availability:** authenticated price reads create no result, job,
    reservation or provider request. Metered actions display their charge beside
    Generate; the later draft charge is disclosed before requesting an outline.
@@ -29,6 +31,8 @@ Issue labels and Project columns hold live status.
    to that result. Outline edits/reordering, revision conflict recovery, quiz
    scope, completed lesson previews, unfinished-only retry, uncertain save and
    existing editorial review/publication remain supported.
+   Reopened root-outline requests offer Edit brief, including after expiry;
+   leaving that request prevents late reads from restoring it over new edits.
 4. **Validation:** unit/route contracts, database/security/accounting checks and
    production browser journeys cover the integrated change. The enlarged-text
    check found a shared top-bar nowrap constraint; the bounded CSS correction
@@ -118,7 +122,8 @@ before discarding edits. Browser-history SPA navigation is not a durable draft
 store. Generated result IDs/checkpoints/receipts provide reload recovery after
 generation is requested. Discovery does not add browser transcript persistence.
 
-Hosted deployment and both new migrations are not applied remotely. Historical
+An automatic Vercel PR preview was created; both new migrations remain unapplied
+remotely, and this branch has not received hosted qualification. Historical
 [qualification run 34071919696](https://github.com/scothinks/project-ve/actions/runs/34071919696)
 passes for `292e65a8f7784df31591e94abe65fec47ddd23b6`, Preview deployment
 `6299858025`; it does not qualify this branch. Its artifact verifies 221/221
@@ -126,3 +131,54 @@ migration parity and service-only recovery ACLs at that earlier revision. Run
 34069618360 failed and is superseded. Engineering/product/Phase 6 summaries now
 reflect that distinction. Activation and representative paid text/image,
 streaming and reconciliation review remain in #63/#71. Engineering P2 is unchanged.
+
+## Recovered pre-change baseline
+
+The agreed baseline was missed before the original layout edit. On 2026-09-07,
+the original source at `0a1d7b9fb5c698d99b6cb098d575d1c16a5d3317` was built in an
+isolated detached checkout. [Before captures](evidence/ai-course-guided-journey/before)
+record 1440px and 390px light/dark authoring views and computed field, heading,
+button and body styles. They are a reconstruction, not contemporaneous evidence
+and not an exact reconstruction of the user's unidentified hosted environment.
+No generation was requested. The current local database supplied authentication;
+the screenshot uses a disposable Catalog administrator and the original form.
+
+This closes the missing authoring comparison evidence. It does not claim the
+application-wide #96 theme inventory/scanner gate is complete. #97–#99 remain
+separate Identity & Entry implementation, in their established dependency order;
+they are not prerequisites for local authoring behavior. Final appearance after
+their shared styles land still needs comparison against this evidence.
+
+The floating robot in the supplied image was not found in the application source
+or local renders (searched app/components/features for floating/chatbot/widget/
+robot). Its origin remains unidentified. No replacement widget or guessed overlay
+was added to manufacture an overlap result.
+
+## Follow-up validation
+
+After all gap fixes were integrated, typecheck, lint (zero errors; the same three
+unrelated warnings), 40 guardrails and diff checks passed. The affected production
+browser batch passed seven of eight cases initially. The new expiry/reopen test
+held its first reload response accidentally; after correcting the fixture to hold
+only a subsequent read, its focused rerun passed. All eight affected cases now
+have passing evidence, including full create/review/publish, partial retry/save,
+discovery/corrections, zero-question complete advice, expiry/refresh/reopened edit,
+late advice, priced consent/lost Start and plan-unavailable entry.
+
+Commands: `npm run test:e2e -- tests/e2e/ai-course-discovery.spec.ts
+tests/e2e/ai-course-authoring.spec.ts`, then the discovery file with
+`--grep 'reopened expired'`. Both used `PROJECT_VE_E2E_KEEP_BUILD_CACHE=1` and
+rebuilt the changed inputs. The earlier database/accounting and route results
+remain valid: these follow-up changes touch client state and browser coverage.
+An initial invocation used the nonexistent `test:e2e:local` script; no tests ran
+from that invocation. The correct repository harness above supplied the results.
+
+The existing current-theme screenshots and manifest remain tied to `7638ad7`;
+they were not relabelled as captures of these later state-recovery fixes. An
+additional local capture-server request was declined, so no follow-up screenshots
+are claimed. The reconstructed baseline above was captured separately before
+that request. Production CI at `7638ad7` passed app, database-types and full local
+remediation jobs. GitGuardian reported four high-entropy findings in the checksum
+manifest; its 25 source and seven image values were verified as SHA-256 hashes.
+Dashboard sign-in could not be completed in this session, so those findings remain
+unresolved and no security suppression or bypass was added.

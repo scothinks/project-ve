@@ -7,11 +7,11 @@ import { AdminSelect } from '@/components/admin/AdminSelect';
 import { aiButton, aiPrimary } from './AiPageResult';
 import { courseField } from './AiCourseOutlineEditor';
 
-export function AiCourseDiscovery({ brief, onChange, disabled, guidanceEnabled, children }: {
-  brief: CourseBrief; onChange: (brief: CourseBrief) => void; disabled: boolean; guidanceEnabled: boolean; children: React.ReactNode;
+export function AiCourseDiscovery({ brief, onChange, disabled, guidanceEnabled, initialMode = 'start', children }: {
+  brief: CourseBrief; onChange: (brief: CourseBrief) => void; disabled: boolean; guidanceEnabled: boolean; initialMode?: 'start' | 'direct'; children: React.ReactNode;
 }) {
   const [seed, setSeed] = useState('');
-  const [mode, setMode] = useState<'start' | 'guided' | 'direct'>('start');
+  const [mode, setMode] = useState<'start' | 'guided' | 'direct'>(initialMode);
   const [answers, setAnswers] = useState<DiscoveryAnswer[]>([]);
   const [advice, setAdvice] = useState<DiscoveryAdvice | null>(null);
   const [answer, setAnswer] = useState('');
@@ -23,7 +23,7 @@ export function AiCourseDiscovery({ brief, onChange, disabled, guidanceEnabled, 
   const session = useRef('');
   const pending = useRef<AbortController | null>(null);
   const revision = useRef(0);
-  const edited = useRef(new Set<'need' | 'audience'>());
+  const edited = useRef(new Set<'need' | 'audience'>(initialMode === 'direct' ? ['need', 'audience'] : []));
   const summary = useRef<HTMLDivElement>(null);
   const question = useRef<HTMLHeadingElement>(null);
   useEffect(() => () => pending.current?.abort(), []);
@@ -32,7 +32,7 @@ export function AiCourseDiscovery({ brief, onChange, disabled, guidanceEnabled, 
   async function guide(nextSeed: string, nextAnswers: DiscoveryAnswer[], bundled = false) {
     invalidate();
     const version = revision.current;
-    const input = { seed: nextSeed, answers: nextAnswers, brief: { ...brief, need: nextAnswers.length ? brief.need || nextSeed : nextSeed, audience: nextAnswers.length ? brief.audience || 'A general audience; no specialist knowledge assumed.' : 'A general audience; no specialist knowledge assumed.' } };
+    const input = { seed: nextSeed, answers: nextAnswers, brief: { ...brief, need: nextAnswers.length ? brief.need || nextSeed : nextSeed, audience: nextAnswers.length || edited.current.has('audience') ? brief.audience || 'A general audience; no specialist knowledge assumed.' : 'A general audience; no specialist knowledge assumed.' } };
     const controller = new AbortController(); pending.current = controller;
     const acceptAdvice = (next: DiscoveryAdvice) => {
       const accepted = { ...next, brief: { ...next.brief }, suggestedFields: next.suggestedFields.filter(field => !edited.current.has(field)) };
@@ -74,14 +74,15 @@ export function AiCourseDiscovery({ brief, onChange, disabled, guidanceEnabled, 
     {mode === 'start' ? <AdminCard className="space-y-5">
       <div><h2 className="text-xl font-bold">A rough idea is enough</h2><p className="mt-2 text-sm leading-6">Start with a topic, a situation, or something you would like to change. We’ll help you shape the course and who it could help.</p></div>
       <label className="block text-sm font-bold">What would you like to help people do?
-        <textarea className={courseField} rows={3} maxLength={1200} disabled={disabled} value={seed} placeholder="Tolerance, making fair decisions, or ‘our team talks over each other’…" onChange={e => { setSeed(e.target.value); edited.current.clear(); onChange({ ...brief, need: e.target.value, audience: '' }); }} />
+        <textarea className={courseField} rows={3} maxLength={1200} disabled={disabled} value={seed} placeholder="Tolerance, making fair decisions, or ‘our team talks over each other’…" onChange={e => { setSeed(e.target.value); edited.current.delete('need'); onChange({ ...brief, need: e.target.value, audience: edited.current.has('audience') ? brief.audience : '' }); }} />
       </label>
       <div className="flex flex-wrap gap-3">
-        <button type="button" className={aiPrimary} disabled={disabled || !seed.trim()} onClick={() => { onChange({ ...brief, need: seed, audience: '' }); void guide(seed, []); }}>Help shape my idea</button>
+        <button type="button" className={aiPrimary} disabled={disabled || !seed.trim()} onClick={() => { void guide(seed, []); }}>Help shape my idea</button>
         <button type="button" className={aiButton} disabled={disabled} aria-expanded={showStarters} onClick={() => setShowStarters(!showStarters)}>Help me choose</button>
         <button type="button" className={aiButton} disabled={disabled} onClick={() => { invalidate(); setMode('direct'); if (seed && !brief.need) onChange({ ...brief, need: seed }); }}>I have a brief</button>
       </div>
-      {showStarters && <div className="space-y-3"><p className="text-sm">Choose a starting point, or write something else above.</p><div className="flex flex-wrap gap-2">{discoveryStarters.map(s => <button type="button" key={s} className={aiButton} disabled={disabled} onClick={() => { edited.current.clear(); setSeed(s); onChange({ ...brief, need: s, audience: '' }); void guide(s, [], true); }}>{s}</button>)}</div></div>}
+      {showStarters && <div className="space-y-3"><p className="text-sm">Choose a starting point, or write something else above.</p><div className="flex flex-wrap gap-2">{discoveryStarters.map(s => <button type="button" key={s} className={aiButton} disabled={disabled} onClick={() => { edited.current.delete('need'); setSeed(s); void guide(s, [], true); }}>{s}</button>)}</div></div>}
+      {edited.current.has('audience') && brief.audience && <p className="text-sm">Your learner description is kept. Review it if the new idea changes who this course will help.</p>}
       <p className="text-xs leading-5">No outline or course is generated until you accept the brief and its outline price. Your setup stays here while you edit; it is not saved across reloads.</p>
     </AdminCard> : <>
       <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">{mode === 'guided' ? 'Shape it together, or edit the summary directly.' : 'Already know what you need? Go straight to your outline.'}</p><button type="button" className={aiButton} disabled={disabled} onClick={changeDirection}>Back to my idea</button></div>

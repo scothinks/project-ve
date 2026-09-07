@@ -10,6 +10,9 @@ tenant authorization, checkpoints, explicit saves and publication boundaries rem
 See [technical evidence and release limits](ai-course-guided-journey.md) and
 [the approved plan](ai-course-journey-improvement-plan.md). Tracking stays in
 AI Authoring #104–#107; this work does not open engineering P2 or authorize deployment.
+The follow-up closes learner-description loss on topic changes and editing of
+reopened outline requests. A reconstructed pre-change authoring baseline now
+records the original source; application-wide identity #96–#99 remains separate.
 
 ## AI authoring Phase 6, reconciled 2026-09-07
 

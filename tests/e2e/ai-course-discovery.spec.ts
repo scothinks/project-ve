@@ -43,6 +43,11 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
     await page.getByRole('button', { name: 'Back to my idea' }).click();
+    await page.getByLabel('What would you like to help people do?').fill('Making fair choices');
+    await expect(page.getByText('Your learner description is kept.', { exact: false })).toBeVisible();
+    await page.getByRole('button', { name: 'Build trust', exact: true }).click();
+    await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue('Young adults practising disagreement in everyday group situations.');
+    await page.getByRole('button', { name: 'Back to my idea' }).click();
     await page.getByRole('button', { name: 'I have a brief' }).click();
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue(/Young adults/);
     await expect(page.getByText('Where will they use this?', { exact: true })).toHaveCount(0);
@@ -50,6 +55,71 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
     expect(generationMutations).toBe(0);
   } finally { await f.cleanup(); }
+});
+
+test('a complete idea needs no redundant guidance question and keeps the supplied learners', async ({ browser, baseURL }) => {
+  const f = await mediaFixture(browser, baseURL!); const page = await f.context.newPage();
+  let calls = 0, mutations = 0;
+  const need = 'Help new team members listen before responding in weekly planning meetings.';
+  try {
+    await page.route('**/api/admin/ai/authoring', route => { if (route.request().method() === 'POST') mutations++; return route.continue(); });
+    await page.route('**/api/admin/ai/course-guidance', route => {
+      calls++; const { input } = route.request().postDataJSON();
+      expect(input.seed).toBe(need); expect(input.answers).toEqual([]);
+      return route.fulfill({ json: { source: 'assistant', advice: { brief: { ...input.brief, need, audience: 'New team members in weekly planning meetings.' }, question: '', choices: [], suggestedFields: ['audience'] } } });
+    });
+    await page.goto(`${baseURL}/admin/courses/ai/brief`);
+    await page.getByLabel('What would you like to help people do?').fill(need);
+    await page.getByRole('button', { name: 'Help shape my idea' }).click();
+    await expect(page.getByText('Your brief is ready to review.', { exact: false })).toBeVisible();
+    await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue('New team members in weekly planning meetings.');
+    await expect(page.getByRole('button', { name: 'Not sure yet', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    expect(calls).toBe(1); expect(mutations).toBe(0);
+  } finally { await f.cleanup(); }
+});
+
+test('reopened expired requests refresh without starting and can return to an editable brief', async ({ browser, baseURL }) => {
+  const f = await mediaFixture(browser, baseURL!); const page = await f.context.newPage();
+  let quotes = 0, starts = 0, reads = 0, holdReads = false, release: (() => void) | undefined;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  try {
+    const quote = checked(await f.editor.rpc('admin_quote_ai_course', { p_kind: 'course_outline', p_brief: { need: 'Make fair decisions', audience: 'New team members', tone: 'Direct', lessonCount: 2 } }));
+    await page.route('**/api/admin/ai/authoring/events?**', route => route.abort());
+    await page.route('**/api/admin/ai/authoring?*', async route => {
+      const response = await route.fetch(); const result = await response.json();
+      if (result.id === quote.id) result.quoteExpiresAt = new Date(Date.now() - 60_000).toISOString();
+      else if (holdReads) { reads++; await pending; }
+      await route.fulfill({ json: result }).catch(() => {});
+    });
+    await page.route('**/api/admin/ai/authoring', route => {
+      const body = route.request().method() === 'POST' ? route.request().postDataJSON() : {};
+      if (body.action === 'quote') quotes++;
+      if (body.action === 'start') { starts++; return route.abort(); }
+      return route.continue();
+    });
+    await page.goto(`${baseURL}/admin/courses/ai/brief?aiResult=${quote.id}`);
+    await expect(page.getByText('This request’s price has expired.', { exact: false })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: 'Refresh request', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    expect(quotes).toBe(1); expect(starts).toBe(0);
+    // A fresh visit must offer the same edit escape hatch as an in-session quote.
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Edit brief', exact: true })).toBeVisible();
+    holdReads = true;
+    await expect.poll(() => reads).toBeGreaterThan(0);
+    await page.getByRole('button', { name: 'Edit brief', exact: true }).click();
+    await expect(page.getByLabel('Learning goal', { exact: false })).toHaveValue('Make fair decisions');
+    await page.getByLabel('Who this will help', { exact: false }).fill('First-time team leads');
+    release!();
+    await expect(page.getByRole('heading', { name: 'Review this request before generating' })).toHaveCount(0);
+    await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue('First-time team leads');
+    expect(quotes).toBe(1); expect(starts).toBe(0);
+    await page.getByRole('link', { name: 'AI results', exact: true }).click();
+    await expect(page.getByRole('alertdialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Keep editing' }).click();
+  } finally { release?.(); await f.cleanup(); }
 });
 
 test('adaptive guidance uses supplied context and late answers cannot replace an author correction', async ({ browser, baseURL }) => {
