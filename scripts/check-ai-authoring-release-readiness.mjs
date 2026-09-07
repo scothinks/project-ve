@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import {
+  hostedEvidenceSchemaVersion,
   hostedOperationKinds,
   hostedThresholds,
   operationKindMigrationFile,
@@ -28,6 +29,9 @@ const availability = read("features/ai-generation/authoring/availability.ts");
 const environmentExample = read(".env.example");
 const vercel = JSON.parse(read("vercel.json"));
 const ciWorkflow = read(".github/workflows/ci.yml");
+const hostedWorkflow = read(".github/workflows/hosted-ai-authoring-qualification.yml");
+const hostedQualifier = read("scripts/qualify-ai-authoring-hosted.mjs");
+const hostedEvidenceTemplate = JSON.parse(read("docs/evidence/ai-authoring-phase-6/hosted-qualification.template.json"));
 
 record(
   "ci.push-trigger",
@@ -172,7 +176,7 @@ record(
   "maintenance.declared",
   Boolean(workerCron) && cronParts.length === 5,
   workerCron
-    ? `Worker maintenance is declared as ${workerCron.schedule} UTC; cadence must be qualified against the Vercel plan.`
+    ? `Worker maintenance fallback is declared as ${workerCron.schedule} UTC; faster scheduling remains an operational follow-up.`
     : "The worker maintenance route is absent from vercel.json.",
 );
 
@@ -186,30 +190,38 @@ record(
 
 record(
   "hosted.qualification",
-  includesAll(read(".github/workflows/hosted-ai-authoring-qualification.yml"), [
+  includesAll(hostedWorkflow, [
     "workflow_dispatch:",
     "environment: Preview",
     "VERCEL_AUTOMATION_BYPASS_SECRET",
     "SUPABASE_ACCESS_TOKEN",
     "test:release:migration:hosted",
     "qualify-ai-authoring-hosted.mjs",
+    "Run read-only media cutover smoke",
   ])
+    && !hostedWorkflow.includes("run_media_smoke")
     && migrationFiles.has(recoveryMigration.file)
-    && includesAll(read("scripts/qualify-ai-authoring-hosted.mjs"), [
+    && includesAll(hostedQualifier, [
       "deployment.identity",
       "runtime.protection",
       "security.worker",
       "evidence.measurements",
+      '"follow-up"',
+      "followUpCount",
+      "hostedQualificationOverall",
     ])
     && includesAll(read("scripts/ai-authoring-release-contract.mjs"), [
       ...hostedOperationKinds,
       recoveryMigration.version,
     ])
+    && hostedEvidenceTemplate.schemaVersion === hostedEvidenceSchemaVersion
+    && hostedEvidenceTemplate.timings?.operations?.length === 2
+    && hostedEvidenceTemplate.timings.operations.some((entry) => entry.kind === "image")
+    && hostedEvidenceTemplate.timings.operations.some((entry) => hostedOperationKinds.includes(entry.kind) && entry.kind !== "image")
     && hostedThresholds.acknowledgementMs === 2_000
     && hostedThresholds.dispatchVisibleMs === 5_000
-    && hostedThresholds.maintenanceIntervalMinutes === 5
     && hostedThresholds.workerMaxDurationSeconds === 300,
-  "A manual, secret-scoped Preview gate audits the hosted migration boundary, records deployment identity, probes the protected runtime, and validates measured evidence.",
+  "A manual, secret-scoped Preview gate audits migration, deployment, runtime, worker security and media; representative paid pilot evidence is advisory.",
 );
 
 record(
