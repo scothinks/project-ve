@@ -25,7 +25,7 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     await page.getByRole('button', { name: 'Help me choose', exact: true }).click();
     await page.getByRole('button', { name: 'Handle disagreements', exact: true }).click();
     expect(guidanceCalls).toBe(0);
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeEnabled();
     await capture('assist-direction.png');
     await page.getByRole('button', { name: 'Disagree respectfully', exact: true }).focus();
     await expect(page.getByRole('button', { name: 'Disagree respectfully', exact: true })).toBeFocused();
@@ -37,7 +37,7 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     await expect(page.getByLabel('Learning goal', { exact: false })).toHaveValue('Handle disagreements: Disagree respectfully');
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue(/general audience/i);
     await page.getByLabel('Who this will help', { exact: false }).fill('Young adults practising disagreement in everyday group situations.');
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeEnabled();
     expect(generationMutations).toBe(0);
     await page.getByRole('link', { name: 'Resume earlier work', exact: true }).click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
@@ -65,7 +65,7 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue(/Young adults/);
     await expect(page.getByText('Where will they use this?', { exact: true })).toHaveCount(0);
     await page.getByLabel('Learning goal', { exact: false }).fill('Help new team members listen and ask clarifying questions before making decisions.');
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeEnabled();
     expect(generationMutations).toBe(0);
   } finally { await f.cleanup(); }
 });
@@ -87,7 +87,7 @@ test('a complete idea needs no redundant guidance question and keeps the supplie
     await expect(page.getByText('Your brief is ready to review.', { exact: false })).toBeVisible();
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue('New team members in weekly planning meetings.');
     await expect(page.getByRole('button', { name: 'Not sure yet', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeEnabled();
     expect(calls).toBe(1); expect(mutations).toBe(0);
   } finally { await f.cleanup(); }
 });
@@ -113,9 +113,9 @@ test('reopened expired requests refresh without starting and can return to an ed
     });
     await page.goto(`${baseURL}/admin/courses/ai/brief?aiResult=${quote.id}`);
     await expect(page.getByText('This request’s price has expired.', { exact: false })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Refresh request', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Generate outline · 0 credits', exact: true })).toBeEnabled();
     expect(quotes).toBe(1); expect(starts).toBe(0);
     // A fresh visit must offer the same edit escape hatch as an in-session quote.
     await page.reload();

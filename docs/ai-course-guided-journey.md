@@ -25,7 +25,7 @@ Issue labels and Project columns hold live status.
 2. **Price and availability:** authenticated price reads create no result, job,
    reservation or provider request. Metered actions display their charge beside
    Generate; the later draft charge is disclosed before requesting an outline.
-   Catalog actions say “No organisation credits.” Pilot, plan and missing-provider
+   Catalog actions say “0 credits,” without a repeated pricing explanation. Pilot, plan and missing-provider
    availability have explicit reasons and manual/saved-result links.
 3. **Workspace:** Shape your idea → Outline → Draft → Review. One explicit priced
    action quotes and starts each generation. Changed prices stop at a retained

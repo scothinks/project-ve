@@ -17,7 +17,7 @@ export function CourseQuoteReview({ result, enabled, busy, onStart, onRefresh, o
     <h2 className="text-xl font-bold">Review this request before generating</h2>
     <p className="text-sm">{result.kind === 'course_outline' ? `${result.brief.lessonCount} planned lessons · one editable outline` : `${result.totalCount - result.completedCount} lessons to draft · ${result.questionsPerLesson} questions per lesson`}</p>
     <p className="text-sm">{result.kind === 'course_outline' ? result.brief.need : result.outline?.title}</p><p className="text-sm">For: {result.brief.audience}</p>
-    <p className="text-sm">{result.metered ? `${result.estimatedUnits} credits for this request. ${result.kind === 'course_outline' ? 'Full course drafting is a separate charge.' : 'Already completed lessons are retained.'}` : 'Platform Catalog · No organisation credits used.'}</p>
+    {result.metered && <p className="text-sm">{`${result.estimatedUnits} credits for this request. ${result.kind === 'course_outline' ? 'Full course drafting is a separate charge.' : 'Already completed lessons are retained.'}`}</p>}
     {expired && <p role="status" className="text-sm">This request’s price has expired. Refresh it, then review and generate.</p>}
     <div className="flex flex-wrap gap-3"><button type="button" className={aiPrimary} disabled={busy || !enabled || expired} onClick={onStart}>{pricedAction(result.kind === 'course_outline' ? 'Generate outline' : 'Generate course draft', result)}</button><button type="button" className={aiButton} disabled={busy || !enabled} onClick={onRefresh}>Refresh request</button>{onEdit && <button type="button" className={aiButton} disabled={busy} onClick={onEdit}>Edit brief</button>}</div>
   </section></AdminCard>;

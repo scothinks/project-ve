@@ -4,7 +4,7 @@ export type CoursePrice = {
   lessonCount: number; unfinishedCount: number; questionsPerLesson: number; metered: boolean; workspaceId: string | null;
 };
 export function pricedAction(label: string, price: Pick<CoursePrice, 'metered' | 'estimatedUnits'> | null) {
-  return price ? `${label} · ${price.metered ? `${price.estimatedUnits} credits` : 'No organisation credits'}` : label;
+  return price ? `${label} · ${price.metered ? `${price.estimatedUnits} credits` : '0 credits'}` : label;
 }
 export function quoteMatchesPrice(quote: CourseResult & { workspaceId?: string | null }, price: CoursePrice) {
   return quote.stage === 'quote' && quote.kind === price.kind && quote.estimatedUnits === price.estimatedUnits

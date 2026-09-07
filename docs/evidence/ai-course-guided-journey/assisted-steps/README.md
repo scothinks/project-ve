@@ -1,7 +1,8 @@
 # Delivered assisted journey
 
-These are **after** captures from the local production build of the source in the
-same commit as this file. They show the existing shared theme, not the separate
+These are **after** captures from the local production build at `1ec111c`.
+The later copy-only refinement shortens Catalog pricing to “0 credits” and removes
+the repeated explanation; these screenshots retain their original wording. They show the existing shared theme, not the separate
 future identity migration. The contrasting `../before/` directory is explicitly
 a reconstruction of the original form at `0a1d7b9`.
 
