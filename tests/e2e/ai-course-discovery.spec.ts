@@ -7,18 +7,31 @@ test.use({ actionTimeout: 15_000 });
 test('uncertain authors shape an idea and learners; complete briefs take the direct path', async ({ browser, baseURL }, info) => {
   const f = await mediaFixture(browser, baseURL!); const page = await f.context.newPage();
   let generationMutations = 0, guidanceCalls = 0;
+  const capture = async (name: string) => {
+    // Full-page captures must start at the top; otherwise a sticky header is
+    // composited at the old focus/scroll offset after changing viewport size.
+    await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); });
+    await page.screenshot({ path: info.outputPath(name), fullPage: true });
+  };
   await page.route('**/api/admin/ai/authoring', route => { if (route.request().method() === 'POST') generationMutations++; return route.continue(); });
   await page.route('**/api/admin/ai/course-guidance', route => { guidanceCalls++; return route.fulfill({ json: { advice: starterAdvice(route.request().postDataJSON().input), source: 'starter' } }); });
   // Bundled fallback fixture; guidance requests never reach a real provider.
   try {
     await page.goto(`${baseURL}/admin/courses/ai/brief`);
+    await expect(page.getByRole('navigation', { name: 'Course navigation' }).getByRole('link')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Check outline cost', exact: true })).toHaveCount(0);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await capture('assist-start.png');
     await page.getByRole('button', { name: 'Help me choose', exact: true }).click();
     await page.getByRole('button', { name: 'Handle disagreements', exact: true }).click();
     expect(guidanceCalls).toBe(0);
+    await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
+    await capture('assist-direction.png');
     await page.getByRole('button', { name: 'Disagree respectfully', exact: true }).focus();
     await expect(page.getByRole('button', { name: 'Disagree respectfully', exact: true })).toBeFocused();
     await page.getByRole('button', { name: 'Disagree respectfully', exact: true }).press('Enter');
     await expect(page.getByRole('heading', { name: 'Where will they use this?', exact: true })).toBeFocused();
+    await capture('assist-learners.png');
     await page.getByRole('button', { name: 'Not sure yet', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Your course so far' })).toBeVisible();
     await expect(page.getByLabel('Learning goal', { exact: false })).toHaveValue('Handle disagreements: Disagree respectfully');
@@ -26,20 +39,20 @@ test('uncertain authors shape an idea and learners; complete briefs take the dir
     await page.getByLabel('Who this will help', { exact: false }).fill('Young adults practising disagreement in everyday group situations.');
     await expect(page.getByRole('button', { name: 'Generate outline · No organisation credits', exact: true })).toBeEnabled();
     expect(generationMutations).toBe(0);
-    await page.getByRole('link', { name: 'AI results', exact: true }).click();
+    await page.getByRole('link', { name: 'Resume earlier work', exact: true }).click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await page.getByRole('button', { name: 'Keep editing' }).click();
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue(/Young adults/);
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: info.outputPath(`guided-${width}.png`), fullPage: true });
+      await capture(`guided-${width}.png`);
     }
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-    await page.screenshot({ path: info.outputPath('guided-dark.png'), fullPage: true });
+    await capture('guided-dark.png');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
-    await page.screenshot({ path: info.outputPath('guided-text-200.png'), fullPage: true });
+    await capture('guided-text-200.png');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
     await page.getByRole('button', { name: 'Back to my idea' }).click();
@@ -116,7 +129,7 @@ test('reopened expired requests refresh without starting and can return to an ed
     await expect(page.getByRole('heading', { name: 'Review this request before generating' })).toHaveCount(0);
     await expect(page.getByLabel('Who this will help', { exact: false })).toHaveValue('First-time team leads');
     expect(quotes).toBe(1); expect(starts).toBe(0);
-    await page.getByRole('link', { name: 'AI results', exact: true }).click();
+    await page.getByRole('link', { name: 'Resume earlier work', exact: true }).click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await page.getByRole('button', { name: 'Keep editing' }).click();
   } finally { release?.(); await f.cleanup(); }
@@ -202,6 +215,6 @@ test('plan-unavailable entry explains the reason and preserves manual creation',
     await page.goto(`${baseURL}/admin/courses/ai/brief`);
     await expect(page.getByRole('link', { name: 'Start from scratch', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Help shape my idea' })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Open AI results', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Resume earlier work', exact: true })).toBeVisible();
   } finally { await f.cleanup(); }
 });

@@ -19,7 +19,9 @@ Issue labels and Project columns hold live status.
    responses cannot overwrite newer edits. Tone and lesson count are secondary
    options. In-flow Back preserves state; setup is not persisted across reloads.
    Changing the topic or choosing another starter retains an author-written
-   learner description and prompts them to review its relevance.
+   learner description and prompts them to review its relevance. The header has
+   course navigation only; the secondary “Resume earlier work” link sits beneath
+   the journey rather than competing with creation as an AI-results tab.
 2. **Price and availability:** authenticated price reads create no result, job,
    reservation or provider request. Metered actions display their charge beside
    Generate; the later draft charge is disclosed before requesting an outline.
@@ -138,7 +140,8 @@ The agreed baseline was missed before the original layout edit. On 2026-09-07,
 the original source at `0a1d7b9fb5c698d99b6cb098d575d1c16a5d3317` was built in an
 isolated detached checkout. [Before captures](evidence/ai-course-guided-journey/before)
 record 1440px and 390px light/dark authoring views and computed field, heading,
-button and body styles. They are a reconstruction, not contemporaneous evidence
+button and body styles. These are explicitly **before** screenshots, not the delivered assisted journey.
+They are a reconstruction, not contemporaneous evidence
 and not an exact reconstruction of the user's unidentified hosted environment.
 No generation was requested. The current local database supplied authentication;
 the screenshot uses a disposable Catalog administrator and the original form.
@@ -175,10 +178,21 @@ from that invocation. The correct repository harness above supplied the results.
 
 The existing current-theme screenshots and manifest remain tied to `7638ad7`;
 they were not relabelled as captures of these later state-recovery fixes. An
-additional local capture-server request was declined, so no follow-up screenshots
-are claimed. The reconstructed baseline above was captured separately before
-that request. Production CI at `7638ad7` passed app, database-types and full local
+additional standalone capture-server request was declined. After the subsequent
+journey review, the authorized browser suite captured the assisted steps described
+below; it did not launch that declined standalone server. The reconstructed
+baseline above was captured separately before that request. Production CI at `7638ad7` passed app, database-types and full local
 remediation jobs. GitGuardian reported four high-entropy findings in the checksum
 manifest; its 25 source and seven image values were verified as SHA-256 hashes.
 Dashboard sign-in could not be completed in this session, so those findings remain
 unresolved and no security suppression or bypass was added.
+
+## Assisted journey presentation correction
+
+The recovered before images were shown during review without sufficiently clear
+labelling; they were not the proposed UI. The creation header now removes the
+AI-results tab and uses a secondary “Resume earlier work” link below the journey.
+[Delivered assisted steps](evidence/ai-course-guided-journey/assisted-steps/README.md)
+show the entry, direction question, learner help and assembled brief from the
+current production build. These captures are separate from historical evidence.
+The six discovery/recovery browser cases passed after this navigation correction.
