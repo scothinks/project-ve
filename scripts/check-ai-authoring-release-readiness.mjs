@@ -197,6 +197,8 @@ record(
     && migrationFiles.has(recoveryMigration.file)
     && includesAll(read("scripts/qualify-ai-authoring-hosted.mjs"), [
       "deployment.identity",
+      "deployments?sha=${encodeURIComponent(expectedSha)}",
+      "vercelDeploymentUrl",
       "runtime.protection",
       "security.worker",
       "evidence.measurements",
@@ -209,7 +211,7 @@ record(
     && hostedThresholds.dispatchVisibleMs === 5_000
     && hostedThresholds.maintenanceIntervalMinutes === 5
     && hostedThresholds.workerMaxDurationSeconds === 300,
-  "A manual, secret-scoped Preview gate audits the hosted migration boundary, records deployment identity, probes the protected runtime, and validates measured evidence.",
+  "A manual, secret-scoped gate audits the hosted migration boundary, resolves the exact Vercel deployment, probes the protected runtime, and validates measured evidence.",
 );
 
 record(
