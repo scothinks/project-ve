@@ -28,11 +28,11 @@ test('contextual image styles, retained preview and explicit use survive navigat
     await drawer.getByRole('button', { name: 'Photography', exact: true }).click();
     await drawer.getByRole('textbox', { name: 'Alt text', exact: true }).fill('Neighbors listening to one another');
     await drawer.getByRole('button', { name: 'Save as course default', exact: true }).click();
-    await drawer.getByRole('button', { name: 'Check image cost', exact: true }).click();
-    await expect(drawer.getByRole('button', { name: 'Generate image', exact: true })).toBeEnabled();
+    await drawer.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(drawer.getByRole('button', { name: 'Generate · 0 credits', exact: true })).toBeEnabled();
     expect(ids).toHaveLength(0);
     for (const width of [1280,390]) { await page.setViewportSize({ width, height: 900 }); await page.screenshot({ path: info.outputPath(`image-cost-${width}.png`), animations: 'disabled' }); expect(await drawer.evaluate(e => e.scrollWidth <= e.clientWidth + 1)).toBe(true); }
-    await drawer.getByRole('button', { name: 'Generate image', exact: true }).click();
+    await drawer.getByRole('button', { name: 'Generate · 0 credits', exact: true }).click();
     await expect(drawer.getByText('Creating your image…', { exact: true })).toBeVisible();
     await drawer.getByRole('button', { name: 'Close', exact: true }).click();
     expect(checked(await f.editor.rpc('admin_read_ai_results', { p_id: ids[0] })).stopRequested).toBe(false);

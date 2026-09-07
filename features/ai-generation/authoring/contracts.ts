@@ -55,7 +55,7 @@ export function resultLabel(result: AuthoringResult) {
   if (result.receipt) return "Added";
   if (result.kind && result.kind !== "page") {
     if (result.stopRequested && isGenerating(result)) return "Stopping…";
-    return { quote: "Check the cost", starting: "Request accepted", writing: result.kind === "image" ? "Creating your image" : result.kind === "course_outline" ? "Planning your course" : result.kind === "course_draft" ? "Writing lessons" : result.kind === "quiz" ? "Writing and checking questions" : result.kind === "lesson_plan" ? "Planning lessons" : "Writing your lesson", ready: "Not added yet", failed: "Needs attention", stopped: "Stopped" }[result.stage];
+    return { quote: "Ready to start", starting: "Request accepted", writing: result.kind === "image" ? "Creating your image" : result.kind === "course_outline" ? "Planning your course" : result.kind === "course_draft" ? "Writing lessons" : result.kind === "quiz" ? "Writing and checking questions" : result.kind === "lesson_plan" ? "Planning lessons" : "Writing your lesson", ready: "Not added yet", failed: "Needs attention", stopped: "Stopped" }[result.stage];
   }
   if (result.candidate?.decision === "review_quiz") return "Ready to review the quiz";
   if (result.assistant && !result.stopRequested) {
@@ -64,12 +64,12 @@ export function resultLabel(result: AuthoringResult) {
     if (result.stage === "ready") return "Suggested next page";
   }
   if (result.stopRequested && isGenerating(result)) return "Stopping…";
-  return { quote: "Check the cost", starting: "Preparing your page", writing: "Writing your page", ready: "Not added yet", failed: "Needs attention", stopped: "Stopped" }[result.stage];
+  return { quote: "Ready to start", starting: "Preparing your page", writing: "Writing your page", ready: "Not added yet", failed: "Needs attention", stopped: "Stopped" }[result.stage];
 }
 
 export function creditLabel(result: AuthoringResult) {
-  if (!result.metered) return "Platform catalogue · No organisation credits used";
+  if (!result.metered) return "0 credits";
   if (result.credit.status === "charged") return `${result.credit.used ?? result.estimatedUnits} credits used${result.credit.released ? ` · ${result.credit.released} credits released` : ""}`;
   if (result.credit.status === "released") return `${result.credit.released ?? result.estimatedUnits} credits released`;
-  return `${result.credit.reserved ?? result.estimatedUnits} credits reserved · Final usage will appear here`;
+  return `${result.credit.reserved ?? result.estimatedUnits} credits reserved`;
 }

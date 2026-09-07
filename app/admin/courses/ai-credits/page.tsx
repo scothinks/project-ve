@@ -67,8 +67,8 @@ export default async function AiCreditsPage() {
             <div className="mt-8 rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-6">
               <p className="text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
                 {isOrgWorkspace
-                  ? "AI authoring isn't enabled for this organisation, so no usage is tracked."
-                  : "Platform catalogue courses aren't metered against an organisation's AI credits."}
+                  ? "AI authoring is unavailable."
+                  : "0 credits"}
               </p>
             </div>
           ) : (

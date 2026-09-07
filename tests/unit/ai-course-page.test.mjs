@@ -10,6 +10,7 @@ const hook=registerHooks({resolve(specifier,context,next){
  if(specifier==='@/lib/admin')return stub('export const requireAdmin=async()=>({});');
  if(specifier==='@/features/organizations/admin/entitlement-guards')return stub('export const getAdminWorkspaceAiAuthoringNotice=async()=>globalThis.__coursePageTest.notice;');
  if(specifier==='@/features/ai-generation/authoring/availability')return stub('export const pageAuthoringEnabled=()=>globalThis.__coursePageTest.enabled;');
+ if(specifier==='@/features/ai-generation/authoring/course-availability')return stub('export const getCourseAvailability=async()=>({enabled:globalThis.__coursePageTest.enabled&&!globalThis.__coursePageTest.notice,reason:globalThis.__coursePageTest.notice});');
  if(specifier==='@/components/admin/ai/AiCourseAuthoring')return stub('export const AiCourseAuthoring=()=>null;');
  return next(specifier,context);
 }});
@@ -19,6 +20,6 @@ const {default:page}=await import('data:text/javascript,'+encodeURIComponent(cod
 test('retained course result remains reachable when AI entitlement or rollout is disabled',async()=>{
  for(const enabled of [true,false])for(const notice of [null,'Plan unavailable']){
   Object.assign(state,{enabled,notice});const rendered=await page({searchParams:Promise.resolve({aiResult:'retained-result'})});
-  assert.equal(rendered.props.initialId,'retained-result');assert.equal(rendered.props.enabled,enabled&&!notice);
+  assert.equal(rendered.props.initialId,'retained-result');assert.equal(rendered.props.availability.enabled,enabled&&!notice);
  }
 });

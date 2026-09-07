@@ -1068,7 +1068,7 @@ function OrgTopBar({
   profile: UserProfile;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-2 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 md:h-20 md:flex-nowrap md:px-6 md:py-0">
+    <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-2 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 md:px-6">
       <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
       <div className="flex items-center gap-3">
         <ResourcesMenu />

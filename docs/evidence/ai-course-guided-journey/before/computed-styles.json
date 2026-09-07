@@ -1,0 +1,295 @@
+{
+  "sourceCommit": "0a1d7b9fb5c698d99b6cb098d575d1c16a5d3317",
+  "provenance": "Reconstructed after implementation from an isolated immutable pre-change checkout; not contemporaneous evidence.",
+  "capturedAt": "2026-09-07T12:00:49.354Z",
+  "records": [
+    {
+      "width": 1440,
+      "scheme": "light",
+      "styles": [
+        {
+          "selector": "body",
+          "color": "rgb(20, 20, 20)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(20, 20, 20)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "h1",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "900",
+          "lineHeight": "36px",
+          "borderColor": "rgb(28, 28, 24)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "textarea",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgb(255, 253, 250)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(230, 225, 216)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "input",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgb(255, 253, 250)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(230, 225, 216)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "button",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(0, 100, 70)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(255, 255, 255)",
+          "borderRadius": "3.35544e+07px"
+        },
+        {
+          "selector": "[role=\"combobox\"]",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(28, 28, 24)",
+          "borderRadius": "8px"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "light",
+      "styles": [
+        {
+          "selector": "body",
+          "color": "rgb(20, 20, 20)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(20, 20, 20)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "h1",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "900",
+          "lineHeight": "36px",
+          "borderColor": "rgb(28, 28, 24)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "textarea",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgb(255, 253, 250)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(230, 225, 216)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "input",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgb(255, 253, 250)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(230, 225, 216)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "button",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(0, 100, 70)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(255, 255, 255)",
+          "borderRadius": "3.35544e+07px"
+        },
+        {
+          "selector": "[role=\"combobox\"]",
+          "color": "rgb(28, 28, 24)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(28, 28, 24)",
+          "borderRadius": "8px"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scheme": "dark",
+      "styles": [
+        {
+          "selector": "body",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(242, 241, 235)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "h1",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "900",
+          "lineHeight": "36px",
+          "borderColor": "rgb(242, 241, 235)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "textarea",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgb(23, 28, 25)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(43, 50, 46)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "input",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgb(23, 28, 25)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(43, 50, 46)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "button",
+          "color": "rgb(12, 36, 26)",
+          "backgroundColor": "rgb(120, 217, 175)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(12, 36, 26)",
+          "borderRadius": "3.35544e+07px"
+        },
+        {
+          "selector": "[role=\"combobox\"]",
+          "color": "rgb(129, 128, 123)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(129, 128, 123)",
+          "borderRadius": "8px"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scheme": "dark",
+      "styles": [
+        {
+          "selector": "body",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(242, 241, 235)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "h1",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "900",
+          "lineHeight": "36px",
+          "borderColor": "rgb(242, 241, 235)",
+          "borderRadius": "0px"
+        },
+        {
+          "selector": "textarea",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgb(23, 28, 25)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(43, 50, 46)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "input",
+          "color": "rgb(242, 241, 235)",
+          "backgroundColor": "rgb(23, 28, 25)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "700",
+          "lineHeight": "20px",
+          "borderColor": "rgb(43, 50, 46)",
+          "borderRadius": "12px"
+        },
+        {
+          "selector": "button",
+          "color": "rgb(12, 36, 26)",
+          "backgroundColor": "rgb(120, 217, 175)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(12, 36, 26)",
+          "borderRadius": "3.35544e+07px"
+        },
+        {
+          "selector": "[role=\"combobox\"]",
+          "color": "rgb(236, 235, 229)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "fontFamily": "geist, \"geist Fallback\", Arial, Helvetica, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderColor": "rgb(236, 235, 229)",
+          "borderRadius": "8px"
+        }
+      ]
+    }
+  ]
+}

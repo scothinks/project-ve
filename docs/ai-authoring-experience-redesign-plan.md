@@ -2,6 +2,7 @@
 
 Status: Phase 1 implementation closed and locally verified; verification and rollout
 evidence in [Phase 1 page pilot](ai-authoring-phase-1.md). Phase 2 is implemented and locally validated; see [Phase 2 evidence](ai-authoring-phase-2.md). Phase 3 is implemented and locally validated; see [Phase 3 evidence](ai-authoring-phase-3.md). Phase 4 is implemented and locally validated; see [Phase 4 evidence](ai-authoring-phase-4.md). Phase 5 is implemented and locally validated; see [Phase 5 evidence](ai-authoring-phase-5.md). Phase 6 implementation and local validation are complete; see [Phase 6 evidence](ai-authoring-phase-6.md). Hosted activation and capped real-output qualification remain pending.
+The approved course-setup follow-up adds [guided idea/audience discovery and upfront pricing](ai-course-journey-improvement-plan.md); see its [implementation evidence](ai-course-guided-journey.md) for local checks and remaining rollout conditions.
 Owner context: Project VE editorial/CMS experience.
 Date: 5 September 2026.
 

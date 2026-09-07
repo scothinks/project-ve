@@ -16,6 +16,7 @@ const sizeClasses = {
 };
 
 export function AdminSelect({
+  id,
   className,
   defaultValue,
   disabled,
@@ -27,6 +28,7 @@ export function AdminSelect({
   size = "default",
   value,
 }: {
+  id?: string;
   className?: string;
   defaultValue?: string;
   disabled?: boolean;
@@ -59,6 +61,7 @@ export function AdminSelect({
       value={currentValue}
     >
       <Select.Trigger
+        id={id}
         className={cn(
           "flex w-full items-center justify-between border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] text-left text-sm font-bold outline-none transition focus:border-[var(--admin-primary-container)] disabled:cursor-not-allowed disabled:opacity-60",
           sizeClasses[size],

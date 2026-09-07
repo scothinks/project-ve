@@ -1,16 +1,32 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
-## AI authoring Phase 6, 2026-09-06
+## Guided AI course creation, 2026-09-07
 
-Phase 6 implementation and local validation are complete. The integrated
-Phase 1–5 implementation now includes
-bounded worker-outage recovery, retained-image registration repair, conservative
-partial-work settlement and delay notices that work even when streams stay
-silent. Existing tenant, lease, credit, media and publication boundaries remain.
-See [Phase 6 evidence](ai-authoring-phase-6.md) for the release acceptance matrix,
-exact local checks and remaining hosted/provider qualification. Full release is
-not closed: deployment/runtime evidence and explicitly capped real-output review
-are still required. This does not open engineering P2 or authorize deployment.
+The approved four-block follow-up implements idea/audience discovery, read-only
+upfront pricing, and a guided outline → draft → editorial-review workspace.
+The included guidance path has bounded, serialized allowance accounting and stays
+disabled by default pending its funding decision. Existing generation charges,
+tenant authorization, checkpoints, explicit saves and publication boundaries remain.
+See [technical evidence and release limits](ai-course-guided-journey.md) and
+[the approved plan](ai-course-journey-improvement-plan.md). Tracking stays in
+AI Authoring #104–#107; this work does not open engineering P2 or authorize deployment.
+The follow-up closes learner-description loss on topic changes and editing of
+reopened outline requests. A reconstructed pre-change authoring baseline now
+records the original source; application-wide identity #96–#99 remains separate.
+
+## AI authoring Phase 6, reconciled 2026-09-07
+
+Phase 6 implementation and local validation are complete. The successful
+[hosted qualification run 34071919696](https://github.com/scothinks/project-ve/actions/runs/34071919696)
+qualifies revision `292e65a8f7784df31591e94abe65fec47ddd23b6`, including protected
+runtime access, worker denial, migration/ACL parity and read-only media checks.
+The previously cited run 34069618360 failed and is superseded. See
+[Phase 6 evidence](ai-authoring-phase-6.md) for the exact deployment and artifacts.
+Representative paid text/image runs, measured streaming/reconciliation and output
+review remain pilot follow-ups; the practical staging qualification does not
+claim those checks or qualify the new guided journey. Scheduler frequency for
+wider unattended rollout and forward replay when a suitable snapshot exists remain
+follow-ups, rather than evidence that the practical staging checks failed.
 
 ## AI authoring Phase 5, 2026-09-06
 

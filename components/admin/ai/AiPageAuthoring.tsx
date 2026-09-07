@@ -10,6 +10,8 @@ import { AiPageResult, aiButton, aiField, aiPrimary } from "./AiPageResult";
 import { AuthoringRequestError, authoringRequest, useAuthoringResult } from "./useAuthoringResult";
 import { resultLabel, type ApplicationReceipt, type AuthoringResult, type AuthoringResults } from "@/features/ai-generation/authoring/contracts";
 
+import { pricedAction } from "@/features/ai-generation/authoring/pricing-labels";
+
 type Props = {
   lessonId?: string; courseId?: string; enabled?: boolean; pageCount?: number; initialResultId?: string; initiallyOpen?: boolean;
   beforeAction?: () => Promise<number>;
@@ -76,7 +78,7 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
   const start = () => run(async () => {
     if (!result) return;
     const revision = await beforeAction!();
-    if (revision !== result.sourceRevision) { setResult(null); throw new Error("Your lesson changed. Check the cost again using your latest changes."); }
+    if (revision !== result.sourceRevision) { setResult(null); throw new Error("Your lesson changed. Update the price to continue."); }
     // Keep this quote identity if the acknowledgement is lost: retrying it
     // cannot create another operation or reservation.
     const r = await authoringRequest<AuthoringResult>({ action: "start", id: result.id });
@@ -137,8 +139,7 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
           {parent?.candidate && <label className="block text-sm font-bold">What would you like to change?<textarea className={aiField} disabled={busy} maxLength={1000} rows={3} value={refinement} onChange={(e) => { setRefinement(e.target.value); setResult(null); }} /></label>}
           {result ? <div className="space-y-4 rounded-2xl bg-[var(--admin-surface-container-low)] p-5">
             <div className="space-y-1">
-              <p className="font-extrabold">{result.metered ? `${result.estimatedUnits} credits` : "No organisation credits used"}</p>
-              <p className="text-sm text-[var(--admin-on-surface-variant)]">{result.metered ? "Covers the review, even if no page is needed." : "Provider charges apply."}</p>
+              {result.metered && <p className="text-sm text-[var(--admin-on-surface-variant)]">Includes the recommendation, even if no page is needed.</p>}
             </div>
             <details className="text-sm text-[var(--admin-on-surface-variant)]">
               <summary className="cursor-pointer font-semibold">Cost details</summary>
@@ -147,8 +148,8 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
                 <p>Estimate valid for 10 minutes.{result.metered && " Credits are reserved when you start."}</p>
               </div>
             </details>
-            <button className={aiPrimary} disabled={busy} type="button" onClick={() => { void start(); }}>{busy ? "Starting…" : parent ? "Create another version" : "Suggest next page"}</button>
-          </div> : <button className={aiPrimary} disabled={busy} type="submit">{busy ? "Saving and checking cost…" : "Check cost"}</button>}
+            <button className={aiPrimary} disabled={busy} type="button" onClick={() => { void start(); }}>{busy ? "Starting…" : pricedAction(parent ? "Create" : "Recommend", result)}</button>
+          </div> : <button className={aiPrimary} disabled={busy} type="submit">{busy ? "Preparing…" : "Update price"}</button>}
         </form>}
         {mode === "list" && <>
           <p className="text-sm leading-6">Return to a suggestion or draft, or continue work you left running.</p>

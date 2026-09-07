@@ -139,7 +139,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
                   <option value="make_good">Make-good</option>
                 </select>
               </Field>
-              <Field label="Rate" help="Stored in minor units for billing accuracy. Example: 150000 for ₦1,500.00.">
+              <Field label="Rate (minor units)" help="NGN: 150000 = ₦1,500.">
                 <input className={inputClasses} name="rateAmount" type="number" defaultValue={selectedCampaign?.rate_amount ?? 0} />
               </Field>
               <Field label="Currency">
