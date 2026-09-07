@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { mkdir } from 'node:fs/promises';
 import { checked, mediaFixture } from '../support/media-browser';
 import { listeningLesson, comparisonLesson } from '../support/course-teaching-fixtures';
 test.use({ actionTimeout: 60_000 });
@@ -8,7 +7,7 @@ const outline={title:'Decide together',description:'Listen and choose fairly.',l
 const question={prompt:'What comes first?',questionType:'single_choice',explanation:'Hear everyone before choosing.',xp:10,options:[{label:'Hear everyone',isCorrect:true},{label:'Choose immediately',isCorrect:false}]};
 const lesson=(title:string,questions:number,index:number)=>({...structuredClone(index===0?listeningLesson:comparisonLesson),title,questions:questions?[index===0?question:{...question,prompt:'What makes a comparison fair?',explanation:'Apply the same needs to each option so its tradeoffs are visible.',options:[{label:'Compare each option against the same needs',isCorrect:true},{label:'Count only the most popular preference',isCorrect:false}]}]:[]});
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j7l8AAAAASUVORK5CYII=','base64');
-for(const partial of [false,true])test(partial?'partial course recovery keeps completed lessons and retries only unfinished work':'editable outline, separate quote, explicit course save, review and publish',async({browser,baseURL})=>{
+for(const partial of [false,true])test(partial?'partial course recovery keeps completed lessons and retries only unfinished work':'editable outline, separate quote, explicit course save, review and publish',async({browser,baseURL},info)=>{
   const f=await mediaFixture(browser,baseURL!);const page=await f.context.newPage();const resultIds:string[]=[];const calls:number[]=[];let savedCourse:string|undefined;let failNextDraft=partial;let dropApply=false;
   try{
     // Exercise real fallback reads so a buffered SSE response cannot make the
@@ -30,9 +29,8 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
       await route.fulfill({json:result});
     });
     await page.goto(`${baseURL}/admin/courses/ai/brief`);
-    await page.getByLabel('The learning need').fill('Make fair choices in a community.');await page.getByLabel('Who is it for?').fill('Young adults');await page.getByLabel('Number of lessons').fill('2');
-    await page.getByRole('button',{name:'Check outline cost'}).click();await expect(page.getByRole('heading',{name:'57 credits · One editable outline'})).toBeVisible();
-    expect(resultIds).toHaveLength(0);await page.getByRole('button',{name:'Generate outline',exact:true}).click();
+    await page.getByRole('button',{name:'I have a brief'}).click();await page.getByLabel('Learning goal').fill('Make fair choices in a community.');await page.getByLabel('Who this will help').fill('Young adults');await page.getByText('Course options ·', {exact:false}).click();await page.getByLabel('Number of lessons').fill('2');
+    expect(resultIds).toHaveLength(0);await page.getByRole('button',{name:'Generate outline · No organisation credits',exact:true}).click();
     await expect(page.getByLabel('Course title', {exact:true})).toHaveValue('Decide together');
     await page.getByLabel('Course title',{exact:true}).fill('Community choices');
     await page.getByRole('button',{name:'Add lesson',exact:true}).click();
@@ -42,27 +40,26 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
     if(!partial){
       checked(await f.editor.rpc('admin_save_ai_course_outline',{p_id:resultIds[0],p_revision:1,p_outline:{...outline,title:'Another editor course'}}));
       await expect(page.locator('[data-outline-revision="2"]')).toBeVisible({timeout:30_000});
-      await page.getByRole('button',{name:'Save outline and check draft cost'}).click();
+      await page.getByRole('button',{name:'Generate course draft · No organisation credits',exact:true}).click();
       await expect(page.getByRole('alert').filter({hasText:'The outline changed'})).toBeVisible();
       await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Community choices');
       expect(checked(await f.editor.rpc('admin_read_ai_results',{p_id:resultIds[0]})).outline.title).toBe('Another editor course');
       await page.getByRole('button',{name:'Reload saved outline'}).click();await page.getByRole('button',{name:'Reload outline',exact:true}).click();
       await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Another editor course');await page.getByLabel('Course title',{exact:true}).fill('Community choices');
     }
-    await page.getByLabel('Quiz scope').selectOption(partial?'0':'1');
-    await page.getByRole('button',{name:'Save outline and check draft cost'}).click();
-    await expect(page.getByRole('heading',{name:`${partial?170:182} credits · 2 lessons to draft`})).toBeVisible();expect(resultIds).toHaveLength(1);
-    await page.getByRole('button',{name:'Generate course draft',exact:true}).click();
+    await page.getByRole('combobox',{name:'Quiz scope'}).click();await page.getByRole('option',{name:partial?'No quizzes':'1 question per lesson',exact:true}).click();
+    await page.getByRole('button',{name:'Generate course draft · No organisation credits',exact:true}).click();
+    await expect.poll(()=>resultIds.length).toBe(2);
     if(partial){
-      await expect(page.getByRole('button',{name:'Check cost to retry unfinished lessons'})).toBeVisible();
+      await expect(page.getByRole('button',{name:'Retry unfinished lessons · No organisation credits'})).toBeVisible();
       await expect(page.getByRole('button',{name:'Save only 1 completed lesson',exact:true})).toBeVisible();
       const failedId=resultIds[1];
       await page.goto(`${baseURL}/admin/courses/ai-results`);await page.locator(`button[data-result-id="${failedId}"]`).click();await page.getByRole('link',{name:'Open course result'}).click();
-      await expect(page.getByText('Lesson 1: Listen first',{exact:true})).toBeVisible();
-      await page.getByRole('button',{name:'Check cost to retry unfinished lessons'}).click();await expect(page.getByRole('heading',{name:'135 credits · 1 lessons to draft'})).toBeVisible();
-      await page.getByRole('button',{name:'Generate course draft',exact:true}).click();await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
+      await expect(page.locator('summary').filter({hasText:'Lesson 1: Listen first'})).toBeVisible();
+      await page.getByRole('button',{name:'Retry unfinished lessons · No organisation credits'}).click();await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
       expect(calls).toEqual([0,1,1]);expect(checked(await f.editor.rpc('admin_read_ai_results',{p_id:failedId})).completedCount).toBe(1);
     }else await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
+    await page.locator('summary').filter({hasText:'Lesson 2: Choose fairly'}).click();
     await expect(page.getByText('A quiet neighbour',{exact:true})).toBeVisible();
     await expect(page.getByText('Defend and revisit the choice',{exact:true})).toBeVisible();
     await expect(page.getByRole('cell',{name:'Family carers need cover',exact:true})).toBeVisible();
@@ -70,7 +67,7 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
     const finalId=resultIds.at(-1)!;
     expect(checked(await f.editor.from('courses').select('id').eq('id',`course-ai-${finalId.replaceAll('-','')}`))).toHaveLength(0);
     await page.setViewportSize({width:390,height:844});await expect(page.getByRole('button',{name:'Save course draft',exact:true})).toBeVisible();
-    await mkdir('docs/evidence/ai-authoring-phase-3',{recursive:true});await page.screenshot({path:`docs/evidence/ai-authoring-phase-3/${partial?'recovered-mobile':'course-mobile'}.png`,fullPage:true});
+    await page.screenshot({path:info.outputPath(`${partial?'recovered-mobile':'course-mobile'}.png`),fullPage:true});
     await page.setViewportSize({width:1280,height:900});
     if(partial)dropApply=true;
     await page.getByRole('button',{name:'Save course draft',exact:true}).click();
@@ -88,7 +85,7 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
       await page.reload();await expect(page.getByRole('button',{name:'Approve reviewed course'})).toBeEnabled();
       await page.getByRole('checkbox',{name:'I have reviewed the course, lesson content, quiz answers and any attached media.'}).check();
       await page.getByRole('button',{name:'Approve reviewed course'}).click();await expect(page.getByRole('button',{name:'Publish course',exact:true})).toBeVisible();
-      await page.screenshot({path:'docs/evidence/ai-authoring-phase-3/review-desktop.png',fullPage:true});
+      await page.screenshot({path:info.outputPath('review-desktop.png'),fullPage:true});
       await page.getByRole('button',{name:'Publish course',exact:true}).click();await expect.poll(async()=>checked(await f.editor.from('courses').select('status').eq('id',savedCourse!).single()).status).toBe('published');
       const lessons=checked(await f.editor.from('lessons').select('id,published_snapshot').eq('course_id',savedCourse!).order('sort_order'));expect(lessons.every(l=>l.published_snapshot)).toBeTruthy();
       await page.goto(`${baseURL}/lessons/${lessons[0].id}`);await expect(page.getByText(/A request for evening meetings may hide a need/)).toBeVisible();

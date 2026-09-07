@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { getCourseAvailability } from "@/features/ai-generation/authoring/course-availability";
 
-export default function ChooseCourseCreationPage() {
+export default async function ChooseCourseCreationPage() {
+  const availability = await getCourseAvailability();
   return (
     <div className="mx-auto flex w-full max-w-[960px] flex-col gap-10">
       <div>
@@ -22,9 +24,8 @@ export default function ChooseCourseCreationPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <Link
+        <div
           className="flex flex-col gap-4 rounded-[22px] border-[1.5px] border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-7 text-left shadow-[0_2px_8px_rgba(18,60,53,0.04)] transition hover:border-[var(--admin-primary)]"
-          href="/admin/courses/ai/brief"
         >
           <span
             className="flex h-12 w-12 items-center justify-center rounded-[14px]"
@@ -36,12 +37,13 @@ export default function ChooseCourseCreationPage() {
             </svg>
           </span>
           <div>
-            <h2 className="mb-1.5 text-[17px] font-extrabold text-[var(--admin-on-surface)]">Create with AI</h2>
+            <h2 className="mb-1.5 text-[17px] font-extrabold text-[var(--admin-on-surface)]">{availability.enabled ? <Link href="/admin/courses/ai/brief" className="underline underline-offset-4">Create with AI</Link> : 'Create with AI'}</h2>
             <p className="text-[13px] font-medium leading-[1.5] text-[var(--admin-on-surface-variant)]">
-              Describe what you want to teach, and we&apos;ll draft a curriculum to get you started.
+              Start with a rough idea or get help choosing a goal and learners. Review the outline before drafting your course.
             </p>
+            {!availability.enabled && <p role="status" className="mt-3 text-sm">{availability.reason} <Link className="font-bold underline" href="/admin/courses/ai-results">Open saved AI results</Link></p>}
           </div>
-        </Link>
+        </div>
 
         <Link
           className="flex flex-col gap-4 rounded-[22px] border-[1.5px] border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-7 text-left shadow-[0_2px_8px_rgba(18,60,53,0.04)] transition hover:border-[var(--admin-primary)]"

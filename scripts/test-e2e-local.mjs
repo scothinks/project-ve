@@ -50,6 +50,8 @@ const result = spawnSync("npx", ["playwright", "test", ...process.argv.slice(2)]
     APP_MODE: "live",
     PROJECT_VE_LOCAL_E2E: "1",
     AI_AUTHORING_PAGE_PILOT_ENABLED: "true",
+    // Guidance browser cases intercept the route; no provider calls are used.
+    AI_AUTHORING_GUIDANCE_ENABLED: "true",
     NEXT_PUBLIC_SUPABASE_URL: localSupabaseUrl,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: localPublishableKey,
     SUPABASE_SERVICE_ROLE_KEY: localServiceRoleKey,

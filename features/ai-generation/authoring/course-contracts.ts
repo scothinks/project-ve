@@ -8,7 +8,7 @@ export type CourseContext = { kind: 'course_outline' | 'course_draft'; brief: Co
   questionsPerLesson: number; refinement: string; priorDraft: CourseOutline | null; index?: number;
   completed?: CourseCandidate['completed'] };
 export type CourseResult = Omit<AuthoringResult, 'kind' | 'candidate' | 'receipt' | 'courseId' | 'lessonId'> & {
-  kind: CourseContext['kind']; courseId: string | null; lessonId: null;
+  kind: CourseContext['kind']; courseId: string | null; lessonId: null; workspaceId: string | null;
   brief: CourseBrief; outline: CourseOutline | null; outlineRevision: number; questionsPerLesson: number;
   completedCount: number; totalCount: number; candidate: CourseCandidate | null;
   receipt: { status: 'saved'; courseId: string; lessonIds: string[]; savedAt: string } | null;

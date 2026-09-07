@@ -8063,6 +8063,16 @@ export type Database = {
         Args: { p_id: string }
         Returns: undefined
       }
+      admin_preview_ai_course_price: {
+        Args: {
+          p_kind: string
+          p_lessons?: number
+          p_organization_id?: string
+          p_questions?: number
+          p_retry_id?: string
+        }
+        Returns: Json
+      }
       admin_preview_organization_assessment_scoring: {
         Args: { p_answers: Json; p_assessment_version_id: string }
         Returns: Json
@@ -8196,6 +8206,10 @@ export type Database = {
       admin_replace_organization_unit_members: {
         Args: { p_members: Json; p_unit_id: string }
         Returns: Json
+      }
+      admin_reserve_ai_course_guidance: {
+        Args: { p_id: string; p_organization_id?: string; p_session: string }
+        Returns: boolean
       }
       admin_reset_ai_course_media: {
         Args: {

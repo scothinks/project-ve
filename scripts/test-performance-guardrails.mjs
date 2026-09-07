@@ -10,6 +10,7 @@ const contractTests = [
   "tests/unit/dashboard-first-useful-html.test.mjs",
   "tests/unit/ai-generation-worker-boundary.test.mjs",
   "tests/unit/ai-authoring-routes.test.mjs",
+  "tests/unit/ai-course-guidance-routes.test.mjs",
 ];
 
 const result = spawnSync(

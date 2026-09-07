@@ -1,7 +1,7 @@
 # AI authoring Phase 6: release hardening
 
 Status, 2026-09-07: the practical hosted staging boundary passes on exact revision
-`2e17a052f1c9f334621a41930108ec384823d825`; PR #92 is merged to `main` as
+`292e65a8f7784df31591e94abe65fec47ddd23b6`; PR #92 is merged to `main` as
 `9da4187cd85ad8bc15d9adf923e02031b6e66078`. CI, migration parity, recovery ACL,
 runtime access, worker denial and the complete read-only media smoke are established.
 Representative paid output review remains a pilot follow-up rather than a merge or
@@ -20,12 +20,14 @@ the Phase 1–6 work was absent from that deployment.
 The machine-readable result is retained in
 [pre-deploy qualification evidence](evidence/ai-authoring-phase-6/predeploy-qualification-2026-09-06.json).
 
-The latest qualification is [GitHub Actions run 34069618360](https://github.com/scothinks/project-ve/actions/runs/34069618360).
-It resolves Preview deployment `6299394706`, immutable URL
-`https://project-bgvtlczlz-oby-douglas-projects.vercel.app`, and exactly matches
-revision `2e17a052f1c9f334621a41930108ec384823d825`. The Vercel automation bypass is
+The successful replacement qualification is [GitHub Actions run 34071919696](https://github.com/scothinks/project-ve/actions/runs/34071919696).
+It resolves Preview deployment `6299858025`, immutable URL
+`https://project-klkbnsk5s-oby-douglas-projects.vercel.app`, and exactly matches
+revision `292e65a8f7784df31591e94abe65fec47ddd23b6`. The Vercel automation bypass is
 configured: the protected application returned HTTP 200 and the worker correctly
 denied an unauthenticated request with HTTP 401.
+
+The earlier run [34069618360](https://github.com/scothinks/project-ve/actions/runs/34069618360) failed and is superseded by this successful run. The workflow executed from `main` at `9da4187cd85ad8bc15d9adf923e02031b6e66078`; its artifact explicitly qualifies the deployment revision above. This historical qualification does not cover the guided course journey or its two new migrations.
 
 The manual workflow reached the default branch in
 [#83](https://github.com/scothinks/project-ve/pull/83). Follow-up runs established
@@ -208,7 +210,7 @@ ledger parity and migration tests are the available release evidence.
 
 ## Migration follow-up
 
-Run 34069618360 used the repository's Supabase access token and project reference
+Run 34071919696 used the repository's Supabase access token and project reference
 only for read-only Management API calls. It established 221 local and 221 hosted
 migrations with no missing or remote-only entries, matched every recovery-function
 marker, and verified execute access for `service_role` while `anon` and

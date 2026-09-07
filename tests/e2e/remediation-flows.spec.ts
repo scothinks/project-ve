@@ -1510,8 +1510,8 @@ test.describe.serial("remediation browser flows", () => {
     expect(duplicatedPages[0].id).not.toBe(pageId);
 
     await page.goto("/admin/courses/ai/brief");
-    await expect(page.getByRole("heading", { name: "What do you want to teach?" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Check outline cost" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Good courses start with a little help" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Help me choose" })).toBeVisible();
 
     await page.context().clearCookies();
     await signIn(page, learnerEmail);
