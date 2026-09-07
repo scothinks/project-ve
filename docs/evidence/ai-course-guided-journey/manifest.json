@@ -3,40 +3,137 @@
   "branch": "codex/ai-course-guided-journey",
   "base": "0a1d7b9fb5c698d99b6cb098d575d1c16a5d3317",
   "scope": "Local production build, deterministic provider fixtures, current shared identity. Discovery captures taken after final keyboard/layout changes; course previews retained from preceding unaffected recovery run.",
-  "sourceSha256": {
-    "app/admin/courses/ai/brief/page.tsx": "b3a1aa733bdf9ebbf6cb4885cf624fae5dd55ad3f8752eed4f58a1a74d44f181",
-    "app/globals.css": "f73ccbcbc1e4f20195408dbc13b5d386e1161b423900c45c80cf53e78996fe26",
-    "components/admin/AdminSelect.tsx": "1255be6b0577a5e6e55f9b7037e13c4fffc90d2c966a7989ddc473f0504287e1",
-    "components/admin/AdminShell.tsx": "a5b62f8059d19085e568056bf012471e9063cafab13e44eea562ca37b43e84bd",
-    "components/admin/ai/AiAssistanceAuthoring.tsx": "a9507c15901fe98b0d1e51ae87e7b8725b679bd388cb25bdecd0a05b721060ec",
-    "components/admin/ai/AiAssistancePreview.tsx": "6a5713ddd5e944b4e9012b1866c4fbd7160f2e91374dbac93e3922a0038ef453",
-    "components/admin/ai/AiAssistanceRecovery.tsx": "75dea3112d78c1c06ccb9035debd5b298e2e7cd557ea57e4dbd6320bc67d4efa",
-    "components/admin/ai/AiCourseArtwork.tsx": "c927d05b63a36a5d71e50736e6c71844539718d3a043d228bf989b74a3848d0f",
-    "components/admin/ai/AiCourseAuthoring.tsx": "7baa931b39ef667b2437ffd63d902e082a44f869a9bb945e4033cd456109b1a1",
-    "components/admin/ai/AiCourseDiscovery.tsx": "7f7e294c93ffd5100adc9000208de01f168aa1b27c3fbb3f4370a1dad07a90ef",
-    "components/admin/ai/AiCourseOutlineEditor.tsx": "af4888ac329459ad6939d8886109b4c74b468f2abd1dfb786d56a0e1c89385cb",
-    "components/admin/ai/AiCoursePreview.tsx": "d2a9b89980788c060ded1b826009f50e866bd0d750afa8479d178710a15b1457",
-    "components/admin/ai/AiImageAuthoring.tsx": "9e095f15aaa0e8495595241da1b17450ca29c825b24f834fed0ad35476db5933",
-    "components/admin/ai/AiImageResult.tsx": "b56e93f14c2497533466acd9d8a4415f2fd030f8f55fbd3429b8d90ab043c7f3",
-    "components/admin/ai/AiPageAuthoring.tsx": "5b60fc82a34231cb30b2453701c73e5f1299e2986be548ed8dd9ace6e9dfd2ca",
-    "components/admin/ai/AiPageResult.tsx": "7dc47b8b5285aaae0ef8171a50fafc0c389dfce5f7e084e8949a4ec1b5d74690",
-    "components/admin/ai/CourseGenerateAction.tsx": "9eda092dc91779a968f7a33aef45b7e8cec3abc76177d2dc40a49e75f7f2f6d4",
-    "components/admin/ai/CourseLeaveGuard.tsx": "1408fc8136aae8f7ced14eb4a101abe49ddff1bf9ee5c10e9e3818166aa6c57f",
-    "components/admin/ai/CourseQuoteReview.tsx": "5044663854e6a2caf00501e026c8a450a5e0be5accac4da4e18a5a5c9e785212",
-    "components/admin/ai/ImageStyleSample.tsx": "03f6526ee056e198422da5086529cd4575754fcd5fe28978eaee8649ef146937",
-    "components/admin/ai/LegacyMediaReview.tsx": "f6b40a9947d20d9dc61c490803e2492d3fec64cb5ee5c9c61f610bb65fde3832",
-    "components/admin/ai/useAuthoringDelay.ts": "fbe1ea1d3eeb21c060311a167e506c6a1412fbbff2b674128052fc0b08c004b3",
-    "components/admin/ai/useAuthoringResult.ts": "e44f2dc2bc840985aca730d29bf82c828c933bfcf12b134d6989e00d883c36a0",
-    "components/admin/ai/useCourseJourney.ts": "04523af3365df29a8b03397f6fdff580c0b96923da09f86a3a5a7e3bfa43b7e7",
-    "components/admin/ai/useCoursePrice.ts": "b642f3da89f60e3bfeb73fb2631082728dc41d091816fe4d1a5c263939fff85d"
-  },
-  "screenshotsSha256": {
-    "course-mobile.png": "7b25a32037bed221c301beb7e0d610a0653e03734d36a11e95565473c7a254bf",
-    "guided-1440.png": "630998df76df3b86cf2fd6b32cff4adad94e8ef34bda16983c276b149911b6aa",
-    "guided-320.png": "1d69734baf865ec469a25cdf02ad6e50d4b38140dd59c90aebcc26437bc97514",
-    "guided-390.png": "93737e14c20d896fd84d1955d041770eb3ac524c9a3e29eae40160abe1c90582",
-    "guided-dark.png": "ffea7834089a2f84bdeb55a207ab23923eca546f332ac5afa4039b481c21e6a5",
-    "guided-text-200.png": "84720775c549d4ef345a157e29e91569a6b8367cad3bae4bcd0715d3f347d540",
-    "recovered-mobile.png": "ee952c74f97182dd3aedd6406ed2f02eddb31e53bf6eedf56d73fe8e1059dc02"
-  }
+  "sourceCommit": "7638ad7c358b8b2ac1e6de22ea0dd5fc46ff93e6",
+  "sourceFiles": [
+    {
+      "path": "app/admin/courses/ai/brief/page.tsx",
+      "sha256": "b3a1aa733bdf9ebbf6cb4885cf624fae5dd55ad3f8752eed4f58a1a74d44f181"
+    },
+    {
+      "path": "app/globals.css",
+      "sha256": "f73ccbcbc1e4f20195408dbc13b5d386e1161b423900c45c80cf53e78996fe26"
+    },
+    {
+      "path": "components/admin/AdminSelect.tsx",
+      "sha256": "1255be6b0577a5e6e55f9b7037e13c4fffc90d2c966a7989ddc473f0504287e1"
+    },
+    {
+      "path": "components/admin/AdminShell.tsx",
+      "sha256": "a5b62f8059d19085e568056bf012471e9063cafab13e44eea562ca37b43e84bd"
+    },
+    {
+      "path": "components/admin/ai/AiAssistanceAuthoring.tsx",
+      "sha256": "a9507c15901fe98b0d1e51ae87e7b8725b679bd388cb25bdecd0a05b721060ec"
+    },
+    {
+      "path": "components/admin/ai/AiAssistancePreview.tsx",
+      "sha256": "6a5713ddd5e944b4e9012b1866c4fbd7160f2e91374dbac93e3922a0038ef453"
+    },
+    {
+      "path": "components/admin/ai/AiAssistanceRecovery.tsx",
+      "sha256": "75dea3112d78c1c06ccb9035debd5b298e2e7cd557ea57e4dbd6320bc67d4efa"
+    },
+    {
+      "path": "components/admin/ai/AiCourseArtwork.tsx",
+      "sha256": "c927d05b63a36a5d71e50736e6c71844539718d3a043d228bf989b74a3848d0f"
+    },
+    {
+      "path": "components/admin/ai/AiCourseAuthoring.tsx",
+      "sha256": "7baa931b39ef667b2437ffd63d902e082a44f869a9bb945e4033cd456109b1a1"
+    },
+    {
+      "path": "components/admin/ai/AiCourseDiscovery.tsx",
+      "sha256": "7f7e294c93ffd5100adc9000208de01f168aa1b27c3fbb3f4370a1dad07a90ef"
+    },
+    {
+      "path": "components/admin/ai/AiCourseOutlineEditor.tsx",
+      "sha256": "af4888ac329459ad6939d8886109b4c74b468f2abd1dfb786d56a0e1c89385cb"
+    },
+    {
+      "path": "components/admin/ai/AiCoursePreview.tsx",
+      "sha256": "d2a9b89980788c060ded1b826009f50e866bd0d750afa8479d178710a15b1457"
+    },
+    {
+      "path": "components/admin/ai/AiImageAuthoring.tsx",
+      "sha256": "9e095f15aaa0e8495595241da1b17450ca29c825b24f834fed0ad35476db5933"
+    },
+    {
+      "path": "components/admin/ai/AiImageResult.tsx",
+      "sha256": "b56e93f14c2497533466acd9d8a4415f2fd030f8f55fbd3429b8d90ab043c7f3"
+    },
+    {
+      "path": "components/admin/ai/AiPageAuthoring.tsx",
+      "sha256": "5b60fc82a34231cb30b2453701c73e5f1299e2986be548ed8dd9ace6e9dfd2ca"
+    },
+    {
+      "path": "components/admin/ai/AiPageResult.tsx",
+      "sha256": "7dc47b8b5285aaae0ef8171a50fafc0c389dfce5f7e084e8949a4ec1b5d74690"
+    },
+    {
+      "path": "components/admin/ai/CourseGenerateAction.tsx",
+      "sha256": "9eda092dc91779a968f7a33aef45b7e8cec3abc76177d2dc40a49e75f7f2f6d4"
+    },
+    {
+      "path": "components/admin/ai/CourseLeaveGuard.tsx",
+      "sha256": "1408fc8136aae8f7ced14eb4a101abe49ddff1bf9ee5c10e9e3818166aa6c57f"
+    },
+    {
+      "path": "components/admin/ai/CourseQuoteReview.tsx",
+      "sha256": "5044663854e6a2caf00501e026c8a450a5e0be5accac4da4e18a5a5c9e785212"
+    },
+    {
+      "path": "components/admin/ai/ImageStyleSample.tsx",
+      "sha256": "03f6526ee056e198422da5086529cd4575754fcd5fe28978eaee8649ef146937"
+    },
+    {
+      "path": "components/admin/ai/LegacyMediaReview.tsx",
+      "sha256": "f6b40a9947d20d9dc61c490803e2492d3fec64cb5ee5c9c61f610bb65fde3832"
+    },
+    {
+      "path": "components/admin/ai/useAuthoringDelay.ts",
+      "sha256": "fbe1ea1d3eeb21c060311a167e506c6a1412fbbff2b674128052fc0b08c004b3"
+    },
+    {
+      "path": "components/admin/ai/useAuthoringResult.ts",
+      "sha256": "e44f2dc2bc840985aca730d29bf82c828c933bfcf12b134d6989e00d883c36a0"
+    },
+    {
+      "path": "components/admin/ai/useCourseJourney.ts",
+      "sha256": "04523af3365df29a8b03397f6fdff580c0b96923da09f86a3a5a7e3bfa43b7e7"
+    },
+    {
+      "path": "components/admin/ai/useCoursePrice.ts",
+      "sha256": "b642f3da89f60e3bfeb73fb2631082728dc41d091816fe4d1a5c263939fff85d"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "course-mobile.png",
+      "sha256": "7b25a32037bed221c301beb7e0d610a0653e03734d36a11e95565473c7a254bf"
+    },
+    {
+      "path": "guided-1440.png",
+      "sha256": "630998df76df3b86cf2fd6b32cff4adad94e8ef34bda16983c276b149911b6aa"
+    },
+    {
+      "path": "guided-320.png",
+      "sha256": "1d69734baf865ec469a25cdf02ad6e50d4b38140dd59c90aebcc26437bc97514"
+    },
+    {
+      "path": "guided-390.png",
+      "sha256": "93737e14c20d896fd84d1955d041770eb3ac524c9a3e29eae40160abe1c90582"
+    },
+    {
+      "path": "guided-dark.png",
+      "sha256": "ffea7834089a2f84bdeb55a207ab23923eca546f332ac5afa4039b481c21e6a5"
+    },
+    {
+      "path": "guided-text-200.png",
+      "sha256": "84720775c549d4ef345a157e29e91569a6b8367cad3bae4bcd0715d3f347d540"
+    },
+    {
+      "path": "recovered-mobile.png",
+      "sha256": "ee952c74f97182dd3aedd6406ed2f02eddb31e53bf6eedf56d73fe8e1059dc02"
+    }
+  ]
 }

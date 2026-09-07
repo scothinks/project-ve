@@ -184,8 +184,18 @@ below; it did not launch that declined standalone server. The reconstructed
 baseline above was captured separately before that request. Production CI at `7638ad7` passed app, database-types and full local
 remediation jobs. GitGuardian reported four high-entropy findings in the checksum
 manifest; its 25 source and seven image values were verified as SHA-256 hashes.
-Dashboard sign-in could not be completed in this session, so those findings remain
-unresolved and no security suppression or bypass was added.
+The manifest now uses explicit `path`/`sha256` records and records its immutable
+source commit. All 32 original hashes were reverified against `7638ad7`; none were
+changed. The evidence-format regression check covers all repository JSON evidence
+and is included in the existing unit/CI gate; it also checks the seven screenshot
+files against their recorded digests. See [evidence checksum guidance](evidence/README.md).
+Validation: all 248 unit tests passed, focused ESLint and `git diff --check`
+passed, and restoring the original manifest caused the new format gate to fail
+as expected. No application or database behavior changed in this follow-up.
+GitGuardian incidents 37054300, 37054301, 37054299 and 37054298 still require an
+authenticated false-positive disposition for the historical commit, followed by
+a check rerun. Browser control was unavailable, so the dashboard action has been
+requested from the user. No scanner exclusion or bypass was added.
 
 ## Assisted journey presentation correction
 
