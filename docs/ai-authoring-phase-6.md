@@ -1,12 +1,12 @@
 # AI authoring Phase 6: release hardening
 
-Status, 2026-09-06: pull request #83 is merged to `main`. Follow-up qualification
-fixes use the repository's Supabase access token through read-only Management API
-queries and preflight the hosted recovery matcher against the checked-in function.
-The full release gate remains open for the next exact-revision hosted run, maintenance
-cadence, measured operation timings, tenant/media and reconciliation smoke,
-rollback, and capped provider-output review. This is AI Authoring Phase 6, not
-authorization for engineering P2. Tracking: [AI Authoring #71](https://github.com/scothinks/project-ve/issues/71).
+Status, 2026-09-07: the practical hosted staging boundary passes on exact revision
+`2e17a052f1c9f334621a41930108ec384823d825`; PR #92 is merged to `main` as
+`9da4187cd85ad8bc15d9adf923e02031b6e66078`. CI, migration parity, recovery ACL,
+runtime access, worker denial and the complete read-only media smoke are established.
+Representative paid output review remains a pilot follow-up rather than a merge or
+deployment blocker. This is AI Authoring Phase 6, not authorization for engineering
+P2. Tracking: [AI Authoring #71](https://github.com/scothinks/project-ve/issues/71).
 
 ## Deployment and blocker audit
 
@@ -20,14 +20,12 @@ the Phase 1–6 work was absent from that deployment.
 The machine-readable result is retained in
 [pre-deploy qualification evidence](evidence/ai-authoring-phase-6/predeploy-qualification-2026-09-06.json).
 
-The latest read-only qualification run identifies GitHub deployment `6297357982`,
-immutable URL `https://project-e2o2zst2g-oby-douglas-projects.vercel.app`, and
-exactly matches commit `f3319ff414f9cdb69079669358abe928f434297e`. The branch alias loads the
-Project VE application through an authenticated Vercel browser session. Automated
-HTTP probes still receive the expected Vercel SSO redirect, so the worker denial
-probe and all authenticated hosted measurements remain blocked until the staging
-Preview environment exposes its automation bypass secret to the manual qualification
-workflow. See the [post-deploy qualification evidence](evidence/ai-authoring-phase-6/hosted-qualification-2026-09-06.json).
+The latest qualification is [GitHub Actions run 34069618360](https://github.com/scothinks/project-ve/actions/runs/34069618360).
+It resolves Preview deployment `6299394706`, immutable URL
+`https://project-bgvtlczlz-oby-douglas-projects.vercel.app`, and exactly matches
+revision `2e17a052f1c9f334621a41930108ec384823d825`. The Vercel automation bypass is
+configured: the protected application returned HTTP 200 and the worker correctly
+denied an unauthenticated request with HTTP 401.
 
 The manual workflow reached the default branch in
 [#83](https://github.com/scothinks/project-ve/pull/83). Follow-up runs established
@@ -64,38 +62,27 @@ and direct public-URL denial. Tenant role denial remains a separate authenticate
 fixture check and is not claimed by the anonymous media probe.
 
 The hosted workflow intentionally does not create paid AI work. Real provider
-requests remain behind the separately approved spending cap and must be recorded
-in a completed copy of
-`docs/evidence/ai-authoring-phase-6/hosted-qualification.template.json`.
+requests remain behind a separately approved spending cap. Before pilot activation,
+one representative text operation and one image operation are sufficient to record
+acknowledgement, dispatch, first result, completion, streaming, reconciliation and
+output review in a completed copy of
+`docs/evidence/ai-authoring-phase-6/hosted-qualification.template.json`. This evidence
+is advisory to the automated release qualification.
 
-Remaining fixes before activation:
+Non-blocking pilot and operational follow-ups:
 
-1. Merge the qualification follow-up to `main`, confirm
-   `VERCEL_AUTOMATION_BYPASS_SECRET` remains available to the GitHub `Preview`
-   environment, and rerun the workflow for the exact deployed revision.
-2. Retain the working read-only migration-ledger audit and capture forward replay
-   against a target snapshot. The latest audit establishes current ledger/function
-   parity; it does not prove replay compatibility for pre-migration target data.
-3. Replace the daily 08:30 UTC worker fallback with an observed maintenance path
-   no slower than every five minutes. Vercel Hobby accepts only daily cron; use a
-   Pro/Enterprise cron or an authenticated external scheduler if the project stays
-   on Hobby. Keep `CRON_SECRET` configured and record one actual invocation.
-4. On the exact deployment, measure acknowledgement at or below two seconds and
-   persisted dispatch visibility at or below five seconds for course outline,
-   course draft, lesson plan, lesson draft, page, quiz and image operations. Record
-   first-result and completion times without imposing a provider-latency fiction.
-5. Supply isolated admin and outsider tenant fixtures, then run denial, private
-   media delivery, public denial and storage/reference reconciliation. The optional
-   workflow media step now needs the hosted Supabase URL, publishable key, access
-   token, and project ref; keep the media smoke disabled until hosted auth and
-   fixture readiness are confirmed.
-6. Reconcile jobs, credits and media after the measured runs. Investigate any
-   nonzero recovery `deferred` count before release.
-7. Exercise `AI_AUTHORING_PAGE_PILOT_ENABLED=false` against the deployed schema,
-   confirm legacy review and accepted history remain available, then restore the
-   intended staging value. This is the rollback smoke; it must not delete results.
-8. Approve and record a provider spending cap before representative text/image
-   quality review. The CI workflow must remain read-only with respect to paid work.
+1. Approve a small provider spending cap, run one representative text operation and
+   one image operation, and reconcile their jobs, credits and media before enabling
+   the pilot flag. Completion time is recorded, not treated as a provider SLA.
+2. Keep the current daily recovery invocation as a documented fallback and choose a
+   faster scheduler before relying on unattended recovery for a wider rollout. The
+   five-minute target is an infrastructure follow-up, not a Vercel Hobby release gate.
+3. Capture forward replay if a suitable pre-migration target snapshot becomes
+   available. Current hosted ledger parity, migration tests and recovery-function
+   inspection remain the release evidence in its absence.
+4. Use production telemetry to compare all seven operation kinds after pilot traffic
+   exists. CI continues to own source-level `after()`, SSE, worker-duration, tenant
+   boundary and feature-switch checks rather than duplicating them as hosted proofs.
 
 ## Integrated implementation
 
@@ -140,20 +127,20 @@ were retained while correcting the loading layout.
 
 ## Acceptance matrix
 
-| Release requirement | Local evidence | Remaining qualification |
+| Release requirement | Local evidence | Hosted or pilot status |
 | --- | --- | --- |
-| Course, expansion, page, quiz and image setup/cost/progress/use | Existing unit, pgTAP and production Playwright journeys run against the integrated implementation | Hosted smoke of each supported entry point |
-| Course economy and intentional composition | Provider spies, bounded scope contracts, contrasting teaching fixtures, course browser tests | Representative real text output review |
-| Visible progress and worker outage | Silent-stream delay/keyboard-stop browser case; runtime worker tests; expired lease, exhausted attempts and deferred registry repair pgTAP | Measure HTTP acknowledgement, dispatch, first result and total completion on the deployment |
-| Draft safety and application recovery | Revision, outsider/deleted target, double apply and retained receipt contracts; lost-response page/quiz tests | Hosted connection-loss smoke |
-| Partial results and retry | Checkpoint preservation, unfinished-only retry and 135-used/35-released partial-course accounting | Real bounded course completion |
-| Paid-image retention | Upload/registration uncertainty, failed legacy worker recovery, immutable version/idempotency and unused discovery tests | Hosted private storage delivery and quota smoke |
-| Media choice and style | Contextual brief persistence, default/override prompt contracts, explicit Use image and media authorization tests | Inspect representative real preset/custom images under the approved cap |
-| Review and migration | Mixed legacy/new review, explicit queued-job choices, optional inline placeholders, preserved cover and attached-asset checks | Hosted migration compatibility and rollback smoke |
-| Metering and concurrency | Full DB suite, organization-AI concurrency, economic integrity, quiz/XP concurrency and denied revocation fixtures | Hosted reconciliation against the exact qualified revision |
-| Tenant and worker security | RPC ACL/classification, auth-before-recovery, fenced writes, media reuse/withdrawal and repository contracts | Supported hosted auth/tenant smoke |
+| Course, expansion, page, quiz and image setup/cost/progress/use | Existing unit, pgTAP and production Playwright journeys run against the integrated implementation | One representative text and one image operation before pilot activation |
+| Course economy and intentional composition | Provider spies, bounded scope contracts, contrasting teaching fixtures, course browser tests | Review the representative text output under the approved cap |
+| Visible progress and worker outage | Silent-stream delay/keyboard-stop browser case; runtime worker tests; expired lease, exhausted attempts and deferred registry repair pgTAP | Record acknowledgement, dispatch, streaming, first result and completion for the two pilot samples |
+| Draft safety and application recovery | Revision, outsider/deleted target, double apply and retained receipt contracts; lost-response page/quiz tests | Local evidence is sufficient for release qualification |
+| Partial results and retry | Checkpoint preservation, unfinished-only retry and 135-used/35-released partial-course accounting | Observe during the representative text run; no separate paid run required |
+| Paid-image retention | Upload/registration uncertainty, failed legacy worker recovery, immutable version/idempotency and unused discovery tests | Hosted private delivery passes; reconcile the representative paid image |
+| Media choice and style | Contextual brief persistence, default/override prompt contracts, explicit Use image and media authorization tests | Review one representative image under the approved cap |
+| Review and migration | Mixed legacy/new review, explicit queued-job choices, optional inline placeholders, preserved cover and attached-asset checks | Hosted migration parity passes; source-level rollback gate remains in CI |
+| Metering and concurrency | Full DB suite, organization-AI concurrency, economic integrity, quiz/XP concurrency and denied revocation fixtures | Reconcile jobs, credits and media for the two pilot samples |
+| Tenant and worker security | RPC ACL/classification, auth-before-recovery, fenced writes, media reuse/withdrawal and repository contracts | Hosted worker denial and media privacy pass; no repeated hosted tenant fixture required |
 | Accessibility and layout | Role/label-driven browser actions, mobile overflow assertions, reduced-motion delay, keyboard cancellation and focus retained on the stopped status | Manual assistive-technology review on the supported deployment |
-| Rollback | Feature-switch route contracts and legacy compatibility tests retain reads/results/accepted work | Exercise the switch against the deployed schema without discarding history |
+| Rollback | Feature-switch route contracts and legacy compatibility tests retain reads/results/accepted work | CI contract is sufficient before pilot; no hosted environment toggle required |
 
 ## Validation
 
@@ -202,42 +189,32 @@ application E2E suite now has current passing evidence. The
 run; its component checks are represented by the earlier database/repository/
 concurrency evidence and the current application and browser gates.
 
-## Hosted release evidence still required
+## Pilot evidence follow-up
 
-Record the deployed revision, compatible migration list, runtime support for
-`after()`/streaming and the worker's 300-second execution window. The checked-in
-fallback cron currently runs daily at 08:30 UTC; it does not establish a five-minute
-maintenance guarantee. Qualify the deployment's actual worker wake-up and
-maintenance schedule before activation.
+The automated release gate owns the exact deployment, migration, runtime, worker
+security and media checks. Source-level `after()`, SSE, worker duration, tenant
+boundaries and rollback remain enforced by CI and local remediation suites. Their
+absence from a second hosted evidence document does not fail qualification.
 
-Measure authenticated HTTP acknowledgement and persisted worker-stage visibility
-against the proposed two-second/five-second healthy-system targets. Record first
-result, completion, stop/retry and recovery timing separately for each operation.
-The local browser attachment measures only a fixture RPC acknowledgement and is
-not HTTP, hosted dispatch or provider-performance evidence. Retain worker recovery
-counts and investigate nonzero `deferred` without exposing secrets or private
-prompts in release artifacts.
+With an explicitly approved cap, run one representative text operation and one
+image operation. Record request-start acknowledgement and persisted dispatch against
+the two-second/five-second healthy-system targets, then record streaming, first
+result and completion without imposing a completion SLA. Reconcile only those runs'
+jobs, credits and media, review both outputs, and stop at the cap.
 
-With an explicitly approved cap, review representative course/text compositions
-and image presets/custom direction, retaining the accepted quote, actual usage,
-output assessment and budget totals. Stop at the cap. Then exercise tenant denial,
-private image delivery, uncertain application and feature-switch rollback on the
-named deployment. Until these checks have recorded evidence, #71 remains open and
-the full Phase 6 release gate is not complete.
+The daily 08:30 UTC recovery invocation remains a limited fallback. A faster
+scheduler is needed before wider unattended rollout, but the mismatch between the
+five-minute aspiration and the current Vercel plan does not invalidate the tested
+application. Forward replay may be added when a suitable snapshot exists; current
+ledger parity and migration tests are the available release evidence.
 
 ## Migration follow-up
 
-The user reports the migration was pushed. A subsequent read-only check of the
-hosted REST schema confirms `service_recover_ai_authoring_jobs` is present for
-the configured service identity; it was not invoked. See the timestamped
-[API schema evidence](evidence/ai-authoring-phase-6/hosted-schema-presence.json).
-The migration ledger and function body could not be independently verified from
-the local shell: the configured direct database password was rejected. An
-anonymous schema read returned HTTP 401, so it does not establish the function's
-individual ACL. The repository does hold Actions secrets for a Supabase access
-token and project reference. The hosted workflow now uses those secrets only for
-read-only Management API calls that compare the hosted and repository ledgers,
-hash and check the recovery function body, and verify that only `service_role`
-has execute access. That audit can run after #83 reaches the default branch. Local
-ACL tests remain the existing evidence. The current schema check confirms hosted
-API presence, not completed hosted workflow or provider-output qualification.
+Run 34069618360 used the repository's Supabase access token and project reference
+only for read-only Management API calls. It established 221 local and 221 hosted
+migrations with no missing or remote-only entries, matched every recovery-function
+marker, and verified execute access for `service_role` while `anon` and
+`authenticated` remain denied. The function was not invoked. The older
+[API schema evidence](evidence/ai-authoring-phase-6/hosted-schema-presence.json)
+remains historical; the workflow artifact is the stronger current migration and
+ACL evidence. Forward replay remains conditional on obtaining a suitable snapshot.

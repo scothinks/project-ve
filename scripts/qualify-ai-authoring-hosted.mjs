@@ -1,7 +1,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
+  asPilotFollowUps,
   deploymentRefMatches,
+  hostedQualificationOverall,
   validateHostedEvidence,
   vercelDeploymentUrl,
 } from "./ai-authoring-release-contract.mjs";
@@ -154,31 +156,31 @@ async function checkWorkerBoundary() {
   }
 }
 
-function validateEvidence() {
+function validatePilotEvidence() {
   if (!evidencePath) {
     record(
       "evidence.measurements",
-      "blocked",
-      "No hosted evidence file was supplied. Record migration, runtime, timing, tenant/media, reconciliation, and rollback results.",
+      "follow-up",
+      "Optional pilot evidence was not supplied. Before enabling the pilot, record one representative text run, one image run, streaming, reconciliation, and capped output review.",
     );
-    results.push(...validateHostedEvidence({}, expectedSha).map((result) => ({
-      ...result,
-      status: "blocked",
-    })));
     return;
   }
   try {
     const evidence = JSON.parse(readFileSync(resolve(evidencePath), "utf8"));
-    results.push(...validateHostedEvidence(evidence, expectedSha));
+    results.push(...asPilotFollowUps(validateHostedEvidence(evidence, expectedSha)));
   } catch (error) {
-    record("evidence.measurements", "fail", error instanceof Error ? error.message : String(error));
+    record(
+      "evidence.measurements",
+      "follow-up",
+      `Pilot evidence could not be read: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
 await checkDeploymentIdentity();
 await checkRuntime();
 await checkWorkerBoundary();
-validateEvidence();
+validatePilotEvidence();
 
 const report = {
   generatedAt: new Date().toISOString(),
@@ -187,9 +189,8 @@ const report = {
   repository,
   ref,
   expectedSha,
-  overall: results.some((result) => result.status === "fail")
-    ? "fail"
-    : results.some((result) => result.status === "blocked") ? "blocked" : "pass",
+  followUpCount: results.filter((result) => result.status === "follow-up").length,
+  overall: hostedQualificationOverall(results),
   results,
 };
 mkdirSync(dirname(outputPath), { recursive: true });

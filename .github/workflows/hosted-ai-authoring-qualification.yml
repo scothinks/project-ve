@@ -18,20 +18,15 @@ on:
         required: true
         type: string
       evidence_path:
-        description: Repository path to completed hosted measurement evidence
+        description: Optional repository path to representative pilot evidence
         required: false
         default: ""
         type: string
       evidence_json:
-        description: Non-secret completed evidence JSON supplied at dispatch (avoids changing the deployed SHA)
+        description: Optional non-secret pilot evidence JSON supplied at dispatch
         required: false
         default: ""
         type: string
-      run_media_smoke:
-        description: Run the read-only hosted media inventory and delivery smoke
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -69,7 +64,7 @@ jobs:
       - name: Inspect hosted migration ledger and recovery boundary
         if: always()
         run: npm run test:release:migration:hosted -- --out artifacts/ai-authoring-hosted-migration.json
-      - name: Qualify hosted identity, protection, worker boundary, and evidence
+      - name: Qualify hosted identity, protection, worker boundary, and pilot follow-ups
         if: always()
         run: |
           arguments=(
@@ -88,7 +83,7 @@ jobs:
           fi
           node scripts/qualify-ai-authoring-hosted.mjs "${arguments[@]}"
       - name: Run read-only media cutover smoke
-        if: ${{ always() && inputs.run_media_smoke }}
+        if: always()
         run: |
           if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_REF" ] || [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" ]; then
             echo "::error::Media cutover smoke is blocked: hosted Supabase inputs are incomplete."
