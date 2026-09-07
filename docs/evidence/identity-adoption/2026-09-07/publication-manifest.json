@@ -1,0 +1,36 @@
+{
+  "baseline": "292e65a8f7784df31591e94abe65fec47ddd23b6",
+  "publication_note": "Approved audit and implementation plan, preserved with portable Markdown links. Issue bodies and Project 3 hold live execution status. Historical references are not new design options or current production tokens.",
+  "artifacts": [
+    {
+      "source": "output/reviews/theme-adoption-audit-2026-09-07.md",
+      "source_sha256": "88a3ca6ffb53ef5712256b2abc30006f26c19ec88d578eacf21856cf3982858a",
+      "published": "theme-adoption-audit-2026-09-07.md",
+      "published_sha256": "dc2d27a6724159fad47baf5bda575e9967b24dd6a51c6b6843132aa8aacda536"
+    },
+    {
+      "source": "output/plans/theme-adoption-migration-2026-09-07-tokens.csv",
+      "source_sha256": "4a606563f8a290023b24aa0e721d7857a63540836b3a4a0ed1436c4e2f249c1d",
+      "published": "theme-adoption-migration-2026-09-07-tokens.csv",
+      "published_sha256": "a2ace7003e3f1841c18fc505f41e07190f12e5418a9bc5293459a95064658633"
+    },
+    {
+      "source": "output/plans/theme-adoption-migration-2026-09-07-tokens.json",
+      "source_sha256": "3f30220ce73430b4207758cbb591f1f5e786c99701bda06386bc1880b38e8984",
+      "published": "theme-adoption-migration-2026-09-07-tokens.json",
+      "published_sha256": "3f30220ce73430b4207758cbb591f1f5e786c99701bda06386bc1880b38e8984"
+    },
+    {
+      "source": "output/plans/theme-adoption-migration-2026-09-07-tokens.md",
+      "source_sha256": "d62f1d6cc98bdf999354b8321eda739cfbaceac255db79409672be6e87c83e56",
+      "published": "theme-adoption-migration-2026-09-07-tokens.md",
+      "published_sha256": "040816f3099e96fd6d9cc3398b2aa5f26eec65f4fc72f67da21b5112791baa96"
+    },
+    {
+      "source": "output/plans/theme-adoption-migration-2026-09-07.md",
+      "source_sha256": "de9cce7852ae5b34aa6d9b4da7f5a0b31abfd8b570ec580aceb671deee8c6998",
+      "published": "theme-adoption-migration-2026-09-07.md",
+      "published_sha256": "33a98e59133b4c726fc2a48a16b2d5b043054d9eeb306406af91c539ba64cf80"
+    }
+  ]
+}

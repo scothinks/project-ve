@@ -1,0 +1,137 @@
+{
+  "status": "Identity convergence draft; not imported by production",
+  "version": "A.2-2026-09-07",
+  "recommendedPalette": "aubergine",
+  "paletteComparison": "teal",
+  "themes": {
+    "aubergine": {
+      "light": {
+        "canvas": "#f6f3ed",
+        "surface": "#fffdf9",
+        "ink": "#252327",
+        "muted": "#625968",
+        "line": "#918794",
+        "primary": "#583c63",
+        "on-primary": "#fffdf9",
+        "focus": "#e8e0ec",
+        "support": "#f0d2b8"
+      },
+      "dark": {
+        "canvas": "#201c23",
+        "surface": "#2b2530",
+        "ink": "#f6f3ed",
+        "muted": "#c4b9ca",
+        "line": "#95889f",
+        "primary": "#d6bce2",
+        "on-primary": "#281b2e",
+        "focus": "#43344b",
+        "support": "#624737"
+      }
+    },
+    "teal": {
+      "light": {
+        "canvas": "#f3f4ef",
+        "surface": "#fffefa",
+        "ink": "#202927",
+        "muted": "#52645e",
+        "line": "#81958c",
+        "primary": "#20584c",
+        "on-primary": "#fffefa",
+        "focus": "#dce9e2",
+        "support": "#f0d2b8"
+      },
+      "dark": {
+        "canvas": "#192420",
+        "surface": "#23312b",
+        "ink": "#f3f4ef",
+        "muted": "#bbcfc4",
+        "line": "#829d8e",
+        "primary": "#b3d7c6",
+        "on-primary": "#142a21",
+        "focus": "#334b40",
+        "support": "#624737"
+      }
+    }
+  },
+  "typography": {
+    "signature": {
+      "family": "Source Sans 3",
+      "weight": 600,
+      "trackingEm": -0.025
+    },
+    "product": {
+      "family": "Source Sans 3",
+      "bodyPx": 16,
+      "lineHeight": 1.5,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ]
+    },
+    "expressive": {
+      "family": "Source Serif 4",
+      "weight": 420
+    },
+    "scalePx": [
+      12,
+      14,
+      16,
+      19,
+      24,
+      32,
+      40,
+      52,
+      72
+    ]
+  },
+  "spacePx": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "shape": {
+    "controlRadiusPx": 4,
+    "currentReleasePx": 16,
+    "currentLeadingRailPx": 3,
+    "clipText": false
+  },
+  "focus": {
+    "outlinePx": 2,
+    "offsetPx": 3,
+    "minContrast": 3
+  },
+  "mark": {
+    "masterField": 96,
+    "clearSpaceUnits": 24,
+    "compactLockupMarkPx": 24,
+    "opticalSizesPx": [
+      16,
+      24
+    ],
+    "final": false
+  },
+  "tenant": {
+    "colourScope": "Identity header only; no status or platform action recolouring",
+    "endorsement": "Neutral Learning on Project VE",
+    "arbitraryTenantColoursValidated": false
+  },
+  "motion": {
+    "identityBoard": "Static",
+    "reducedMotion": "No animation required for comprehension"
+  },
+  "pending": [
+    "Final geometry",
+    "External first-association review",
+    "Print and optical reproduction",
+    "Final type and colour approval",
+    "Production semantic status mapping",
+    "Product theme adoption"
+  ]
+}
