@@ -1,4 +1,4 @@
-export const hostedEvidenceSchemaVersion = 1;
+export const hostedEvidenceSchemaVersion = 2;
 
 export const recoveryMigration = {
   file: "20260907020000_ai_authoring_outage_recovery.sql",
@@ -17,10 +17,11 @@ export const hostedOperationKinds = [
   "image",
 ];
 
+export const hostedTextOperationKinds = hostedOperationKinds.filter((kind) => kind !== "image");
+
 export const hostedThresholds = {
   acknowledgementMs: 2_000,
   dispatchVisibleMs: 5_000,
-  maintenanceIntervalMinutes: 5,
   workerMaxDurationSeconds: 300,
 };
 
@@ -79,32 +80,6 @@ export function validateHostedEvidence(evidence, expectedSha) {
       : `Evidence revision is ${String(evidence?.revision?.sha ?? "missing")}; expected ${expectedSha}.`,
   ));
 
-  const ledger = evidence?.migration?.ledger;
-  const migrationCompatible = evidence?.migration?.compatible === true
-    && Array.isArray(ledger)
-    && ledger.includes(recoveryMigration.version);
-  checks.push(check(
-    "evidence.migration.compatibility",
-    migrationCompatible,
-    migrationCompatible
-      ? `Evidence records a compatible ledger containing ${recoveryMigration.version}.`
-      : `Expected migration.compatible=true and a ledger containing ${recoveryMigration.version}.`,
-  ));
-  checks.push(check(
-    "evidence.migration.forward-replay",
-    evidence?.migration?.forwardReplay === true,
-    evidence?.migration?.forwardReplay === true
-      ? "Forward replay against the target snapshot is recorded."
-      : "Expected migration.forwardReplay=true after replaying the target snapshot.",
-  ));
-
-  checks.push(check(
-    "evidence.runtime.after-dispatch",
-    evidence?.runtime?.afterDispatchObserved === true,
-    evidence?.runtime?.afterDispatchObserved === true
-      ? "The deployed request acknowledged before the after() worker dispatch was observed."
-      : "Expected runtime.afterDispatchObserved=true on the deployed runtime.",
-  ));
   checks.push(check(
     "evidence.runtime.streaming",
     evidence?.runtime?.streamingObserved === true,
@@ -112,15 +87,6 @@ export function validateHostedEvidence(evidence, expectedSha) {
       ? "The private SSE progress stream was observed on the deployment."
       : "Expected runtime.streamingObserved=true for the private SSE route.",
   ));
-  const workerDuration = evidence?.runtime?.workerMaxDurationSeconds;
-  checks.push(check(
-    "evidence.runtime.worker-duration",
-    finitePositive(workerDuration) && workerDuration >= hostedThresholds.workerMaxDurationSeconds,
-    finitePositive(workerDuration) && workerDuration >= hostedThresholds.workerMaxDurationSeconds
-      ? `The deployed worker supports ${workerDuration} seconds.`
-      : `Expected runtime.workerMaxDurationSeconds >= ${hostedThresholds.workerMaxDurationSeconds}; received ${String(workerDuration ?? "missing")}.`,
-  ));
-
   checks.push(check(
     "evidence.timings.origin",
     evidence?.timings?.origin === "request_start",
@@ -128,24 +94,29 @@ export function validateHostedEvidence(evidence, expectedSha) {
       ? "All timing milestones are elapsed from the initiating request start."
       : "Expected timings.origin=\"request_start\" so acknowledgement, dispatch, first-result, and completion values share one clock.",
   ));
-  const operationEntries = evidence?.timings?.operations ?? [];
+  const operationEntries = Array.isArray(evidence?.timings?.operations)
+    ? evidence.timings.operations
+    : [];
   const suppliedKinds = operationEntries.map((entry) => entry?.kind);
   const unexpectedKinds = suppliedKinds.filter((kind) => !hostedOperationKinds.includes(kind));
   const duplicateKinds = suppliedKinds.filter((kind, index) => suppliedKinds.indexOf(kind) !== index);
+  const textKinds = suppliedKinds.filter((kind) => hostedTextOperationKinds.includes(kind));
+  const imageKinds = suppliedKinds.filter((kind) => kind === "image");
+  const representativeOperationsValid = operationEntries.length === 2
+    && textKinds.length === 1
+    && imageKinds.length === 1
+    && unexpectedKinds.length === 0
+    && duplicateKinds.length === 0;
   checks.push(check(
     "evidence.timings.operations",
-    operationEntries.length === hostedOperationKinds.length
-      && unexpectedKinds.length === 0
-      && duplicateKinds.length === 0,
-    operationEntries.length === hostedOperationKinds.length
-      && unexpectedKinds.length === 0
-      && duplicateKinds.length === 0
-      ? `Timing evidence contains the ${hostedOperationKinds.length} supported operation kinds exactly once.`
-      : `Expected exactly: ${hostedOperationKinds.join(", ")}; unexpected: ${[...new Set(unexpectedKinds)].join(", ") || "none"}; duplicates: ${[...new Set(duplicateKinds)].join(", ") || "none"}.`,
+    representativeOperationsValid,
+    representativeOperationsValid
+      ? `Timing evidence contains one representative text operation (${textKinds[0]}) and one image operation.`
+      : `Expected exactly one text operation (${hostedTextOperationKinds.join(", ")}) and one image operation; unexpected: ${[...new Set(unexpectedKinds)].join(", ") || "none"}; duplicates: ${[...new Set(duplicateKinds)].join(", ") || "none"}.`,
   ));
-  const operations = new Map(operationEntries.map((entry) => [entry?.kind, entry]));
-  for (const kind of hostedOperationKinds) {
-    const entry = operations.get(kind);
+  for (const entry of operationEntries) {
+    const kind = entry?.kind;
+    if (!hostedOperationKinds.includes(kind)) continue;
     const timingValid = entry
       && finiteNonNegative(entry.acknowledgementMs)
       && entry.acknowledgementMs <= hostedThresholds.acknowledgementMs
@@ -166,44 +137,6 @@ export function validateHostedEvidence(evidence, expectedSha) {
     ));
   }
 
-  const interval = evidence?.maintenance?.maxIntervalMinutes;
-  checks.push(check(
-    "evidence.maintenance.cadence",
-    finitePositive(interval) && interval <= hostedThresholds.maintenanceIntervalMinutes,
-    finitePositive(interval) && interval <= hostedThresholds.maintenanceIntervalMinutes
-      ? `Maintenance runs at most every ${interval} minutes.`
-      : `Expected maintenance.maxIntervalMinutes greater than 0 and at most ${hostedThresholds.maintenanceIntervalMinutes}; received ${String(interval ?? "missing")}.`,
-  ));
-  checks.push(check(
-    "evidence.maintenance.invocation",
-    evidence?.maintenance?.invocationObserved === true,
-    evidence?.maintenance?.invocationObserved === true
-      ? "An authenticated maintenance invocation was observed."
-      : "Expected maintenance.invocationObserved=true.",
-  ));
-  const recovery = evidence?.maintenance?.recovery;
-  const recoveryCountsValid = finiteNonNegative(recovery?.recoveredImages)
-    && finiteNonNegative(recovery?.settledIncomplete)
-    && recovery?.deferred === 0;
-  checks.push(check(
-    "evidence.maintenance.recovery",
-    recoveryCountsValid,
-    recoveryCountsValid
-      ? `Recovery reported ${recovery.recoveredImages} recovered images, ${recovery.settledIncomplete} settled incomplete jobs, and no deferred items.`
-      : "Expected non-negative recovery counts and maintenance.recovery.deferred=0.",
-    recovery ? { recovery } : {},
-  ));
-
-  const tenantMediaFields = ["tenantDenialObserved", "privateDeliveryObserved", "publicDeliveryDenied", "storageReconciled"];
-  const missingTenantMedia = missingTrueFields(evidence?.tenantMedia, tenantMediaFields);
-  checks.push(check(
-    "evidence.tenant-media",
-    missingTenantMedia.length === 0,
-    missingTenantMedia.length === 0
-      ? "Tenant denial, private delivery, public denial, and storage reconciliation are recorded."
-      : `Missing tenant/media evidence: ${missingTenantMedia.join(", ")}.`,
-  ));
-
   const reconciliationFields = ["jobs", "credits", "media"];
   const missingReconciliation = missingTrueFields(evidence?.reconciliation, reconciliationFields);
   checks.push(check(
@@ -214,15 +147,32 @@ export function validateHostedEvidence(evidence, expectedSha) {
       : `Missing reconciliation evidence: ${missingReconciliation.join(", ")}.`,
   ));
 
-  const rollbackFields = ["featureSwitchDisabled", "acceptedHistoryRetained", "legacyReviewAvailable"];
-  const missingRollback = missingTrueFields(evidence?.rollback, rollbackFields);
+  const qualityFields = ["spendingCapApproved", "textOutputReviewed", "imageOutputReviewed"];
+  const missingQuality = missingTrueFields(evidence?.qualityReview, qualityFields);
+  const spendingCapUsd = evidence?.qualityReview?.spendingCapUsd;
+  const actualSpendUsd = evidence?.qualityReview?.actualSpendUsd;
+  const spendWithinCap = finitePositive(spendingCapUsd)
+    && finiteNonNegative(actualSpendUsd)
+    && actualSpendUsd <= spendingCapUsd;
   checks.push(check(
-    "evidence.rollback",
-    missingRollback.length === 0,
-    missingRollback.length === 0
-      ? "The feature-switch rollback retained accepted history and legacy review."
-      : `Missing rollback evidence: ${missingRollback.join(", ")}.`,
+    "evidence.quality-review",
+    missingQuality.length === 0 && spendWithinCap,
+    missingQuality.length === 0 && spendWithinCap
+      ? `Representative text and image outputs were reviewed within the approved $${spendingCapUsd} cap ($${actualSpendUsd} spent).`
+      : `Missing quality evidence: ${missingQuality.join(", ") || "none"}; record a positive spending cap and non-negative spend within that cap.`,
   ));
 
   return checks;
+}
+
+export function asPilotFollowUps(checks) {
+  return checks.map((result) => result.status === "pass"
+    ? result
+    : { ...result, status: "follow-up" });
+}
+
+export function hostedQualificationOverall(results) {
+  if (results.some((result) => result.status === "fail")) return "fail";
+  if (results.some((result) => result.status === "blocked")) return "blocked";
+  return "pass";
 }

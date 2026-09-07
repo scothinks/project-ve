@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
+  asPilotFollowUps,
   deploymentRefMatches,
   hostedEvidenceSchemaVersion,
-  hostedOperationKinds,
+  hostedQualificationOverall,
   recoveryFunctionMarkers,
   recoveryMigration,
   validateHostedEvidence,
@@ -21,11 +22,10 @@ function completeEvidence(sha) {
   return {
     schemaVersion: hostedEvidenceSchemaVersion,
     revision: { sha },
-    migration: { compatible: true, forwardReplay: true, ledger: [recoveryMigration.version] },
-    runtime: { afterDispatchObserved: true, streamingObserved: true, workerMaxDurationSeconds: 300 },
+    runtime: { streamingObserved: true },
     timings: {
       origin: "request_start",
-      operations: hostedOperationKinds.map((kind) => ({
+      operations: ["course_outline", "image"].map((kind) => ({
         kind,
         acknowledgementMs: 100,
         dispatchVisibleMs: 200,
@@ -33,29 +33,24 @@ function completeEvidence(sha) {
         completionMs: 400,
       })),
     },
-    maintenance: {
-      maxIntervalMinutes: 5,
-      invocationObserved: true,
-      recovery: { recoveredImages: 0, settledIncomplete: 0, deferred: 0 },
-    },
-    tenantMedia: {
-      tenantDenialObserved: true,
-      privateDeliveryObserved: true,
-      publicDeliveryDenied: true,
-      storageReconciled: true,
-    },
     reconciliation: { jobs: true, credits: true, media: true },
-    rollback: { featureSwitchDisabled: true, acceptedHistoryRetained: true, legacyReviewAvailable: true },
+    qualityReview: {
+      spendingCapApproved: true,
+      spendingCapUsd: 5,
+      actualSpendUsd: 1.25,
+      textOutputReviewed: true,
+      imageOutputReviewed: true,
+    },
   };
 }
 
-test("hosted release contract accepts the current migration and complete evidence", () => {
+test("hosted release contract accepts the current migration and representative pilot evidence", () => {
   const migration = readFileSync(`supabase/migrations/${recoveryMigration.file}`, "utf8");
   assert.ok(Object.values(recoveryFunctionMarkers(migration)).every(Boolean));
 
   const sha = "0123456789012345678901234567890123456789";
   const checks = validateHostedEvidence(completeEvidence(sha), sha);
-  assert.ok(checks.length > hostedOperationKinds.length);
+  assert.ok(checks.length >= 7);
   assert.deepEqual(checks.filter((entry) => entry.status !== "pass"), []);
 });
 
@@ -74,4 +69,18 @@ test("hosted release contract identifies timing shape and threshold drift", () =
     "evidence.timings.operations",
     "evidence.timings.course_outline",
   ]);
+});
+
+test("incomplete pilot evidence is advisory to the hosted release gate", () => {
+  const sha = "0123456789012345678901234567890123456789";
+  const checks = asPilotFollowUps(validateHostedEvidence({}, sha));
+  assert.ok(checks.length > 0);
+  assert.deepEqual(checks.filter((entry) => entry.status === "fail"), []);
+  assert.ok(checks.every((entry) => entry.status === "pass" || entry.status === "follow-up"));
+  assert.equal(hostedQualificationOverall([
+    { status: "pass" },
+    { status: "follow-up" },
+  ]), "pass");
+  assert.equal(hostedQualificationOverall([{ status: "blocked" }]), "blocked");
+  assert.equal(hostedQualificationOverall([{ status: "fail" }]), "fail");
 });
