@@ -14,9 +14,10 @@ import { pricedAction } from '@/features/ai-generation/authoring/pricing-labels'
 
 type Setup = { kind: AssistanceKind; parent?: AssistanceResult; selected?: number };
 const titles = { quiz: 'Generate questions', lesson_plan: 'Suggest lessons', lesson_draft: 'Draft lesson' };
-export function AiAssistanceAuthoring({ courseId, lessonId, kind, enabled, initialResultId, beforeAction, refreshOnApply = true }: {
+export function AiAssistanceAuthoring({ courseId, lessonId, kind, enabled, unavailableReason, initialResultId, beforeAction, refreshOnApply = true }: {
   courseId: string; lessonId?: string; kind: 'quiz' | 'lesson_plan'; enabled: boolean; initialResultId?: string;
   beforeAction?: () => Promise<void>; refreshOnApply?: boolean;
+  unavailableReason?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(Boolean(initialResultId));
@@ -85,9 +86,10 @@ export function AiAssistanceAuthoring({ courseId, lessonId, kind, enabled, initi
       ? result.kind === 'quiz' ? 'Writing and checking questions' : result.kind === 'lesson_plan' ? 'Planning lessons' : 'Writing your lesson'
       : result?.stage === 'ready' ? 'Not added yet' : result?.stage === 'failed' ? 'Needs attention' : result?.stage === 'stopped' ? 'Stopped' : 'Ready to start';
   return <>
+    {!enabled && <p role="status" className="rounded-2xl border border-[var(--admin-border-warm)] p-5 text-sm leading-6">{unavailableReason ?? 'AI suggestions are not enabled yet.'} You can still edit manually or resume saved work.</p>}
     <div className="flex flex-wrap items-center gap-2">
       {enabled && <button type="button" className={aiButton} disabled={busy} onClick={() => begin({ kind })}>{titles[kind]}</button>}
-      <AiPageAuthoring lessonId={lessonId} courseId={courseId} />
+      <AiPageAuthoring lessonId={lessonId} courseId={courseId} resultsLabel={kind === 'lesson_plan' ? 'Resume earlier work' : undefined} />
     </div>
     <AdminDrawer open={open} onOpenChange={setOpen} title={setup ? titles[setup.kind] : 'Your AI result'} description="Saved in AI results." widthClassName="w-full max-w-[720px]">
       <div className="space-y-5">

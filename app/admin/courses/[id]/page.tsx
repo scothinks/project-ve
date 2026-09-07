@@ -5,7 +5,7 @@ import { AdminNoticeBanner } from "@/components/admin/AdminPrimitives";
 import { CurriculumOutlineEditor, type CurriculumLesson } from "@/components/admin/CurriculumOutlineEditor";
 import { requireAdmin } from "@/lib/admin";
 import { getAdminCourseDetailPageData } from "@/features/learning/admin/course-detail-data";
-import { resolveOrganizationEntitlements } from "@/features/organizations/application/entitlements";
+import { getLessonAssistanceAvailability } from "@/features/ai-generation/authoring/lesson-availability";
 
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -31,10 +31,7 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
     questionCountByQuizId,
     mediaAssetsByLessonId,
   } = data;
-  const organizationEntitlements = course.organization_id
-    ? (await resolveOrganizationEntitlements(supabase, course.organization_id)).entitlements
-    : null;
-  const aiGenerationAvailable = organizationEntitlements?.aiAuthoringEnabled ?? true;
+  const aiAvailability = await getLessonAssistanceAvailability({ supabase }, course.organization_id);
   const derivedMinutes = lessons.reduce((total, lesson) => total + lesson.estimated_minutes, 0);
   const thumbnailUrl = typeof course.thumbnail?.url === "string" ? course.thumbnail.url : null;
   const thumbnailAlt = typeof course.thumbnail?.altText === "string" ? course.thumbnail.altText : course.title;
@@ -127,8 +124,9 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
         </div>
 
         <CurriculumOutlineEditor
-          aiGenerationAvailable={aiGenerationAvailable}
-          aiSuggestHref={aiGenerationAvailable ? `/admin/courses/${course.id}/expand` : undefined}
+          aiGenerationAvailable={aiAvailability.enabled}
+          aiSuggestHref={aiAvailability.enabled ? `/admin/courses/${course.id}/expand` : undefined}
+          aiSuggestUnavailableReason={aiAvailability.reason ?? undefined}
           courseId={course.id}
           lessons={curriculumLessons}
           mediaLibraryAssets={mediaAssets}

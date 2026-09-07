@@ -86,7 +86,11 @@ test('lesson suggestions quote drafting separately, retain refinements and add a
       checked(await f.service.rpc('service_ai_page_checkpoint', { p_job: j.id, p_worker: 'lesson-browser', p_token: j.lock_token, p_version: j.lock_version, p_action: 'ready', p_candidate: r.kind === 'lesson_plan' ? planCandidate : lessonCandidate }));
       await route.fulfill({ json: r });
     });
-    await page.goto(`${baseURL}/admin/courses/${target.course}/expand`);
+    await page.goto(`${baseURL}/admin/courses/${target.course}`);
+    await page.getByRole('link', { name: 'Suggest lessons with AI', exact: true }).click();
+    await expect(page).toHaveURL(`${baseURL}/admin/courses/${target.course}/expand`);
+    await expect(page.getByRole('button', { name: 'Resume earlier work', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'AI results', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Suggest lessons', exact: true }).click();
     let drawer = page.getByRole('dialog');
     await expect(drawer.getByText('Drafting is charged separately.')).toBeVisible();

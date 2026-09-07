@@ -13,6 +13,8 @@ AI Authoring #104–#107; this work does not open engineering P2 or authorize de
 The follow-up closes learner-description loss on topic changes and editing of
 reopened outline requests. A reconstructed pre-change authoring baseline now
 records the original source; application-wide identity #96–#99 remains separate.
+Lesson suggestion entry and destination now share availability checks; unavailable
+states retain manual editing and saved work instead of leaving an empty screen.
 
 ## AI authoring Phase 6, reconciled 2026-09-07
 
