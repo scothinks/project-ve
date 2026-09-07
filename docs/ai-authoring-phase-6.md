@@ -41,8 +41,10 @@ markers used by the hosted audit, all seven current operation kinds, `after()`
 dispatch, the private SSE contract, worker authentication/order/duration, rollback
 switch, maintenance declaration, media smoke tool, current branch trigger and
 hosted workflow wiring. The manual `Hosted AI Authoring Qualification` workflow
-checks out the exact expected SHA, resolves that SHA's successful Preview deployment
-and uses its immutable URL for runtime and media probes. Independent diagnostics run
+checks out the exact expected SHA, resolves that SHA's successful Vercel app deployment
+across Preview or Production, rejects workflow-environment records that do not point
+to an immutable `vercel.app` URL, and uses that URL for runtime and media probes.
+Independent diagnostics run
 even when an earlier gate fails, emit specific failed assertions, and upload all JSON
 artifacts. Completed non-secret evidence can be supplied directly at dispatch, so
 recording evidence does not change the SHA being qualified.

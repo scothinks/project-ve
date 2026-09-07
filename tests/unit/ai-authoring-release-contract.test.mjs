@@ -9,6 +9,7 @@ import {
   recoveryFunctionMarkers,
   recoveryMigration,
   validateHostedEvidence,
+  vercelDeploymentUrl,
 } from "../../scripts/ai-authoring-release-contract.mjs";
 
 test("deployment identity accepts Vercel branch and exact-SHA references", () => {
@@ -16,6 +17,19 @@ test("deployment identity accepts Vercel branch and exact-SHA references", () =>
   assert.equal(deploymentRefMatches("main", "main", sha), true);
   assert.equal(deploymentRefMatches(sha, "main", sha), true);
   assert.equal(deploymentRefMatches("another-branch", "main", sha), false);
+});
+
+test("deployment identity accepts only immutable Vercel app URLs", () => {
+  assert.equal(vercelDeploymentUrl({
+    environment_url: "https://project-example.vercel.app/path",
+  }), "https://project-example.vercel.app");
+  assert.equal(vercelDeploymentUrl({
+    environment_url: "",
+    target_url: "https://project-fallback.vercel.app",
+  }), "https://project-fallback.vercel.app");
+  assert.equal(vercelDeploymentUrl({
+    environment_url: "https://github.com/example/actions/runs/1",
+  }), null);
 });
 
 function completeEvidence(sha) {

@@ -29,6 +29,16 @@ export function deploymentRefMatches(deploymentRef, requestedRef, expectedSha) {
   return deploymentRef === requestedRef || deploymentRef === expectedSha;
 }
 
+export function vercelDeploymentUrl(status) {
+  for (const value of [status?.environment_url, status?.target_url]) {
+    try {
+      const url = new URL(value);
+      if (url.protocol === "https:" && url.hostname.endsWith(".vercel.app")) return url.origin;
+    } catch {}
+  }
+  return null;
+}
+
 function finiteNonNegative(value) {
   return Number.isFinite(value) && value >= 0;
 }
