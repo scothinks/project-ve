@@ -196,3 +196,23 @@ AI-results tab and uses a secondary “Resume earlier work” link below the jou
 show the entry, direction question, learner help and assembled brief from the
 current production build. These captures are separate from historical evidence.
 The six discovery/recovery browser cases passed after this navigation correction.
+
+## Project-wide pricing copy
+
+The user's follow-up makes compact pricing the project convention: `0 credits`
+or `N credits`, with a short action such as Generate, Recommend, Create, Refine
+or Retry. The course, page, lesson, quiz and image actions share the same pricing
+formatter. Result/recovery and Catalog usage views also use `0 credits`.
+Redundant pricing paragraphs and provider-cost implementation copy are removed.
+Metered actions still disclose later drafting charges, and result/usage views
+retain reserved, used and released amounts. XP/reward and currency pricing was
+already expressed as concise amounts with its real units; those units remain.
+The ad-rate field keeps its required minor units with a shorter example.
+Preparation-only actions remain distinct from the billable action; no quoting,
+reservation, pricing, entitlement or generation behavior changes.
+Historical screenshot labels are superseded by this copy convention.
+
+Validation after integration: typecheck, focused ESLint, four existing
+pricing/discovery unit checks, diff checks, and all 15 affected production browser
+workflows passed (course, discovery, page, lesson/quiz assistance and image files).
+Existing DB/accounting evidence remains valid; this change alters presentation.

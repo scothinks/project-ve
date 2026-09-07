@@ -8,6 +8,7 @@ import { authoringRequest, useAuthoringResult, AuthoringRequestError } from './u
 import { ImageStyleSample } from './ImageStyleSample';
 import { AiImageResult } from './AiImageResult';
 import { aiButton, aiField, aiPrimary } from './AiPageResult';
+import { pricedAction } from '@/features/ai-generation/authoring/pricing-labels';
 export function AiImageAuthoring({ request, onPick }: { request: MediaPickerRequestConfig; onPick: (value: PickedMedia) => void }) {
   const target: ImageTarget | undefined = request.imageTarget ?? (request.uploadContext?.courseId && ['course_thumbnail','course_cover'].includes(request.uploadContext.placement)
     ? { target: request.uploadContext.placement as ImageTarget['target'], targetId: request.uploadContext.courseId } : request.uploadContext?.lessonId && request.uploadContext.placement === 'lesson_thumbnail' ? { target: 'lesson_thumbnail', targetId: request.uploadContext.lessonId } : undefined);
@@ -79,7 +80,7 @@ export function AiImageAuthoring({ request, onPick }: { request: MediaPickerRequ
       onRefine={() => { setParent(result.id); setBrief(result.image.brief); setStyle(result.image.style); setAlt(result.image.altText); setCaption(result.image.caption); setResult(null); }}/>
     : <>
       {!setup && <p role="status">Preparing your saved image brief…</p>}
-      <p className="text-sm">Your lesson is the starting point. Adjust the brief, choose a style, then check the cost.</p>
+      <p className="text-sm">Adjust the brief and choose a style to continue.</p>
       <label className="block text-sm font-bold">Image brief<textarea className={aiField} maxLength={6000} rows={5} value={brief} onChange={e => { setBrief(e.target.value); request.onGenerationBriefChange?.(e.target.value); setResult(null); }}/></label>
       <fieldset disabled={busy || !setup} className="space-y-3"><legend className="font-bold">Image style</legend>
         <div className="grid grid-cols-2 gap-2">
@@ -97,9 +98,9 @@ export function AiImageAuthoring({ request, onPick }: { request: MediaPickerRequ
       <p className="text-sm">Shape: {setup?.aspectRatio ?? 'from your saved block'}. Style choices are free; existing images stay unchanged.</p>
       <label className="block text-sm font-bold">Alt text<input className={aiField} maxLength={240} value={altText} onChange={e => { setAlt(e.target.value); setResult(null); }}/></label>
       <label className="block text-sm">Caption (optional)<input className={aiField} maxLength={500} value={caption} onChange={e => { setCaption(e.target.value); setResult(null); }}/></label>
-      {result ? <div className="space-y-3 rounded-xl border p-4"><p>{result.metered ? `${result.estimatedUnits} credits` : 'No organisation credits used. Provider charges apply.'}</p><p className="text-sm">One image. Estimate expires in 10 minutes. Closing or using the result has no additional charge.</p>
-        <button className={aiPrimary} type="button" disabled={busy || request.aiGenerationAvailable === false} onClick={() => void run(async () => { await flush(); receive(await authoringRequest({ action: 'start', id: result.id })); })}>Generate image</button>
-      </div> : <button className={aiPrimary} type="button" disabled={busy || !setup || request.aiGenerationAvailable === false} onClick={() => void run(async () => { const revision = await flush(); const r = await authoringRequest<ImageResult>({ action: 'quote', kind: 'image', ...(resolvedTarget ?? target), revision, brief, style, altText, caption, parentId: parent }); setResult(r); })}>{busy ? 'Saving and checking cost…' : 'Check image cost'}</button>}
+      {result ? <div className="space-y-3 rounded-xl border p-4"><p className="text-sm">One image. Price valid for 10 minutes.</p>
+        <button className={aiPrimary} type="button" disabled={busy || request.aiGenerationAvailable === false} onClick={() => void run(async () => { await flush(); receive(await authoringRequest({ action: 'start', id: result.id })); })}>{pricedAction('Generate', result)}</button>
+      </div> : <button className={aiPrimary} type="button" disabled={busy || !setup || request.aiGenerationAvailable === false} onClick={() => void run(async () => { const revision = await flush(); const r = await authoringRequest<ImageResult>({ action: 'quote', kind: 'image', ...(resolvedTarget ?? target), revision, brief, style, altText, caption, parentId: parent }); setResult(r); })}>{busy ? 'Preparing…' : 'Continue'}</button>}
       {request.aiGenerationAvailable === false && <p>AI generation is unavailable for this workspace. Choose from the library or upload an image.</p>}
     </>}
   </div>;

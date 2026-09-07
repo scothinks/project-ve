@@ -3,9 +3,7 @@ export type CoursePrice = {
   kind: 'course_outline' | 'course_draft'; estimatedUnits: number; outlineUnits: number; draftUnits: number;
   lessonCount: number; unfinishedCount: number; questionsPerLesson: number; metered: boolean; workspaceId: string | null;
 };
-export function pricedAction(label: string, price: Pick<CoursePrice, 'metered' | 'estimatedUnits'> | null) {
-  return price ? `${label} · ${price.metered ? `${price.estimatedUnits} credits` : '0 credits'}` : label;
-}
+export { pricedAction } from './pricing-labels.ts';
 export function quoteMatchesPrice(quote: CourseResult & { workspaceId?: string | null }, price: CoursePrice) {
   return quote.stage === 'quote' && quote.kind === price.kind && quote.estimatedUnits === price.estimatedUnits
     && quote.metered === price.metered && quote.workspaceId === price.workspaceId && quote.totalCount === price.lessonCount
