@@ -1,6 +1,20 @@
-# Identity adoption: G0 contract and evidence
+# Identity adoption: contract and evidence
 
 Tracking: [B0 / #96](https://github.com/scothinks/project-ve/issues/96), in the existing [Identity and Entry Experience initiative](https://github.com/users/scothinks/projects/3). Implementer: Codex, working with scothinks. The [approved migration plan](../identity-adoption/2026-09-07/theme-adoption-migration-2026-09-07.md) controls B0–B6. This record does not approve an intermediate hosted release or the separate #91 entry-flow changes.
+
+## Current execution and validation cadence
+
+On 2026-09-08 the user authorised starting B1 / #97 and explicitly deferred any
+further CI or E2E runs until #102's implementation is complete. This supersedes
+the per-issue execution cadence in the immutable plan; it does not turn planned
+checks into passed evidence. Preserve each batch's source revision for later
+qualification. Use focused source checks during implementation and batch the
+build, generated-CSS and browser checks at the integration point. Avoid branch
+pushes before then because they automatically trigger CI.
+
+[B1 extraction evidence](b1-extraction.md) records the verbatim move and pending
+qualification. The registry's `G1` value selects source-contract enforcement;
+it does not assert that the G1 visual acceptance gate has passed.
 
 ## Source contract
 
@@ -42,6 +56,6 @@ Before deleting definitions, use `THEME_EVIDENCE_DIR=/absolute/before npm run te
 
 Run `npm run test:theme-contract -- --generated .next-e2e/static/css` after the production build. Capture SHA/build IDs and validation results in this directory before moving #96 to Review. Gate acceptance and later batch activation stay explicit. Roll back B0 as one change set; it has no schema/data changes.
 
-Status: B0 locally verified; [G0 results and review evidence](g0-results.md) are ready. G0 acceptance and hosted release remain separate.
+Status: B0 locally verified; [G0 results and review evidence](g0-results.md) are retained. B1 implementation is ready for review with integrated qualification deferred under the cadence above. Hosted release remains separate.
 
 The Tailwind build can discover class samples in documentation and tests. G0 keeps its source configuration unchanged. The later colour cutover must exclude archived samples from utility generation; generated-CSS expiry checks remain mandatory so historical evidence cannot preserve retired runtime classes.
