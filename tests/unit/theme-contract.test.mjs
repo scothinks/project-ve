@@ -67,3 +67,10 @@ test('new colour literals cannot bypass the registry', () => {
   assert.equal(input.entries.filter(e => e.kind === 'colour').length, 2);
   assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /new unclassified colour/);
 });
+
+test('CSS escaped references and named colours remain visible to the contract', () => {
+  const input = parseSource('app/theme.css', String.raw`.x { color: var(--ve-\0064 ead); background: rebeccapurple; }`);
+  assert.ok(input.entries.some(e => e.value === '--ve-dead'));
+  assert.ok(input.entries.some(e => e.value === 'rebeccapurple'));
+  assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /missing token|new unclassified/);
+});

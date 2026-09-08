@@ -3,6 +3,10 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import postcss from 'postcss';
+import colourNames from 'color-name';
+
+const namedColour = new RegExp(`(?<![\\w-])(?:${Object.keys(colourNames).join('|')})(?![\\w-])`, 'gi');
+const decodeCss = value => value.replace(/\\([\da-f]{1,6})\s?|\\([^\n])/gi, (_, hex, char) => hex ? String.fromCodePoint(parseInt(hex, 16)) : char);
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.svg', '.html', '.json']);
@@ -18,6 +22,10 @@ export function parseSource(file, text) {
     entries.push({ id: `${key}:${ordinal}`, file, line: text.slice(0, offset).split('\n').length, kind, value, context, ...extra });
   }
   function values(value, context, offset, extra = {}) {
+    value = decodeCss(value);
+    for (const m of value.matchAll(namedColour)) {
+      if (!['white', 'black'].includes(m[0].toLowerCase())) add('colour', m[0], context, offset, extra);
+    }
     // Input is a parsed declaration/AST literal, never comments or arbitrary source text.
     for (const m of value.matchAll(/(?<![\w-])--[a-zA-Z][\w-]*/g)) add('reference', m[0], context, offset, extra);
     for (const m of value.matchAll(/#[\da-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^)]*\)|\b(?:white|black|transparent|currentColor)\b|(?:bg|text|border|ring|fill|stroke|outline|from|via|to|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}(?:\/\d+)?/g)) {
@@ -33,7 +41,7 @@ export function parseSource(file, text) {
       const scope = ancestors.join(' > ');
       const context = `${scope} | ${decl.prop}: ${decl.value}`;
       const offset = decl.source.start.offset;
-      if (decl.prop.startsWith('--')) add('definition', decl.prop, context, offset, { expression: decl.value, scope });
+      if (decl.prop.startsWith('--')) add('definition', decodeCss(decl.prop), context, offset, { expression: decl.value, scope });
       values(decl.value, context, offset, { definition: decl.prop.startsWith('--') ? decl.prop : null, scope });
     });
     return { entries, imports, hazards };
@@ -55,6 +63,7 @@ export function parseSource(file, text) {
     }
     if (ts.isCallExpression(node)) {
       const name = node.expression.getText(ast);
+      if (/\.style\[|\[['"](?:setProperty|insertRule|replaceSync)['"]\]|\.setAttribute$/.test(name) && (!name.endsWith('.setAttribute') || node.arguments[0]?.text === 'style')) hazards.push({ file, reason: 'computed CSSOM/style attribute write', source: node.getText(ast) });
       if (name === 'require' || node.expression.kind === ts.SyntaxKind.ImportKeyword) {
         if (node.arguments[0] && literal(node.arguments[0])) imports.push(node.arguments[0].text);
         else hazards.push({ file, line: ast.getLineAndCharacterOfPosition(node.pos).line + 1, reason: 'dynamic import', source: node.getText(ast) });

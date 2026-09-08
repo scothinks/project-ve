@@ -1,0 +1,598 @@
+{
+  "baselineSourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+  "baselineBuildId": "WgE4LbgBIl3_xMCVm9ngp",
+  "lockfileSha256": "808271cf888604f9680d6f77b1dc62ce8d15e2263ce71ff2c7b152821ef3f88f",
+  "globalsBeforeSha256": "f73ccbcbc1e4f20195408dbc13b5d386e1161b423900c45c80cf53e78996fe26",
+  "globalsAfterSha256": "7900a0e8157e3d9f8ec5eb10d027be3ebcec9b3c9396f585a9fab1fbad5141d6",
+  "deletedTokenNames": [
+    "--admin-on-primary-container",
+    "--admin-on-secondary-fixed",
+    "--admin-secondary-container",
+    "--admin-surface-container-highest",
+    "--admin-tertiary-container",
+    "--learner-atmosphere-mint",
+    "--learner-atmosphere-warm",
+    "--learner-reward-rgb",
+    "--learner-success",
+    "--ve-intro-control",
+    "--ve-intro-panel",
+    "--ve-store-rgb"
+  ],
+  "deletedDeclarationCount": 24,
+  "liveConsumerCount": 0,
+  "deadAliasReferences": [
+    {
+      "id": "app/globals.css:reference:c7b184ad02ef00f9324b:0",
+      "file": "app/globals.css",
+      "line": 415,
+      "kind": "reference",
+      "value": "--learner-reward-rgb",
+      "context": ".learner-system | --ve-store-rgb: var(--learner-reward-rgb)",
+      "definition": "--ve-store-rgb",
+      "scope": ".learner-system"
+    }
+  ],
+  "declarations": [
+    {
+      "id": "app/globals.css:definition:73ca245cb8eec4f5025c:0",
+      "file": "app/globals.css",
+      "line": 21,
+      "kind": "definition",
+      "value": "--ve-store-rgb",
+      "context": ":root | --ve-store-rgb: 246, 196, 83",
+      "expression": "246, 196, 83",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:501ceca7fb563e501b83:0",
+      "file": "app/globals.css",
+      "line": 45,
+      "kind": "definition",
+      "value": "--ve-intro-control",
+      "context": ":root | --ve-intro-control: #fbfaf7",
+      "expression": "#fbfaf7",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:ebda11ec4e1f7f7e3e68:0",
+      "file": "app/globals.css",
+      "line": 48,
+      "kind": "definition",
+      "value": "--ve-intro-panel",
+      "context": ":root | --ve-intro-panel: #e9e4db",
+      "expression": "#e9e4db",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:379e5522e88b02751dd7:0",
+      "file": "app/globals.css",
+      "line": 61,
+      "kind": "definition",
+      "value": "--admin-on-primary-container",
+      "context": ":root | --admin-on-primary-container: #cfffe5",
+      "expression": "#cfffe5",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:4155f7b021aa06142265:0",
+      "file": "app/globals.css",
+      "line": 63,
+      "kind": "definition",
+      "value": "--admin-secondary-container",
+      "context": ":root | --admin-secondary-container: #fd7958",
+      "expression": "#fd7958",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:9cfc8a8ef65522e8f355:0",
+      "file": "app/globals.css",
+      "line": 65,
+      "kind": "definition",
+      "value": "--admin-on-secondary-fixed",
+      "context": ":root | --admin-on-secondary-fixed: #3c0700",
+      "expression": "#3c0700",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:b3a5574b018a75019729:0",
+      "file": "app/globals.css",
+      "line": 68,
+      "kind": "definition",
+      "value": "--admin-tertiary-container",
+      "context": ":root | --admin-tertiary-container: #8f6a00",
+      "expression": "#8f6a00",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:0abb861c75fa1260ee38:0",
+      "file": "app/globals.css",
+      "line": 76,
+      "kind": "definition",
+      "value": "--admin-surface-container-highest",
+      "context": ":root | --admin-surface-container-highest: #e5e2dc",
+      "expression": "#e5e2dc",
+      "scope": ":root"
+    },
+    {
+      "id": "app/globals.css:definition:b8e258b9b3fd1f43d1a0:0",
+      "file": "app/globals.css",
+      "line": 109,
+      "kind": "definition",
+      "value": "--ve-store-rgb",
+      "context": "@media (prefers-color-scheme: dark) > :root | --ve-store-rgb: 243, 203, 103",
+      "expression": "243, 203, 103",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:22a92302753ab4eebd3a:0",
+      "file": "app/globals.css",
+      "line": 133,
+      "kind": "definition",
+      "value": "--ve-intro-control",
+      "context": "@media (prefers-color-scheme: dark) > :root | --ve-intro-control: #1d2420",
+      "expression": "#1d2420",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:f8e3eb7e91ca1d0b0c12:0",
+      "file": "app/globals.css",
+      "line": 136,
+      "kind": "definition",
+      "value": "--ve-intro-panel",
+      "context": "@media (prefers-color-scheme: dark) > :root | --ve-intro-panel: #3a453e",
+      "expression": "#3a453e",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:d9a9b20c20bbe9206b51:0",
+      "file": "app/globals.css",
+      "line": 145,
+      "kind": "definition",
+      "value": "--admin-on-primary-container",
+      "context": "@media (prefers-color-scheme: dark) > :root | --admin-on-primary-container: #cfffe5",
+      "expression": "#cfffe5",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:730fe71e571c59df2be4:0",
+      "file": "app/globals.css",
+      "line": 147,
+      "kind": "definition",
+      "value": "--admin-secondary-container",
+      "context": "@media (prefers-color-scheme: dark) > :root | --admin-secondary-container: #fd7958",
+      "expression": "#fd7958",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:fcc31e5205b06338bbb7:0",
+      "file": "app/globals.css",
+      "line": 149,
+      "kind": "definition",
+      "value": "--admin-on-secondary-fixed",
+      "context": "@media (prefers-color-scheme: dark) > :root | --admin-on-secondary-fixed: #ffdad2",
+      "expression": "#ffdad2",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:a9ed07135a4853088105:0",
+      "file": "app/globals.css",
+      "line": 152,
+      "kind": "definition",
+      "value": "--admin-tertiary-container",
+      "context": "@media (prefers-color-scheme: dark) > :root | --admin-tertiary-container: #5b4300",
+      "expression": "#5b4300",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:ef0714b7d285e3363f97:0",
+      "file": "app/globals.css",
+      "line": 160,
+      "kind": "definition",
+      "value": "--admin-surface-container-highest",
+      "context": "@media (prefers-color-scheme: dark) > :root | --admin-surface-container-highest: var(--ve-line-soft)",
+      "expression": "var(--ve-line-soft)",
+      "scope": "@media (prefers-color-scheme: dark) > :root"
+    },
+    {
+      "id": "app/globals.css:definition:0f029c15f176ff5e0dcf:0",
+      "file": "app/globals.css",
+      "line": 374,
+      "kind": "definition",
+      "value": "--learner-atmosphere-mint",
+      "context": ".learner-system | --learner-atmosphere-mint: #f5fbf2",
+      "expression": "#f5fbf2",
+      "scope": ".learner-system"
+    },
+    {
+      "id": "app/globals.css:definition:1885b197a6c097db6638:0",
+      "file": "app/globals.css",
+      "line": 375,
+      "kind": "definition",
+      "value": "--learner-atmosphere-warm",
+      "context": ".learner-system | --learner-atmosphere-warm: #f7f4ed",
+      "expression": "#f7f4ed",
+      "scope": ".learner-system"
+    },
+    {
+      "id": "app/globals.css:definition:42b9b13eb32d6f3bebdf:0",
+      "file": "app/globals.css",
+      "line": 387,
+      "kind": "definition",
+      "value": "--learner-reward-rgb",
+      "context": ".learner-system | --learner-reward-rgb: 118, 90, 5",
+      "expression": "118, 90, 5",
+      "scope": ".learner-system"
+    },
+    {
+      "id": "app/globals.css:definition:f607f3f794735817706e:0",
+      "file": "app/globals.css",
+      "line": 391,
+      "kind": "definition",
+      "value": "--learner-success",
+      "context": ".learner-system | --learner-success: #008651",
+      "expression": "#008651",
+      "scope": ".learner-system"
+    },
+    {
+      "id": "app/globals.css:definition:7bc73837b97d92ad1012:0",
+      "file": "app/globals.css",
+      "line": 415,
+      "kind": "definition",
+      "value": "--ve-store-rgb",
+      "context": ".learner-system | --ve-store-rgb: var(--learner-reward-rgb)",
+      "expression": "var(--learner-reward-rgb)",
+      "scope": ".learner-system"
+    },
+    {
+      "id": "app/globals.css:definition:a26e9aff6ecd5933e6bb:0",
+      "file": "app/globals.css",
+      "line": 429,
+      "kind": "definition",
+      "value": "--learner-atmosphere-mint",
+      "context": ".learner-system.dashboard-learner | --learner-atmosphere-mint: #f6fbf2",
+      "expression": "#f6fbf2",
+      "scope": ".learner-system.dashboard-learner"
+    },
+    {
+      "id": "app/globals.css:definition:57e2c8037a206de2fe02:0",
+      "file": "app/globals.css",
+      "line": 430,
+      "kind": "definition",
+      "value": "--learner-atmosphere-warm",
+      "context": ".learner-system.dashboard-learner | --learner-atmosphere-warm: #fff2e8",
+      "expression": "#fff2e8",
+      "scope": ".learner-system.dashboard-learner"
+    },
+    {
+      "id": "app/globals.css:definition:d1bcbe6cd27423acfab1:0",
+      "file": "app/globals.css",
+      "line": 441,
+      "kind": "definition",
+      "value": "--learner-reward-rgb",
+      "context": ".learner-system.dashboard-learner | --learner-reward-rgb: 128, 97, 15",
+      "expression": "128, 97, 15",
+      "scope": ".learner-system.dashboard-learner"
+    }
+  ],
+  "baselineCaptures": [
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-course-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554",
+      "stylesSha256": "fdeb0bea28c0f64d76bff00bcb5f146b2bad879c3f14de98ed63eb3c6a28458b"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-course-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace",
+      "stylesSha256": "5107434e1e7b3d103c190ffbe05da74fc78536842a5214d1c37ab7ef185c2b2d"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-course-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d",
+      "stylesSha256": "34c7997e57f6df72b7c3a566477249a6184b8c45d7ed9dc57fd3014c01cc943c"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-course-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934",
+      "stylesSha256": "36e0312b2c63eb43707aecb8f49e55ba32a24681dac99b2f8672a5565e71c677"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-drawer-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "7ce5440e5e86b6b23b20b274fbcadc97337d9a8a7996c9907716c7483dae322f",
+      "stylesSha256": "23c401da632b0c773aac5f6c6bdeb6113d4bc37ade87ab58f02abbc0ae3411e5"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-drawer-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "57bd29a19faa40b7057bc0c6d0cfaa4acf54f261bdb908c3b5f495bd0e031749",
+      "stylesSha256": "a457020e14c8f5fc963a389d1cf498c262a99a56fbfc7d2bd79bb69e42a3eadc"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-drawer-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "236f8a90c3389433bbdb64802035b1d24504c4704430cee43a90f60957f11282",
+      "stylesSha256": "b0e6987d1df6130cbaab0dfa7d60e7e9ffce577b34715d07710f5946bdecdf0c"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-drawer-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "b6ad59aafd3113a5f029ec525f8b6e3461844fc2e9e8a6636c05922f6e808023",
+      "stylesSha256": "64fa25e271a3afecd867def134442791799a11a5fa0eef80371d490419eeb237"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-select-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5",
+      "stylesSha256": "3e68f2b2c0d0d79027e56ad65c0532f8e183c52e1d4f4123759cd2360efa74c5"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-select-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595",
+      "stylesSha256": "4388abbe34f16bbd3dbb683fa90540e28f91b910b04b57af5a796b1d2190d8a0"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-select-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a",
+      "stylesSha256": "c3351f17c9fa3013f5825c2b96072f27a52482876ffb95679cc24e8e016b2ade"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "admin-select-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b",
+      "stylesSha256": "862c73c7c0533a0df0c13193ee1f67eb0a505fe48ae332ccad093dab0e948400"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "dashboard-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "6b018948e294ef2ce4cab6985b130d242a75f6fe10548f28cafe0dc50588e9cb",
+      "stylesSha256": "08cbf37766f4e78bb8b1af77083083f40734436c13d0482a35130dfb16b1f665"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "dashboard-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "6b018948e294ef2ce4cab6985b130d242a75f6fe10548f28cafe0dc50588e9cb",
+      "stylesSha256": "d22e2255762bcbc44555ed4af27f0f64db57e4bc8e31f562f79a2728a9931ff8"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "dashboard-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "683a65ace27c5490d8ef4b3a22d916b0f205ecbe730ba805734da3bf768dd00e",
+      "stylesSha256": "801dd715228d73aacf280a45678f53ffcc9b3202256dcaf4d51d6fa7c53d0508"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "dashboard-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "0ffce56575bf836e6ae81cb711668d4cf8b225ebf12d2b6193b33fa8f4c15f9f",
+      "stylesSha256": "acdee80c8444ba5b254319178d9f9a75eed1558df7cf7585a618245af897cecd"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "login-focus-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1",
+      "stylesSha256": "d8a5bcc03b1f2e33bb5718ed4a22c2e77ade0b637b6a94a7992e3e0b656704f6"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "login-focus-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142",
+      "stylesSha256": "5d16ed44ed9112b17c4d4d87d1e2b86048900315a05bda7d3ba8679dd262becb"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "login-focus-320-dark",
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a",
+      "stylesSha256": "2a933edc8dbd266c2a1691653c5696a3c9a59fbf08d8ea57e3cc9af9b7c1594a"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "login-focus-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230",
+      "stylesSha256": "2a933edc8dbd266c2a1691653c5696a3c9a59fbf08d8ea57e3cc9af9b7c1594a"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "login-focus-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247",
+      "stylesSha256": "12298bff4a95a148021188ef3a15b7ea57539710d8a53efa9c111d46a41324c7"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "organization-course-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7",
+      "stylesSha256": "062b6d772bd7195013e9db02d1f1c84a8511062496d7b012589b569bf34a1ada"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "organization-course-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614",
+      "stylesSha256": "64d78c68bdfe2f3ee1616ccc3e536de44bda8d9c617a70ef5a5911e5fff64fcd"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "organization-course-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876",
+      "stylesSha256": "34c7997e57f6df72b7c3a566477249a6184b8c45d7ed9dc57fd3014c01cc943c"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "organization-course-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0",
+      "stylesSha256": "36e0312b2c63eb43707aecb8f49e55ba32a24681dac99b2f8672a5565e71c677"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "welcome-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903",
+      "stylesSha256": "5bf4c5ab53c73043ff98d861938d8e2ef1fabdfee01f0a83020d0ab062a2d95b"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "welcome-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed",
+      "stylesSha256": "2e7ef2b8f7ea6693a9e815a6aec7bbf55b04c42bc14199ecba13be3b144a9ca1"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "welcome-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65",
+      "stylesSha256": "c65c305a979561a601fac4cdeb2a8c5c364c053809f3669160989eeea3c7c7b7"
+    },
+    {
+      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "name": "welcome-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab",
+      "stylesSha256": "2906e885dc1d2bc060e215896eea0904c952e18db1c2f3331896f7e39a8ec81c"
+    }
+  ]
+}
