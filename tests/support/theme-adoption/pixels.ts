@@ -1,9 +1,9 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-const require = createRequire(import.meta.url);
+const dependencyRequire = createRequire(path.join(process.cwd(), 'package.json'));
 // Reuse the PNG decoder shipped with the pinned Playwright dependency.
-const { PNG } = require(path.join(path.dirname(require.resolve('playwright-core')), 'lib/utilsBundle.js'));
+const { PNG } = dependencyRequire(path.join(path.dirname(dependencyRequire.resolve('playwright-core')), 'lib/utilsBundle.js'));
 type RgbaImage = { width: number; height: number; data: Uint8Array };
 export const decodePng = (bytes: Buffer): RgbaImage => PNG.sync.read(bytes);
 
