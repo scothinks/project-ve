@@ -15,7 +15,7 @@ export async function captureTheme(page: Page, name: string) {
   await expect(page.locator('body')).toBeVisible();
   // Wait for deterministic local images and two painted frames, not a fixed sleep.
   await page.evaluate(async () => {
-    await Promise.all([...document.images].filter(i => i.loading !== 'lazy').map(i => i.decode().catch(() => undefined)));
+    await Promise.all([...document.images].filter(i => i.loading !== 'lazy' || i.getBoundingClientRect().top < innerHeight).map(i => i.decode().catch(() => undefined)));
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
   const styles = await page.evaluate(names => {

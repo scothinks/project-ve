@@ -41,12 +41,17 @@ test('theme baseline covers public, learner, platform and organization scopes wi
       await expect(adminPage.getByRole('listbox')).toHaveCount(0);
       await adminPage.getByRole('button', { name: /Add a cover image/ }).click();
       await expect(adminPage.getByRole('heading', { name: 'Choose a cover image' })).toBeVisible();
+      await expect(adminPage.getByText('Loading media…', { exact: true })).toHaveCount(0);
+      await expect(adminPage.getByRole('alert')).toHaveCount(0);
       await captureTheme(adminPage, `admin-drawer-${suffix}`);
       await adminPage.keyboard.press('Escape');
       await expect(adminPage.getByRole('heading', { name: 'Choose a cover image' })).toHaveCount(0);
       await orgPage.goto(`${baseURL}/admin/courses/new`);
       await expect(orgPage.locator('input[name="title"]')).toBeVisible();
       await captureTheme(orgPage, `organization-course-${suffix}`);
+      await orgPage.goto(`${baseURL}/o/media-${org.organizationId}`);
+      await expect(orgPage.locator('main')).toContainText('Media release fixture');
+      await captureTheme(orgPage, `organization-learner-${suffix}`);
     }
     await publicPage.setViewportSize({ width: 320, height: 900 });
     await publicPage.goto(`${baseURL}/login`);
