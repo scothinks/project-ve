@@ -1,6 +1,6 @@
 {
-  "baselineSourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
-  "baselineBuildId": "WgE4LbgBIl3_xMCVm9ngp",
+  "baselineSourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+  "baselineBuildId": "m1sstmH820gGa5e3WFM7j",
   "lockfileSha256": "808271cf888604f9680d6f77b1dc62ce8d15e2263ce71ff2c7b152821ef3f88f",
   "globalsBeforeSha256": "f73ccbcbc1e4f20195408dbc13b5d386e1161b423900c45c80cf53e78996fe26",
   "globalsAfterSha256": "7900a0e8157e3d9f8ec5eb10d027be3ebcec9b3c9396f585a9fab1fbad5141d6",
@@ -276,7 +276,7 @@
   ],
   "baselineCaptures": [
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-course-1440-dark",
       "viewport": {
         "width": 1440,
@@ -284,10 +284,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554",
-      "stylesSha256": "fdeb0bea28c0f64d76bff00bcb5f146b2bad879c3f14de98ed63eb3c6a28458b"
+      "stylesSha256": "3b04244606ee92dea7773206623f585208560969d8c7c5a4b3c57d80b4165854"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-course-1440-light",
       "viewport": {
         "width": 1440,
@@ -295,10 +295,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace",
-      "stylesSha256": "5107434e1e7b3d103c190ffbe05da74fc78536842a5214d1c37ab7ef185c2b2d"
+      "stylesSha256": "01fd57c6f3a2191522b1552abb022bf78885f305478e5b2f160e7be8fe9608e9"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-course-390-dark",
       "viewport": {
         "width": 390,
@@ -306,10 +306,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d",
-      "stylesSha256": "34c7997e57f6df72b7c3a566477249a6184b8c45d7ed9dc57fd3014c01cc943c"
+      "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-course-390-light",
       "viewport": {
         "width": 390,
@@ -317,54 +317,54 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934",
-      "stylesSha256": "36e0312b2c63eb43707aecb8f49e55ba32a24681dac99b2f8672a5565e71c677"
+      "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-drawer-1440-dark",
       "viewport": {
         "width": 1440,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "7ce5440e5e86b6b23b20b274fbcadc97337d9a8a7996c9907716c7483dae322f",
-      "stylesSha256": "23c401da632b0c773aac5f6c6bdeb6113d4bc37ade87ab58f02abbc0ae3411e5"
+      "imageSha256": "4b9d7d9ffabb9e65df9f8cfd983ef46983f9e9e66dd9b7091980bb0cef11938a",
+      "stylesSha256": "6c5f0c01b76257f714255ee913699a7c6842c0e2817608241273d854dadfa93a"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-drawer-1440-light",
       "viewport": {
         "width": 1440,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "57bd29a19faa40b7057bc0c6d0cfaa4acf54f261bdb908c3b5f495bd0e031749",
-      "stylesSha256": "a457020e14c8f5fc963a389d1cf498c262a99a56fbfc7d2bd79bb69e42a3eadc"
+      "imageSha256": "99a41668e1b92d27191d1b9ee7f33c3cba0b1c2fd8ce074a4b04cacebf3b1d30",
+      "stylesSha256": "136217caf8f30987387e61685de6e9c84e1672b996c92200e7a48e61ba3a4d47"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-drawer-390-dark",
       "viewport": {
         "width": 390,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "236f8a90c3389433bbdb64802035b1d24504c4704430cee43a90f60957f11282",
-      "stylesSha256": "b0e6987d1df6130cbaab0dfa7d60e7e9ffce577b34715d07710f5946bdecdf0c"
+      "imageSha256": "0d8c626783752d71dc5c5149030cf938cd3541a76b540844f3cc14ae097a4119",
+      "stylesSha256": "88308c9662e0f246c2aefff4d5b25641d0bb9301fb5a9cd90993407a73a3083d"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-drawer-390-light",
       "viewport": {
         "width": 390,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "b6ad59aafd3113a5f029ec525f8b6e3461844fc2e9e8a6636c05922f6e808023",
-      "stylesSha256": "64fa25e271a3afecd867def134442791799a11a5fa0eef80371d490419eeb237"
+      "imageSha256": "9bde8da8128f6d5e6a1252dd00a47f14b03fff327d6f21e11eeca097abc5b57e",
+      "stylesSha256": "5f3800a26a7929bbf0d8a53732a484ee7411394dd8136f268f7d0a2363b6e4d3"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-select-1440-dark",
       "viewport": {
         "width": 1440,
@@ -372,10 +372,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5",
-      "stylesSha256": "3e68f2b2c0d0d79027e56ad65c0532f8e183c52e1d4f4123759cd2360efa74c5"
+      "stylesSha256": "d41cf33aca7be9505db8f12171da2dbbe3a01010168e22db5a943704c8aec829"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-select-1440-light",
       "viewport": {
         "width": 1440,
@@ -383,10 +383,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595",
-      "stylesSha256": "4388abbe34f16bbd3dbb683fa90540e28f91b910b04b57af5a796b1d2190d8a0"
+      "stylesSha256": "50f7914918689b4abd5346d18e40f720f62d24939c77549576d4ebe1acc85465"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-select-390-dark",
       "viewport": {
         "width": 390,
@@ -394,10 +394,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a",
-      "stylesSha256": "c3351f17c9fa3013f5825c2b96072f27a52482876ffb95679cc24e8e016b2ade"
+      "stylesSha256": "ba0ec598ea7e05f91e78df5f03d18a069e837a8f94d46743f9fc1267607d8c8e"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "admin-select-390-light",
       "viewport": {
         "width": 390,
@@ -405,54 +405,54 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b",
-      "stylesSha256": "862c73c7c0533a0df0c13193ee1f67eb0a505fe48ae332ccad093dab0e948400"
+      "stylesSha256": "98fea0d23b93ce7b0a5029ab24e75d9bff09d56eff77c0538196007581fbe435"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "dashboard-1440-dark",
       "viewport": {
         "width": 1440,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "6b018948e294ef2ce4cab6985b130d242a75f6fe10548f28cafe0dc50588e9cb",
-      "stylesSha256": "08cbf37766f4e78bb8b1af77083083f40734436c13d0482a35130dfb16b1f665"
+      "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+      "stylesSha256": "6c3ecda8f4b12f87f373304984ad8d36484891386fdf9c7a8ea28dc27e4bacd9"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "dashboard-1440-light",
       "viewport": {
         "width": 1440,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "6b018948e294ef2ce4cab6985b130d242a75f6fe10548f28cafe0dc50588e9cb",
-      "stylesSha256": "d22e2255762bcbc44555ed4af27f0f64db57e4bc8e31f562f79a2728a9931ff8"
+      "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+      "stylesSha256": "7f3c589cad06388c9c756365bbc3ee98679db423535982ac845fd08cc7a6cfdf"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "dashboard-390-dark",
       "viewport": {
         "width": 390,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "683a65ace27c5490d8ef4b3a22d916b0f205ecbe730ba805734da3bf768dd00e",
-      "stylesSha256": "801dd715228d73aacf280a45678f53ffcc9b3202256dcaf4d51d6fa7c53d0508"
+      "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+      "stylesSha256": "31d293a3adb5e472b1fdcce063b5872b94ba587e1a4e7cc47592b7733add89d2"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "dashboard-390-light",
       "viewport": {
         "width": 390,
         "height": 900
       },
       "browser": "151.0.7922.34",
-      "imageSha256": "0ffce56575bf836e6ae81cb711668d4cf8b225ebf12d2b6193b33fa8f4c15f9f",
-      "stylesSha256": "acdee80c8444ba5b254319178d9f9a75eed1558df7cf7585a618245af897cecd"
+      "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+      "stylesSha256": "d5beaa2937f53f114808aa0ac64a062d1a9c98e477071141ad7784c0c2902e87"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "login-focus-1440-dark",
       "viewport": {
         "width": 1440,
@@ -460,10 +460,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1",
-      "stylesSha256": "d8a5bcc03b1f2e33bb5718ed4a22c2e77ade0b637b6a94a7992e3e0b656704f6"
+      "stylesSha256": "fa7bf7c1117d517050889441945c02b3012c095ad4180d5b8ee0481b21dbeab2"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "login-focus-1440-light",
       "viewport": {
         "width": 1440,
@@ -471,10 +471,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142",
-      "stylesSha256": "5d16ed44ed9112b17c4d4d87d1e2b86048900315a05bda7d3ba8679dd262becb"
+      "stylesSha256": "506b696e998e0c56daad0ff3164791a1187439e961a9e4d4a9ae1bc4d9c9580a"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "login-focus-320-dark",
       "viewport": {
         "width": 320,
@@ -482,10 +482,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a",
-      "stylesSha256": "2a933edc8dbd266c2a1691653c5696a3c9a59fbf08d8ea57e3cc9af9b7c1594a"
+      "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "login-focus-390-dark",
       "viewport": {
         "width": 390,
@@ -493,10 +493,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230",
-      "stylesSha256": "2a933edc8dbd266c2a1691653c5696a3c9a59fbf08d8ea57e3cc9af9b7c1594a"
+      "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "login-focus-390-light",
       "viewport": {
         "width": 390,
@@ -504,10 +504,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247",
-      "stylesSha256": "12298bff4a95a148021188ef3a15b7ea57539710d8a53efa9c111d46a41324c7"
+      "stylesSha256": "3087e853508778764165fd9be160043333f0b11c37ccb2f026ba1eb465bd7a96"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "organization-course-1440-dark",
       "viewport": {
         "width": 1440,
@@ -515,10 +515,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7",
-      "stylesSha256": "062b6d772bd7195013e9db02d1f1c84a8511062496d7b012589b569bf34a1ada"
+      "stylesSha256": "f40f2a7c922ff600dcfdedf71d746f1ecd72c10f983eb3995890e76d5fffccd8"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "organization-course-1440-light",
       "viewport": {
         "width": 1440,
@@ -526,10 +526,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614",
-      "stylesSha256": "64d78c68bdfe2f3ee1616ccc3e536de44bda8d9c617a70ef5a5911e5fff64fcd"
+      "stylesSha256": "c04eaa2c0434452ba421a6b3d35f536891055295f983ecf51913c025bc4fedd3"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "organization-course-390-dark",
       "viewport": {
         "width": 390,
@@ -537,10 +537,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876",
-      "stylesSha256": "34c7997e57f6df72b7c3a566477249a6184b8c45d7ed9dc57fd3014c01cc943c"
+      "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "organization-course-390-light",
       "viewport": {
         "width": 390,
@@ -548,10 +548,54 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0",
-      "stylesSha256": "36e0312b2c63eb43707aecb8f49e55ba32a24681dac99b2f8672a5565e71c677"
+      "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+      "name": "organization-learner-1440-dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+      "stylesSha256": "8417c58c8c63d4849f15c792c8758e77be5c0521401fdd3a453dd1952355cee8"
+    },
+    {
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+      "name": "organization-learner-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+      "stylesSha256": "7e73bc01f1265affde968c232bc309c4849fb47929e0cd3f0963d4580067b751"
+    },
+    {
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+      "name": "organization-learner-390-dark",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+      "stylesSha256": "0482ed4a5a14514e7788ab7295a4c5dcac8223b187b0752379c34c96e5881f16"
+    },
+    {
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+      "name": "organization-learner-390-light",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "browser": "151.0.7922.34",
+      "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+      "stylesSha256": "17961f9990c6ac594d39e5c78422dcc7ee9d9980b61e8e7a18583b56ac92b137"
+    },
+    {
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "welcome-1440-dark",
       "viewport": {
         "width": 1440,
@@ -559,10 +603,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903",
-      "stylesSha256": "5bf4c5ab53c73043ff98d861938d8e2ef1fabdfee01f0a83020d0ab062a2d95b"
+      "stylesSha256": "66a443b4c1d13e5b0bc15fe6036a1a9b4521bd3e26069727d3dc2d379dc11760"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "welcome-1440-light",
       "viewport": {
         "width": 1440,
@@ -570,10 +614,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed",
-      "stylesSha256": "2e7ef2b8f7ea6693a9e815a6aec7bbf55b04c42bc14199ecba13be3b144a9ca1"
+      "stylesSha256": "a648b8dc2af56680b14347c4486eeb15427a9559e74ccbd7eb4bd2acd4ccafa3"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "welcome-390-dark",
       "viewport": {
         "width": 390,
@@ -581,10 +625,10 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65",
-      "stylesSha256": "c65c305a979561a601fac4cdeb2a8c5c364c053809f3669160989eeea3c7c7b7"
+      "stylesSha256": "7d6f21192c55bfb4576149753c143511904cecebaa88898cf2831515afce411e"
     },
     {
-      "sourceSha": "1c8c100db5f89c4d2817a5a987810eaeadcf89f5",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
       "name": "welcome-390-light",
       "viewport": {
         "width": 390,
@@ -592,7 +636,7 @@
       },
       "browser": "151.0.7922.34",
       "imageSha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab",
-      "stylesSha256": "2906e885dc1d2bc060e215896eea0904c952e18db1c2f3331896f7e39a8ec81c"
+      "stylesSha256": "22a060e19bae7e6be3964b145cb467fd75181bc18336a95e7e2b3aafd694b5cd"
     }
   ]
 }

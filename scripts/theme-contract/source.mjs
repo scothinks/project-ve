@@ -10,7 +10,7 @@ const decodeCss = value => value.replace(/\\([\da-f]{1,6})\s?|\\([^\n])/gi, (_, 
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.svg', '.html', '.json']);
-export const productionRoots = ['app', 'components', 'features', 'lib', 'public', 'middleware.ts', 'next.config.ts'];
+export const productionRoots = ['app', 'components', 'features', 'lib', 'public', 'middleware.ts', 'middleware.js', 'instrumentation.ts', 'instrumentation.js', 'next.config.ts', 'next.config.js', 'next.config.mjs', 'postcss.config.mjs', 'tailwind.config.ts', 'tailwind.config.js'];
 
 export function parseSource(file, text) {
   const entries = [], imports = [], hazards = [];
@@ -41,7 +41,7 @@ export function parseSource(file, text) {
       const scope = ancestors.join(' > ');
       const context = `${scope} | ${decl.prop}: ${decl.value}`;
       const offset = decl.source.start.offset;
-      if (decl.prop.startsWith('--')) add('definition', decodeCss(decl.prop), context, offset, { expression: decl.value, scope });
+      if (decl.prop.startsWith('--')) add('definition', decodeCss(decl.prop), context, offset, { expression: decodeCss(decl.value), scope });
       values(decl.value, context, offset, { definition: decl.prop.startsWith('--') ? decl.prop : null, scope });
     });
     return { entries, imports, hazards };

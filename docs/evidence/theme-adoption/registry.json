@@ -1,7 +1,7 @@
 {
   "version": 1,
   "gate": "G0",
-  "sourceSha": "4df178ee1e177d86a448bbacc14cc78bc1d1f033",
+  "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
   "scope": "All files under app/components/features/lib/public, middleware and Next config; source imports followed outside roots; untracked files included. Third-party package source is dependency-owned and generated CSS is checked separately.",
   "tokens": [
     {
@@ -1447,14 +1447,14 @@
     {
       "file": "components/welcome/WelcomeCarousel.tsx",
       "source": "`0 22px 40px rgba(${slide.glowRgb},0.20)`",
-      "sourceHash": "0e7c4a7218bf705da451c64d0118d366aad0085c61afbf46ffa7809c522c69c3",
       "values": [
         "var(--ve-green-rgb)",
         "var(--ve-sky-rgb)",
         "var(--ve-violet-rgb)"
       ],
       "owner": "B2",
-      "reason": "Both shadow sites read the private useMemo slide array; exactly three static glowRgb values. Any change to this file invalidates this bounded review."
+      "reason": "Both shadow sites read the private useMemo slide array; exactly three static glowRgb values. Any change to this file invalidates this bounded review.",
+      "sourceSha256": "0e7c4a7218bf705da451c64d0118d366aad0085c61afbf46ffa7809c522c69c3"
     }
   ],
   "occurrences": [

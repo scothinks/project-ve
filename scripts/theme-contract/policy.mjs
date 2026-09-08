@@ -2,7 +2,7 @@ export const isLegacy = name => /^(?:--(?:ve|learner|admin)-|--(?:background|for
 const gateNumber = gate => Number(String(gate).match(/\d+/)?.[0]);
 
 export function checkContract(scan, registry, { generated = false } = {}) {
-  const errors = scan.hazards.filter(h => !registry.dynamicUses?.some(d => d.file === h.file && d.source === h.source && d.sourceHash === scan.files?.[h.file] && d.owner && d.values?.length)).map(h => `${h.file}: ${h.reason}: ${h.source}`);
+  const errors = scan.hazards.filter(h => !registry.dynamicUses?.some(d => d.file === h.file && d.source === h.source && d.sourceSha256 === scan.files?.[h.file] && d.owner && d.values?.length)).map(h => `${h.file}: ${h.reason}: ${h.source}`);
   const definitions = scan.entries.filter(e => e.kind === 'definition');
   const references = scan.entries.filter(e => e.kind === 'reference');
   const names = new Set(definitions.map(e => e.value));
@@ -14,7 +14,7 @@ export function checkContract(scan, registry, { generated = false } = {}) {
   for (const e of scan.entries) {
     if (retired.has(e.value)) errors.push(`${e.id}: retired token ${e.value}`);
     if (isLegacy(e.value) && !dispositions.has(e.value)) errors.push(`${e.id}: no token disposition`);
-    if (!generated && (isLegacy(e.value) || e.kind === 'colour' || (e.kind === 'reference' && !e.value.startsWith('--ui-')))) {
+    if (!generated && (isLegacy(e.value) || e.kind === 'colour' || (['reference', 'definition'].includes(e.kind) && !e.value.startsWith('--ui-')))) {
       const approved = accepted.get(e.id);
       if (!approved) errors.push(`${e.id}: new unclassified ${e.kind} ${e.value}`);
       else if (!approved.owner || !approved.disposition || !approved.reason) errors.push(`${e.id}: incomplete ownership/disposition`);
@@ -45,7 +45,7 @@ export function checkContract(scan, registry, { generated = false } = {}) {
     if (gate >= 2 && isLegacy(d.value) && !['--font-geist', '--learner-body-font'].includes(d.value)) {
       const adapter = registry.adapters.find(a => a.token === d.value);
       if (!adapter || d.expression !== `var(${adapter.target})`) errors.push(`${d.id}: adapter must be one exact terminal reference`);
-      if (d.file !== 'app/styles/theme-compat.css' || d.scope !== ':root') errors.push(`${d.id}: adapter outside root compatibility file`);
+      if ((!generated && d.file !== 'app/styles/theme-compat.css') || d.scope !== ':root') errors.push(`${d.id}: adapter outside root compatibility file`);
       if (definitions.filter(other => other.value === d.value).length !== 1) errors.push(`${d.id}: duplicate/scoped adapter`);
       if (!references.some(ref => ref.value === d.value)) errors.push(`${d.id}: adapter with no consumers must be deleted`);
     }
@@ -67,7 +67,7 @@ export function checkContract(scan, registry, { generated = false } = {}) {
     for (const role of registry.roles) {
       for (const mode of ['light', 'dark']) {
         if (!role[mode] || !role.meaning) errors.push(`${role.token}: missing documented mode value`);
-        if (!definitions.some(d => d.value === role.token && d.expression === role[mode] && (mode === 'dark' ? d.scope.includes('prefers-color-scheme: dark') : d.scope === ':root'))) errors.push(`${role.token}: missing ${mode} definition`);
+        if (!definitions.some(d => d.value === role.token && d.expression === role[mode] && (mode === 'dark' ? /prefers-color-scheme:\s*dark/.test(d.scope) : d.scope === ':root'))) errors.push(`${role.token}: missing ${mode} definition`);
       }
     }
     for (const name of names) if (name.startsWith('--ui-') && !registry.roles.some(r => r.token === name) && !['--ui-font-body', '--ui-font-display'].includes(name)) errors.push(`${name}: missing role dictionary entry`);

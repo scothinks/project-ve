@@ -7,7 +7,7 @@ import test from "node:test";
 
 const evidenceRoot = fileURLToPath(new URL("../../docs/evidence/", import.meta.url));
 const sha256Value = /^[a-f0-9]{64}$/i;
-const sha256Field = /^(?:[a-z][a-z0-9]*)?sha256$/i;
+const sha256Field = /^(?:[a-z][a-z0-9_]*)?sha256$/i;
 
 // This is an evidence-format contract, not a replacement for secret scanning.
 // File paths are data: a path containing "auth" must not become the name of
@@ -57,4 +57,15 @@ test("guided journey screenshot bytes still match the historical evidence manife
     const digest = createHash("sha256").update(readFileSync(path.join(directory, entry.path))).digest("hex");
     assert.equal(digest, entry.sha256, entry.path);
   }
+});
+
+test("explicit checksum fields accept historical snake case while rejecting path-shaped keys", () => {
+  const digest = createHash("sha256").update("checksum format fixture").digest("hex");
+  for (const field of ["sha256", "sourceSha256", "source_sha256", "globals_css_sha256"]) {
+    assert.doesNotThrow(() => checkChecksumFields({ [field]: digest }, "fixture"));
+  }
+  for (const field of ["hash", "app/auth.ts", "app/globals.css"]) {
+    assert.throws(() => checkChecksumFields({ [field]: digest }, "fixture"), /explicit sha256 field/);
+  }
+  assert.throws(() => checkChecksumFields({ source_sha256: "invalid" }, "fixture"), /invalid SHA-256/);
 });

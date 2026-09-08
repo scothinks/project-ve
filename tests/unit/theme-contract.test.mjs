@@ -74,3 +74,10 @@ test('CSS escaped references and named colours remain visible to the contract', 
   assert.ok(input.entries.some(e => e.value === 'rebeccapurple'));
   assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /missing token|new unclassified/);
 });
+
+test('a registered one-hop adapter with literal values in both modes passes source and generated checks', () => {
+  const input = scan(':root { --ve-card: var(--ui-surface); --ui-surface: #fff; } @media (prefers-color-scheme:dark) { :root { --ui-surface: #111; } } .card { background: var(--ve-card); }');
+  const policy = registry(input, { gate: 'G2', adapters: [{ token: '--ve-card', target: '--ui-surface', removeBy: 'G5' }], roles: [{ token: '--ui-surface', light: '#fff', dark: '#111', meaning: 'Surface' }] });
+  assert.deepEqual(checkContract(input, policy), []);
+  assert.deepEqual(checkContract({ ...input, entries: input.entries.map(e => ({ ...e, file: 'compiled.css' })) }, policy, { generated: true }), []);
+});
