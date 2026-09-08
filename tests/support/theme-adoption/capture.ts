@@ -30,7 +30,7 @@ export async function captureTheme(page: Page, name: string) {
     };
   }, tokens);
   mkdirSync(output, { recursive: true });
-  const bytes = await page.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide', path: path.join(output, `${name}.png`) });
+  const bytes = await page.screenshot({ fullPage: !/admin-(select|drawer)/.test(name), animations: 'disabled', caret: 'hide', path: path.join(output, `${name}.png`) });
   const serialized = JSON.stringify(styles, null, 2) + '\n';
   writeFileSync(path.join(output, `${name}.styles.json`), serialized);
   const sourceSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();

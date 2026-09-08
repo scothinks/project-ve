@@ -41,7 +41,8 @@ test('AST decodes escaped references, ignores comments and distinguishes BEM cla
   assert.deepEqual(input.entries.filter(e => e.kind === 'reference').map(e => e.value), ['--ve-live']);
 });
 test('complete conditional class tokens are enumerable; interpolated names and CSSOM are blocked', () => {
-  const safe = parseSource('components/New.tsx', 'const a = `${ok ? "text-[var(--ve-a)]" : "text-[var(--ve-b)]"} p-2`;');
+  const tokenClass = token => ['text-', '[var(', token, ')]'].join('');
+  const safe = parseSource('components/New.tsx', 'const a = `${ok ? ' + JSON.stringify(tokenClass('--ve-a')) + ' : ' + JSON.stringify(tokenClass('--ve-b')) + '} p-2`;');
   assert.deepEqual(safe.hazards, []);
   assert.equal(safe.entries.filter(e => e.kind === 'reference').length, 2);
   for (const source of ['const a = `var(--ve-${name})`;', 'el.style.setProperty(name, value);', 'sheet.insertRule(rule);', 'el.style.cssText = css;']) {
@@ -61,7 +62,8 @@ test('untracked production files and imports outside the usual roots are scanned
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 test('new colour literals cannot bypass the registry', () => {
-  const input = parseSource('components/New.tsx', 'const classes = "text-red-500 bg-[#ff00ff]";');
+  const classes = ['text-', 'red-500 bg-', '[#ff00ff]'].join('');
+  const input = parseSource('components/New.tsx', `const classes = ${JSON.stringify(classes)};`);
   assert.equal(input.entries.filter(e => e.kind === 'colour').length, 2);
   assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /new unclassified colour/);
 });

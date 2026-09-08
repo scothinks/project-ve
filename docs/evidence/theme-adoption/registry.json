@@ -1425,7 +1425,9 @@
         "app/admin/organizations/page.tsx:reference:82a906e2f5fabaed3383:0",
         "app/admin/organizations/page.tsx:reference:703f4005e5a96406081e:0"
       ],
-      "generatedScopes": []
+      "generatedScopes": [
+        "@layer utilities > .bg-\\[var\\(--ve-soft\\)\\]"
+      ]
     }
   ],
   "dynamicUses": [

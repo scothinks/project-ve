@@ -35,7 +35,7 @@ test('theme baseline covers public, learner, platform and organization scopes wi
       await captureTheme(adminPage, `admin-course-${suffix}`);
       await adminPage.getByRole('combobox').first().focus();
       await adminPage.keyboard.press('Space');
-      await expect(adminPage.getByRole('listbox')).toBeVisible();
+      await expect(adminPage.getByRole('listbox')).toBeInViewport();
       await captureTheme(adminPage, `admin-select-${suffix}`);
       await adminPage.keyboard.press('Escape');
       await expect(adminPage.getByRole('listbox')).toHaveCount(0);
