@@ -17,19 +17,28 @@ export async function captureTheme(page: Page, name: string) {
     await Promise.all([...document.images].filter(i => i.loading !== 'lazy' || i.getBoundingClientRect().top < innerHeight).map(i => i.decode().catch(() => undefined)));
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
+  mkdirSync(output, { recursive: true });
+  let bytes: Buffer = Buffer.alloc(0);
+  let previous = '';
+  await expect.poll(async () => {
+    bytes = await page.screenshot({ fullPage: !/admin-(select|drawer)/.test(name), animations: 'disabled', caret: 'hide' });
+    const current = digest(bytes);
+    const stable = current === previous;
+    previous = current;
+    return stable;
+  }, { message: `${name}: wait for two identical painted frames`, intervals: [100, 200, 400], timeout: 10_000 }).toBe(true);
+  writeFileSync(path.join(output, `${name}.png`), bytes);
   const styles = await page.evaluate(names => {
     const properties = ['color','background-color','background-image','border-top-color','border-top-width','border-radius','outline-color','outline-width','outline-style','outline-offset','box-shadow','font-family','font-size','font-weight','line-height','color-scheme'];
-    const values = (el: Element) => Object.fromEntries(properties.map(p => [p, getComputedStyle(el).getPropertyValue(p)]));
+    const values = (el: Element, pseudo: string | null = null) => Object.fromEntries(properties.map(p => [p, getComputedStyle(el, pseudo).getPropertyValue(p)]));
     const elements = [...document.querySelectorAll('body, main, header, nav, h1, h2, h3, p, a, button, input, textarea, select, [role="dialog"], [role="listbox"], [role="option"]')].filter(el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden');
     const scopes = [...document.querySelectorAll('html, body, main, .learner-shell, .dashboard-shell, .admin-shell, [role="dialog"], [role="listbox"]')];
     return {
-      elements: elements.map(el => ({ tag: el.tagName, role: el.getAttribute('role'), styles: values(el) })),
+      elements: elements.map(el => ({ tag: el.tagName, role: el.getAttribute('role'), styles: values(el), placeholder: el.matches('input, textarea') ? values(el, '::placeholder') : null })),
       scopes: scopes.map(el => ({ tag: el.tagName, className: el.className, tokens: Object.fromEntries(names.map(n => [n, getComputedStyle(el).getPropertyValue(n).trim()])) })),
       focus: document.activeElement ? { tag: document.activeElement.tagName, visible: document.activeElement.matches(':focus-visible'), styles: values(document.activeElement) } : null,
     };
   }, tokens);
-  mkdirSync(output, { recursive: true });
-  const bytes = await page.screenshot({ fullPage: !/admin-(select|drawer)/.test(name), animations: 'disabled', caret: 'hide', path: path.join(output, `${name}.png`) });
   const serialized = JSON.stringify(styles, null, 2) + '\n';
   writeFileSync(path.join(output, `${name}.styles.json`), serialized);
   const sourceSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
