@@ -1,5 +1,16 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## Identity adoption foundation, 2026-09-08
+
+B0 / #96 is implemented and locally verified: a production-source token contract
+is wired into CI, and 24 declarations for 12 proven-dead tokens are removed.
+All 33 before/after visual comparisons passed with exact computed-style parity
+and the documented, bounded edge-antialiasing tolerance. See the
+[G0 source, build and capture evidence](evidence/theme-adoption/g0-results.md).
+G0 awaits review; #97–#102 retain their successive acceptance gates. The separate
+#91 entry-flow work and the closed P1.5/P2 boundaries are unchanged. No hosted
+identity release is claimed.
+
 ## Guided AI course creation, 2026-09-07
 
 The approved four-block follow-up implements idea/audience discovery, read-only

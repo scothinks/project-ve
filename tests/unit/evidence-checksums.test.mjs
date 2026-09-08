@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { gunzipSync } from "node:zlib";
 
 const evidenceRoot = fileURLToPath(new URL("../../docs/evidence/", import.meta.url));
 const sha256Value = /^[a-f0-9]{64}$/i;
@@ -68,4 +69,30 @@ test("explicit checksum fields accept historical snake case while rejecting path
     assert.throws(() => checkChecksumFields({ [field]: digest }, "fixture"), /explicit sha256 field/);
   }
   assert.throws(() => checkChecksumFields({ source_sha256: "invalid" }, "fixture"), /invalid SHA-256/);
+});
+
+test("G0 screenshots, computed styles and build CSS match their exact-source evidence", () => {
+  const root = path.join(evidenceRoot, "theme-adoption");
+  const manifest = JSON.parse(readFileSync(path.join(root, "g0-captures.json"), "utf8"));
+  assert.equal(manifest.captures.length, manifest.summary.captureCount);
+  assert.ok(manifest.captures.length > 0);
+  function verify(entry) {
+    assert.match(entry.path, /^(captures|build-css)\//);
+    assert.ok(!entry.path.includes(".."));
+    const bytes = readFileSync(path.join(root, entry.path));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256, entry.path);
+    if (entry.contentSha256) assert.equal(createHash("sha256").update(gunzipSync(bytes)).digest("hex"), entry.contentSha256);
+  }
+  for (const capture of manifest.captures) {
+    [capture.before, capture.after, capture.styles].forEach(verify);
+    assert.equal(capture.before.sha256, capture.reference.imageSha256);
+    assert.equal(capture.after.sha256, capture.candidate.imageSha256);
+    assert.equal(capture.styles.contentSha256, capture.reference.stylesSha256);
+    assert.equal(capture.styles.contentSha256, capture.candidate.stylesSha256);
+    assert.equal(capture.comparison.passed, true);
+    assert.equal(capture.comparison.disallowedPixels, 0);
+    assert.equal(capture.reference.sourceSha, manifest.builds.find(b => b.label === "before").sourceSha);
+    assert.equal(capture.candidate.sourceSha, manifest.builds.find(b => b.label === "after").sourceSha);
+  }
+  for (const build of manifest.builds) build.css.forEach(verify);
 });

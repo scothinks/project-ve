@@ -42,6 +42,6 @@ Before deleting definitions, use `THEME_EVIDENCE_DIR=/absolute/before npm run te
 
 Run `npm run test:theme-contract -- --generated .next-e2e/static/css` after the production build. Capture SHA/build IDs and validation results in this directory before moving #96 to Review. Gate acceptance and later batch activation stay explicit. Roll back B0 as one change set; it has no schema/data changes.
 
-Status: baseline capture and retirement verification in progress. No hosted deployment.
+Status: B0 locally verified; [G0 results and review evidence](g0-results.md) are ready. G0 acceptance and hosted release remain separate.
 
 The Tailwind build can discover class samples in documentation and tests. G0 keeps its source configuration unchanged. The later colour cutover must exclude archived samples from utility generation; generated-CSS expiry checks remain mandatory so historical evidence cannot preserve retired runtime classes.

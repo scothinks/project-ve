@@ -1,0 +1,1577 @@
+{
+  "summary": {
+    "captureCount": 33,
+    "identicalPngCount": 29,
+    "totalAntialiasPixels": 241,
+    "maximumPixelsInOneCapture": 88,
+    "maximumChannelDelta": 2,
+    "disallowedPixels": 0
+  },
+  "builds": [
+    {
+      "label": "before",
+      "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+      "buildId": "m1sstmH820gGa5e3WFM7j",
+      "css": [
+        {
+          "path": "build-css/before-362c3373c264c030.css.gz",
+          "sha256": "77ca2790cb1e606e35530f4ab59e6d9ee46f09ad5bb85bd37b2ecdd8ea8e28e1",
+          "contentSha256": "7afb7adce8dd18dd5a57771455fdbb5da4ddc692eb4eafdd2dfb075cbd1f09d7"
+        },
+        {
+          "path": "build-css/before-ac3077db489998c0.css.gz",
+          "sha256": "813759937f819f08278077af2430628f59315c8763581d53e3073aa5e8796a60",
+          "contentSha256": "4725a48085729c02d9780de5151a1701039309f849d9d5781009cc1f6c55f16a"
+        },
+        {
+          "path": "build-css/before-bbd1249403cd70ee.css.gz",
+          "sha256": "8888450141bcfb35fbbb930c87c70f53b016d1f4fac2df773af18a2de245efa5",
+          "contentSha256": "9b3047b633f0885e2a0b7277388f272edefb978a030eafb82e2bbefde842e4a4"
+        }
+      ]
+    },
+    {
+      "label": "after",
+      "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+      "buildId": "pCLSERG5fWl2upr329ZP1",
+      "css": [
+        {
+          "path": "build-css/after-362c3373c264c030.css.gz",
+          "sha256": "77ca2790cb1e606e35530f4ab59e6d9ee46f09ad5bb85bd37b2ecdd8ea8e28e1",
+          "contentSha256": "7afb7adce8dd18dd5a57771455fdbb5da4ddc692eb4eafdd2dfb075cbd1f09d7"
+        },
+        {
+          "path": "build-css/after-ac3077db489998c0.css.gz",
+          "sha256": "813759937f819f08278077af2430628f59315c8763581d53e3073aa5e8796a60",
+          "contentSha256": "4725a48085729c02d9780de5151a1701039309f849d9d5781009cc1f6c55f16a"
+        },
+        {
+          "path": "build-css/after-bded4d78c7bb7708.css.gz",
+          "sha256": "6e19208bdf12243e8d1375e5c24e951cb65f70e45eca769d3e0a9461de87d195",
+          "contentSha256": "912e94dba87e021fa4072b8ec38b601b5e9730ebf9562bd92b33eeb6a5bed4c4"
+        }
+      ]
+    }
+  ],
+  "lockfileSha256": "808271cf888604f9680d6f77b1dc62ce8d15e2263ce71ff2c7b152821ef3f88f",
+  "captures": [
+    {
+      "name": "admin-course-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-course-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554",
+        "stylesSha256": "3b04244606ee92dea7773206623f585208560969d8c7c5a4b3c57d80b4165854"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-course-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554",
+        "stylesSha256": "3b04244606ee92dea7773206623f585208560969d8c7c5a4b3c57d80b4165854"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 915
+      },
+      "before": {
+        "path": "captures/before/admin-course-1440-dark.png",
+        "sha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554"
+      },
+      "after": {
+        "path": "captures/after/admin-course-1440-dark.png",
+        "sha256": "20059c1d81810ba4e81d2992e73bbba315f80edb97564e44e55ffbd1ed203554"
+      },
+      "styles": {
+        "path": "captures/styles/admin-course-1440-dark.json.gz",
+        "sha256": "ffb3f5d7f9e32ed6265eac6f8b5595bdd470d08efeade5d979b2d64d3360aeef",
+        "contentSha256": "3b04244606ee92dea7773206623f585208560969d8c7c5a4b3c57d80b4165854"
+      }
+    },
+    {
+      "name": "admin-course-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-course-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace",
+        "stylesSha256": "01fd57c6f3a2191522b1552abb022bf78885f305478e5b2f160e7be8fe9608e9"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-course-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace",
+        "stylesSha256": "01fd57c6f3a2191522b1552abb022bf78885f305478e5b2f160e7be8fe9608e9"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 915
+      },
+      "before": {
+        "path": "captures/before/admin-course-1440-light.png",
+        "sha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace"
+      },
+      "after": {
+        "path": "captures/after/admin-course-1440-light.png",
+        "sha256": "2573079bdc2d94c19458afbbf6934b3a99bd719252138363168df784ae04eace"
+      },
+      "styles": {
+        "path": "captures/styles/admin-course-1440-light.json.gz",
+        "sha256": "e422e4faf5a463dc0079b58c0b9ecefd794e9bd32ce1d34254e2f002178e5551",
+        "contentSha256": "01fd57c6f3a2191522b1552abb022bf78885f305478e5b2f160e7be8fe9608e9"
+      }
+    },
+    {
+      "name": "admin-course-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-course-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d",
+        "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-course-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d",
+        "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 291
+      },
+      "before": {
+        "path": "captures/before/admin-course-390-dark.png",
+        "sha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d"
+      },
+      "after": {
+        "path": "captures/after/admin-course-390-dark.png",
+        "sha256": "95447601e3c9255a9f138a301acf9d0f1d54a24161a6d78c577f9a2aea41f26d"
+      },
+      "styles": {
+        "path": "captures/styles/admin-course-390-dark.json.gz",
+        "sha256": "3dce2a4f8f831949d1480c863c0eb8930429a3c5c8d06c6025ef49282bea2eb6",
+        "contentSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      }
+    },
+    {
+      "name": "admin-course-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-course-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934",
+        "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-course-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934",
+        "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 291
+      },
+      "before": {
+        "path": "captures/before/admin-course-390-light.png",
+        "sha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934"
+      },
+      "after": {
+        "path": "captures/after/admin-course-390-light.png",
+        "sha256": "cacded0849a14b8e5657e28c51e92b5c0d6da2af35c7bfa2fc0a0b804a2f4934"
+      },
+      "styles": {
+        "path": "captures/styles/admin-course-390-light.json.gz",
+        "sha256": "19a19b5cbf4f4cc0f4f4e5d0d2ab84d6533a704a124a96edb4a89293e885adc8",
+        "contentSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      }
+    },
+    {
+      "name": "admin-drawer-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-drawer-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "4b9d7d9ffabb9e65df9f8cfd983ef46983f9e9e66dd9b7091980bb0cef11938a",
+        "stylesSha256": "6c5f0c01b76257f714255ee913699a7c6842c0e2817608241273d854dadfa93a"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-drawer-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "62abaf81e6c2000309112e830e91071316b0eeff1637f3ab6a76c640b1ccf015",
+        "stylesSha256": "6c5f0c01b76257f714255ee913699a7c6842c0e2817608241273d854dadfa93a"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 58,
+        "antialiasPixels": 58,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 1,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/admin-drawer-1440-dark.png",
+        "sha256": "4b9d7d9ffabb9e65df9f8cfd983ef46983f9e9e66dd9b7091980bb0cef11938a"
+      },
+      "after": {
+        "path": "captures/after/admin-drawer-1440-dark.png",
+        "sha256": "62abaf81e6c2000309112e830e91071316b0eeff1637f3ab6a76c640b1ccf015"
+      },
+      "styles": {
+        "path": "captures/styles/admin-drawer-1440-dark.json.gz",
+        "sha256": "ebcf7e23f5932761d48307d8b8ea6917cabc6147ceba2df0501fe36d9d2be61a",
+        "contentSha256": "6c5f0c01b76257f714255ee913699a7c6842c0e2817608241273d854dadfa93a"
+      }
+    },
+    {
+      "name": "admin-drawer-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-drawer-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "99a41668e1b92d27191d1b9ee7f33c3cba0b1c2fd8ce074a4b04cacebf3b1d30",
+        "stylesSha256": "136217caf8f30987387e61685de6e9c84e1672b996c92200e7a48e61ba3a4d47"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-drawer-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "28c7197d4bbdc9d7eb5af745e7b8ef8f4eb13b2cf56a622e1b5db9572f71974c",
+        "stylesSha256": "136217caf8f30987387e61685de6e9c84e1672b996c92200e7a48e61ba3a4d47"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 47,
+        "antialiasPixels": 47,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 2,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/admin-drawer-1440-light.png",
+        "sha256": "99a41668e1b92d27191d1b9ee7f33c3cba0b1c2fd8ce074a4b04cacebf3b1d30"
+      },
+      "after": {
+        "path": "captures/after/admin-drawer-1440-light.png",
+        "sha256": "28c7197d4bbdc9d7eb5af745e7b8ef8f4eb13b2cf56a622e1b5db9572f71974c"
+      },
+      "styles": {
+        "path": "captures/styles/admin-drawer-1440-light.json.gz",
+        "sha256": "d4569804ae82b5dbe21b3417458e16b317489b2e19c83e43e0205d445da00e36",
+        "contentSha256": "136217caf8f30987387e61685de6e9c84e1672b996c92200e7a48e61ba3a4d47"
+      }
+    },
+    {
+      "name": "admin-drawer-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-drawer-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "0d8c626783752d71dc5c5149030cf938cd3541a76b540844f3cc14ae097a4119",
+        "stylesSha256": "88308c9662e0f246c2aefff4d5b25641d0bb9301fb5a9cd90993407a73a3083d"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-drawer-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b78995c66a9209966d0ba8de0166b28d0cf10cc0306ac3c33dbced8b865ef986",
+        "stylesSha256": "88308c9662e0f246c2aefff4d5b25641d0bb9301fb5a9cd90993407a73a3083d"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 88,
+        "antialiasPixels": 88,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 2,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/admin-drawer-390-dark.png",
+        "sha256": "0d8c626783752d71dc5c5149030cf938cd3541a76b540844f3cc14ae097a4119"
+      },
+      "after": {
+        "path": "captures/after/admin-drawer-390-dark.png",
+        "sha256": "b78995c66a9209966d0ba8de0166b28d0cf10cc0306ac3c33dbced8b865ef986"
+      },
+      "styles": {
+        "path": "captures/styles/admin-drawer-390-dark.json.gz",
+        "sha256": "05a3d5643a68a206aafae0de06c75d9bf8fa0a906206dee767785a5311a29b86",
+        "contentSha256": "88308c9662e0f246c2aefff4d5b25641d0bb9301fb5a9cd90993407a73a3083d"
+      }
+    },
+    {
+      "name": "admin-drawer-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-drawer-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "9bde8da8128f6d5e6a1252dd00a47f14b03fff327d6f21e11eeca097abc5b57e",
+        "stylesSha256": "5f3800a26a7929bbf0d8a53732a484ee7411394dd8136f268f7d0a2363b6e4d3"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-drawer-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "be55526c6f83551feb9f38eb0e679ffec28b7d03c84c92babb192931856b3e23",
+        "stylesSha256": "5f3800a26a7929bbf0d8a53732a484ee7411394dd8136f268f7d0a2363b6e4d3"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 48,
+        "antialiasPixels": 48,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 2,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/admin-drawer-390-light.png",
+        "sha256": "9bde8da8128f6d5e6a1252dd00a47f14b03fff327d6f21e11eeca097abc5b57e"
+      },
+      "after": {
+        "path": "captures/after/admin-drawer-390-light.png",
+        "sha256": "be55526c6f83551feb9f38eb0e679ffec28b7d03c84c92babb192931856b3e23"
+      },
+      "styles": {
+        "path": "captures/styles/admin-drawer-390-light.json.gz",
+        "sha256": "7183dba9e140df99ba7d9e01a04809d1716c4f6328e7dffe56e9c64443b42e49",
+        "contentSha256": "5f3800a26a7929bbf0d8a53732a484ee7411394dd8136f268f7d0a2363b6e4d3"
+      }
+    },
+    {
+      "name": "admin-select-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-select-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5",
+        "stylesSha256": "d41cf33aca7be9505db8f12171da2dbbe3a01010168e22db5a943704c8aec829"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-select-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5",
+        "stylesSha256": "d41cf33aca7be9505db8f12171da2dbbe3a01010168e22db5a943704c8aec829"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/admin-select-1440-dark.png",
+        "sha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5"
+      },
+      "after": {
+        "path": "captures/after/admin-select-1440-dark.png",
+        "sha256": "5e0d674059a1470561ae36be8f256745fa4da0ed477733e62d256376a4aacdc5"
+      },
+      "styles": {
+        "path": "captures/styles/admin-select-1440-dark.json.gz",
+        "sha256": "82e610e7b2d7187b2108c8e20f681f9ee783fe6d1a8864501c056f34a21c3895",
+        "contentSha256": "d41cf33aca7be9505db8f12171da2dbbe3a01010168e22db5a943704c8aec829"
+      }
+    },
+    {
+      "name": "admin-select-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-select-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595",
+        "stylesSha256": "50f7914918689b4abd5346d18e40f720f62d24939c77549576d4ebe1acc85465"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-select-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595",
+        "stylesSha256": "50f7914918689b4abd5346d18e40f720f62d24939c77549576d4ebe1acc85465"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/admin-select-1440-light.png",
+        "sha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595"
+      },
+      "after": {
+        "path": "captures/after/admin-select-1440-light.png",
+        "sha256": "57813e03142ef9b7a8554423570d4d0081b1b32b7fb3d2b20ec4cbee3db9f595"
+      },
+      "styles": {
+        "path": "captures/styles/admin-select-1440-light.json.gz",
+        "sha256": "99ee6b0a733bfab37e15fbc09ea8c5e366bd0ab342c3bc7275fa14df93d91914",
+        "contentSha256": "50f7914918689b4abd5346d18e40f720f62d24939c77549576d4ebe1acc85465"
+      }
+    },
+    {
+      "name": "admin-select-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-select-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a",
+        "stylesSha256": "ba0ec598ea7e05f91e78df5f03d18a069e837a8f94d46743f9fc1267607d8c8e"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-select-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a",
+        "stylesSha256": "ba0ec598ea7e05f91e78df5f03d18a069e837a8f94d46743f9fc1267607d8c8e"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/admin-select-390-dark.png",
+        "sha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a"
+      },
+      "after": {
+        "path": "captures/after/admin-select-390-dark.png",
+        "sha256": "8a0980bf604350c02f929f4dd8ece9827e61148de551a9d6e96aff1c9ac2ba0a"
+      },
+      "styles": {
+        "path": "captures/styles/admin-select-390-dark.json.gz",
+        "sha256": "260a262519c7fd8e5dfcf92adf1f55087df499cfe8322b2c4ada925fd5e470ce",
+        "contentSha256": "ba0ec598ea7e05f91e78df5f03d18a069e837a8f94d46743f9fc1267607d8c8e"
+      }
+    },
+    {
+      "name": "admin-select-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "admin-select-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b",
+        "stylesSha256": "98fea0d23b93ce7b0a5029ab24e75d9bff09d56eff77c0538196007581fbe435"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "admin-select-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b",
+        "stylesSha256": "98fea0d23b93ce7b0a5029ab24e75d9bff09d56eff77c0538196007581fbe435"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/admin-select-390-light.png",
+        "sha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b"
+      },
+      "after": {
+        "path": "captures/after/admin-select-390-light.png",
+        "sha256": "149a580d94a2f5d4e93a4cec75c61133a5859c2b131074f04b9a3f003db9e84b"
+      },
+      "styles": {
+        "path": "captures/styles/admin-select-390-light.json.gz",
+        "sha256": "0d8b2adfb92375cbb523d386834f77d99d4bffb20f0efa314cacb4d918109f7e",
+        "contentSha256": "98fea0d23b93ce7b0a5029ab24e75d9bff09d56eff77c0538196007581fbe435"
+      }
+    },
+    {
+      "name": "dashboard-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "dashboard-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+        "stylesSha256": "6c3ecda8f4b12f87f373304984ad8d36484891386fdf9c7a8ea28dc27e4bacd9"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "dashboard-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+        "stylesSha256": "6c3ecda8f4b12f87f373304984ad8d36484891386fdf9c7a8ea28dc27e4bacd9"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 1576
+      },
+      "before": {
+        "path": "captures/before/dashboard-1440-dark.png",
+        "sha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f"
+      },
+      "after": {
+        "path": "captures/after/dashboard-1440-dark.png",
+        "sha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f"
+      },
+      "styles": {
+        "path": "captures/styles/dashboard-1440-dark.json.gz",
+        "sha256": "a1fc7da9b6bc3a88407d6563bda670e8086f8b8b93bba6d9a7786c0345178896",
+        "contentSha256": "6c3ecda8f4b12f87f373304984ad8d36484891386fdf9c7a8ea28dc27e4bacd9"
+      }
+    },
+    {
+      "name": "dashboard-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "dashboard-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+        "stylesSha256": "7f3c589cad06388c9c756365bbc3ee98679db423535982ac845fd08cc7a6cfdf"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "dashboard-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f",
+        "stylesSha256": "7f3c589cad06388c9c756365bbc3ee98679db423535982ac845fd08cc7a6cfdf"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 1576
+      },
+      "before": {
+        "path": "captures/before/dashboard-1440-light.png",
+        "sha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f"
+      },
+      "after": {
+        "path": "captures/after/dashboard-1440-light.png",
+        "sha256": "b594fc9c628fc5e739f38b2eb1aa8cc35bc2fde2f5be549407da9b63806b2a8f"
+      },
+      "styles": {
+        "path": "captures/styles/dashboard-1440-light.json.gz",
+        "sha256": "3c34aba064f7136b56126c7aa02ee27edae32f56c3215288190e8ab141562359",
+        "contentSha256": "7f3c589cad06388c9c756365bbc3ee98679db423535982ac845fd08cc7a6cfdf"
+      }
+    },
+    {
+      "name": "dashboard-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "dashboard-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+        "stylesSha256": "31d293a3adb5e472b1fdcce063b5872b94ba587e1a4e7cc47592b7733add89d2"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "dashboard-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+        "stylesSha256": "31d293a3adb5e472b1fdcce063b5872b94ba587e1a4e7cc47592b7733add89d2"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 523
+      },
+      "before": {
+        "path": "captures/before/dashboard-390-dark.png",
+        "sha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919"
+      },
+      "after": {
+        "path": "captures/after/dashboard-390-dark.png",
+        "sha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919"
+      },
+      "styles": {
+        "path": "captures/styles/dashboard-390-dark.json.gz",
+        "sha256": "d4cbd174428715fb72a11e04ee363b94b0046b38c2f3250886dd755e9243ce5b",
+        "contentSha256": "31d293a3adb5e472b1fdcce063b5872b94ba587e1a4e7cc47592b7733add89d2"
+      }
+    },
+    {
+      "name": "dashboard-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "dashboard-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+        "stylesSha256": "d5beaa2937f53f114808aa0ac64a062d1a9c98e477071141ad7784c0c2902e87"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "dashboard-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919",
+        "stylesSha256": "d5beaa2937f53f114808aa0ac64a062d1a9c98e477071141ad7784c0c2902e87"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 523
+      },
+      "before": {
+        "path": "captures/before/dashboard-390-light.png",
+        "sha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919"
+      },
+      "after": {
+        "path": "captures/after/dashboard-390-light.png",
+        "sha256": "e1c4938c8f58be8cfc330230de91ece1dd79023f112d015f6d0c59ac68f79919"
+      },
+      "styles": {
+        "path": "captures/styles/dashboard-390-light.json.gz",
+        "sha256": "e10e04b470656a822f2b230d4bd9ae50862daa3a8cafea56f24d2ab4828f1de4",
+        "contentSha256": "d5beaa2937f53f114808aa0ac64a062d1a9c98e477071141ad7784c0c2902e87"
+      }
+    },
+    {
+      "name": "login-focus-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "login-focus-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1",
+        "stylesSha256": "fa7bf7c1117d517050889441945c02b3012c095ad4180d5b8ee0481b21dbeab2"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "login-focus-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1",
+        "stylesSha256": "fa7bf7c1117d517050889441945c02b3012c095ad4180d5b8ee0481b21dbeab2"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/login-focus-1440-dark.png",
+        "sha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1"
+      },
+      "after": {
+        "path": "captures/after/login-focus-1440-dark.png",
+        "sha256": "b6913340b9153218d92ff71e348bc16b4e6d827d7833023bd2d48c91a486e8e1"
+      },
+      "styles": {
+        "path": "captures/styles/login-focus-1440-dark.json.gz",
+        "sha256": "d7648116bba189919c6a191a691150fa8d7949f3b9490c496b9a66f2070f2308",
+        "contentSha256": "fa7bf7c1117d517050889441945c02b3012c095ad4180d5b8ee0481b21dbeab2"
+      }
+    },
+    {
+      "name": "login-focus-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "login-focus-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142",
+        "stylesSha256": "506b696e998e0c56daad0ff3164791a1187439e961a9e4d4a9ae1bc4d9c9580a"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "login-focus-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142",
+        "stylesSha256": "506b696e998e0c56daad0ff3164791a1187439e961a9e4d4a9ae1bc4d9c9580a"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/login-focus-1440-light.png",
+        "sha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142"
+      },
+      "after": {
+        "path": "captures/after/login-focus-1440-light.png",
+        "sha256": "32cd5ee8bcf998fa8f39b9ad1d9f094e0b8941ce8d06c613fb10af9045d29142"
+      },
+      "styles": {
+        "path": "captures/styles/login-focus-1440-light.json.gz",
+        "sha256": "3c0f799b982b47d3f7fb1410c96b4c2f8655c65464451d4be32453b5858bfe52",
+        "contentSha256": "506b696e998e0c56daad0ff3164791a1187439e961a9e4d4a9ae1bc4d9c9580a"
+      }
+    },
+    {
+      "name": "login-focus-320-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "login-focus-320-dark",
+        "viewport": {
+          "width": 320,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a",
+        "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "login-focus-320-dark",
+        "viewport": {
+          "width": 320,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a",
+        "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 144
+      },
+      "before": {
+        "path": "captures/before/login-focus-320-dark.png",
+        "sha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a"
+      },
+      "after": {
+        "path": "captures/after/login-focus-320-dark.png",
+        "sha256": "c6f9c17ed407f82169fbbb748833ea31a16d756aa0a0700873219a238ae9311a"
+      },
+      "styles": {
+        "path": "captures/styles/login-focus-320-dark.json.gz",
+        "sha256": "46aeb9da48ebde3c1fc721b5d54504964f144d33b1e6526670b7cd02bc127d01",
+        "contentSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      }
+    },
+    {
+      "name": "login-focus-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "login-focus-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230",
+        "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "login-focus-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230",
+        "stylesSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/login-focus-390-dark.png",
+        "sha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230"
+      },
+      "after": {
+        "path": "captures/after/login-focus-390-dark.png",
+        "sha256": "ddccbc17eeea9f5ef8ef4a9d419c7409c00905a6d393f8ffa819f562ccedb230"
+      },
+      "styles": {
+        "path": "captures/styles/login-focus-390-dark.json.gz",
+        "sha256": "46aeb9da48ebde3c1fc721b5d54504964f144d33b1e6526670b7cd02bc127d01",
+        "contentSha256": "f239a3ac6080d5dbb8279ea998823c41b0857f62c7c4ccd57b16afd8f8b9d1f1"
+      }
+    },
+    {
+      "name": "login-focus-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "login-focus-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247",
+        "stylesSha256": "3087e853508778764165fd9be160043333f0b11c37ccb2f026ba1eb465bd7a96"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "login-focus-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247",
+        "stylesSha256": "3087e853508778764165fd9be160043333f0b11c37ccb2f026ba1eb465bd7a96"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/login-focus-390-light.png",
+        "sha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247"
+      },
+      "after": {
+        "path": "captures/after/login-focus-390-light.png",
+        "sha256": "1c7ac45b6f54d45dcb6dde93ae399c8b0a2e420019e901a76e2277ee76cff247"
+      },
+      "styles": {
+        "path": "captures/styles/login-focus-390-light.json.gz",
+        "sha256": "717b13ebd0d2008aa49bc19ee29940c4fb70138516a82b8dd8d9806a40f8c60e",
+        "contentSha256": "3087e853508778764165fd9be160043333f0b11c37ccb2f026ba1eb465bd7a96"
+      }
+    },
+    {
+      "name": "organization-course-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-course-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7",
+        "stylesSha256": "f40f2a7c922ff600dcfdedf71d746f1ecd72c10f983eb3995890e76d5fffccd8"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-course-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7",
+        "stylesSha256": "f40f2a7c922ff600dcfdedf71d746f1ecd72c10f983eb3995890e76d5fffccd8"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 915
+      },
+      "before": {
+        "path": "captures/before/organization-course-1440-dark.png",
+        "sha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7"
+      },
+      "after": {
+        "path": "captures/after/organization-course-1440-dark.png",
+        "sha256": "c7a8bf15b9d51082f70392abce9803370c74dee45cfa99edb5438ebfd8f0fed7"
+      },
+      "styles": {
+        "path": "captures/styles/organization-course-1440-dark.json.gz",
+        "sha256": "9e587011f7fc1df393b3d4d07b61574db4ee90c70fff058bbaecd2160c1a26f2",
+        "contentSha256": "f40f2a7c922ff600dcfdedf71d746f1ecd72c10f983eb3995890e76d5fffccd8"
+      }
+    },
+    {
+      "name": "organization-course-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-course-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614",
+        "stylesSha256": "c04eaa2c0434452ba421a6b3d35f536891055295f983ecf51913c025bc4fedd3"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-course-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614",
+        "stylesSha256": "c04eaa2c0434452ba421a6b3d35f536891055295f983ecf51913c025bc4fedd3"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 915
+      },
+      "before": {
+        "path": "captures/before/organization-course-1440-light.png",
+        "sha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614"
+      },
+      "after": {
+        "path": "captures/after/organization-course-1440-light.png",
+        "sha256": "b50d1029d5a7b1e0be46b12843b510ee573a2d780b72802438c1ccad68710614"
+      },
+      "styles": {
+        "path": "captures/styles/organization-course-1440-light.json.gz",
+        "sha256": "b7f6a152fd1241b560aeb60cc7af0e857c4160c1bb14eea3d3805d8e4f0431d2",
+        "contentSha256": "c04eaa2c0434452ba421a6b3d35f536891055295f983ecf51913c025bc4fedd3"
+      }
+    },
+    {
+      "name": "organization-course-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-course-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876",
+        "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-course-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876",
+        "stylesSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 291
+      },
+      "before": {
+        "path": "captures/before/organization-course-390-dark.png",
+        "sha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876"
+      },
+      "after": {
+        "path": "captures/after/organization-course-390-dark.png",
+        "sha256": "0588b26fabddc3683db5b7d9335e1418072aa74a29388679821ba14e11fee876"
+      },
+      "styles": {
+        "path": "captures/styles/organization-course-390-dark.json.gz",
+        "sha256": "3dce2a4f8f831949d1480c863c0eb8930429a3c5c8d06c6025ef49282bea2eb6",
+        "contentSha256": "09032c54be030e37a4ce4dbda4b73c89543aedc34f985ad77d0cc4f2bc6d7317"
+      }
+    },
+    {
+      "name": "organization-course-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-course-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0",
+        "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-course-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0",
+        "stylesSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 291
+      },
+      "before": {
+        "path": "captures/before/organization-course-390-light.png",
+        "sha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0"
+      },
+      "after": {
+        "path": "captures/after/organization-course-390-light.png",
+        "sha256": "0f7c76c196ee5e781755d5b1a78b29fe9642823edc29d8b9b53ab9420e90ecb0"
+      },
+      "styles": {
+        "path": "captures/styles/organization-course-390-light.json.gz",
+        "sha256": "19a19b5cbf4f4cc0f4f4e5d0d2ab84d6533a704a124a96edb4a89293e885adc8",
+        "contentSha256": "91ed4ef2383e2069d8466aff3d97b8f6197da8d9ae4679b874a513f6f1bd3ff3"
+      }
+    },
+    {
+      "name": "organization-learner-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-learner-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+        "stylesSha256": "8417c58c8c63d4849f15c792c8758e77be5c0521401fdd3a453dd1952355cee8"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-learner-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+        "stylesSha256": "8417c58c8c63d4849f15c792c8758e77be5c0521401fdd3a453dd1952355cee8"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/organization-learner-1440-dark.png",
+        "sha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95"
+      },
+      "after": {
+        "path": "captures/after/organization-learner-1440-dark.png",
+        "sha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95"
+      },
+      "styles": {
+        "path": "captures/styles/organization-learner-1440-dark.json.gz",
+        "sha256": "af8d92e00b2c65b62b3bf91a4041fa0c00dac42ae97d85a940cb6b9db66faa68",
+        "contentSha256": "8417c58c8c63d4849f15c792c8758e77be5c0521401fdd3a453dd1952355cee8"
+      }
+    },
+    {
+      "name": "organization-learner-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-learner-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+        "stylesSha256": "7e73bc01f1265affde968c232bc309c4849fb47929e0cd3f0963d4580067b751"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-learner-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95",
+        "stylesSha256": "7e73bc01f1265affde968c232bc309c4849fb47929e0cd3f0963d4580067b751"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/organization-learner-1440-light.png",
+        "sha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95"
+      },
+      "after": {
+        "path": "captures/after/organization-learner-1440-light.png",
+        "sha256": "dd82d0dcc7c962f301747d6d1d08845365d7cc42eb603d9bf68531f04b03cc95"
+      },
+      "styles": {
+        "path": "captures/styles/organization-learner-1440-light.json.gz",
+        "sha256": "9ad479bc393ab8edbe8f07fd5e17b7dce29fd620226aa6e1b8d047149833f8cf",
+        "contentSha256": "7e73bc01f1265affde968c232bc309c4849fb47929e0cd3f0963d4580067b751"
+      }
+    },
+    {
+      "name": "organization-learner-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-learner-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+        "stylesSha256": "0482ed4a5a14514e7788ab7295a4c5dcac8223b187b0752379c34c96e5881f16"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-learner-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+        "stylesSha256": "0482ed4a5a14514e7788ab7295a4c5dcac8223b187b0752379c34c96e5881f16"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/organization-learner-390-dark.png",
+        "sha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d"
+      },
+      "after": {
+        "path": "captures/after/organization-learner-390-dark.png",
+        "sha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d"
+      },
+      "styles": {
+        "path": "captures/styles/organization-learner-390-dark.json.gz",
+        "sha256": "d4171382641c71bf4b076e4f88c987206c38fb4605f9c547fbc80b4f6b09cf6c",
+        "contentSha256": "0482ed4a5a14514e7788ab7295a4c5dcac8223b187b0752379c34c96e5881f16"
+      }
+    },
+    {
+      "name": "organization-learner-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "organization-learner-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+        "stylesSha256": "17961f9990c6ac594d39e5c78422dcc7ee9d9980b61e8e7a18583b56ac92b137"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "organization-learner-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d",
+        "stylesSha256": "17961f9990c6ac594d39e5c78422dcc7ee9d9980b61e8e7a18583b56ac92b137"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/organization-learner-390-light.png",
+        "sha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d"
+      },
+      "after": {
+        "path": "captures/after/organization-learner-390-light.png",
+        "sha256": "531fbab5fd6c64d11f8979b817519efb6fb5e872b4d2ba2d67cb2b8f551dce1d"
+      },
+      "styles": {
+        "path": "captures/styles/organization-learner-390-light.json.gz",
+        "sha256": "14eb2213c9939f9ce013e42574caae9b0dea0f111a6ea63e39374e18e1d1e580",
+        "contentSha256": "17961f9990c6ac594d39e5c78422dcc7ee9d9980b61e8e7a18583b56ac92b137"
+      }
+    },
+    {
+      "name": "welcome-1440-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "welcome-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903",
+        "stylesSha256": "66a443b4c1d13e5b0bc15fe6036a1a9b4521bd3e26069727d3dc2d379dc11760"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "welcome-1440-dark",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903",
+        "stylesSha256": "66a443b4c1d13e5b0bc15fe6036a1a9b4521bd3e26069727d3dc2d379dc11760"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/welcome-1440-dark.png",
+        "sha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903"
+      },
+      "after": {
+        "path": "captures/after/welcome-1440-dark.png",
+        "sha256": "5e8cce596697d5319ae481f733280231c5332d128028cac10461cceaf0ac0903"
+      },
+      "styles": {
+        "path": "captures/styles/welcome-1440-dark.json.gz",
+        "sha256": "976b29a1046fe9683b23e21120f3b216ba99bae233cd2b492adb2d1fd60ae969",
+        "contentSha256": "66a443b4c1d13e5b0bc15fe6036a1a9b4521bd3e26069727d3dc2d379dc11760"
+      }
+    },
+    {
+      "name": "welcome-1440-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "welcome-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed",
+        "stylesSha256": "a648b8dc2af56680b14347c4486eeb15427a9559e74ccbd7eb4bd2acd4ccafa3"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "welcome-1440-light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed",
+        "stylesSha256": "a648b8dc2af56680b14347c4486eeb15427a9559e74ccbd7eb4bd2acd4ccafa3"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 648
+      },
+      "before": {
+        "path": "captures/before/welcome-1440-light.png",
+        "sha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed"
+      },
+      "after": {
+        "path": "captures/after/welcome-1440-light.png",
+        "sha256": "88e25fd878f1192be6b1ea0b80b9bd544fa70d91cc35153fd503805cf528b3ed"
+      },
+      "styles": {
+        "path": "captures/styles/welcome-1440-light.json.gz",
+        "sha256": "44d9e2426b2651cfe8c9051f746a5dbda97a6b40240cf9fb37896fed72e5c943",
+        "contentSha256": "a648b8dc2af56680b14347c4486eeb15427a9559e74ccbd7eb4bd2acd4ccafa3"
+      }
+    },
+    {
+      "name": "welcome-390-dark",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "welcome-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65",
+        "stylesSha256": "7d6f21192c55bfb4576149753c143511904cecebaa88898cf2831515afce411e"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "welcome-390-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65",
+        "stylesSha256": "7d6f21192c55bfb4576149753c143511904cecebaa88898cf2831515afce411e"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/welcome-390-dark.png",
+        "sha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65"
+      },
+      "after": {
+        "path": "captures/after/welcome-390-dark.png",
+        "sha256": "203ab51f3221e014197d31c5abac7562b90d0e44deb6e2d7d96f3cdf26df3c65"
+      },
+      "styles": {
+        "path": "captures/styles/welcome-390-dark.json.gz",
+        "sha256": "c60fe3006708afbd17953574704491bdc869733ee039c8a331e3b45900cb2012",
+        "contentSha256": "7d6f21192c55bfb4576149753c143511904cecebaa88898cf2831515afce411e"
+      }
+    },
+    {
+      "name": "welcome-390-light",
+      "reference": {
+        "sourceSha": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+        "name": "welcome-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab",
+        "stylesSha256": "22a060e19bae7e6be3964b145cb467fd75181bc18336a95e7e2b3aafd694b5cd"
+      },
+      "candidate": {
+        "sourceSha": "fad782457bb8a5deab05358c5bf1fb39fcd91fca",
+        "name": "welcome-390-light",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "browser": "151.0.7922.34",
+        "imageSha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab",
+        "stylesSha256": "22a060e19bae7e6be3964b145cb467fd75181bc18336a95e7e2b3aafd694b5cd"
+      },
+      "comparison": {
+        "passed": true,
+        "differentPixels": 0,
+        "antialiasPixels": 0,
+        "disallowedPixels": 0,
+        "maxChannelDelta": 0,
+        "maximumAntialiasPixels": 175
+      },
+      "before": {
+        "path": "captures/before/welcome-390-light.png",
+        "sha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab"
+      },
+      "after": {
+        "path": "captures/after/welcome-390-light.png",
+        "sha256": "37a5b38106d0a4ce8052f802f79eaff80c869f9f907b1ff6242ac41d7e2f28ab"
+      },
+      "styles": {
+        "path": "captures/styles/welcome-390-light.json.gz",
+        "sha256": "30e3d67acf922f9ddf9a8b4324c3d548032b99cdfb1f86f443d0502d0787d0bb",
+        "contentSha256": "22a060e19bae7e6be3964b145cb467fd75181bc18336a95e7e2b3aafd694b5cd"
+      }
+    }
+  ]
+}
