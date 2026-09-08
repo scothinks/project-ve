@@ -9,8 +9,7 @@ const tokens: string[] = registry.tokens.filter((t: { disposition: string }) => 
 const digest = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
 
 export async function captureTheme(page: Page, name: string) {
-  const output = process.env.THEME_EVIDENCE_DIR;
-  if (!output) throw new Error('Set THEME_EVIDENCE_DIR for an explicit evidence capture; there is no automatic snapshot update.');
+  const output = process.env.THEME_EVIDENCE_DIR ?? path.join('test-results', 'theme-adoption');
   await page.evaluate(async () => { await document.fonts.ready; });
   await expect(page.locator('body')).toBeVisible();
   // Wait for deterministic local images and two painted frames, not a fixed sleep.
