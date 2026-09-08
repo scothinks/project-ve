@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { compareThemePixels } from '../support/theme-adoption/pixels.mjs';
+import { compareThemePixels } from '../support/theme-adoption/pixels.ts';
 const image = () => ({ width: 8, height: 8, data: new Uint8Array(8 * 8 * 4).fill(255) });
 function edge() { const i = image(); i.data.fill(0, 0, 4); i.data[3] = 255; return i; }
 test('identical pixels pass independently of PNG encoding', () => assert.equal(compareThemePixels(image(), image()).passed, true));

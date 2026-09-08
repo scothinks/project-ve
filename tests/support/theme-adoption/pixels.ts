@@ -4,9 +4,10 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 // Reuse the PNG decoder shipped with the pinned Playwright dependency.
 const { PNG } = require(path.join(path.dirname(require.resolve('playwright-core')), 'lib/utilsBundle.js'));
-export const decodePng = bytes => PNG.sync.read(bytes);
+type RgbaImage = { width: number; height: number; data: Uint8Array };
+export const decodePng = (bytes: Buffer): RgbaImage => PNG.sync.read(bytes);
 
-function onEdge(image, x, y) {
+function onEdge(image: RgbaImage, x: number, y: number) {
   const at = (y * image.width + x) * 4;
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
     if (x + dx < 0 || y + dy < 0 || x + dx >= image.width || y + dy >= image.height) continue;
@@ -16,7 +17,7 @@ function onEdge(image, x, y) {
   return false;
 }
 
-export function compareThemePixels(before, after) {
+export function compareThemePixels(before: RgbaImage, after: RgbaImage) {
   if (before.width !== after.width || before.height !== after.height) return { passed: false, reason: 'Image dimensions changed' };
   let differentPixels = 0, antialiasPixels = 0, disallowedPixels = 0, maxChannelDelta = 0;
   for (let y = 0; y < before.height; y++) for (let x = 0; x < before.width; x++) {
