@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
+import { compareThemePixels, decodePng } from './pixels.mjs';
 
 const registry = JSON.parse(readFileSync('docs/evidence/theme-adoption/registry.json', 'utf8'));
 const tokens: string[] = registry.tokens.filter((t: { disposition: string }) => t.disposition !== 'DELETE_UNUSED').map((t: { token: string }) => t.token);
@@ -46,6 +47,8 @@ export async function captureTheme(page: Page, name: string) {
   if (process.env.THEME_COMPARE_DIR) {
     const baseline = process.env.THEME_COMPARE_DIR;
     expect(styles, `${name}: computed colour/font/focus parity`).toEqual(JSON.parse(readFileSync(path.join(baseline, `${name}.styles.json`), 'utf8')));
-    expect(digest(bytes), `${name}: exact screenshot parity`).toBe(digest(readFileSync(path.join(baseline, `${name}.png`))));
+    const comparison = compareThemePixels(decodePng(readFileSync(path.join(baseline, `${name}.png`))), decodePng(bytes));
+    writeFileSync(path.join(output, `${name}.comparison.json`), JSON.stringify(comparison, null, 2) + '\n');
+    expect(comparison.passed, `${name}: screenshot parity ${JSON.stringify(comparison)}`).toBe(true);
   }
 }
