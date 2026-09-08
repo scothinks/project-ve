@@ -207,6 +207,26 @@ show the entry, direction question, learner help and assembled brief from the
 current production build. These captures are separate from historical evidence.
 The six discovery/recovery browser cases passed after this navigation correction.
 
+## Lesson suggestion availability correction
+
+The course's “Suggest lessons with AI” link previously checked only the
+organisation plan, while its destination hid the start button when the pilot
+flag was off. This produced a heading and recovery button with no explanation.
+Both entry and destination now use the destination course's entitlement,
+rollout flag and provider configuration. Unavailable states explain the reason,
+retain manual editing and saved-result recovery, and offer a return to the course.
+The lesson flow labels recovery “Resume earlier work” as a secondary action.
+No pilot flag, provider credential, billing or authorization boundary changed.
+
+Validation: 252 unit tests, 40 guardrails, typecheck, focused ESLint and diff
+checks passed. All six affected production browser workflows passed across
+`ai-assistance-authoring.spec.ts` and `ai-page-authoring.spec.ts`. The lesson case
+now starts from the course's actual suggestion link and verifies recommendation,
+separate drafting, refinement, recovery and explicit saving. Unit coverage checks
+rollout off, missing provider, denied destination plan and direct-URL recovery.
+The browser harness uses deterministic provider fixtures; this does not activate
+or qualify hosted AI generation.
+
 ## Project-wide pricing copy
 
 The user's follow-up makes compact pricing the project convention: `0 credits`

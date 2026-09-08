@@ -268,12 +268,14 @@ function SortableLessonRow({
 export function CurriculumOutlineEditor({
   aiGenerationAvailable,
   aiSuggestHref,
+  aiSuggestUnavailableReason,
   courseId,
   lessons,
   mediaLibraryAssets = [],
 }: {
   aiGenerationAvailable?: boolean;
   aiSuggestHref?: string;
+  aiSuggestUnavailableReason?: string;
   courseId: string;
   lessons: CurriculumLesson[];
   mediaLibraryAssets?: AdminLearningMediaAssetRow[];
@@ -482,6 +484,7 @@ export function CurriculumOutlineEditor({
             </Link>
           ) : null}
         </div>
+        {aiSuggestUnavailableReason && <p role="status" className="mt-3 text-sm text-[var(--admin-on-surface-variant)]">{aiSuggestUnavailableReason} You can still add lessons manually.</p>}
       </section>
 
       <AlertDialog.Root onOpenChange={(open) => !open && setArchiveTarget(null)} open={archiveTarget !== null}>

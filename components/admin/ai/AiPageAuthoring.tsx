@@ -16,9 +16,10 @@ type Props = {
   lessonId?: string; courseId?: string; enabled?: boolean; pageCount?: number; initialResultId?: string; initiallyOpen?: boolean;
   beforeAction?: () => Promise<number>;
   onApplied?: (result: AuthoringResult, receipt: ApplicationReceipt) => void;
+  resultsLabel?: string;
 };
 
-export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialResultId, initiallyOpen = false, beforeAction, onApplied }: Props) {
+export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialResultId, initiallyOpen = false, beforeAction, onApplied, resultsLabel = "AI results" }: Props) {
   const [open, setOpen] = useState(initiallyOpen || Boolean(initialResultId));
   const [mode, setMode] = useState<"setup" | "result" | "list">(initialResultId ? "result" : "list");
   const [result, setResult] = useState<AuthoringResult | null>(null);
@@ -123,7 +124,7 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
   return <>
     <div className="flex flex-wrap gap-2 py-2">
       {enabled && lessonId && <button className={aiButton} type="button" disabled={busy} onClick={() => setup()}>Suggest next page</button>}
-      <button className={aiButton} type="button" onClick={(event) => { openerRef.current = event.currentTarget; setMode("list"); setOpen(true); setError(""); }}>AI results{results.unusedCount ? ` (${results.unusedCount})` : ""}</button>
+      <button className={resultsLabel === "AI results" ? aiButton : "text-sm font-bold underline underline-offset-4"} type="button" onClick={(event) => { openerRef.current = event.currentTarget; setMode("list"); setOpen(true); setError(""); }}>{resultsLabel}{results.unusedCount ? ` (${results.unusedCount})` : ""}</button>
     </div>
     <AdminDrawer open={open} onOpenChange={setOpen} title={mode === "setup" ? parent ? "Create another version" : "Suggest next page" : mode === "list" ? "AI results" : result?.assistant ? "Your suggestion" : "Your page"}
       onCloseAutoFocus={(event) => { if (openerRef.current?.isConnected) { event.preventDefault(); openerRef.current.focus(); } }}
