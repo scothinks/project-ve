@@ -1,5 +1,16 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## Admin reward economy redesign, 2026-09-10
+
+Planning only. A bounded presentation and sequencing change over the working missions,
+proof review, rewards, perks, campaigns, inventory and redemptions surfaces, so a
+non-technical programme officer can run them without knowing the underlying data model.
+No capability is removed, no schema changes, and every existing server action, entitlement
+check and editorial boundary is reused. Eight work packages (A–H) with per-package
+acceptance evidence; see [the plan](admin-reward-economy-redesign-plan.md). Depends on the
+identity `--ui-*` cutover reaching `main` first. Tracking is the Reward Economy project;
+this work does not open engineering P2 or authorize deployment.
+
 ## Guided AI course creation, 2026-09-07
 
 The approved four-block follow-up implements idea/audience discovery, read-only
