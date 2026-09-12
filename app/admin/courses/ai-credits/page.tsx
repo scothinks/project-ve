@@ -39,9 +39,9 @@ export default async function AiCreditsPage() {
 
   return (
     <div className="-mx-5 md:-mx-8">
-      <div className="border-b border-[var(--admin-border-warm)] px-5 py-6 md:px-10">
+      <div className="border-b border-[var(--ui-border-subtle)] px-5 py-6 md:px-10">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)]"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)]"
           href="/admin/courses"
         >
           <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24">
@@ -53,19 +53,19 @@ export default async function AiCreditsPage() {
 
       <div className="flex justify-center px-6 py-12 md:py-24">
         <div className="flex w-full max-w-[820px] flex-col">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--admin-accent-violet,#8d68f2)]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--ui-info)]">
             {isOrgWorkspace ? "This organisation" : "Platform catalogue"}
           </p>
-          <h1 className="mt-2.5 text-[32px] font-black leading-[1.1] tracking-[-0.01em] text-[var(--admin-brand-hero)]">
+          <h1 className="mt-2.5 text-[32px] font-black leading-[1.1] tracking-[-0.01em] text-[var(--ui-text)]">
             AI credits &amp; usage
           </h1>
-          <p className="mt-2.5 max-w-[560px] text-sm font-medium leading-[1.6] text-[var(--admin-on-surface-variant)]">
+          <p className="mt-2.5 max-w-[560px] text-sm font-medium leading-[1.6] text-[var(--ui-text-muted)]">
             What your organisation has used this cycle, and what&apos;s still available.
           </p>
 
           {!summary ? (
-            <div className="mt-8 rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-6">
-              <p className="text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <div className="mt-8 rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-6 py-6">
+              <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                 {isOrgWorkspace
                   ? "AI authoring is unavailable."
                   : "0 credits"}
@@ -73,27 +73,27 @@ export default async function AiCreditsPage() {
             </div>
           ) : (
             <>
-              <div className="mt-8 rounded-[20px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-6">
+              <div className="mt-8 rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <p className="text-xl font-black text-[var(--admin-on-surface)]">
+                  <p className="text-xl font-black text-[var(--ui-text)]">
                     {formatUnits(summary.usedUnits)} of {formatUnits(summary.allocatedUnits)} credits used
                   </p>
-                  <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">
+                  <span className="text-xs font-bold text-[var(--ui-text-muted)]">
                     Resets {formatDate(summary.resetsAt)}
                   </span>
                 </div>
-                <div className="mt-3.5 h-2.5 overflow-hidden rounded-full bg-[var(--admin-surface-container-low)]">
+                <div className="mt-3.5 h-2.5 overflow-hidden rounded-full bg-[var(--ui-surface-soft)]">
                   <div
                     className="h-full rounded-full"
                     style={{
-                      background: isNearLimit ? "var(--admin-secondary)" : "var(--admin-primary)",
+                      background: isNearLimit ? "var(--ui-warning)" : "var(--ui-action)",
                       width: `${usedPercent}%`,
                     }}
                   />
                 </div>
                 <p
                   className="mt-2.5 text-xs font-bold"
-                  style={{ color: isNearLimit ? "var(--admin-secondary)" : "var(--admin-on-surface-variant)" }}
+                  style={{ color: isNearLimit ? "var(--ui-warning)" : "var(--ui-text-muted)" }}
                 >
                   {isNearLimit
                     ? "Approaching this cycle's limit."
@@ -102,50 +102,50 @@ export default async function AiCreditsPage() {
               </div>
 
               <div className="mt-6 grid gap-3.5 sm:grid-cols-3">
-                <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--admin-on-surface-variant)]">
+                <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]">
                     Monthly allocation
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-[var(--admin-on-surface)]">{formatUnits(summary.monthlyAllocation)}</p>
+                  <p className="mt-1.5 text-xl font-black text-[var(--ui-text)]">{formatUnits(summary.monthlyAllocation)}</p>
                 </div>
-                <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--admin-on-surface-variant)]">
+                <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]">
                     Temporary allocation
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-[var(--admin-on-surface)]">{formatUnits(summary.temporaryAllocation)}</p>
+                  <p className="mt-1.5 text-xl font-black text-[var(--ui-text)]">{formatUnits(summary.temporaryAllocation)}</p>
                 </div>
-                <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--admin-on-surface-variant)]">
+                <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]">
                     Top-up balance
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-[var(--admin-on-surface)]">{formatUnits(summary.topUpAllocation)}</p>
+                  <p className="mt-1.5 text-xl font-black text-[var(--ui-text)]">{formatUnits(summary.topUpAllocation)}</p>
                 </div>
               </div>
 
-              <p className="mb-3 mt-8 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]">
+              <p className="mb-3 mt-8 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                 Recent AI activity
               </p>
               {summary.recentActivity.length === 0 ? (
-                <p className="rounded-[16px] border border-dashed border-[var(--admin-border-warm)] px-4 py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+                <p className="rounded-[16px] border border-dashed border-[var(--ui-border-subtle)] px-4 py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
                   No AI activity yet this cycle.
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {summary.recentActivity.map((item) => (
                     <div
-                      className="flex items-center gap-3.5 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3"
+                      className="flex items-center gap-3.5 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3"
                       key={item.id}
                     >
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[var(--admin-on-surface)]">
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[var(--ui-text)]">
                         {item.operationType.replaceAll("_", " ")}
                       </span>
-                      <span className="w-[90px] shrink-0 text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+                      <span className="w-[90px] shrink-0 text-xs font-semibold text-[var(--ui-text-muted)]">
                         {formatUnits(item.status === "charged" ? item.finalChargedUnits ?? item.reservedUnits : item.reservedUnits)} credits
                       </span>
-                      <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--admin-on-surface-variant)]">
+                      <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--ui-text-muted)]">
                         {item.status}
                       </span>
-                      <span className="w-[70px] shrink-0 text-right text-[11px] font-semibold text-[var(--admin-outline)]">
+                      <span className="w-[70px] shrink-0 text-right text-[11px] font-semibold text-[var(--ui-text-muted)]">
                         {formatRelativeTime(item.createdAt)}
                       </span>
                     </div>

@@ -41,7 +41,7 @@ export default async function AdminAdsInventoryPage({ searchParams }: AdsRoutePr
                   <tr key={partner.id}>
                     <td className="px-4 py-4">
                       <p className="font-black">{partner.name}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{partner.id}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{partner.id}</p>
                     </td>
                     <td className="px-4 py-4">
                       <AdminStatusBadge tone={statusTone(partner.status)}>{partner.status}</AdminStatusBadge>
@@ -81,21 +81,21 @@ export default async function AdminAdsInventoryPage({ searchParams }: AdsRoutePr
               {placementItems.length ? placementItems.map((placement) => (
                 <form
                   action={saveAdPlacementFallback}
-                  className="grid gap-4 rounded-[20px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4"
+                  className="grid gap-4 rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] p-4"
                   key={placement.key}
                 >
                   <input name="placementKey" type="hidden" value={placement.key} />
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-black">{placement.name}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{placement.key}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{placement.key}</p>
                     </div>
                     <AdminStatusBadge tone={placement.house_fallback_enabled ? "good" : "warning"}>
                       {placement.house_fallback_enabled ? "Fallback on" : "Fallback off"}
                     </AdminStatusBadge>
                   </div>
                   <PlacementFallbackPreview placement={placement} />
-                  <label className="flex items-start gap-2 rounded-[14px] bg-[var(--ve-card)] p-3">
+                  <label className="flex items-start gap-2 rounded-[14px] bg-[var(--ui-surface)] p-3">
                     <input
                       className="mt-1"
                       defaultChecked={placement.house_fallback_enabled}
@@ -105,7 +105,7 @@ export default async function AdminAdsInventoryPage({ searchParams }: AdsRoutePr
                     />
                     <span>
                       <span className="block text-xs font-black">Show Advertise here fallback</span>
-                      <span className="block text-[11px] font-semibold text-[var(--ve-muted)]">
+                      <span className="block text-[11px] font-semibold text-[var(--ui-text-muted)]">
                         Used only when paid inventory is unavailable for this placement.
                       </span>
                     </span>
@@ -185,7 +185,7 @@ export default async function AdminAdsInventoryPage({ searchParams }: AdsRoutePr
                   </td>
                   <td className="px-4 py-4 text-xs font-bold">
                     <div>{placement.key}</div>
-                    <div className="mt-1 text-[var(--ve-muted)]">
+                    <div className="mt-1 text-[var(--ui-text-muted)]">
                       Fallback: {placement.house_fallback_enabled ? "Advertise here enabled" : "Off"}
                     </div>
 	                  </td>

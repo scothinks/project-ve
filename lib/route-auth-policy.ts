@@ -11,6 +11,7 @@ const learnerProtectedExactPaths = new Set([
   "/profile",
   "/profile/transcript",
   "/xp-store",
+  "/welcome/save",
 ]);
 
 const learnerProtectedPrefixes = [

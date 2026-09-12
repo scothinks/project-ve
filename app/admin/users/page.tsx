@@ -48,27 +48,27 @@ export default async function AdminUsersPage({
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <section className="mb-6 grid gap-4 md:grid-cols-3">
         <AdminCard>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Manual XP granted today
           </p>
-          <p className="mt-3 text-3xl font-black tabular-nums text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
+          <p className="mt-3 text-3xl font-black tabular-nums text-[var(--ui-reward)]">
             {formatXpLabel(grantedToday)}
           </p>
         </AdminCard>
         <AdminCard>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Remaining grant quota
           </p>
-          <p className="mt-3 text-3xl font-black tabular-nums text-[var(--ve-green)]">
+          <p className="mt-3 text-3xl font-black tabular-nums text-[var(--ui-text)]">
             {formatXpLabel(remainingGrant)}
           </p>
         </AdminCard>
         <AdminCard>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Daily safety limit
           </p>
           <p className="mt-3 text-3xl font-black tabular-nums">{formatXpLabel(grantLimit)}</p>
-          <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+          <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
             This resets each day in Africa/Lagos time.
           </p>
         </AdminCard>
@@ -82,7 +82,7 @@ export default async function AdminUsersPage({
             <tr key={user.id}>
               <td className="min-w-[240px] px-4 py-4">
                 <p className="font-black">{user.display_name ?? "Unnamed learner"}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   {user.referral_code ?? user.id}
                 </p>
               </td>
@@ -112,7 +112,7 @@ export default async function AdminUsersPage({
                   />
                   <div className="grid gap-2 sm:grid-cols-[96px_minmax(0,1fr)_auto]">
                     <input
-                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
+                      className="rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]"
                       defaultValue=""
                       min={1}
                       name="amount"
@@ -121,7 +121,7 @@ export default async function AdminUsersPage({
                       type="number"
                     />
                     <input
-                      className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]"
+                      className="rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]"
                       defaultValue=""
                       maxLength={200}
                       name="reason"
@@ -129,14 +129,14 @@ export default async function AdminUsersPage({
                       type="text"
                     />
                     <button
-                      className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-sm font-black text-[var(--ui-on-action)] disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={!canGrantXp}
                       type="submit"
                     >
                       Grant
                     </button>
                   </div>
-                  <p className="text-[11px] font-semibold text-[var(--ve-muted)]">
+                  <p className="text-[11px] font-semibold text-[var(--ui-text-muted)]">
                     {canGrantXp
                       ? `${formatXpLabel(remainingGrant)} remaining in today’s admin grant quota.`
                       : "Today’s admin grant quota is exhausted."}

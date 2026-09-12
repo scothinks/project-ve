@@ -9920,6 +9920,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      service_claim_welcome_progress: {
+        Args: { p_receipt_id: string; p_topics: string[]; p_user_id: string }
+        Returns: Json
+      }
       service_close_legacy_media_buckets: { Args: never; Returns: Json }
       service_finish_media_deletion: {
         Args: { p_version_id: string }

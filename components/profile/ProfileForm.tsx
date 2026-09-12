@@ -68,19 +68,19 @@ function ToggleRow({
       type="button"
     >
       <span>
-        <span className="block text-sm font-black text-[var(--foreground)] lg:text-[0.95rem]">{label}</span>
-        <span className="mt-0.5 block text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+        <span className="block text-sm font-black text-[var(--ui-text)] lg:text-[0.95rem]">{label}</span>
+        <span className="mt-0.5 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           {description}
         </span>
       </span>
       <span
         className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-          checked ? "bg-[var(--ve-green)]" : "bg-[var(--ve-line)]"
+          checked ? "bg-[var(--ui-current-rail)]" : "bg-[var(--ui-text-muted)]"
         }`}
       >
         <span
-          className={`absolute top-1 size-5 rounded-full bg-[var(--ve-card)] transition ${
-            checked ? "left-6" : "left-1"
+          className={`absolute top-1 size-5 rounded-full transition ${
+            checked ? "left-6 bg-[var(--ui-on-action)]" : "left-1 bg-[var(--ui-surface)]"
           }`}
         />
       </span>
@@ -96,7 +96,7 @@ function ProfileTabs({
   setActiveSection: (section: ProfileSection) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 border-b border-[var(--ve-line-soft)] text-[11px] font-black lg:block lg:border-b-0 lg:text-sm">
+    <div className="grid grid-cols-3 border-b border-[var(--ui-border-subtle)] text-[11px] font-black lg:block lg:border-b-0 lg:text-sm">
       {[
         { id: "account", label: "Account" },
         { id: "notifications", label: "Notifications" },
@@ -108,8 +108,8 @@ function ProfileTabs({
           <button
             className={`border-b-2 px-0 pb-3 pt-1 text-left transition lg:flex lg:w-full lg:items-center lg:justify-between lg:rounded-[8px] lg:border-b-0 lg:border-l-4 lg:px-4 lg:py-3 ${
               isActive
-                ? "border-[var(--ve-green)] text-[var(--ve-green)] lg:bg-[var(--ve-green-soft)]"
-                : "border-transparent text-[var(--ve-muted-strong)] lg:hover:bg-[var(--ve-card-muted)]"
+                ? "border-[var(--ui-current-text)] text-[var(--ui-current-text)] lg:bg-[var(--ui-current-bg)]"
+                : "border-transparent text-[var(--ui-text-muted)] lg:hover:bg-[var(--ui-surface-muted)]"
             }`}
             key={section.id}
             onClick={() => setActiveSection(section.id as ProfileSection)}
@@ -141,26 +141,26 @@ function ShortcutRow({
       <span
         className={`grid size-10 shrink-0 place-items-center rounded-full ${
           iconTone === "green"
-            ? "bg-[var(--ve-green-soft)] text-[var(--ve-green)]"
-            : "bg-[var(--ve-store-soft)] text-[#a66d00]"
+            ? "bg-[var(--ui-success-bg)] text-[var(--ui-success)]"
+            : "bg-[var(--ui-warning-bg)] text-[var(--ui-reward)]"
         }`}
       >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-black text-[var(--foreground)]">{label}</span>
-        <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--ve-muted-strong)]">
+        <span className="block text-sm font-black text-[var(--ui-text)]">{label}</span>
+        <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[var(--ui-text-muted)]">
           {description}
         </span>
       </span>
-      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ve-muted-strong)]" />
+      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ui-text-muted)]" />
     </>
   );
 
   if (onClick) {
     return (
       <button
-        className="flex w-full items-center gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-left shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)] lg:rounded-[8px] lg:bg-[var(--ve-card-subtle)] lg:px-4 lg:py-4"
+        className="flex w-full items-center gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 text-left shadow-[0_8px_20px_rgba(var(--ui-shadow-rgb),0.04)] lg:rounded-[8px] lg:bg-[var(--ui-surface-raised)] lg:px-4 lg:py-4"
         onClick={onClick}
         type="button"
       >
@@ -171,7 +171,7 @@ function ShortcutRow({
 
   return (
     <Link
-      className="flex items-center gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)] lg:rounded-[8px] lg:bg-[var(--ve-card-subtle)] lg:px-4 lg:py-4"
+      className="flex items-center gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 shadow-[0_8px_20px_rgba(var(--ui-shadow-rgb),0.04)] lg:rounded-[8px] lg:bg-[var(--ui-surface-raised)] lg:px-4 lg:py-4"
       href="/profile/transcript"
     >
       {content}
@@ -192,20 +192,20 @@ function HelpLink({
 }) {
   return (
     <Link
-      className={`group relative flex items-center justify-between overflow-hidden rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] text-[var(--foreground)] shadow-[0_12px_30px_rgba(var(--ve-shadow-rgb),0.04)] ${
+      className={`group relative flex items-center justify-between overflow-hidden rounded-[8px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] text-[var(--ui-text)] shadow-[0_12px_30px_rgba(var(--ui-shadow-rgb),0.04)] ${
         compact ? "px-4 py-4" : "min-h-[112px] px-4 py-5 lg:min-h-[9rem] lg:p-6"
       }`}
       href={href}
     >
       <span className="flex items-center gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ui-surface-soft)] text-[var(--ui-text)]">
           {icon}
         </span>
         <span className={compact ? "text-sm font-semibold" : "text-xl font-semibold"}>{label}</span>
       </span>
-      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ve-muted-soft)]" />
+      <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--ui-text-subtle)]" />
       {!compact ? (
-        <span className="pointer-events-none absolute -right-10 -top-16 size-32 rounded-full bg-[color:color-mix(in_srgb,var(--ve-green-soft)_72%,transparent)]" />
+        <span className="pointer-events-none absolute -right-10 -top-16 size-32 rounded-full bg-[color:color-mix(in_srgb,var(--ui-surface-soft)_72%,transparent)]" />
       ) : null}
     </Link>
   );
@@ -482,26 +482,26 @@ export function ProfileForm({
 
   return (
     <section className="mx-auto w-full max-w-[430px] px-5 pb-28 pt-8 lg:grid lg:max-w-[1116px] lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-8 lg:px-0 lg:pb-16 lg:pt-12">
-      <aside className="space-y-4 lg:rounded-[12px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[var(--ve-card-subtle)] lg:p-5 lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.08)]">
+      <aside className="space-y-4 lg:rounded-[12px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[var(--ui-surface-raised)] lg:p-5 lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.08)]">
         <div className="flex items-center gap-3">
           {activeSection === "help" ? (
             <button
               aria-label="Back to account profile"
-              className="grid size-7 place-items-center text-[var(--foreground)] lg:hidden"
+              className="grid size-7 place-items-center text-[var(--ui-text)] lg:hidden"
               onClick={() => setActiveSection("account")}
               type="button"
             >
               <ArrowLeftIcon className="h-5 w-5" />
             </button>
           ) : null}
-          <h1 className="text-2xl font-black leading-8 text-[var(--foreground)] lg:text-[2rem] lg:leading-10">
+          <h1 className="text-2xl font-black leading-8 text-[var(--ui-text)] lg:text-[2rem] lg:leading-10">
             Profile
           </h1>
         </div>
-        <div className="hidden border-y border-[var(--ve-line-soft)] py-5 lg:block">
+        <div className="hidden border-y border-[var(--ui-border-subtle)] py-5 lg:block">
           <Avatar avatarUrl={avatar} className="size-16 text-xl" email={email} name={profileName} />
-          <p className="mt-3 text-lg font-black text-[var(--foreground)]">{profileName}</p>
-          <p className="mt-1 break-all text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+          <p className="mt-3 text-lg font-black text-[var(--ui-text)]">{profileName}</p>
+          <p className="mt-1 break-all text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             {email}
           </p>
         </div>
@@ -517,27 +517,27 @@ export function ProfileForm({
               email={email}
               name={profileName}
             />
-            <h2 className="mt-4 text-xl font-semibold leading-7 text-[var(--foreground)]">
+            <h2 className="mt-4 text-xl font-semibold leading-7 text-[var(--ui-text)]">
               {profileName}
             </h2>
-            <p className="text-xs font-medium text-[var(--ve-muted-strong)]">{email}</p>
+            <p className="text-xs font-medium text-[var(--ui-text-muted)]">{email}</p>
           </div>
 
           <div className="space-y-5 lg:min-w-0">
             <form
-              className="space-y-4 lg:rounded-[12px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[var(--ve-card-subtle)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.08)]"
+              className="space-y-4 lg:rounded-[12px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[var(--ui-surface-raised)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.08)]"
               onSubmit={(event) => void saveProfile(event)}
             >
               <div className="hidden lg:block">
-                <h2 className="text-xl font-black text-[var(--foreground)]">Account Details</h2>
-                <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                <h2 className="text-xl font-black text-[var(--ui-text)]">Account Details</h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   Keep your learner profile current.
                 </p>
               </div>
               <label className="block">
-                <span className="text-xs font-medium text-[var(--ve-muted-strong)]">Display Name</span>
+                <span className="text-xs font-medium text-[var(--ui-text-muted)]">Display Name</span>
                 <input
-                  className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-sm font-medium outline-none focus:border-[var(--ve-green)] lg:bg-[var(--ve-shell)]"
+                  className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 text-sm font-medium outline-none focus:border-[var(--ui-focus)] lg:bg-[var(--ui-chrome)]"
                   maxLength={120}
                   onBlur={() => setName((current) => sanitizePlainTextInput(current, 120).trim())}
                   onChange={(event) => setName(sanitizePlainTextInput(event.target.value, 120))}
@@ -547,23 +547,23 @@ export function ProfileForm({
               </label>
 
               <label className="block">
-                <span className="text-xs font-medium text-[var(--ve-muted-strong)]">
+                <span className="text-xs font-medium text-[var(--ui-text-muted)]">
                   Email Address (Read-only)
                 </span>
                 <span className="relative mt-2 block">
                   <input
-                    className="h-12 w-full rounded-[8px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 pr-11 text-sm font-medium text-[var(--ve-muted)] outline-none"
+                    className="h-12 w-full rounded-[8px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] px-4 pr-11 text-sm font-medium text-[var(--ui-text-muted)] outline-none"
                     readOnly
                     value={email}
                   />
-                  <LockIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ve-muted)]" />
+                  <LockIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ui-text-muted)]" />
                 </span>
               </label>
 
               <label className="block">
-                <span className="text-xs font-medium text-[var(--ve-muted-strong)]">Avatar URL</span>
+                <span className="text-xs font-medium text-[var(--ui-text-muted)]">Avatar URL</span>
                 <input
-                  className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-sm font-medium outline-none focus:border-[var(--ve-green)] lg:bg-[var(--ve-shell)]"
+                  className="mt-2 h-12 w-full rounded-[8px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 text-sm font-medium outline-none focus:border-[var(--ui-focus)] lg:bg-[var(--ui-chrome)]"
                   maxLength={1000}
                   onBlur={() => setAvatar((current) => sanitizeUrlInput(current))}
                   onChange={(event) => setAvatar(event.target.value)}
@@ -572,18 +572,18 @@ export function ProfileForm({
                 />
               </label>
 
-              <Button className="h-12 w-full rounded-[8px] text-sm !text-white" disabled={savingProfile} type="submit">
+              <Button className="h-12 w-full rounded-[8px] text-sm text-[var(--ui-on-action)]" disabled={savingProfile} type="submit">
                 {savingProfile ? "Saving..." : "Save Profile"}
               </Button>
             </form>
 
-            <div className="border-t border-[var(--ve-line-soft)] pt-6 lg:rounded-[12px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[var(--ve-card-subtle)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.08)]">
-              <h2 className="text-xl font-semibold text-[var(--foreground)]">Account Security</h2>
+            <div className="border-t border-[var(--ui-border-subtle)] pt-6 lg:rounded-[12px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[var(--ui-surface-raised)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.08)]">
+              <h2 className="text-xl font-semibold text-[var(--ui-text)]">Account Security</h2>
               <label className="mt-4 block">
-                <span className="text-xs font-medium text-[var(--ve-muted-strong)]">New Password</span>
+                <span className="text-xs font-medium text-[var(--ui-text-muted)]">New Password</span>
                 <span className="relative mt-2 block">
                   <input
-                    className="h-12 w-full rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 pr-20 text-sm font-medium outline-none focus:border-[var(--ve-green)] lg:bg-[var(--ve-shell)]"
+                    className="h-12 w-full rounded-[8px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 pr-20 text-sm font-medium outline-none focus:border-[var(--ui-focus)] lg:bg-[var(--ui-chrome)]"
                     autoComplete="new-password"
                     maxLength={128}
                     minLength={8}
@@ -594,7 +594,7 @@ export function ProfileForm({
                   />
                   <button
                     aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ve-muted-strong)]"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ui-text-muted)]"
                     onClick={() => setShowPassword((current) => !current)}
                     type="button"
                   >
@@ -603,7 +603,7 @@ export function ProfileForm({
                 </span>
               </label>
               <Button
-                className="mt-3 h-12 w-full rounded-[8px] bg-[var(--ve-line-soft)] text-sm text-[var(--ve-muted-strong)]"
+                className="mt-3 h-12 w-full rounded-[8px] bg-[var(--ui-border-subtle)] text-sm text-[var(--ui-text-muted)]"
                 disabled={savingPassword || newPassword.length < 8}
                 onClick={() => void updatePassword()}
                 type="button"
@@ -614,12 +614,12 @@ export function ProfileForm({
             </div>
           </div>
 
-          <div className="space-y-3 lg:rounded-[12px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[color:color-mix(in_srgb,var(--ve-store-soft)_42%,var(--ve-card-subtle))] lg:p-5 lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.08)]">
+          <div className="space-y-3 lg:rounded-[12px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_42%,var(--ui-surface-raised))] lg:p-5 lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.08)]">
             <div className="hidden lg:block">
-              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#8a6a16]">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-reward)]">
                 Your Learning
               </p>
-              <h2 className="mt-1 text-lg font-black text-[var(--foreground)]">Related links</h2>
+              <h2 className="mt-1 text-lg font-black text-[var(--ui-text)]">Related links</h2>
             </div>
             <ShortcutRow
               description="View your learning record"
@@ -634,7 +634,7 @@ export function ProfileForm({
               onClick={() => setActiveSection("notifications")}
             />
             <Button
-              className="h-11 w-full gap-2 rounded-[8px] border-[#ef5b5b] text-[#d84242]"
+              className="h-11 w-full gap-2 rounded-[8px] border-[var(--ui-danger)] text-[var(--ui-danger)]"
               disabled={signingOut}
               onClick={() => void logout()}
               type="button"
@@ -648,17 +648,17 @@ export function ProfileForm({
       ) : null}
 
       {activeSection === "notifications" ? (
-        <div className="mt-6 space-y-5 lg:mt-0 lg:rounded-[12px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[var(--ve-card-subtle)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.08)]">
+        <div className="mt-6 space-y-5 lg:mt-0 lg:rounded-[12px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[var(--ui-surface-raised)] lg:p-6 lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.08)]">
           <div>
-            <h2 className="text-xl font-semibold text-[var(--foreground)] lg:text-2xl lg:font-black">
+            <h2 className="text-xl font-semibold text-[var(--ui-text)] lg:text-2xl lg:font-black">
               Notification Preferences
             </h2>
-            <p className="mt-1 text-sm font-semibold leading-5 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-sm font-semibold leading-5 text-[var(--ui-text-muted)]">
               Manage how and when Project Ve communicates with you.
             </p>
           </div>
 
-          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] px-4 py-3 shadow-none lg:rounded-[8px] lg:bg-[var(--ve-shell)] lg:px-5">
+          <Card className="rounded-[14px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] px-4 py-3 shadow-none lg:rounded-[8px] lg:bg-[var(--ui-chrome)] lg:px-5">
             <ToggleRow
               checked={preferences.inAppEnabled}
               description="Allow alerts within the app"
@@ -671,11 +671,11 @@ export function ProfileForm({
           </Card>
 
           <div className="grid gap-5 lg:grid-cols-2">
-          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ve-shell)] lg:p-5">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted-strong)]">
+          <Card className="rounded-[14px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ui-chrome)] lg:p-5">
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Activity Updates
             </p>
-            <div className="divide-y divide-[var(--ve-line-soft)]">
+            <div className="divide-y divide-[var(--ui-border-subtle)]">
               <ToggleRow
                 checked={preferences.rewardsEnabled}
                 description="Reward availability, redemption and fulfillment updates."
@@ -697,11 +697,11 @@ export function ProfileForm({
             </div>
           </Card>
 
-          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ve-shell)] lg:p-5">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted-strong)]">
+          <Card className="rounded-[14px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ui-chrome)] lg:p-5">
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               System & Security
             </p>
-            <div className="divide-y divide-[var(--ve-line-soft)]">
+            <div className="divide-y divide-[var(--ui-border-subtle)]">
               <ToggleRow
                 checked={preferences.accountEnabled}
                 description="Login activity and password changes"
@@ -724,15 +724,15 @@ export function ProfileForm({
           </Card>
           </div>
 
-          <Card className="rounded-[14px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ve-shell)] lg:p-5">
+          <Card className="rounded-[14px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-4 shadow-none lg:rounded-[8px] lg:bg-[var(--ui-chrome)] lg:p-5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ve-card)] text-[var(--ve-muted-strong)]">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ui-surface)] text-[var(--ui-text-muted)]">
                   <BellIcon className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-black text-[var(--foreground)]">Push alerts</p>
-                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                  <p className="text-sm font-black text-[var(--ui-text)]">Push alerts</p>
+                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Browser push notifications are managed at the system level.
                   </p>
                 </div>
@@ -767,19 +767,19 @@ export function ProfileForm({
       ) : null}
 
       {message ? (
-        <p className="mt-5 rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_88%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[var(--ve-green)] lg:col-start-2">
+        <p className="mt-5 rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_88%,var(--ui-surface))] px-4 py-3 text-xs font-bold text-[var(--ui-success)] lg:col-start-2">
           {message}
         </p>
       ) : null}
 
       {error ? (
-        <p className="mt-5 rounded-[14px] bg-[color:color-mix(in_srgb,#b63a3a_16%,var(--ve-card))] px-4 py-3 text-xs font-bold text-[#b63a3a] lg:col-start-2">
+        <p className="mt-5 rounded-[14px] bg-[var(--ui-danger-bg)] px-4 py-3 text-xs font-bold text-[var(--ui-danger)] lg:col-start-2">
           {error}
         </p>
       ) : null}
 
       {isDemoMode && !supabase ? (
-        <p className="mt-5 rounded-[14px] bg-[var(--ve-card-muted)] px-4 py-3 text-xs leading-5 text-[var(--ve-muted)] lg:col-start-2">
+        <p className="mt-5 rounded-[14px] bg-[var(--ui-surface-muted)] px-4 py-3 text-xs leading-5 text-[var(--ui-text-muted)] lg:col-start-2">
           Demo mode is active, so profile changes stay in this browser session.
         </p>
       ) : null}

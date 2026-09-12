@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readWelcomeReceipt, welcomeSaveHref } from "@/features/entry/progress-server";
 import type { User } from "@supabase/supabase-js";
 import { getSafeAuthNextPath, shouldRouteAuthNextToPublicAssessment } from "@/lib/auth-redirect";
 import { getRiskContext } from "@/lib/auth-risk";
@@ -221,7 +222,9 @@ export async function GET(request: NextRequest) {
     const destination = referral.kind === "contextual"
       ? getReferralRedirectPath((data ?? {}) as ReferralAcceptResult, next)
       : next;
-    const response = NextResponse.redirect(new URL(destination, request.url));
+    const receipt = await readWelcomeReceipt();
+    const target = receipt?.completed.length && !destination.startsWith("/login") ? welcomeSaveHref(destination) : destination;
+    const response = NextResponse.redirect(new URL(target, request.url));
     clearOAuthSignupProofCookie(response);
     return response;
   }
@@ -249,7 +252,9 @@ export async function GET(request: NextRequest) {
     && shouldRouteAuthNextToPublicAssessment(next);
 
   const destination = shouldRouteToAssessment ? "/onboarding/assessment" : next;
-  const response = NextResponse.redirect(new URL(destination, request.url));
+  const receipt = await readWelcomeReceipt();
+    const target = receipt?.completed.length && !destination.startsWith("/login") ? welcomeSaveHref(destination) : destination;
+    const response = NextResponse.redirect(new URL(target, request.url));
   clearOAuthSignupProofCookie(response);
   return response;
 }

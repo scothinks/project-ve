@@ -22,7 +22,7 @@ function AdShell({
     <article
       aria-label={`${ad.disclosureLabel}: ${ad.sponsorLabel}`}
       className={cn(
-        "overflow-hidden rounded-[22px] border border-[color:color-mix(in_srgb,var(--ve-green)_16%,var(--ve-line-soft))] bg-[var(--ve-card)] shadow-sm",
+        "overflow-hidden rounded-[22px] border border-[color:color-mix(in_srgb,var(--ui-action)_16%,var(--ui-border-subtle))] bg-[var(--ui-surface)] shadow-sm",
         !ad.imageUrl && "ad-shell--no-image",
         className,
       )}
@@ -41,10 +41,10 @@ function AdShell({
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
               {ad.disclosureLabel}
             </p>
-            <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+            <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
               {ad.sponsorLabel}
             </p>
           </div>
@@ -62,20 +62,20 @@ function AdShell({
         </div>
 
         {ad.eyebrow ? (
-          <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             {ad.eyebrow}
           </p>
         ) : null}
-        <h2 className="mt-2 text-lg font-black leading-6 tracking-[-0.02em] text-[var(--foreground)]">
+        <h2 className="mt-2 text-lg font-black leading-6 tracking-[-0.02em] text-[var(--ui-text)]">
           {ad.headline}
         </h2>
         {ad.body ? (
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             {ad.body}
           </p>
         ) : null}
         {ad.legalText ? (
-          <p className="mt-3 text-[11px] font-semibold leading-5 text-[var(--ve-muted)]">
+          <p className="mt-3 text-[11px] font-semibold leading-5 text-[var(--ui-text-muted)]">
             {ad.legalText}
           </p>
         ) : null}
@@ -83,14 +83,14 @@ function AdShell({
           <div className="mt-4">
             {ad.clickUrl?.startsWith("/") ? (
               <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
                 href={ad.clickUrl}
               >
                 {ad.ctaLabel}
               </Link>
             ) : (
               <a
-                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-full bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
                 href={ad.clickUrl ?? "#"}
               >
                 {ad.ctaLabel}

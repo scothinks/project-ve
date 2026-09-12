@@ -27,6 +27,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run ci
+      - name: Enforce the theme contract on the production CSS
+        run: npm run test:theme-contract -- --generated .next/static/css
 
   database-types:
     runs-on: ubuntu-latest

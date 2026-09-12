@@ -1,0 +1,46 @@
+[
+  {
+    "profile": "desktop",
+    "lessonBeforeQuiz": true,
+    "questionRevealed": true,
+    "readAgainPreservesXP": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "mobile",
+    "lessonBeforeQuiz": true,
+    "questionRevealed": true,
+    "readAgainPreservesXP": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "compact",
+    "lessonBeforeQuiz": true,
+    "questionRevealed": true,
+    "readAgainPreservesXP": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "reduced",
+    "lessonBeforeQuiz": true,
+    "questionRevealed": true,
+    "readAgainPreservesXP": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  }
+]

@@ -18,8 +18,8 @@ function toolbarButtonClasses(active = false) {
     richTextButtonBase,
     "transition disabled:cursor-not-allowed disabled:opacity-50",
     active
-      ? "border-[var(--admin-primary)] bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_80%,var(--admin-surface-milk))] text-[var(--admin-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]",
+      ? "border-[var(--ui-action)] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_80%,var(--ui-surface))] text-[var(--ui-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]",
   );
 }
 
@@ -34,7 +34,7 @@ export function RichTextBlockEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-44 rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-semibold leading-7 outline-none focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]",
+          "min-h-44 rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-semibold leading-7 outline-none focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]",
       },
     },
     extensions: [
@@ -127,7 +127,7 @@ export function RichTextBlockEditor({
       </div>
       <div className="mb-2 grid gap-2 md:grid-cols-[1fr_auto]">
         <input
-          className="min-h-9 rounded-[10px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 text-xs font-bold outline-none focus:border-[var(--admin-primary)]"
+          className="min-h-9 rounded-[10px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 text-xs font-bold outline-none focus:border-[var(--ui-focus)]"
           disabled={disabled || !editor}
           onChange={(event) => setLinkHref(event.target.value)}
           placeholder="https://example.com"

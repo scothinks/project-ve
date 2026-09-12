@@ -8,15 +8,15 @@ import { formatRewardDate } from "@/lib/rewards";
 
 function statusToneClasses(status: string) {
   if (status === "pending") {
-    return "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_60%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]";
+    return "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_60%,transparent)] text-[var(--ui-warning)]";
   }
   if (status === "accepted") {
-    return "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] text-[var(--admin-primary)]";
+    return "bg-[color:color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-[var(--ui-success)]";
   }
   if (status === "expired" || status === "revoked" || status === "declined") {
-    return "bg-[var(--admin-error-container)] text-[var(--admin-on-error-container)]";
+    return "bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]";
   }
-  return "bg-[var(--admin-surface-container-high)] text-[var(--admin-on-surface-variant)]";
+  return "bg-[var(--ui-surface-raised)] text-[var(--ui-text-muted)]";
 }
 
 function targetLabel(invitation: AdminOrganizationInvitationRow) {
@@ -33,17 +33,17 @@ export function PeopleInvitationsTable({
 }) {
   if (invitations.length === 0) {
     return (
-      <p className="py-10 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+      <p className="py-10 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
         No invitations sent yet.
       </p>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[var(--admin-border-warm)]">
+    <div className="overflow-hidden rounded-[18px] border border-[var(--ui-border-subtle)]">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="bg-[var(--admin-surface-container-low)] text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+          <thead className="bg-[var(--ui-surface-soft)] text-xs font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
             <tr>
               <th className="whitespace-nowrap px-4 py-3">Recipient</th>
               <th className="whitespace-nowrap px-4 py-3">Role</th>
@@ -53,16 +53,16 @@ export function PeopleInvitationsTable({
               <th className="whitespace-nowrap px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]">
+          <tbody className="divide-y divide-[var(--ui-border-subtle)] bg-[var(--ui-surface)]">
             {invitations.map((invitation) => (
               <tr key={invitation.id}>
-                <td className="whitespace-nowrap px-4 py-3 font-bold text-[var(--admin-on-surface)]">
+                <td className="whitespace-nowrap px-4 py-3 font-bold text-[var(--ui-text)]">
                   {invitation.email ?? invitation.profile?.display_name ?? "Unknown recipient"}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-[var(--admin-on-surface-variant)]">
+                <td className="whitespace-nowrap px-4 py-3 text-[var(--ui-text-muted)]">
                   {ORGANIZATION_ROLE_LABELS[invitation.role]}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-[var(--admin-on-surface-variant)]">
+                <td className="whitespace-nowrap px-4 py-3 text-[var(--ui-text-muted)]">
                   {targetLabel(invitation)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
@@ -70,7 +70,7 @@ export function PeopleInvitationsTable({
                     {invitation.status}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-[var(--admin-on-surface-variant)]">
+                <td className="whitespace-nowrap px-4 py-3 text-[var(--ui-text-muted)]">
                   {formatRewardDate(invitation.expires_at)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right">
@@ -87,7 +87,7 @@ export function PeopleInvitationsTable({
                       title="Revoke invitation?"
                       trigger={
                         <button
-                          className="text-sm font-bold text-[var(--admin-error)] hover:underline"
+                          className="text-sm font-bold text-[var(--ui-danger)] hover:underline"
                           type="button"
                         >
                           Revoke

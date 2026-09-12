@@ -31,60 +31,60 @@ const pageTypeConfig: Record<
   primer: {
     label: "Primer",
     intro: "Start here",
-    shell: "bg-[var(--ve-card)]",
-    badge: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+    shell: "bg-[var(--ui-surface)]",
+    badge: "bg-[var(--ui-learning-bg)] text-[var(--ui-learning)]",
     title: "text-center text-[24px] font-black leading-8",
     subtitle:
-      "mx-auto mt-2.5 max-w-[18rem] text-center text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_88%,var(--foreground))]",
+      "mx-auto mt-2.5 max-w-[18rem] text-center text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ui-text-muted)_88%,var(--ui-text))]",
     image: "mb-5 aspect-[31/18] w-full rounded-[20px] object-cover",
     content: "mt-6",
   },
   concept: {
     label: "Concept",
     intro: "Learn the idea",
-    shell: "bg-[var(--ve-card)]",
-    badge: "bg-[color:color-mix(in_srgb,var(--ve-sky)_18%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-sky)_75%,var(--foreground))]",
+    shell: "bg-[var(--ui-surface)]",
+    badge: "bg-[color:color-mix(in_srgb,var(--ui-learning)_18%,var(--ui-surface))] text-[var(--ui-learning)]",
     title: "text-left text-[22px] font-black leading-7",
     subtitle:
-      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_90%,var(--foreground))]",
+      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ui-text-muted)_90%,var(--ui-text))]",
     image: "mb-5 aspect-[31/18] w-full rounded-[18px] object-cover",
     content: "mt-6",
   },
   example: {
     label: "Example",
     intro: "See it happen",
-    shell: "rounded-[22px] border border-[color:color-mix(in_srgb,var(--ve-mission)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_76%,var(--ve-card))] p-5",
-    badge: "bg-[color:color-mix(in_srgb,var(--ve-mission)_14%,var(--ve-card))] text-[#c94f2e]",
+    shell: "rounded-[22px] border border-[color:color-mix(in_srgb,var(--ui-text)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-support-bg)_76%,var(--ui-surface))] p-5",
+    badge: "bg-[color:color-mix(in_srgb,var(--ui-text)_14%,var(--ui-surface))] text-[var(--ui-text)]",
     title: "text-left text-[23px] font-black leading-8",
     subtitle:
-      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_90%,var(--foreground))]",
+      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ui-text-muted)_90%,var(--ui-text))]",
     image: "mt-4 h-34 w-full rounded-[18px] object-cover lg:h-52",
     content:
-      "mt-6 rounded-[20px] border border-[color:color-mix(in_srgb,var(--ve-mission)_12%,var(--ve-line-soft))] bg-[var(--ve-card)] p-5",
+      "mt-6 rounded-[20px] border border-[color:color-mix(in_srgb,var(--ui-text)_12%,var(--ui-border-subtle))] bg-[var(--ui-surface)] p-5",
   },
   reflection: {
     label: "Reflection",
     intro: "Think it through",
-    shell: "rounded-[24px] border border-[color:color-mix(in_srgb,#6750a4_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,#6750a4_10%,var(--ve-card))] p-5 lg:p-6",
-    badge: "bg-[var(--ve-card)] text-[#7f6ac0]",
+    shell: "rounded-[24px] border border-[color:color-mix(in_srgb,var(--ui-learning)_18%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-learning)_10%,var(--ui-surface))] p-5 lg:p-6",
+    badge: "bg-[var(--ui-surface)] text-[var(--ui-text)]",
     title: "text-center text-[23px] font-black leading-8",
     subtitle:
-      "mx-auto mt-3 max-w-[19rem] text-center text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_86%,var(--foreground))]",
+      "mx-auto mt-3 max-w-[19rem] text-center text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ui-text-muted)_86%,var(--ui-text))]",
     image: "mt-5 h-32 w-full rounded-[18px] object-cover lg:h-48",
     content:
-      "mt-6 rounded-[20px] bg-[color:color-mix(in_srgb,var(--ve-card)_88%,white)] p-5",
+      "mt-6 rounded-[20px] bg-[color:color-mix(in_srgb,var(--ui-surface)_88%,var(--ui-surface))] p-5",
   },
   summary: {
     label: "Summary",
     intro: "Wrap up",
-    shell: "rounded-[24px] border border-[color:color-mix(in_srgb,var(--ve-green)_20%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_68%,var(--ve-card))] p-5 lg:p-6",
-    badge: "bg-[#087f5b] text-white",
+    shell: "rounded-[24px] border border-[color:color-mix(in_srgb,var(--ui-learning)_20%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-learning-bg)_68%,var(--ui-surface))] p-5 lg:p-6",
+    badge: "bg-[var(--ui-learning)] text-[var(--ui-on-learning)]",
     title: "text-left text-[23px] font-black leading-8",
     subtitle:
-      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ve-muted-strong)_90%,var(--foreground))]",
+      "mt-2.5 text-[15px] font-semibold leading-6 text-[color:color-mix(in_srgb,var(--ui-text-muted)_90%,var(--ui-text))]",
     image: "mt-5 h-32 w-full rounded-[18px] object-cover lg:h-48",
     content:
-      "mt-6 rounded-[20px] border border-[color:color-mix(in_srgb,var(--ve-green)_10%,var(--ve-line-soft))] bg-[var(--ve-card)] p-5",
+      "mt-6 rounded-[20px] border border-[color:color-mix(in_srgb,var(--ui-learning)_10%,var(--ui-border-subtle))] bg-[var(--ui-surface)] p-5",
   },
 };
 
@@ -119,12 +119,12 @@ export function LessonPageLayout({
             <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] ${config.badge}`}>
               {config.label}
             </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[color:color-mix(in_srgb,var(--ve-muted)_90%,var(--foreground))]">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[color:color-mix(in_srgb,var(--ui-text-muted)_90%,var(--ui-text))]">
               {config.intro}
             </span>
           </div>
           {pageNumber && totalPages ? (
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--ve-muted)]">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
               Page {pageNumber} of {totalPages}
             </span>
           ) : null}
@@ -162,7 +162,7 @@ export function LessonPageLayout({
 
       <div className={config.content}>
         {blocks.length === 0 ? (
-          <div className="rounded-[18px] border border-dashed border-[var(--ve-line)] px-4 py-8 text-center text-xs font-bold text-[var(--ve-muted)]">
+          <div className="rounded-[18px] border border-dashed border-[var(--ui-border)] px-4 py-8 text-center text-xs font-bold text-[var(--ui-text-muted)]">
             {emptyText}
           </div>
         ) : (

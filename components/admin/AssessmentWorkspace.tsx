@@ -22,19 +22,19 @@ import type {
 import type { OrganizationAssessmentCapability } from "@/features/organizations/entitlements";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)] disabled:cursor-not-allowed disabled:opacity-60";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)] disabled:cursor-not-allowed disabled:opacity-60";
 }
 
 function compactFieldClasses() {
-  return "w-full rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-2 py-1.5 text-xs font-black tabular-nums outline-none focus:border-[var(--ve-green)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)] disabled:cursor-not-allowed disabled:opacity-60";
+  return "w-full rounded-[10px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-2 py-1.5 text-xs font-black tabular-nums outline-none focus:border-[var(--ui-focus)] focus:ring-2 focus:ring-[var(--ui-focus)] disabled:cursor-not-allowed disabled:opacity-60";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function helperTextClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]";
 }
 
 function statusTone(status: string): "good" | "warning" | "danger" {
@@ -79,7 +79,7 @@ function Section({
         <div className="mb-4">
           <h2 className="text-base font-black">{title}</h2>
           {subtitle ? (
-            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">{subtitle}</p>
           ) : null}
         </div>
         {children}
@@ -161,7 +161,7 @@ function QuestionForm({
   const slots = [0, 1, 2, 3].map((index) => options[index] ?? null);
 
   return (
-    <form action={saveAssessmentQuestion} className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+    <form action={saveAssessmentQuestion} className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
       <input name="assessmentVersionId" type="hidden" value={versionId} />
       <input name="questionId" type="hidden" value={question?.id ?? ""} />
       {dimensions.map((dimension) => (
@@ -203,7 +203,7 @@ function QuestionForm({
       </label>
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs">
-          <thead className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+          <thead className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
             <tr>
               <th className="w-12 px-2 py-2">Option</th>
               <th className="min-w-52 px-2 py-2">Label</th>
@@ -213,7 +213,7 @@ function QuestionForm({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--ve-line-soft)]">
+          <tbody className="divide-y divide-[var(--ui-border-subtle)]">
             {slots.map((option, index) => (
               <tr key={option?.id ?? `new-${index}`}>
                 <td className="px-2 py-3 font-black">{String.fromCharCode(65 + index)}</td>
@@ -316,7 +316,7 @@ export function AssessmentIndex({
         {assessments.map((assessment) => (
           <tr key={assessment.id}>
             <td className="px-4 py-3">
-              <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/assessments/${assessment.id}`}>
+              <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/assessments/${assessment.id}`}>
                 {assessment.title}
               </Link>
               <p className={helperTextClasses()}>{assessment.slug}</p>
@@ -461,17 +461,17 @@ export function AssessmentWorkspace({
 
       <Section id="scoring" title="Scoring" subtitle="Weighting validation against approved Project Ve value dimensions.">
         {scoringIssues.length > 0 ? (
-          <ul className="space-y-2 text-sm font-bold text-[var(--ve-danger)]">
+          <ul className="space-y-2 text-sm font-bold text-[var(--ui-danger)]">
             {scoringIssues.map((issue) => <li key={issue}>{issue}</li>)}
           </ul>
         ) : (
-          <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_80%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]">
+          <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--ui-success)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_80%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-success)]">
             Scoring weights are ready for preview and publication.
           </div>
         )}
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {valueDimensions.map((dimension) => (
-            <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4" key={dimension.id}>
+            <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4" key={dimension.id}>
               <p className="font-black">{dimension.label}</p>
               <p className={helperTextClasses()}>{dimension.description}</p>
             </div>
@@ -482,11 +482,11 @@ export function AssessmentWorkspace({
       <Section id="preview" title="Preview" subtitle="Run a non-persistent scoring preview using selected answer options.">
         <form className="space-y-4" method="get">
           {questions.map((question) => (
-            <fieldset className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4" key={question.id}>
+            <fieldset className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4" key={question.id}>
               <legend className="font-black">{question.prompt}</legend>
               <div className="mt-3 grid gap-2">
                 {question.options.map((option) => (
-                  <label className="flex items-start gap-3 rounded-[12px] bg-[var(--ve-card)] px-3 py-2 text-sm font-bold" key={option.id}>
+                  <label className="flex items-start gap-3 rounded-[12px] bg-[var(--ui-surface)] px-3 py-2 text-sm font-bold" key={option.id}>
                     <input
                       defaultChecked={previewAnswers[question.id] === option.id}
                       name={`preview:${question.id}`}
@@ -503,18 +503,18 @@ export function AssessmentWorkspace({
             <button className={adminButtonClasses("secondary")} type="submit">Preview scoring</button>
           ) : null}
         </form>
-        <div className="mt-5 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+        <div className="mt-5 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
           <p className={labelClasses()}>Preview readiness</p>
           <p className="mt-2 text-2xl font-black capitalize">{readinessLevel}</p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {previewScores.map((item) => (
-              <div className="rounded-[12px] bg-[var(--ve-card)] p-3" key={item.dimension.id}>
+              <div className="rounded-[12px] bg-[var(--ui-surface)] p-3" key={item.dimension.id}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-black">{item.dimension.label}</span>
                   <span className="text-sm font-black tabular-nums">{Math.round(item.score * 100)}%</span>
                 </div>
-                <div className="mt-2 h-2 rounded-full bg-[var(--ve-panel)]">
-                  <div className="h-full rounded-full bg-[var(--ve-green)]" style={{ width: `${Math.round(item.score * 100)}%` }} />
+                <div className="mt-2 h-2 rounded-full bg-[var(--ui-surface-inset)]">
+                  <div className="h-full rounded-full bg-[var(--ui-action)]" style={{ width: `${Math.round(item.score * 100)}%` }} />
                 </div>
               </div>
             ))}
@@ -525,7 +525,7 @@ export function AssessmentWorkspace({
       <Section id="history" title="Version history" subtitle="Published versions remain available for historical attempts and programme use.">
         <div className="space-y-3">
           {versionHistory.map((version) => (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4" key={version.id}>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4" key={version.id}>
               <div>
                 <p className="font-black">{version.title}</p>
                 <p className={helperTextClasses()}>{version.slug}</p>
@@ -546,9 +546,9 @@ export function AssessmentWorkspace({
             <p className={labelClasses()}>Programme usage</p>
             <div className="mt-3 space-y-2">
               {usage.length > 0 ? usage.map((item) => (
-                <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-bold" key={`${item.programme_id}:${item.assessment_version_id}`}>
+                <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-bold" key={`${item.programme_id}:${item.assessment_version_id}`}>
                   {item.programme?.title ?? item.programme_id}
-                  <span className="ml-2 text-xs text-[var(--ve-muted)]">{item.is_required ? "required" : "optional"}</span>
+                  <span className="ml-2 text-xs text-[var(--ui-text-muted)]">{item.is_required ? "required" : "optional"}</span>
                 </div>
               )) : (
                 <p className={helperTextClasses()}>No programmes are using this version yet.</p>

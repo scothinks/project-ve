@@ -1,0 +1,42 @@
+[
+  {
+    "profile": "desktop",
+    "signupConfirmationLogin": true,
+    "recoveryPreservesXP": true,
+    "welcomeRepeatAccess": true,
+    "xpAwardNotDuplicated": true,
+    "organisationContext": true,
+    "validationErrors": true,
+    "noExternalRequests": true
+  },
+  {
+    "profile": "mobile",
+    "signupConfirmationLogin": true,
+    "recoveryPreservesXP": true,
+    "welcomeRepeatAccess": true,
+    "xpAwardNotDuplicated": true,
+    "organisationContext": true,
+    "validationErrors": true,
+    "noExternalRequests": true
+  },
+  {
+    "profile": "compact",
+    "signupConfirmationLogin": true,
+    "recoveryPreservesXP": true,
+    "welcomeRepeatAccess": true,
+    "xpAwardNotDuplicated": true,
+    "organisationContext": true,
+    "validationErrors": true,
+    "noExternalRequests": true
+  },
+  {
+    "profile": "reduced",
+    "signupConfirmationLogin": true,
+    "recoveryPreservesXP": true,
+    "welcomeRepeatAccess": true,
+    "xpAwardNotDuplicated": true,
+    "organisationContext": true,
+    "validationErrors": true,
+    "noExternalRequests": true
+  }
+]

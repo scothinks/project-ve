@@ -43,10 +43,10 @@ export default async function AdminCatalogPeoplePage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-ink-charcoal)]">
+          <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">
             Catalog Staff
           </h1>
-          <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+          <p className="text-sm font-medium text-[var(--ui-text-muted)]">
             Manage who can help run Project VE&rsquo;s own platform catalogue — courses, missions, rewards and
             recommendations that belong to no organisation.
           </p>

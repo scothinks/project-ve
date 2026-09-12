@@ -147,26 +147,26 @@ export default async function AdminCoursesPage({
   const paginatedCourses = paginateItems(filteredCourses, parsePageParam(page), pageSize);
 
   const pendingActionsPillClasses = pendingActionsCount > 0
-    ? "border-[color:color-mix(in_srgb,var(--admin-secondary)_32%,var(--admin-border-warm))] text-[var(--admin-secondary)]"
-    : "border-[var(--admin-border-warm)] text-[var(--admin-on-surface-variant)]";
+    ? "border-[color:color-mix(in_srgb,var(--ui-warning)_32%,var(--ui-border-subtle))] text-[var(--ui-warning)]"
+    : "border-[var(--ui-border-subtle)] text-[var(--ui-text-muted)]";
 
   return (
     <div className="-mx-5 -my-6 md:-mx-8 md:-my-8">
     <div className="mx-auto max-w-[1280px] px-5 py-8 md:px-16 md:py-14">
       <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-col gap-2.5">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--admin-primary)]">Your workspace</p>
-          <h1 className="text-[40px] font-black leading-[1.05] tracking-[-0.02em] text-[var(--admin-brand-hero)]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--ui-text)]">Your workspace</p>
+          <h1 className="text-[40px] font-black leading-[1.05] tracking-[-0.02em] text-[var(--ui-text)]">
             Courses
           </h1>
-          <p className="max-w-[520px] text-[15px] font-medium leading-6 text-[var(--admin-on-surface-variant)]">
+          <p className="max-w-[520px] text-[15px] font-medium leading-6 text-[var(--ui-text-muted)]">
             Everything you&apos;re teaching, in one place. Pick one up where you left off, or start something new.
           </p>
         </div>
         <div className="flex items-stretch gap-2.5">
           <AiPageAuthoring />
           <Link
-            className={`inline-flex items-center gap-1.5 rounded-full border bg-[var(--admin-surface-milk)] px-4 py-[9px] text-xs font-extrabold ${pendingActionsPillClasses}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border bg-[var(--ui-surface)] px-4 py-[9px] text-xs font-extrabold ${pendingActionsPillClasses}`}
             href="/admin/courses/pending-actions"
           >
             <svg aria-hidden="true" className="h-[15px] w-[15px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ export default async function AdminCoursesPage({
               : `${pendingActionsCount} action${pendingActionsCount === 1 ? "" : "s"} needed`}
           </Link>
           <Link
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-[9px] text-xs font-extrabold text-[var(--admin-on-surface-variant)]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-[9px] text-xs font-extrabold text-[var(--ui-text-muted)]"
             href="/admin/courses/ai-credits"
           >
             <SparkleIcon className="h-[15px] w-[15px]" />

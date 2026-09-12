@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "soft" | "outline" | "ghost";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-[var(--ve-green)] !text-white shadow-[0_12px_24px_rgba(8,127,91,0.22)]",
-  soft: "bg-[var(--ve-green-soft)] !text-[var(--ve-green)]",
-  outline: "border border-[var(--ve-line)] bg-[var(--ve-card)] !text-[var(--ve-muted-strong)]",
-  ghost: "bg-transparent !text-[var(--ve-green)]",
+  primary: "bg-[var(--ui-action)] text-[var(--ui-on-action)] shadow-[0_12px_24px_rgba(var(--ui-shadow-rgb),0.22)] hover:bg-[var(--ui-action-hover)] active:bg-[var(--ui-action-pressed)]",
+  soft: "bg-[var(--ui-action-soft)] text-[var(--ui-on-action-soft)]",
+  outline: "border border-[var(--ui-border)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)]",
+  ghost: "bg-transparent text-[var(--ui-action)]",
 };
 
 const base =

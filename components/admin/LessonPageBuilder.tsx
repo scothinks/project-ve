@@ -718,9 +718,9 @@ export function LessonPageBuilder({
   return (
     <ImageDraftContext.Provider value={{ beforeAction: prepareAiAction, onApplied: reconcileAiImage, resolveTarget: target => ({ ...target, targetId: imageTargetIdsRef.current.get(target.targetId) ?? target.targetId }) }}><Toast.Provider swipeDirection="right">
       <fieldset className="min-w-0" disabled={publishState !== "idle"} inert={publishState !== "idle"}>
-      <div className="-mx-5 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border-warm)] px-5 py-5 md:-mx-8 md:px-10">
+      <div className="-mx-5 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ui-border-subtle)] px-5 py-5 md:-mx-8 md:px-10">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)]"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)]"
           href={`/admin/courses/${lesson.course_id}`}
         >
           <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24">
@@ -729,14 +729,14 @@ export function LessonPageBuilder({
           Curriculum
         </Link>
         <span className="flex min-w-0 items-center gap-2.5">
-          <span className="truncate text-sm font-extrabold text-[var(--admin-on-surface)]">{lesson.title}</span>
+          <span className="truncate text-sm font-extrabold text-[var(--ui-text)]">{lesson.title}</span>
           <span
             className={`shrink-0 rounded-full px-2.5 py-[3px] text-[10px] font-extrabold uppercase tracking-[0.06em] ${
               lessonStatus === "published"
-                ? "bg-[#e6f4ea] text-[#0b5a3a]"
+                ? "bg-[var(--ui-success-bg)] text-[var(--ui-success)]"
                 : lessonStatus === "archived"
-                  ? "bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]"
-                  : "bg-[var(--admin-surface-container)] text-[var(--admin-on-surface-variant)]"
+                  ? "bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]"
+                  : "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]"
             }`}
             title={
               lessonStatus === "published" && publishedAt
@@ -753,7 +753,7 @@ export function LessonPageBuilder({
             <DropdownMenu.Root>
               <DropdownMenu.Trigger
                 aria-label="More lesson actions"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface-variant)]"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)]"
                 type="button"
               >
                 ⋯
@@ -761,12 +761,12 @@ export function LessonPageBuilder({
               <DropdownMenu.Portal>
                 <DropdownMenu.Content
                   align="end"
-                  className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+                  className="z-50 min-w-56 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-2 shadow-xl"
                   sideOffset={6}
                 >
                   <DropdownMenu.Item asChild>
                     <button
-                      className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--ui-danger)] outline-none hover:bg-[var(--ui-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={publishState !== "idle" || autosaveState === "saving" || !hasUnpublishedChanges}
                       onClick={requestRevert}
                       type="button"
@@ -779,7 +779,7 @@ export function LessonPageBuilder({
             </DropdownMenu.Root>
           ) : null}
           <button
-            className="rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-5 py-[11px] text-[13px] font-extrabold text-[var(--admin-on-surface)] disabled:opacity-60"
+            className="rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-5 py-[11px] text-[13px] font-extrabold text-[var(--ui-text)] disabled:opacity-60"
             disabled={publishState !== "idle" || autosaveState === "saving" || (lessonStatus === "published" && !hasUnpublishedChanges)}
             onClick={() => {
               if (lesson.ai_generated && lesson.ai_publish_status !== "ready" && lesson.ai_publish_status !== "published") {
@@ -797,7 +797,7 @@ export function LessonPageBuilder({
                 : "Publish"}
           </button>
           <button
-            className="rounded-full bg-[var(--admin-primary)] px-[22px] py-[11px] text-[13px] font-extrabold text-[var(--admin-on-primary)] disabled:opacity-60"
+            className="rounded-full bg-[var(--ui-action)] px-[22px] py-[11px] text-[13px] font-extrabold text-[var(--ui-on-action)] disabled:opacity-60"
             disabled={autosaveState === "saving"}
             onClick={() => {
               void saveBuilderSnapshot(true);
@@ -810,9 +810,9 @@ export function LessonPageBuilder({
       </div>
 
       <LessonAuthoringSteps current="pages" lessonId={lesson.id} pageCount={pages.length} questionCount={questionCount} />
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border-warm)] py-4">
-        <p className="text-sm font-semibold text-[var(--admin-on-surface-variant)]">Write your pages, add a quiz, choose the values learners will explore, then preview and review.</p>
-        <button className="rounded-full bg-[var(--admin-primary)] px-5 py-3 text-sm font-extrabold text-[var(--admin-on-primary)] disabled:opacity-60" disabled={pages.length === 0 || autosaveState === "saving"} onClick={() => { void saveAndNavigate(`/admin/courses/lessons/${lesson.id}/quiz`); }} type="button">Next: Quiz</button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ui-border-subtle)] py-4">
+        <p className="text-sm font-semibold text-[var(--ui-text-muted)]">Write your pages, add a quiz, choose the values learners will explore, then preview and review.</p>
+        <button className="rounded-full bg-[var(--ui-action)] px-5 py-3 text-sm font-extrabold text-[var(--ui-on-action)] disabled:opacity-60" disabled={pages.length === 0 || autosaveState === "saving"} onClick={() => { void saveAndNavigate(`/admin/courses/lessons/${lesson.id}/quiz`); }} type="button">Next: Quiz</button>
       </div>
 
       {notice ? (
@@ -864,17 +864,17 @@ export function LessonPageBuilder({
       <AlertDialog.Root open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Remove block?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               This removes the content block from the current lesson page. The deletion is saved with the rest of your draft.
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]" type="button">
+              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 text-sm font-black text-[var(--ui-text-muted)]" type="button">
                 Cancel
               </AlertDialog.Cancel>
               <AlertDialog.Action
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--admin-error-container)_80%,var(--admin-surface-milk))] px-4 text-sm font-black text-[var(--admin-error)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_80%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-danger)]"
                 onClick={() => {
                   if (deleteTarget) removeBlock(deleteTarget);
                 }}
@@ -890,17 +890,17 @@ export function LessonPageBuilder({
       <AlertDialog.Root open={deletePageTarget !== null} onOpenChange={(open) => !open && setDeletePageTarget(null)}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Delete page?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               This removes the page and all of its content blocks from the lesson. The deletion is saved with the rest of your draft; published progress is preserved.
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]" type="button">
+              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 text-sm font-black text-[var(--ui-text-muted)]" type="button">
                 Cancel
               </AlertDialog.Cancel>
               <AlertDialog.Action
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--admin-error-container)_80%,var(--admin-surface-milk))] px-4 text-sm font-black text-[var(--admin-error)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_80%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-danger)]"
                 onClick={() => {
                   if (deletePageTarget) removePage(deletePageTarget);
                 }}
@@ -916,18 +916,18 @@ export function LessonPageBuilder({
       <AlertDialog.Root open={revertConfirmOpen} onOpenChange={setRevertConfirmOpen}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Revert to published?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               This discards every draft change — lesson settings, cover, pages, blocks, and reordering — since this lesson was last published,
               and restores exactly what learners currently see. This cannot be undone.
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]" type="button">
+              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 text-sm font-black text-[var(--ui-text-muted)]" type="button">
                 Cancel
               </AlertDialog.Cancel>
               <AlertDialog.Action
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--admin-error-container)_80%,var(--admin-surface-milk))] px-4 text-sm font-black text-[var(--admin-error)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_80%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-danger)]"
                 onClick={() => {
                   void confirmRevert();
                 }}
@@ -943,17 +943,17 @@ export function LessonPageBuilder({
       <AlertDialog.Root open={pendingHref !== null} onOpenChange={(open) => !open && setPendingHref(null)}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Leave with unsaved changes?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Save the lesson builder before navigating away, or leave and keep the local recovery draft for this browser session.
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]" type="button">
+              <AlertDialog.Cancel className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 text-sm font-black text-[var(--ui-text-muted)]" type="button">
                 Stay
               </AlertDialog.Cancel>
               <button
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--admin-primary)] px-4 text-sm font-black text-white"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--ui-action)] px-4 text-sm font-black text-[var(--ui-on-action)]"
                 onClick={() => {
                   if (pendingHref) void saveAndNavigate(pendingHref);
                 }}
@@ -963,7 +963,7 @@ export function LessonPageBuilder({
                 Save first
               </button>
               <AlertDialog.Action
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--admin-error-container)_80%,var(--admin-surface-milk))] px-4 text-sm font-black text-[var(--admin-error)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_80%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-danger)]"
                 onClick={() => {
                   if (pendingHref) router.push(pendingHref);
                 }}
@@ -978,7 +978,7 @@ export function LessonPageBuilder({
 
       </fieldset>
       <Toast.Root
-        className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-xl"
+        className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 shadow-xl"
         duration={4200}
         onOpenChange={(open) => {
           if (!open) setToast(null);
@@ -986,7 +986,7 @@ export function LessonPageBuilder({
         open={toast !== null}
       >
         <Toast.Title className="text-sm font-black">{toast?.title}</Toast.Title>
-        <Toast.Description className="mt-1 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+        <Toast.Description className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           {toast?.body}
         </Toast.Description>
       </Toast.Root>

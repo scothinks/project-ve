@@ -99,13 +99,13 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
         <CampaignFilterSelect campaigns={campaigns} value={campaign} />
         <div className="flex flex-wrap gap-2 md:justify-end">
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-5 text-sm font-black text-[var(--ui-on-action-soft)]"
             href="/admin/inventory/new"
           >
             Add Inventory
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-violet)] px-5 text-sm font-black text-white"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
             href="/admin/rewards/perks/new"
           >
             Add Perk
@@ -129,7 +129,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        className="text-2xl font-black hover:text-[var(--ve-violet)]"
+                        className="text-2xl font-black hover:text-[var(--ui-info)]"
                         href={`/admin/rewards/perks/${program.reward.id}`}
                       >
                         {program.reward.title}
@@ -139,28 +139,28 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                         {program.fallbackConfigured ? "fallback armed" : "fallback missing"}
                       </AdminStatusBadge>
                     </div>
-                    <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                    <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                       {program.reward.description}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-6 text-sm">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">XP cost</p>
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">XP cost</p>
                         <p className="mt-1 font-black">{formatXpLabel(program.reward.cost_xp)}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Fallback</p>
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallback</p>
                         <p className="mt-1 font-black">{program.fallbackConfigured ? "Armed" : "Missing"}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Prize pool</p>
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Prize pool</p>
                         <p className="mt-1 font-black">{program.enabledPrizeCount}/{program.prizeCount} active</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Draw activity</p>
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Draw activity</p>
                         <p className="mt-1 font-black">{program.drawsToday} today · {program.drawsTotal} total</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Offer ends</p>
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Offer ends</p>
                         <p className="mt-1 font-black">{formatRewardDate(program.reward.offer_expires_at)}</p>
                       </div>
                     </div>
@@ -168,7 +168,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
 
                   <div className="flex flex-wrap gap-2 lg:justify-end">
                     <Link
-                      className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-violet)]"
+                      className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-on-action-soft)]"
                       href={`/admin/rewards/perks/${program.reward.id}`}
                     >
                       Manage pool
@@ -183,7 +183,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                           value={campaign ? `/admin/rewards/perks?campaign=${encodeURIComponent(campaign)}` : "/admin/rewards/perks"}
                         />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-green)]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-action)]"
                           type="submit"
                         >
                           Publish perk
@@ -200,7 +200,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                         />
                         <input name="isEnabled" type="hidden" value="false" />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-danger)]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-danger)]"
                           type="submit"
                         >
                           Pause perk
@@ -217,7 +217,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                         />
                         <input name="isEnabled" type="hidden" value="true" />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 text-sm font-black text-[var(--ve-green)]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-4 text-sm font-black text-[var(--ui-action)]"
                           type="submit"
                         >
                           Resume perk
@@ -234,7 +234,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                           value={campaign ? `/admin/rewards/perks?campaign=${encodeURIComponent(campaign)}` : "/admin/rewards/perks"}
                         />
                         <button
-                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[var(--ve-panel)] px-4 text-sm font-black text-[var(--ve-muted-strong)]"
+                          className="inline-flex h-11 min-w-32 items-center justify-center rounded-[12px] bg-[var(--ui-surface-inset)] px-4 text-sm font-black text-[var(--ui-text-muted)]"
                           type="submit"
                         >
                           Move to draft

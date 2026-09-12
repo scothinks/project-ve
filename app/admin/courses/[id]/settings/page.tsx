@@ -69,7 +69,7 @@ export default async function CourseSettingsPage({ params, searchParams }: Cours
   return (
     <>
       <Link
-        className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]"
+        className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]"
         href={`/admin/courses/${course.id}`}
       >
         ← Back to Curriculum
@@ -77,13 +77,13 @@ export default async function CourseSettingsPage({ params, searchParams }: Cours
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
 
       <div className="mb-6 flex flex-col gap-1">
-        <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-primary-container)]">
+        <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-action)]">
           Course Settings
         </span>
-        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-brand-hero)]">
+        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">
           {course.title}
         </h1>
-        <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+        <p className="text-sm font-medium text-[var(--ui-text-muted)]">
           Identity and completion rules for this course.
         </p>
       </div>
@@ -100,7 +100,7 @@ export default async function CourseSettingsPage({ params, searchParams }: Cours
         </AdminCard>
         <div className="space-y-4">
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
               Ownership scope
             </p>
             <div className="mt-3">
@@ -108,16 +108,16 @@ export default async function CourseSettingsPage({ params, searchParams }: Cours
                 {catalogScopeLabel(course.catalog_scope)}
               </AdminBadge>
             </div>
-            <dl className="mt-4 space-y-3 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <dl className="mt-4 space-y-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               <div>
                 <dt className="text-[11px] font-black uppercase tracking-[0.14em]">Owner</dt>
-                <dd className="mt-1 text-[var(--admin-ink-charcoal)]">
+                <dd className="mt-1 text-[var(--ui-text)]">
                   {course.organization_id ? `Organisation ${course.organization_id}` : "Project VE platform"}
                 </dd>
               </div>
               <div>
                 <dt className="text-[11px] font-black uppercase tracking-[0.14em]">Version</dt>
-                <dd className="mt-1 text-[var(--admin-ink-charcoal)]">
+                <dd className="mt-1 text-[var(--ui-text)]">
                   v{course.catalog_version}
                   {course.source_catalog_version ? ` · copied from source v${course.source_catalog_version}` : ""}
                 </dd>
@@ -125,24 +125,24 @@ export default async function CourseSettingsPage({ params, searchParams }: Cours
               {course.source_course_id ? (
                 <div>
                   <dt className="text-[11px] font-black uppercase tracking-[0.14em]">Source course</dt>
-                  <dd className="mt-1 text-[var(--admin-ink-charcoal)]">{course.source_course_id}</dd>
+                  <dd className="mt-1 text-[var(--ui-text)]">{course.source_course_id}</dd>
                 </div>
               ) : null}
               {course.copied_at ? (
                 <div>
                   <dt className="text-[11px] font-black uppercase tracking-[0.14em]">Copied</dt>
-                  <dd className="mt-1 text-[var(--admin-ink-charcoal)]">{formatRewardDate(course.copied_at)}</dd>
+                  <dd className="mt-1 text-[var(--ui-text)]">{formatRewardDate(course.copied_at)}</dd>
                 </div>
               ) : null}
               {course.upstream_update_available ? (
-                <div className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-3 py-2 text-[var(--admin-ink-charcoal)]">
+                <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] px-3 py-2 text-[var(--ui-text)]">
                   Source platform content has changed since this adaptation was copied.
                 </div>
               ) : null}
             </dl>
           </AdminCard>
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
               Provenance
             </p>
             <h2 className="mt-2 text-lg font-black">

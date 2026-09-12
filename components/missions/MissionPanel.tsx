@@ -78,69 +78,69 @@ const categoryTheme: Record<
   }
 > = {
   course: {
-    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
-    accent: "text-[#0b6f4d]",
-    progress: "bg-[#0b6f4d]",
-    pill: "bg-transparent text-[#0b6f4d]",
-    label: "bg-transparent text-[#8b6b1c]",
-    buttonBg: "#007a53",
-    buttonFg: "#ffffff",
+    card: "!rounded-[8px] border-[var(--ui-reward)] bg-[var(--ui-surface)] shadow-none",
+    accent: "text-[var(--ui-mission)]",
+    progress: "bg-[var(--ui-current-text)]",
+    pill: "bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]",
+    label: "bg-transparent text-[var(--ui-mission)]",
+    buttonBg: "var(--ui-action)",
+    buttonFg: "var(--ui-on-action)",
     buttonShadow: "none",
-    buttonSoftBg: "#eef4ec",
-    buttonSoftFg: "#0b6f4d",
-    buttonSoftBorder: "#b9c7b9",
+    buttonSoftBg: "var(--ui-action-soft)",
+    buttonSoftFg: "var(--ui-on-action-soft)",
+    buttonSoftBorder: "var(--ui-border)",
   },
   referral: {
-    card: "!rounded-[8px] border-[#e4eadf] bg-[#f4f7ef] shadow-none",
-    accent: "text-[#0b6f4d]",
-    progress: "bg-[#0b6f4d]",
-    pill: "bg-[#007a53] text-white",
-    label: "bg-transparent text-[#8b6b1c]",
-    buttonBg: "#007a53",
-    buttonFg: "#ffffff",
+    card: "!rounded-[8px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] shadow-none",
+    accent: "text-[var(--ui-mission)]",
+    progress: "bg-[var(--ui-current-text)]",
+    pill: "bg-[var(--ui-reward)] text-[var(--ui-on-reward)]",
+    label: "bg-transparent text-[var(--ui-mission)]",
+    buttonBg: "var(--ui-action)",
+    buttonFg: "var(--ui-on-action)",
     buttonShadow: "none",
-    buttonSoftBg: "#eef4ec",
-    buttonSoftFg: "#0b6f4d",
-    buttonSoftBorder: "#b9c7b9",
+    buttonSoftBg: "var(--ui-action-soft)",
+    buttonSoftFg: "var(--ui-on-action-soft)",
+    buttonSoftBorder: "var(--ui-border)",
   },
   feedback: {
-    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
-    accent: "text-[#0b6f4d]",
-    progress: "bg-[#0b6f4d]",
-    pill: "bg-[#ffdd76] text-[#2c2614]",
-    label: "bg-transparent text-[#8b6b1c]",
-    buttonBg: "#007a53",
-    buttonFg: "#ffffff",
+    card: "!rounded-[8px] border-[var(--ui-reward)] bg-[var(--ui-surface)] shadow-none",
+    accent: "text-[var(--ui-mission)]",
+    progress: "bg-[var(--ui-current-text)]",
+    pill: "bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]",
+    label: "bg-transparent text-[var(--ui-mission)]",
+    buttonBg: "var(--ui-action)",
+    buttonFg: "var(--ui-on-action)",
     buttonShadow: "none",
-    buttonSoftBg: "#eef4ec",
-    buttonSoftFg: "#0b6f4d",
-    buttonSoftBorder: "#b9c7b9",
+    buttonSoftBg: "var(--ui-action-soft)",
+    buttonSoftFg: "var(--ui-on-action-soft)",
+    buttonSoftBorder: "var(--ui-border)",
   },
   campaign: {
-    card: "!rounded-[8px] border-[#8b6b1c] bg-[#f4f7ef] shadow-none",
-    accent: "text-[#0b6f4d]",
-    progress: "bg-[#0b6f4d]",
-    pill: "bg-[#ffdd76] text-[#2c2614]",
-    label: "bg-transparent text-[#8b6b1c]",
-    buttonBg: "#007a53",
-    buttonFg: "#ffffff",
+    card: "!rounded-[8px] border-[var(--ui-reward)] bg-[var(--ui-surface)] shadow-none",
+    accent: "text-[var(--ui-mission)]",
+    progress: "bg-[var(--ui-current-text)]",
+    pill: "bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]",
+    label: "bg-transparent text-[var(--ui-mission)]",
+    buttonBg: "var(--ui-action)",
+    buttonFg: "var(--ui-on-action)",
     buttonShadow: "none",
-    buttonSoftBg: "#eef4ec",
-    buttonSoftFg: "#0b6f4d",
-    buttonSoftBorder: "#b9c7b9",
+    buttonSoftBg: "var(--ui-action-soft)",
+    buttonSoftFg: "var(--ui-on-action-soft)",
+    buttonSoftBorder: "var(--ui-border)",
   },
   custom: {
-    card: "!rounded-[8px] border-[#d8ddd2] bg-[#f4f7ef] shadow-none",
-    accent: "text-[#0b6f4d]",
-    progress: "bg-[#0b6f4d]",
-    pill: "bg-[#e8eee3] text-[#3f4b45]",
-    label: "bg-transparent text-[#8b6b1c]",
-    buttonBg: "#007a53",
-    buttonFg: "#ffffff",
+    card: "!rounded-[8px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] shadow-none",
+    accent: "text-[var(--ui-mission)]",
+    progress: "bg-[var(--ui-current-text)]",
+    pill: "bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]",
+    label: "bg-transparent text-[var(--ui-mission)]",
+    buttonBg: "var(--ui-action)",
+    buttonFg: "var(--ui-on-action)",
     buttonShadow: "none",
-    buttonSoftBg: "#eef4ec",
-    buttonSoftFg: "#0b6f4d",
-    buttonSoftBorder: "#b9c7b9",
+    buttonSoftBg: "var(--ui-action-soft)",
+    buttonSoftFg: "var(--ui-on-action-soft)",
+    buttonSoftBorder: "var(--ui-border)",
   },
 };
 
@@ -245,18 +245,18 @@ function getProofFieldStatusTone(
   requirementMode?: UserMissionSummary["proofRequirementMode"],
 ) {
   if (!status && requirementMode === "any") {
-    return "bg-[var(--ve-panel)] text-[var(--ve-muted)]";
+    return "bg-[var(--ui-surface-inset)] text-[var(--ui-text-muted)]";
   }
 
   switch (status) {
     case "approved":
-      return "bg-[#e4f4ed] text-[#087f5b]";
+      return "bg-[var(--ui-success-bg)] text-[var(--ui-success)]";
     case "submitted":
-      return "bg-[#fff8df] text-[#a66d00]";
+      return "bg-[var(--ui-warning-bg)] text-[var(--ui-warning)]";
     case "rejected":
-      return "bg-[#fff0f0] text-[#c00000]";
+      return "bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]";
     default:
-      return "bg-[var(--ve-panel)] text-[var(--ve-muted-strong)]";
+      return "bg-[var(--ui-surface-inset)] text-[var(--ui-text-muted)]";
   }
 }
 
@@ -743,46 +743,46 @@ export function MissionPanel({
           key={mission.id}
           variant="quiet"
         >
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[var(--ve-card-muted)]">
-            <HubIcon className="size-8 text-[var(--ve-green)]" />
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[var(--ui-surface-muted)]">
+            <HubIcon className="size-8 text-[var(--ui-mission)]" />
           </div>
-          <h3 className="mt-3 text-[1.15rem] font-black tracking-[-0.01em] text-[var(--foreground)]">
+          <h3 className="mt-3 text-[1.15rem] font-black tracking-[-0.01em] text-[var(--ui-text)]">
             {mission.title}
           </h3>
-          <p className="mx-auto mt-1.5 max-w-[24rem] text-[0.82rem] font-medium leading-5 text-[var(--ve-muted-strong)]">
+          <p className="mx-auto mt-1.5 max-w-[24rem] text-[0.82rem] font-medium leading-5 text-[var(--ui-text-muted)]">
             {mission.description}
           </p>
 
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-left">
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3 text-left">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                 {boostDetails ? "Qualification Reward" : "Mission Reward"}
               </p>
               {boostDetails ? (
                 <>
-                  <p className="mt-1 flex items-center gap-1 text-[1.05rem] font-black text-[var(--ve-green)]">
+                  <p className="mt-1 flex items-center gap-1 text-[1.05rem] font-black text-[var(--ui-reward)]">
                     <BoostIcon className="size-4" />
                     {boostDetails.multiplier}x {boostDetails.unitLabel} Boost
                   </p>
                   {boostDetails.durationLabel ? (
-                    <p className="mt-0.5 text-[0.7rem] font-bold text-[var(--ve-muted)]">
+                    <p className="mt-0.5 text-[0.7rem] font-bold text-[var(--ui-text-muted)]">
                       Active for {boostDetails.durationLabel}
                     </p>
                   ) : null}
                 </>
               ) : (
-                <p className="mt-1 text-[1.05rem] font-black text-[var(--ve-green)]">{rewardLabel}</p>
+                <p className="mt-1 text-[1.05rem] font-black text-[var(--ui-reward)]">{rewardLabel}</p>
               )}
             </div>
-            <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green)] text-white">
+            <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ui-reward)] text-[var(--ui-on-reward)]">
               {boostDetails ? <BoostIcon className="size-5" /> : <MedalIcon className="size-5" />}
             </div>
           </div>
 
           <div className="mt-4 text-left">
-            <h4 className="pl-1 text-[0.78rem] font-bold text-[var(--foreground)]">Share your link</h4>
-            <div className="mt-2 flex items-center gap-1 rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-1">
-              <div className="flex-1 truncate px-2.5 text-[0.8rem] font-medium text-[var(--ve-muted-strong)]">
+            <h4 className="pl-1 text-[0.78rem] font-bold text-[var(--ui-text)]">Share your link</h4>
+            <div className="mt-2 flex items-center gap-1 rounded-[10px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-1">
+              <div className="flex-1 truncate px-2.5 text-[0.8rem] font-medium text-[var(--ui-text-muted)]">
                 {referral.shareUrl ?? "Created only when you choose to share"}
               </div>
               <MissionActionButton
@@ -796,7 +796,7 @@ export function MissionPanel({
               </MissionActionButton>
             </div>
             <button
-              className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--ve-card-muted)] py-3 text-[0.82rem] font-bold text-[var(--foreground)]"
+              className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--ui-surface-muted)] py-3 text-[0.82rem] font-bold text-[var(--ui-text)]"
               disabled={creatingReferralLinkId === mission.id}
               onClick={() => void shareReferralLink(mission)}
               type="button"
@@ -807,23 +807,23 @@ export function MissionPanel({
           </div>
 
           <div className="mt-5 text-left">
-            <h4 className="pl-1 text-[0.78rem] font-bold text-[var(--foreground)]">Your Referral Status</h4>
+            <h4 className="pl-1 text-[0.78rem] font-bold text-[var(--ui-text)]">Your Referral Status</h4>
             <div className="mt-2 grid grid-cols-3 gap-2">
-              <div className="aspect-square rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-2 text-center">
-                <p className="mt-2 text-[1.4rem] font-black text-[var(--foreground)]">{referral.invitedCount}</p>
-                <p className="mt-1 text-[10px] font-bold text-[var(--ve-muted)]">Invited</p>
+              <div className="aspect-square rounded-[10px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-2 text-center">
+                <p className="mt-2 text-[1.4rem] font-black text-[var(--ui-text)]">{referral.invitedCount}</p>
+                <p className="mt-1 text-[10px] font-bold text-[var(--ui-text-muted)]">Invited</p>
               </div>
-              <div className="aspect-square rounded-[10px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-2 text-center">
-                <p className="mt-2 text-[1.4rem] font-black text-[var(--foreground)]">{referral.qualifiedCount}</p>
-                <p className="mt-1 text-[10px] font-bold text-[var(--ve-muted)]">Qualified</p>
+              <div className="aspect-square rounded-[10px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-2 text-center">
+                <p className="mt-2 text-[1.4rem] font-black text-[var(--ui-text)]">{referral.qualifiedCount}</p>
+                <p className="mt-1 text-[10px] font-bold text-[var(--ui-text-muted)]">Qualified</p>
               </div>
-              <div className="aspect-square rounded-[10px] bg-[var(--ve-green)] p-2 text-center shadow-sm">
-                <p className="mt-2 text-[1.4rem] font-black text-white">{referral.awardedCount}</p>
-                <p className="mt-1 text-[10px] font-bold text-white/80">Awarded</p>
+              <div className="aspect-square rounded-[10px] bg-[var(--ui-success)] p-2 text-center shadow-sm">
+                <p className="mt-2 text-[1.4rem] font-black text-[var(--ui-on-success)]">{referral.awardedCount}</p>
+                <p className="mt-1 text-[10px] font-bold text-[var(--ui-on-success)]">Awarded</p>
               </div>
             </div>
-            <p className="mt-3 flex items-start gap-1.5 rounded-[10px] bg-[var(--ve-card-muted)] p-3 text-left text-[0.72rem] font-medium leading-4 text-[var(--ve-muted-strong)]">
-              <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-[var(--ve-muted)]" />
+            <p className="mt-3 flex items-start gap-1.5 rounded-[10px] bg-[var(--ui-surface-muted)] p-3 text-left text-[0.72rem] font-medium leading-4 text-[var(--ui-text-muted)]">
+              <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-[var(--ui-text-muted)]" />
               {mission.presentation?.rewardExplanation
                 ?? `A referred learner becomes qualified after completing ${referral.requiredFriendLessonCount} ${referral.requiredFriendLessonCount === 1 ? "lesson" : "lessons"}.`}
             </p>
@@ -833,20 +833,20 @@ export function MissionPanel({
     }
 
     if (variant === "boost" && boostDetails) {
-      const boostAccent = "#8b6b1c";
+      const boostAccent = "var(--ui-reward)";
       const boostContent = (
         <>
           <div
-            className="grid size-11 shrink-0 place-items-center rounded-full text-white shadow-sm"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-[var(--ui-on-action)] shadow-sm"
             style={{ backgroundColor: boostAccent }}
           >
             <BoostIcon className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[0.92rem] font-black leading-5 text-[var(--foreground)]">
+            <h3 className="truncate text-[0.92rem] font-black leading-5 text-[var(--ui-text)]">
               {mission.title}
             </h3>
-            <p className="mt-0.5 line-clamp-2 text-[0.74rem] font-medium leading-4 text-[var(--ve-muted-strong)]">
+            <p className="mt-0.5 line-clamp-2 text-[0.74rem] font-medium leading-4 text-[var(--ui-text-muted)]">
               {mission.description}
             </p>
           </div>
@@ -857,7 +857,7 @@ export function MissionPanel({
             </div>
             <span className="mt-0.5 text-[0.64rem] font-bold leading-4">{boostDetails.unitLabel} Boost</span>
             {boostDetails.durationLabel ? (
-              <span className="text-[0.64rem] font-medium leading-4 text-[var(--ve-muted)]">
+              <span className="text-[0.64rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                 {boostDetails.durationLabel}
               </span>
             ) : null}
@@ -866,7 +866,7 @@ export function MissionPanel({
       );
       const boostClasses = cn(
         "mission-card mission-card--boost flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-[8px] border p-4 text-left",
-        "border-[#e4d9b8] bg-[#f7f2e4] shadow-none",
+        "border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] shadow-none",
       );
 
       if (!action.disabled && action.type === "link") {
@@ -908,10 +908,10 @@ export function MissionPanel({
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--foreground)]">
+            <h3 className="text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--ui-text)]">
               {mission.title}
             </h3>
-            <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[var(--ui-text-muted)]">
               {mission.description}
             </p>
           </div>
@@ -950,7 +950,7 @@ export function MissionPanel({
         <div className="mission-card__top-row flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {isRequired ? (
-              <div className="inline-flex items-center gap-1 rounded-[8px] bg-[#fff0bd] px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#a66d00]">
+              <div className="inline-flex items-center gap-1 rounded-[8px] bg-[var(--ui-warning-bg)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-warning)]">
                 Required
               </div>
             ) : (
@@ -964,15 +964,15 @@ export function MissionPanel({
               </div>
             )}
             {dueLabel ? (
-              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ve-muted)]">
+              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                 {dueLabel}
               </span>
             ) : null}
             {!mission.referral ? (
-              <BookmarkIcon className="size-4 shrink-0 text-[var(--ve-muted-soft)]" />
+              <BookmarkIcon className="size-4 shrink-0 text-[var(--ui-text-subtle)]" />
             ) : null}
             {showReviewStatus ? (
-              <span className="rounded-[8px] bg-[color:color-mix(in_srgb,var(--ve-card)_72%,transparent)] px-2.5 py-1 text-[10px] font-black text-[var(--ve-muted-strong)]">
+              <span className="rounded-[8px] bg-[color:color-mix(in_srgb,var(--ui-surface)_72%,transparent)] px-2.5 py-1 text-[10px] font-black text-[var(--ui-text-muted)]">
                 {statusCopy[mission.status]}
               </span>
             ) : null}
@@ -987,7 +987,7 @@ export function MissionPanel({
               )}
               title={rewardLabel}
             >
-              <span className="grid size-4 shrink-0 place-items-center rounded-full bg-[#087f5b] text-white">
+              <span className="grid size-4 shrink-0 place-items-center rounded-full bg-[var(--ui-action)] text-[var(--ui-on-action)]">
                 <StarBadgeIcon className="size-2.5" />
               </span>
               <span className="inline-flex min-w-0 items-center gap-1.5 text-[0.78rem] font-black tracking-[-0.01em] sm:text-sm">
@@ -998,29 +998,29 @@ export function MissionPanel({
         </div>
 
         <div className="mission-card__body mt-4 min-w-0">
-          <h3 className="mission-card__title text-[1.08rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--foreground)]">
+          <h3 className="mission-card__title text-[1.08rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--ui-text)]">
             {mission.title}
           </h3>
-          <p className="mission-card__description mt-1.5 max-w-none text-[0.82rem] font-medium leading-5 text-[var(--ve-muted-strong)] sm:max-w-[34ch]">
+          <p className="mission-card__description mt-1.5 max-w-none text-[0.82rem] font-medium leading-5 text-[var(--ui-text-muted)] sm:max-w-[34ch]">
             {mission.description}
           </p>
           {mission.presentation?.fullInstructions ? (
-            <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {mission.presentation.fullInstructions}
             </p>
           ) : null}
           {mission.presentation?.eligibilityExplanation ? (
-            <p className="mt-2 text-xs font-bold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-bold leading-5 text-[var(--ui-text-muted)]">
               {mission.presentation.eligibilityExplanation}
             </p>
           ) : null}
           {mission.status === "completed" && mission.presentation?.successMessage ? (
-            <p className="mt-2 text-xs font-black leading-5 text-[#087f5b]">
+            <p className="mt-2 text-xs font-black leading-5 text-[var(--ui-success)]">
               {mission.presentation.successMessage}
             </p>
           ) : null}
           {mission.status === "rejected" && mission.presentation?.rejectionMessage ? (
-            <p className="mt-2 text-xs font-black leading-5 text-[#c00000]">
+            <p className="mt-2 text-xs font-black leading-5 text-[var(--ui-danger)]">
               {mission.presentation.rejectionMessage}
             </p>
           ) : null}
@@ -1030,7 +1030,7 @@ export function MissionPanel({
           <div className="mt-3 flex flex-wrap gap-2">
             {mission.proofRequiredFields.map((field) => (
               <div
-                className="flex items-center gap-1 rounded bg-[var(--ve-card-muted)] px-2 py-1 text-[11px] font-bold text-[var(--ve-muted-strong)]"
+                className="flex items-center gap-1 rounded bg-[var(--ui-surface-muted)] px-2 py-1 text-[11px] font-bold text-[var(--ui-text-muted)]"
                 key={field}
               >
                 {getProofFieldIcon(field)}
@@ -1042,7 +1042,7 @@ export function MissionPanel({
 
         {hasStructuredProgress ? (
           <div className="mission-card__progress mt-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[0.78rem] font-semibold tracking-[-0.01em] text-[var(--ve-muted)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[0.78rem] font-semibold tracking-[-0.01em] text-[var(--ui-text-muted)]">
               <span className="min-w-0 flex-1">
                 {mission.completionLabel
                   ? mission.availableAgainAt
@@ -1056,7 +1056,7 @@ export function MissionPanel({
                 {mission.progressCount}/{mission.targetCount}
               </span>
             </div>
-            <div className="mt-2 h-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--ve-card)_65%,transparent)]">
+            <div className="mt-2 h-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--ui-surface)_65%,transparent)]">
               <div
                 className={cn("h-full rounded-full", theme.progress)}
                 style={{ width: `${progressPercent}%` }}
@@ -1087,7 +1087,7 @@ export function MissionPanel({
         </div>
 
         {mission.presentation?.terms ? (
-          <p className="mt-4 text-[11px] font-semibold leading-5 text-[var(--ve-muted)]">
+          <p className="mt-4 text-[11px] font-semibold leading-5 text-[var(--ui-text-muted)]">
             {mission.presentation.terms}
           </p>
         ) : null}
@@ -1108,14 +1108,14 @@ export function MissionPanel({
       ) : null}
 
       {!isFeatured && !loading && missions.length > 0 ? (
-        <div className="mission-panel__tabs mb-5 flex gap-6 border-b border-[var(--ve-line-soft)] lg:hidden">
+        <div className="mission-panel__tabs mb-5 flex gap-6 border-b border-[var(--ui-border-subtle)] lg:hidden">
           {tabs.map((tab) => (
             <button
               className={cn(
                 "relative flex items-center gap-1.5 pb-3 text-[0.85rem] font-semibold tracking-[-0.01em] transition-colors",
                 activeTab === tab.key
-                  ? "border-b-2 border-[var(--ve-green)] text-[var(--ve-green)]"
-                  : "border-b-2 border-transparent text-[var(--ve-muted)] hover:text-[var(--foreground)]",
+                  ? "border-b-2 border-[var(--ui-current-text)] text-[var(--ui-current-text)]"
+                  : "border-b-2 border-transparent text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]",
               )}
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -1123,7 +1123,7 @@ export function MissionPanel({
             >
               {tab.label}
               {tab.key === "active" && tab.count > 0 ? (
-                <span className="grid size-4 place-items-center rounded-full bg-[var(--ve-green)] text-[9px] font-black leading-none text-white">
+                <span className="grid size-4 place-items-center rounded-full bg-[var(--ui-current-text)] text-[9px] font-black leading-none text-[var(--ui-on-action)]">
                   {tab.count}
                 </span>
               ) : null}
@@ -1133,7 +1133,7 @@ export function MissionPanel({
       ) : null}
 
       {message ? (
-        <div className="mt-3 rounded-[18px] border border-[#ffe2d3] bg-[#fff0e8] px-4 py-3 text-xs font-bold text-[#c94f2e]">
+        <div className="mt-3 rounded-[18px] border border-[var(--ui-mission-bg)] bg-[var(--ui-mission-bg)] px-4 py-3 text-xs font-bold text-[var(--ui-danger)]">
           {message}
         </div>
       ) : null}
@@ -1142,19 +1142,19 @@ export function MissionPanel({
         {loading
           ? Array.from({ length: skeletonCount }).map((_, index) => (
               <Card
-                className="overflow-hidden border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-6 shadow-[0_12px_32px_rgba(16,16,16,0.055)]"
+                className="overflow-hidden border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-6 shadow-[0_12px_32px_rgba(var(--ui-shadow-rgb),0.055)]"
                 key={`mission-loading-${index}`}
                 variant="quiet"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
-                    <div className="h-3 w-20 rounded-full bg-[#f2f0eb]" />
-                    <div className="h-4 w-44 rounded-full bg-[#e9e6e1]" />
-                    <div className="h-3 w-full rounded-full bg-[#efede9]" />
+                    <div className="h-3 w-20 rounded-full bg-[var(--ui-surface-muted)]" />
+                    <div className="h-4 w-44 rounded-full bg-[var(--ui-surface-muted)]" />
+                    <div className="h-3 w-full rounded-full bg-[var(--ui-surface-muted)]" />
                   </div>
-                  <div className="h-9 w-16 rounded-[18px] bg-[#f2f0eb]" />
+                  <div className="h-9 w-16 rounded-[18px] bg-[var(--ui-surface-muted)]" />
                 </div>
-                <div className="mt-5 h-11 w-36 rounded-[18px] bg-[#efede9]" />
+                <div className="mt-5 h-11 w-36 rounded-[18px] bg-[var(--ui-surface-muted)]" />
               </Card>
             ))
           : null}
@@ -1162,7 +1162,7 @@ export function MissionPanel({
         {!loading && visibleMissions.length === 0 ? (
           <Card className="p-6 text-center" variant="mission">
             <p className="text-sm font-black">No missions yet</p>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Check back soon for new challenges.
             </p>
           </Card>
@@ -1179,7 +1179,7 @@ export function MissionPanel({
                 )}
                 key={group.key}
               >
-                <h2 className="mission-panel__group-title hidden text-[1.05rem] font-black tracking-[-0.01em] text-[var(--foreground)] lg:block">
+                <h2 className="mission-panel__group-title hidden text-[1.05rem] font-black tracking-[-0.01em] text-[var(--ui-text)] lg:block">
                   {group.key === "history" ? "Mission History" : group.label}
                 </h2>
                 <div
@@ -1190,7 +1190,7 @@ export function MissionPanel({
                 >
                   {missionGroups[group.key].length === 0 ? (
                     <Card className="mission-card mission-card--empty !rounded-[8px] p-6 text-center" variant="quiet">
-                      <p className="text-xs font-semibold text-[var(--ve-muted)]">
+                      <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
                         {group.key === "history"
                           ? "No completed missions yet. Get started above!"
                           : "Nothing here right now. Check back soon."}
@@ -1220,10 +1220,10 @@ export function MissionPanel({
         <div className="mission-proof-overlay fixed inset-0 z-50 grid place-items-end bg-black/35 px-0 sm:px-4 sm:py-6">
           <div className="mission-proof-shell w-full sm:mx-auto sm:max-w-[420px]">
             <Card className="mission-proof-dialog max-h-[calc(100dvh-1rem)] overflow-y-auto rounded-b-none p-0 sm:rounded-b-[24px]">
-              <div className="mission-proof-dialog__header sticky top-0 z-10 flex items-center gap-3 border-b border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-card)_92%,transparent)] px-5 py-4 backdrop-blur-md">
+              <div className="mission-proof-dialog__header sticky top-0 z-10 flex items-center gap-3 border-b border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-surface)_92%,transparent)] px-5 py-4 backdrop-blur-md">
                 <button
                   aria-label="Close proof submission"
-                  className="grid size-9 shrink-0 place-items-center rounded-full text-[var(--ve-muted-strong)] hover:bg-[var(--ve-card-muted)]"
+                  className="grid size-9 shrink-0 place-items-center rounded-full text-[var(--ui-text-muted)] hover:bg-[var(--ui-surface-muted)]"
                   onClick={closeProofModal}
                   type="button"
                 >
@@ -1240,30 +1240,30 @@ export function MissionPanel({
               <div className="p-5">
                 <div className="flex flex-col gap-1.5">
                   {organizationName ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-mission)]">
                       <BuildingIcon className="size-3.5" />
                       {organizationName}
                     </div>
                   ) : null}
-                  <h2 className="text-[1.4rem] font-black leading-7 tracking-[-0.01em] text-[var(--foreground)]">
+                  <h2 className="text-[1.4rem] font-black leading-7 tracking-[-0.01em] text-[var(--ui-text)]">
                     {activeProofMission.title}
                   </h2>
-                  <p className="text-[0.85rem] font-medium leading-6 text-[var(--ve-muted-strong)]">
+                  <p className="text-[0.85rem] font-medium leading-6 text-[var(--ui-text-muted)]">
                     Provide the required evidence to complete this mission. All submissions will be reviewed by
                     an organisation instructor.
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="rounded-[8px] bg-[#dff2e9] px-2.5 py-1 text-[11px] font-black text-[#087f5b]">
+                    <span className="rounded-[8px] bg-[var(--ui-action-soft)] px-2.5 py-1 text-[11px] font-black text-[var(--ui-action)]">
                       {getMissionRewardLabel(activeProofMission, pointsLabel)}
                     </span>
-                    <span className="text-[11px] font-black text-[var(--ve-muted)]">
+                    <span className="text-[11px] font-black text-[var(--ui-text-muted)]">
                       {activeProofMission.proofRequirementMode === "any"
                         ? `Any 1 of ${activeProofMission.proofRequiredFields?.length ?? 0} proof options`
                         : "Proof required"}
                     </span>
                   </div>
                   {activeProofMission.status === "under_review" ? (
-                    <p className="mt-1 text-xs font-semibold text-[#a66d00]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-reward)]">
                       {activeProofMission.presentation?.pendingMessage
                         ?? "Submitted items stay under review until an admin approves them."}
                     </p>
@@ -1271,7 +1271,7 @@ export function MissionPanel({
                 </div>
 
                 {proofFieldMessage ? (
-                  <div className="mt-4 rounded-[14px] border border-[#f1ddd7] bg-[#fff7f4] px-4 py-3 text-sm font-black text-[#c94f2e]">
+                  <div className="mt-4 rounded-[14px] border border-[var(--ui-danger-bg)] bg-[var(--ui-danger-bg)] px-4 py-3 text-sm font-black text-[var(--ui-danger)]">
                     {proofFieldMessage}
                   </div>
                 ) : null}
@@ -1289,8 +1289,8 @@ export function MissionPanel({
                         className={cn(
                           "mission-proof-field rounded-[12px] border p-4",
                           isRejected
-                            ? "border-[#f3c6bd] bg-[#fff7f4]"
-                            : "border-[var(--ve-line-soft)] bg-[var(--ve-shell)]",
+                            ? "border-[var(--ui-danger-bg)] bg-[var(--ui-danger-bg)]"
+                            : "border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)]",
                         )}
                         key={field}
                       >
@@ -1300,15 +1300,15 @@ export function MissionPanel({
                               className={cn(
                                 "grid size-8 shrink-0 place-items-center rounded-full",
                                 isRejected
-                                  ? "bg-[#fbe4e0] text-[#c00000]"
-                                  : "bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]",
+                                  ? "bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]"
+                                  : "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]",
                               )}
                             >
                               {getProofFieldIcon(field)}
                             </div>
                             <div>
                               <p className="text-sm font-black">{getMissionProofFieldLabel(field)}</p>
-                              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                              <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                                 {getProofFieldInstruction(field)}
                               </p>
                             </div>
@@ -1328,9 +1328,9 @@ export function MissionPanel({
                         </div>
 
                         {isRejected && activeProofMission.presentation?.rejectionMessage ? (
-                          <div className="mt-3 rounded-lg border-l-2 border-[#c00000] bg-[var(--ve-card-muted)] px-3 py-2">
-                            <p className="text-[13px] leading-5 text-[var(--ve-muted-strong)]">
-                              <strong className="font-medium text-[#c00000]">Instructor note: </strong>
+                          <div className="mt-3 rounded-lg border-l-2 border-[var(--ui-danger)] bg-[var(--ui-surface-muted)] px-3 py-2">
+                            <p className="text-[13px] leading-5 text-[var(--ui-text-muted)]">
+                              <strong className="font-medium text-[var(--ui-danger)]">Instructor note: </strong>
                               {activeProofMission.presentation.rejectionMessage}
                             </p>
                           </div>
@@ -1338,7 +1338,7 @@ export function MissionPanel({
 
                         {field === "text" ? (
                           <textarea
-                            className="mt-3 min-h-24 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-3 text-sm font-medium outline-none"
+                            className="mt-3 min-h-24 w-full rounded-[14px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-medium outline-none"
                             disabled={isLocked}
                             onChange={(event) =>
                               setProofDrafts((current) => ({ ...current, [field]: event.target.value }))
@@ -1350,13 +1350,13 @@ export function MissionPanel({
                           <>
                             {isMediaField ? (
                               <div className="mt-3 flex flex-col gap-3">
-                                <div className="flex rounded-lg bg-[var(--ve-card-muted)] p-1">
+                                <div className="flex rounded-lg bg-[var(--ui-surface-muted)] p-1">
                                   <button
                                     className={cn(
                                       "flex-1 rounded-md px-3 py-1.5 text-[11px] font-bold transition-colors",
                                       inputMode === "upload"
-                                        ? "bg-[var(--ve-card)] text-[var(--foreground)] shadow-sm"
-                                        : "text-[var(--ve-muted)]",
+                                        ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-sm"
+                                        : "text-[var(--ui-text-muted)]",
                                     )}
                                     onClick={() => setProofInputMode((current) => ({ ...current, [field]: "upload" }))}
                                     type="button"
@@ -1367,8 +1367,8 @@ export function MissionPanel({
                                     className={cn(
                                       "flex-1 rounded-md px-3 py-1.5 text-[11px] font-bold transition-colors",
                                       inputMode === "link"
-                                        ? "bg-[var(--ve-card)] text-[var(--foreground)] shadow-sm"
-                                        : "text-[var(--ve-muted)]",
+                                        ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-sm"
+                                        : "text-[var(--ui-text-muted)]",
                                     )}
                                     onClick={() => setProofInputMode((current) => ({ ...current, [field]: "link" }))}
                                     type="button"
@@ -1382,12 +1382,12 @@ export function MissionPanel({
                                     className={cn(
                                       "flex h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-center",
                                       isRejected
-                                        ? "border-[#e3a99e] bg-[#fff2ee]"
-                                        : "border-[var(--ve-line)] bg-[var(--ve-card-muted)]",
+                                        ? "border-[var(--ui-danger-bg)] bg-[var(--ui-danger-bg)]"
+                                        : "border-[var(--ui-border)] bg-[var(--ui-surface-muted)]",
                                     )}
                                   >
-                                    <UploadCloudIcon className={cn("size-5", isRejected ? "text-[#c00000]" : "text-[var(--ve-muted-strong)]")} />
-                                    <p className={cn("text-xs font-semibold", isRejected ? "text-[#c00000]" : "text-[var(--ve-muted-strong)]")}>
+                                    <UploadCloudIcon className={cn("size-5", isRejected ? "text-[var(--ui-danger)]" : "text-[var(--ui-text-muted)]")} />
+                                    <p className={cn("text-xs font-semibold", isRejected ? "text-[var(--ui-danger)]" : "text-[var(--ui-text-muted)]")}>
                                       <span className="font-bold">Tap to upload</span> or drag and drop
                                     </p>
                                     <input
@@ -1408,7 +1408,7 @@ export function MissionPanel({
                                   </label>
                                 ) : (
                                   <input
-                                    className="h-12 w-full rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-medium outline-none"
+                                    className="h-12 w-full rounded-[10px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-3 text-sm font-medium outline-none"
                                     disabled={isLocked}
                                     onChange={(event) =>
                                       setProofDrafts((current) => ({ ...current, [field]: event.target.value }))
@@ -1419,12 +1419,12 @@ export function MissionPanel({
                                   />
                                 )}
                                 {uploadingProofField === field ? (
-                                  <p className="text-xs font-semibold text-[var(--ve-muted)]">Uploading…</p>
+                                  <p className="text-xs font-semibold text-[var(--ui-text-muted)]">Uploading…</p>
                                 ) : null}
                               </div>
                             ) : (
                               <input
-                                className="mt-3 h-12 w-full rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-medium outline-none"
+                                className="mt-3 h-12 w-full rounded-[10px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-3 text-sm font-medium outline-none"
                                 disabled={isLocked}
                                 onChange={(event) =>
                                   setProofDrafts((current) => ({ ...current, [field]: event.target.value }))
@@ -1440,7 +1440,7 @@ export function MissionPanel({
                         {!isMediaField || inputMode === "link" ? (
                           <div className="mt-3 flex justify-end">
                             <button
-                              className="min-h-10 rounded-[10px] bg-[#087f5b] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+                              className="min-h-10 rounded-[10px] bg-[var(--ui-action)] px-4 py-2 text-sm font-black text-[var(--ui-on-action)] disabled:opacity-50"
                               disabled={isLocked || submittingProofField === field || uploadingProofField === field}
                               onClick={() => void submitProofField(activeProofMission, field)}
                               type="button"
@@ -1459,10 +1459,10 @@ export function MissionPanel({
                 </div>
               </div>
 
-              <div className="sticky bottom-0 border-t border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-card)_92%,transparent)] px-5 py-3 backdrop-blur-md">
+              <div className="sticky bottom-0 border-t border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-surface)_92%,transparent)] px-5 py-3 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[var(--ve-muted)]">Progress</span>
-                  <span className="text-[0.85rem] font-black text-[var(--foreground)]">
+                  <span className="text-[11px] font-bold text-[var(--ui-text-muted)]">Progress</span>
+                  <span className="text-[0.85rem] font-black text-[var(--ui-text)]">
                     {(activeProofMission.proofRequiredFields ?? []).filter(
                       (field) =>
                         activeProofMission.proofFieldStatuses?.[field] === "approved" ||

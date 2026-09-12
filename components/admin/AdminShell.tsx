@@ -1,5 +1,8 @@
 "use client";
 
+import { BrandSignature } from "@/components/brand/BrandSignature";
+import { PlatformEndorsement } from "@/components/brand/PlatformEndorsement";
+import { TenantIdentity, TenantLogo } from "@/components/organizations/TenantIdentity";
 import * as Collapsible from "@radix-ui/react-collapsible";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Select from "@radix-ui/react-select";
@@ -321,10 +324,10 @@ function AdminNavLink({
       aria-current={active ? "page" : undefined}
       aria-label={collapsed ? link.label : undefined}
       className={cn(
-        "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[var(--ve-muted-strong)] transition hover:bg-[var(--ve-panel)] hover:text-[var(--foreground)]",
+        "flex min-h-10 items-center rounded-[12px] text-sm font-bold text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-inset)] hover:text-[var(--ui-text)]",
         collapsed ? "justify-center px-2" : "gap-3 px-3 py-2",
         active &&
-          "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)] shadow-sm ring-1 ring-[color:color-mix(in_srgb,var(--ve-green)_18%,transparent)]",
+          "bg-[color:color-mix(in_srgb,var(--ui-current-bg)_82%,var(--ui-surface))] text-[var(--ui-current-text)] shadow-sm ring-1 ring-[color:color-mix(in_srgb,var(--ui-current-text)_18%,transparent)]",
       )}
       href={link.href}
       title={collapsed ? link.label : undefined}
@@ -348,7 +351,7 @@ function AdminNavGroup({
 }) {
   if (collapsed) {
     return (
-      <div className="space-y-1 border-t border-[var(--ve-line-soft)] pt-3 first:border-t-0 first:pt-0">
+      <div className="space-y-1 border-t border-[var(--ui-border-subtle)] pt-3 first:border-t-0 first:pt-0">
         <p className="sr-only">{group.label}</p>
         {group.links.map((link) => (
           <AdminNavLink collapsed key={link.href} link={link} pathname={pathname} />
@@ -359,16 +362,16 @@ function AdminNavGroup({
 
   return (
     <Collapsible.Root className="space-y-2" defaultOpen={defaultOpen}>
-      <Collapsible.Trigger className="group flex w-full items-center justify-between rounded-[12px] px-2 py-2 text-left transition hover:bg-[var(--ve-panel)]">
+      <Collapsible.Trigger className="group flex w-full items-center justify-between rounded-[12px] px-2 py-2 text-left transition hover:bg-[var(--ui-surface-inset)]">
         <span>
-          <span className="block text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ve-muted)]">
+          <span className="block text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">
             {group.label}
           </span>
-          <span className="mt-0.5 block text-xs font-semibold text-[var(--ve-muted-strong)]">
+          <span className="mt-0.5 block text-xs font-semibold text-[var(--ui-text-muted)]">
             {group.summary}
           </span>
         </span>
-        <ChevronRightIcon className="h-4 w-4 text-[var(--ve-muted)] transition group-data-[state=open]:rotate-90" />
+        <ChevronRightIcon className="h-4 w-4 text-[var(--ui-text-muted)] transition group-data-[state=open]:rotate-90" />
       </Collapsible.Trigger>
       <Collapsible.Content className="space-y-1">
         {group.links.map((link) => (
@@ -393,12 +396,12 @@ function AdminBreadcrumbs({ pathname }: { pathname: string }) {
 
         return (
           <span className="inline-flex items-center gap-2" key={`${crumb.href}-${crumb.label}`}>
-            {index > 0 ? <span className="text-[var(--ve-muted)]">/</span> : null}
+            {index > 0 ? <span className="text-[var(--ui-text-muted)]">/</span> : null}
             {isLast ? (
-              <span className="capitalize text-[var(--foreground)]">{crumb.label}</span>
+              <span className="capitalize text-[var(--ui-text)]">{crumb.label}</span>
             ) : (
               <Link
-                className="capitalize text-[var(--ve-muted-strong)] hover:text-[var(--ve-green)]"
+                className="capitalize text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]"
                 href={crumb.href}
               >
                 {crumb.label}
@@ -460,34 +463,34 @@ function WorkspaceSwitcher({
 
   if (collapsed) {
     return (
-      <div className="mt-6 flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] text-xs font-black text-[var(--ve-green)]">
-        {selectedContext?.type === "platform" ? "P" : selectedLabel.slice(0, 2).toUpperCase()}
+      <div className="mt-6 flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] text-xs font-black text-[var(--ui-action)]">
+        {selectedContext?.type === "platform" ? <BrandSignature markOnly /> : selectedLabel.slice(0, 2).toUpperCase()}
       </div>
     );
   }
 
   return (
-    <div className="mt-6 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4">
-      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+    <div className="mt-6 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-4">
+      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         Workspace
       </p>
       <Select.Root value={selectedContext?.id ?? "platform"} onValueChange={handleChange}>
-        <Select.Trigger className="mt-2 flex min-h-11 w-full items-center justify-between rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 text-left text-sm font-black outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
+        <Select.Trigger className="mt-2 flex min-h-11 w-full items-center justify-between rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 text-left text-sm font-black outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]">
           <Select.Value />
-          <Select.Icon className="text-[var(--ve-muted)]">
+          <Select.Icon className="text-[var(--ui-text-muted)]">
             <ChevronRightIcon className="h-4 w-4 rotate-90" />
           </Select.Icon>
         </Select.Trigger>
         <Select.Portal>
           <Select.Content
             align="start"
-            className="z-50 min-w-[18rem] overflow-hidden rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-1 shadow-xl"
+            className="z-50 min-w-[18rem] overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
             position="popper"
           >
             <Select.Viewport>
               {contextOptions.map((context) => (
                 <Select.Item
-                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ve-panel)]"
+                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ui-surface-inset)]"
                   key={context.id}
                   value={context.id}
                 >
@@ -498,11 +501,11 @@ function WorkspaceSwitcher({
           </Select.Content>
         </Select.Portal>
       </Select.Root>
-      <p className="mt-2 text-xs font-semibold text-[var(--ve-muted-strong)]">
+      <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
         {selectedContext?.roleLabel ?? "Platform admin"}
       </p>
       {selectedContext?.type === "organization" ? (
-        <p className="mt-1 text-xs font-black capitalize text-[var(--ve-green)]">
+        <p className="mt-1 text-xs font-black capitalize text-[var(--ui-text)]">
           {selectedContext.verificationStatus.replaceAll("_", " ")}
         </p>
       ) : null}
@@ -731,14 +734,14 @@ function CreateMenu({ collapsed = false, workspace }: { collapsed?: boolean; wor
         {collapsed ? (
           <button
             aria-label="Create"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--admin-primary)] text-[var(--admin-on-primary)] shadow-[0_12px_24px_rgba(8,127,91,0.22)] transition hover:bg-[var(--admin-primary-container)]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--ui-action)] text-[var(--ui-on-action)] shadow-[0_12px_24px_rgba(var(--ui-shadow-rgb),0.22)] transition hover:bg-[var(--ui-action)]"
             type="button"
           >
             <AdminAddBoxIcon className="h-5 w-5" />
           </button>
         ) : (
           <button
-            className="mb-6 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--admin-primary-container)] px-4 py-2 text-sm font-black text-[var(--admin-on-primary)] shadow-[0_12px_24px_rgba(8,127,91,0.22)] transition hover:bg-[var(--admin-primary)]"
+            className="mb-6 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--ui-action)] px-4 py-2 text-sm font-black text-[var(--ui-on-action)] shadow-[0_12px_24px_rgba(var(--ui-shadow-rgb),0.22)] transition hover:bg-[var(--ui-action)]"
             type="button"
           >
             <AdminAddBoxIcon className="h-5 w-5" />
@@ -749,17 +752,17 @@ function CreateMenu({ collapsed = false, workspace }: { collapsed?: boolean; wor
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="start"
-          className="z-50 min-w-[15rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          className="z-50 min-w-[15rem] overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
           side={collapsed ? "right" : "bottom"}
           sideOffset={8}
         >
           {items.map((item) => (
             <DropdownMenu.Item asChild key={item.href}>
               <Link
-                className="flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                className="flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--ui-text)] outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
                 href={item.href}
               >
-                <item.icon className="h-[18px] w-[18px] text-[var(--admin-on-surface-variant)]" />
+                <item.icon className="h-[18px] w-[18px] text-[var(--ui-text-muted)]" />
                 {item.label}
               </Link>
             </DropdownMenu.Item>
@@ -790,51 +793,45 @@ function OrgWorkspaceIdentity({
   const platformContext = contexts.find((context) => context.type === "platform");
   const selected = orgContexts.find((context) => context.id === currentWorkspace.id);
   const identity = currentWorkspace.organizationIdentity;
+  const platformCatalog = currentWorkspace.id === PLATFORM_CATALOG_WORKSPACE_ID;
   const displayName = identity?.shortName ?? identity?.name ?? selected?.label ?? "Organisation";
-  const initials = displayName.slice(0, 2).toUpperCase();
 
   function handleChange(value: string) {
     document.cookie = `project-ve-admin-workspace=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
     router.refresh();
   }
 
+  const workspaceDetail = (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <span>{selected?.roleLabel ?? "Admin"}</span>
+      {identity ? (
+        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--ui-success-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--ui-success)]">
+          {identity.lifecycleStatus}
+        </span>
+      ) : null}
+    </span>
+  );
+
   if (collapsed) {
+    if (platformCatalog) return <BrandSignature markOnly />;
     return (
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--admin-primary-container)] font-black text-[var(--admin-on-primary)]">
-        {initials}
-      </div>
+      <span aria-label={displayName} role="img">
+        <TenantLogo logoUrl={identity?.logoUrl} name={displayName} small />
+      </span>
     );
   }
 
   return (
     <Select.Root value={currentWorkspace.id} onValueChange={handleChange}>
-      <Select.Trigger className="flex items-center gap-2 rounded-lg px-1 py-1 text-left outline-none transition hover:bg-[var(--admin-surface-container-low)]">
-        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)]">
-          {identity?.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt={displayName} className="h-full w-full object-cover" src={identity.logoUrl} />
-          ) : (
-            <span className="flex h-full w-full items-center justify-center text-xs font-black text-[var(--admin-on-surface-variant)]">
-              {initials}
-            </span>
-          )}
-        </div>
-        <span className="flex flex-col leading-tight">
-          <span className="text-sm font-black text-[var(--admin-on-surface)]">{displayName}</span>
-          <span className="flex items-center gap-1.5">
-            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
-              {selected?.roleLabel ?? "Admin"}
-            </span>
-            {identity ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--admin-primary)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--admin-primary-container)]" />
-                {identity.lifecycleStatus}
-              </span>
-            ) : null}
-          </span>
-        </span>
+      <Select.Trigger aria-label={`Switch workspace: ${displayName}`} className="flex max-w-full items-center gap-2 rounded-lg px-1 py-1 text-left outline-none transition hover:bg-[var(--ui-surface-soft)]">
+        {platformCatalog ? (
+          <div className="flex min-w-0 flex-col gap-1">
+            <BrandSignature />
+            <span className="text-sm text-[var(--ui-text-muted)]">{workspaceDetail}</span>
+          </div>
+        ) : <TenantIdentity logoUrl={identity?.logoUrl} name={displayName} detail={workspaceDetail} />}
         {orgContexts.length > 1 || platformContext ? (
-          <Select.Icon className="ml-1 text-[var(--admin-on-surface-variant)]">
+          <Select.Icon className="ml-1 text-[var(--ui-text-muted)]">
             <ChevronRightIcon className="h-3.5 w-3.5 rotate-90" />
           </Select.Icon>
         ) : null}
@@ -842,24 +839,24 @@ function OrgWorkspaceIdentity({
       <Select.Portal>
         <Select.Content
           align="start"
-          className="z-50 min-w-[16rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          className="z-50 min-w-[16rem] overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
           position="popper"
         >
           <Select.Viewport>
             {platformContext ? (
               <>
                 <Select.Item
-                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                  className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
                   value={platformContext.id}
                 >
                   <Select.ItemText>{platformContext.label}</Select.ItemText>
                 </Select.Item>
-                <div className="my-1 h-px bg-[var(--admin-border-warm)]" role="separator" />
+                <div className="my-1 h-px bg-[var(--ui-border-subtle)]" role="separator" />
               </>
             ) : null}
             {orgContexts.map((context) => (
               <Select.Item
-                className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+                className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
                 key={context.id}
                 value={context.id}
               >
@@ -875,12 +872,16 @@ function OrgWorkspaceIdentity({
 
 function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: ResolvedAdminWorkspace }) {
   return (
-    <nav className="fixed left-0 top-0 hidden h-screen w-20 flex-col items-center border-r border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] py-6 md:flex xl:hidden">
+    <nav className="fixed left-0 top-0 hidden h-screen w-20 flex-col items-center border-r border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] py-6 md:flex xl:hidden">
       <Link
-        className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--admin-primary-container)] text-sm font-black text-[var(--admin-on-primary)]"
+        className="mb-8 flex h-11 w-11 items-center justify-center rounded border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-sm font-black text-[var(--ui-text)]"
         href="/admin"
       >
-        Ve
+        {workspace.id !== PLATFORM_CATALOG_WORKSPACE_ID && workspace.organizationIdentity ? (
+          <span aria-label={workspace.organizationIdentity.name} role="img">
+            <TenantLogo logoUrl={workspace.organizationIdentity.logoUrl} name={workspace.organizationIdentity.name} small />
+          </span>
+        ) : <BrandSignature markOnly />}
       </Link>
       <ul className="flex flex-1 flex-col items-center gap-2">
         {visibleOrgLinks(workspace).map((link) => {
@@ -892,8 +893,8 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
                 aria-current={active ? "page" : undefined}
                 aria-label={link.label}
                 className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-lg text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-high)] hover:text-[var(--admin-primary)]",
-                  active && "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_14%,transparent)] text-[var(--admin-primary)]",
+                  "flex h-11 w-11 items-center justify-center rounded-lg text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-raised)] hover:text-[var(--ui-action)]",
+                  active && "bg-[color:color-mix(in_srgb,var(--ui-current-text)_14%,transparent)] text-[var(--ui-current-text)]",
                 )}
                 href={link.href}
                 title={link.label}
@@ -907,9 +908,9 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
       <Link
           aria-label={orgSettingsLink.label}
           className={cn(
-            "mt-4 flex h-11 w-11 items-center justify-center rounded-lg text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-high)] hover:text-[var(--admin-primary)]",
+            "mt-4 flex h-11 w-11 items-center justify-center rounded-lg text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-raised)] hover:text-[var(--ui-action)]",
             isActivePath(pathname, orgSettingsLink.href) &&
-              "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_14%,transparent)] text-[var(--admin-primary)]",
+              "bg-[color:color-mix(in_srgb,var(--ui-current-text)_14%,transparent)] text-[var(--ui-current-text)]",
           )}
           href={orgSettingsLink.href}
           title={orgSettingsLink.label}
@@ -925,14 +926,13 @@ function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: Reso
 
 function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspace: ResolvedAdminWorkspace }) {
   return (
-    <nav className="fixed left-0 top-0 hidden h-screen w-72 flex-col overflow-y-auto border-r border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4 xl:flex">
+    <nav className="fixed left-0 top-0 hidden h-screen w-72 flex-col overflow-y-auto border-r border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-4 xl:flex">
       <div className="mb-6 flex items-center gap-3 px-1">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] font-black text-[var(--admin-primary)]">
-          Ve
-        </div>
         <div>
-          <p className="font-black leading-tight text-[var(--admin-brand-hero)]">Project Ve</p>
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--admin-on-surface-variant)]">
+          {workspace.id !== PLATFORM_CATALOG_WORKSPACE_ID && workspace.organizationIdentity ? (
+            <TenantIdentity logoUrl={workspace.organizationIdentity.logoUrl} name={workspace.organizationIdentity.shortName || workspace.organizationIdentity.name} />
+          ) : <BrandSignature />}
+          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">
             Admin workspace
           </p>
         </div>
@@ -945,7 +945,7 @@ function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspa
           </li>
         ))}
       </ul>
-      <div className="mt-auto border-t border-[var(--admin-border-warm)] pt-3">
+      <div className="mt-auto border-t border-[var(--ui-border-subtle)] pt-3">
         <AdminNavLink link={orgSettingsLink} pathname={pathname} />
       </div>
     </nav>
@@ -957,7 +957,7 @@ function ResourcesMenu() {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
-          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)] hover:text-[var(--ui-action)]"
           type="button"
         >
           <BookOpenIcon className="h-5 w-5" />
@@ -968,12 +968,12 @@ function ResourcesMenu() {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"
-          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
           sideOffset={8}
         >
           <DropdownMenu.Item asChild>
             <Link
-              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--ui-text)] outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
               href="/support"
             >
               Support
@@ -981,7 +981,7 @@ function ResourcesMenu() {
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
             <Link
-              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--ui-text)] outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
               href="/contact"
             >
               Contact
@@ -1012,14 +1012,14 @@ function AdminAvatarMenu({ profile }: { profile: UserProfile }) {
       <DropdownMenu.Trigger asChild>
         <button
           aria-label="Account menu"
-          className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--admin-border-warm)] transition hover:border-[var(--admin-primary)]"
+          className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--ui-border-subtle)] transition hover:border-[var(--ui-action)]"
           type="button"
         >
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img alt="" className="h-full w-full object-cover" src={profile.avatar_url} />
           ) : (
-            <span className="flex h-full w-full items-center justify-center bg-[var(--admin-surface-container-low)] text-xs font-black text-[var(--admin-on-surface-variant)]">
+            <span className="flex h-full w-full items-center justify-center bg-[var(--ui-surface-soft)] text-xs font-black text-[var(--ui-text-muted)]">
               {initials}
             </span>
           )}
@@ -1028,25 +1028,25 @@ function AdminAvatarMenu({ profile }: { profile: UserProfile }) {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"
-          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          className="z-50 min-w-[12rem] overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
           sideOffset={8}
         >
           <div className="px-3 py-2">
-            <p className="truncate text-sm font-black text-[var(--admin-on-surface)]">
+            <p className="truncate text-sm font-black text-[var(--ui-text)]">
               {profile.display_name ?? "Admin"}
             </p>
           </div>
-          <div className="my-1 h-px bg-[var(--admin-border-warm)]" role="separator" />
+          <div className="my-1 h-px bg-[var(--ui-border-subtle)]" role="separator" />
           <DropdownMenu.Item asChild>
             <Link
-              className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+              className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--ui-text)] outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
               href="/profile"
             >
               View profile
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--admin-secondary)] outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)]"
+            className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-[var(--ui-danger)] outline-none data-[highlighted]:bg-[var(--ui-surface-soft)]"
             onSelect={handleSignOut}
           >
             <LogoutIcon className="h-4 w-4" />
@@ -1068,21 +1068,24 @@ function OrgTopBar({
   profile: UserProfile;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-2 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 md:px-6">
-      <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-2 border-b border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3 md:px-6">
+      <div className="min-w-0 basis-full space-y-2 md:min-w-[15rem] md:flex-1 md:basis-0">
+        <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
+        {currentWorkspace.id !== PLATFORM_CATALOG_WORKSPACE_ID && currentWorkspace.organizationIdentity ? <PlatformEndorsement /> : null}
+      </div>
+      <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
         <ResourcesMenu />
-        <div className="flex items-center gap-1 border-l border-[var(--admin-border-warm)] pl-3">
+        <div className="flex items-center gap-1 border-l border-[var(--ui-border-subtle)] pl-3">
           <Link
             aria-label="Recent activity and notifications"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)] hover:text-[var(--ui-action)]"
             href="/admin/activity"
           >
             <BellIcon className="h-5 w-5" />
           </Link>
           <Link
             aria-label="Help and support"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)] hover:text-[var(--ui-action)]"
             href="/support"
           >
             <HelpCircleIcon className="h-5 w-5" />
@@ -1113,32 +1116,31 @@ export function AdminShell({
 
   if (currentWorkspace.type === "organization") {
     return (
-      <main className="min-h-screen bg-[var(--admin-surface)] text-[var(--admin-on-surface)]">
+      <main className="min-h-screen bg-[var(--ui-surface-inset)] text-[var(--ui-text)]">
         <OrgSideNav pathname={pathname} workspace={currentWorkspace} />
         <OrgSideNavExpanded pathname={pathname} workspace={currentWorkspace} />
         <div className="flex min-h-screen flex-col md:pl-20 xl:pl-72">
           <OrgTopBar currentWorkspace={currentWorkspace} organizationContexts={organizationContexts} profile={profile} />
-          <header className="sticky top-0 z-20 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]/95 px-5 py-4 backdrop-blur md:hidden">
-            <div className="flex items-center justify-between">
-              <OrgWorkspaceIdentity contexts={organizationContexts} currentWorkspace={currentWorkspace} />
-              <Link className="text-sm font-black text-[var(--admin-primary)]" href="/dashboard">
+          <header className="border-b border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]/95 px-5 py-4 md:hidden">
+            <div className="flex justify-end">
+              <Link className="text-sm font-black text-[var(--ui-action)]" href="/dashboard">
                 App
               </Link>
             </div>
             <Collapsible.Root className="mt-4" onOpenChange={setMobileNavOpen} open={mobileNavOpen}>
-              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--admin-surface-container-low)] px-4 py-3 text-sm font-black text-[var(--admin-on-surface)]">
+              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ui-surface-soft)] px-4 py-3 text-sm font-black text-[var(--ui-text)]">
                 <span className="inline-flex items-center gap-2">
                   <MenuIcon className="h-4 w-4" />
                   Admin navigation
                 </span>
                 <ChevronRightIcon className={cn("h-4 w-4 transition", mobileNavOpen && "rotate-90")} />
               </Collapsible.Trigger>
-              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3 shadow-lg">
+              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 shadow-lg">
                 <nav className="grid gap-1">
                   {visibleOrgLinks(currentWorkspace).map((link) => (
                     <AdminNavLink key={link.href} link={link} pathname={pathname} />
                   ))}
-                  <div className="mt-2 border-t border-[var(--admin-border-warm)] pt-2">
+                  <div className="mt-2 border-t border-[var(--ui-border-subtle)] pt-2">
                     <AdminNavLink link={orgSettingsLink} pathname={pathname} />
                   </div>
                 </nav>
@@ -1155,11 +1157,11 @@ export function AdminShell({
   }
 
   return (
-    <main className="min-h-screen bg-[var(--ve-panel)] text-[var(--foreground)]">
+    <main className="min-h-screen bg-[var(--ui-surface-inset)] text-[var(--ui-text)]">
       <div className="flex min-h-screen w-full">
         <aside
           className={cn(
-            "sticky top-0 hidden h-screen shrink-0 border-r border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-6 transition-[width] duration-200 md:flex md:flex-col",
+            "sticky top-0 hidden h-screen shrink-0 border-r border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-6 transition-[width] duration-200 md:flex md:flex-col",
             collapsed ? "w-20" : "w-72",
           )}
         >
@@ -1167,24 +1169,24 @@ export function AdminShell({
             <div className={cn(collapsed && "sr-only")}>
               <Link
                 href="/dashboard"
-                className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]"
+                className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]"
               >
-                Project VE
+                <BrandSignature />
               </Link>
               <h1 className="mt-2 text-2xl font-black">Admin</h1>
             </div>
             {collapsed ? (
               <Link
                 aria-label="Project VE admin"
-                className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-sm font-black text-[var(--ve-green)]"
+                className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] text-sm font-black text-[var(--ui-action)]"
                 href="/admin"
               >
-                VE
+                <BrandSignature decorative markOnly />
               </Link>
             ) : null}
             <button
               aria-label={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] text-[var(--foreground)] hover:bg-[var(--ve-panel-soft)]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--ui-surface-inset)] text-[var(--ui-text)] hover:bg-[var(--ui-surface-soft)]"
               onClick={() => setCollapsed((value) => !value)}
               type="button"
             >
@@ -1211,27 +1213,25 @@ export function AdminShell({
           </nav>
 
           {collapsed ? null : (
-            <div className="mt-auto rounded-[16px] bg-[var(--ve-card-muted)] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+            <div className="mt-auto rounded-[16px] bg-[var(--ui-surface-muted)] p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                 Signed in
               </p>
               <p className="mt-1 truncate text-sm font-black">
                 {profile.display_name ?? "Admin"}
               </p>
-              <p className="mt-1 text-xs font-bold capitalize text-[var(--ve-green)]">{profile.role}</p>
+              <p className="mt-1 text-xs font-bold capitalize text-[var(--ui-text)]">{profile.role}</p>
             </div>
           )}
         </aside>
 
         <section className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-[var(--ve-line-soft)] bg-[var(--ve-shell)]/95 px-5 py-4 backdrop-blur md:hidden">
+          <header className="sticky top-0 z-20 border-b border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)]/95 px-5 py-4 backdrop-blur md:hidden">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
-                  Project VE
-                </p>
+                <BrandSignature />
                 <h1 className="text-xl font-black">Admin</h1>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   {organizationContexts.length > 1
                     ? `${organizationContexts.length - 1} organisation contexts`
                     : "Project VE platform"}
@@ -1248,7 +1248,7 @@ export function AdminShell({
               />
             </div>
             <Collapsible.Root className="mt-4" open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black text-[var(--foreground)]">
+              <Collapsible.Trigger className="flex w-full items-center justify-between rounded-[14px] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-black text-[var(--ui-text)]">
                 <span className="inline-flex items-center gap-2">
                   <MenuIcon className="h-4 w-4" />
                   Admin navigation
@@ -1257,11 +1257,11 @@ export function AdminShell({
                   className={cn("h-4 w-4 transition", mobileNavOpen && "rotate-90")}
                 />
               </Collapsible.Trigger>
-              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 shadow-lg">
+              <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 shadow-lg">
                 <nav className="space-y-4">
                   {visibleLinkGroups.map((group) => (
                     <section key={group.id}>
-                      <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                      <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                         {group.label}
                       </p>
                       <div className="grid gap-1">

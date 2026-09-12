@@ -46,18 +46,18 @@ type PerkEditorFormProps = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-violet)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function SectionChevron({ open }: { open: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] text-[var(--ve-violet)] transition-transform ${
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-info-bg)_82%,var(--ui-surface))] text-[var(--ui-info)] transition-transform ${
         open ? "rotate-90" : ""
       }`}
     >
@@ -95,8 +95,8 @@ function CollapsibleSection({
     <section
       className={`rounded-[16px] border p-4 ${
         tone === "perk"
-          ? "border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_62%,var(--ve-card))]"
-          : "border-[var(--ve-line-soft)] bg-[var(--ve-shell)]"
+          ? "border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-info-bg)_62%,var(--ui-surface))]"
+          : "border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)]"
       }`}
     >
       <button
@@ -106,16 +106,16 @@ function CollapsibleSection({
       >
         <div>
           {eyebrow ? (
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-violet)]">{eyebrow}</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-info)]">{eyebrow}</p>
           ) : null}
-          <h2 className="mt-2 text-sm font-black text-[var(--foreground)]">{title}</h2>
+          <h2 className="mt-2 text-sm font-black text-[var(--ui-text)]">{title}</h2>
           {description ? (
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">{description}</p>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">{description}</p>
           ) : null}
         </div>
         <SectionChevron open={open} />
       </button>
-      {open ? <div className="mt-4 border-t border-[var(--ve-line-soft)] pt-4">{children}</div> : null}
+      {open ? <div className="mt-4 border-t border-[var(--ui-border-subtle)] pt-4">{children}</div> : null}
     </section>
   );
 }
@@ -125,7 +125,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[var(--ve-violet)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)] disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -202,7 +202,7 @@ export function PerkEditorForm({
         tone="perk"
       >
         <div className="space-y-5">
-          <p className="text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+          <p className="text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Saving here keeps this perk in draft. Publish or pause it from the Perks overview when the pool and inventory are ready.
           </p>
 
@@ -257,10 +257,10 @@ export function PerkEditorForm({
                 <option value="system_only">System only</option>
               </select>
             </label>
-            <div className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3">
+            <div className="rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3">
               <span className={labelClasses()}>Publishing</span>
-              <p className="mt-2 text-sm font-black text-[var(--foreground)]">Managed from Perks overview</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-2 text-sm font-black text-[var(--ui-text)]">Managed from Perks overview</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Use the overview to publish, pause, or return this perk to draft.
               </p>
             </div>
@@ -302,10 +302,10 @@ export function PerkEditorForm({
             </label>
             {limitPeriod === "none" ? (
               <>
-                <div className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3">
+                <div className="rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3">
                   <span className={labelClasses()}>Per-user limit</span>
-                  <p className="mt-2 text-sm font-black text-[var(--foreground)]">No per-user limit</p>
-                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-2 text-sm font-black text-[var(--ui-text)]">No per-user limit</p>
+                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Anyone with enough XP can open this perk while the prize pool and campaign rules allow.
                   </p>
                 </div>
@@ -407,7 +407,7 @@ export function PerkEditorForm({
         <div className="space-y-4">
           <div className="flex items-center justify-end">
             <button
-              className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black"
+              className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black"
               onClick={() => setClaimSteps((current) => [...current, ""])}
               type="button"
             >
@@ -430,7 +430,7 @@ export function PerkEditorForm({
                   value={step}
                 />
                 <button
-                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
+                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 text-xs font-black text-[var(--ui-danger)]"
                   onClick={() => setClaimSteps((current) => current.filter((_, stepIndex) => stepIndex !== index))}
                   type="button"
                 >
@@ -446,8 +446,8 @@ export function PerkEditorForm({
         <p
           className={`rounded-[14px] px-4 py-3 text-sm font-black ${
             state.ok
-              ? "bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_72%,var(--ve-card))] text-[var(--ve-violet)]"
-              : "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+              ? "bg-[var(--ui-success-bg)] text-[var(--ui-success)]"
+              : "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
           }`}
         >
           {state.message}

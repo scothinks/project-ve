@@ -41,7 +41,7 @@ export default async function OrganizationResultsPage({ params, searchParams }: 
   }));
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       <AppHeader
         backHref={appendOrganizationDeliverySearchParam(orgHref(workspace, `/learn/${course.id}`), deliveryContext)}
         showMenu={false}

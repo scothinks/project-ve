@@ -16,11 +16,11 @@ type RewardThumbnailFieldsProps = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function normalizePickerColor(value: string, fallback = "#f4fbf7") {
@@ -117,7 +117,7 @@ export function RewardThumbnailFields({
             <div className="mt-1 flex gap-2">
               <input
                 aria-label="Pick thumbnail color"
-                className="h-[46px] w-14 rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] p-1"
+                className="h-[46px] w-14 rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface)] p-1"
                 onChange={(event) => setPreviewColor(event.target.value)}
                 type="color"
                 value={pickerColor}
@@ -145,16 +145,16 @@ export function RewardThumbnailFields({
           ) : null}
         </div>
 
-        <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+        <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-black text-[var(--foreground)]">Need another icon?</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="text-sm font-black text-[var(--ui-text)]">Need another icon?</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Search the full Tabler library only when the recommended list is not enough.
               </p>
             </div>
             <button
-              className="rounded-full bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
+              className="rounded-full bg-[var(--ui-surface)] px-3 py-2 text-xs font-black text-[var(--ui-action)]"
               onClick={() => setShowAllIcons((value) => !value)}
               type="button"
             >
@@ -164,7 +164,7 @@ export function RewardThumbnailFields({
         </div>
 
         {showAllIcons ? (
-          <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+          <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
               <label>
                 <span className={labelClasses()}>Search full library</span>
@@ -200,7 +200,7 @@ export function RewardThumbnailFields({
               </label>
             </div>
             {!query.trim() ? (
-              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Search by icon name. Example: `gift`, `coffee`, `certificate`, `wifi`, `flag`.
               </p>
             ) : null}
@@ -208,22 +208,22 @@ export function RewardThumbnailFields({
         ) : null}
       </div>
 
-      <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
+      <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
         <p className={labelClasses()}>Preview</p>
         <div
           aria-describedby={previewId}
-          className="mt-3 aspect-square overflow-hidden rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)]"
+          className="mt-3 aspect-square overflow-hidden rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]"
         >
           <RewardThumbnailVisual
-            className="text-[var(--ve-green)]"
+            className="text-[var(--ui-action)]"
             defaultColor={previewColor || "#f4fbf7"}
-            iconClassName="h-[52%] w-[52%] text-[var(--ve-green)]"
-            textClassName="text-sm font-black text-[var(--ve-green)]"
+            iconClassName="h-[52%] w-[52%] text-[var(--ui-artwork-ink)]"
+            textClassName="text-sm font-black text-[var(--ui-artwork-ink)]"
             thumbnail={previewThumbnail}
             title={title}
           />
         </div>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]" id={previewId}>
+        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]" id={previewId}>
           Uploaded image still takes priority over the icon.
         </p>
       </div>

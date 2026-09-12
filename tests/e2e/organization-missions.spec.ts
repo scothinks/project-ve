@@ -78,12 +78,13 @@ async function createTestUser(email: string, displayName: string) {
 
 async function signIn(page: Page, email: string, nextPath = "/dashboard") {
   await page.goto(nextPath.startsWith("/login?") ? nextPath : `/login?next=${encodeURIComponent(nextPath)}`);
-  if (await page.getByPlaceholder("Enter Full Name").isVisible().catch(() => false)) {
-    await page.getByRole("button", { name: "Login" }).last().click();
+  if (await page.getByLabel("Full name", { exact: true }).isVisible().catch(() => false)) {
+    await page.getByRole("button", { name: "Sign in", exact: true }).last().click();
+    await expect(page.locator(".auth-form-wrap")).toHaveAttribute("aria-busy", "false");
   }
-  await page.getByPlaceholder("Enter Email Address").fill(email);
-  await page.getByPlaceholder("Enter Password").fill(authCredential);
-  await page.getByRole("button", { name: "Login" }).click();
+  await page.getByLabel("Email address", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(authCredential);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   if (!nextPath.startsWith("/login?")) {
     await expect(page).toHaveURL(new RegExp(`${nextPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), {
       timeout: 30_000,

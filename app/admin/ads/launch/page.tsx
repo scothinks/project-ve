@@ -37,7 +37,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
 
         <div className="mt-5 grid gap-5 xl:grid-cols-2">
           <WorkflowCard step="Step 1" title="Sponsor partner">
-            <p className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {selectedPartner
                 ? `Editing ${selectedPartner.name}. Clear the edit link to create a new sponsor.`
                 : "Capture who the sponsor is, where clicks are allowed to go, and whether commercial terms are accepted."}
@@ -74,11 +74,11 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
                   <textarea className={inputClasses} name="notes" rows={3} defaultValue={selectedPartner?.notes ?? ""} />
                 </Field>
               </AdvancedPanel>
-              <label className="md:col-span-2 flex items-start gap-3 rounded-[16px] bg-[var(--ve-panel)] p-4">
+              <label className="md:col-span-2 flex items-start gap-3 rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
                 <input className="mt-1" name="termsAccepted" type="checkbox" value="true" defaultChecked={Boolean(selectedPartner?.terms_accepted_at)} />
                 <span>
                   <span className="block text-sm font-black">Sponsor accepted Project VE ads terms v1</span>
-                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Paid campaigns are blocked until terms are recorded.
                   </span>
                 </span>
@@ -92,7 +92,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
           </WorkflowCard>
 
           <WorkflowCard step="Step 2" title="Campaign brief">
-            <p className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {selectedCampaign
                 ? `Editing ${selectedCampaign.name}. Clear the edit link to create a new campaign.`
                 : "Define the commercial terms, schedule, and delivery intent. Advanced targeting stays tucked away until needed."}
@@ -188,7 +188,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
                 <Field label="Overspend tolerance %">
                   <input className={inputClasses} name="overspendTolerancePercent" type="number" min={0} defaultValue={selectedCampaign?.overspend_tolerance_percent ?? 0} />
                 </Field>
-                <label className="flex items-center gap-2 rounded-[14px] bg-[var(--ve-card)] p-3">
+                <label className="flex items-center gap-2 rounded-[14px] bg-[var(--ui-surface)] p-3">
                   <input name="allowOverspend" type="checkbox" value="true" defaultChecked={Boolean(selectedCampaign?.allow_overspend)} />
                   <span className="text-sm font-bold">Allow controlled overspend</span>
                 </label>
@@ -259,7 +259,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
           <WorkflowCard step="Step 3" title="Creative submission">
-            <p className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Submit native sponsor copy and first-party assets. Approval happens separately to preserve review integrity.
             </p>
             <form action={saveAdCreativeVersion} className="mt-5 grid gap-4 md:grid-cols-2">
@@ -346,33 +346,33 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
           </WorkflowCard>
 
           <AdminCard className="self-start">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
               Native preview
             </p>
-            <div className="mt-4 overflow-hidden rounded-[24px] border border-[color:color-mix(in_srgb,var(--ve-green)_16%,var(--ve-line-soft))] bg-[var(--ve-card)] shadow-sm">
-              <div className="h-32 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--ve-green-soft)_70%,white),color-mix(in_srgb,var(--ve-violet-soft)_60%,white))]" />
+            <div className="mt-4 overflow-hidden rounded-[24px] border border-[color:color-mix(in_srgb,var(--ui-action)_16%,var(--ui-border-subtle))] bg-[var(--ui-surface)] shadow-sm">
+              <div className="h-32 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--ui-action-soft)_70%,var(--ui-surface)),color-mix(in_srgb,var(--ui-info-bg)_60%,var(--ui-surface)))]" />
               <div className="p-5">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
                   Sponsored
                 </p>
-                <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                   Sponsor name
                 </p>
-                <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                   Optional eyebrow
                 </p>
                 <h3 className="mt-2 text-lg font-black leading-6 tracking-[-0.02em]">
                   Native ad headline appears here
                 </h3>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   Body copy should be clear, sponsor-safe, and visibly separate from lesson content.
                 </p>
-                <div className="mt-4 inline-flex min-h-10 items-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black text-white">
+                <div className="mt-4 inline-flex min-h-10 items-center rounded-full bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]">
                   CTA label
                 </div>
               </div>
             </div>
-            <div className="mt-4 rounded-[16px] bg-[var(--ve-panel)] p-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <div className="mt-4 rounded-[16px] bg-[var(--ui-surface-inset)] p-4 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Approval checks: visible disclosure, sponsor identity, HTTPS CTA, accessible alt text, approved asset, placement-compatible format.
             </div>
           </AdminCard>
@@ -380,7 +380,7 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
 
         <div className="mt-5">
           <WorkflowCard step="Step 4" title="Placement flight">
-            <p className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Connect an approved creative version to a placement, then set delivery limits and brand-safety exclusions.
             </p>
             <form action={saveAdFlight} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -435,11 +435,11 @@ export default async function AdminAdsLaunchPage({ searchParams }: AdsRouteProps
               <Field label="Lesson sequence page" help="Optional. Use only when this creative should appear on a specific lesson page.">
                 <input className={inputClasses} name="sequencePageNumber" type="number" min={0} />
               </Field>
-              <label className="flex items-start gap-3 rounded-[16px] bg-[var(--ve-panel)] p-4">
+              <label className="flex items-start gap-3 rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
                 <input className="mt-1" name="allowConsecutiveCreative" type="checkbox" value="true" />
                 <span>
                   <span className="block text-sm font-black">Allow consecutive lesson pages</span>
-                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Leave off unless this flight is intentionally sequenced across adjacent lesson screens.
                   </span>
                 </span>

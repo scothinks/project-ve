@@ -122,7 +122,7 @@ export function AppInstallPrompt() {
       title="Save Project VE to your home screen."
       trailing={!deferredPrompt ? (
         <button
-          className="shrink-0 rounded-full border border-[var(--ve-line)] px-4 py-2 text-sm font-black text-[var(--foreground)]"
+          className="shrink-0 rounded-full border border-[var(--ui-border)] px-4 py-2 text-sm font-black text-[var(--ui-text)]"
           onClick={() => setShowIosHelp((current) => !current)}
           type="button"
         >
@@ -131,10 +131,10 @@ export function AppInstallPrompt() {
       ) : undefined}
     >
       {showIosPrompt && showIosHelp ? (
-        <div className="rounded-[18px] border border-[#efe7da] bg-[var(--ve-panel)] px-4 py-3">
-          <p className="text-sm font-semibold leading-6 text-[#575757]">
-            In Safari, tap <span className="font-black text-[var(--foreground)]">Share</span>, then choose{" "}
-            <span className="font-black text-[var(--foreground)]">Add to Home Screen</span>.
+        <div className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] px-4 py-3">
+          <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
+            In Safari, tap <span className="font-black text-[var(--ui-text)]">Share</span>, then choose{" "}
+            <span className="font-black text-[var(--ui-text)]">Add to Home Screen</span>.
           </p>
         </div>
       ) : null}

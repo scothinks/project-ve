@@ -1,3 +1,4 @@
+import { authCookieOptions, sessionPersistenceCookie } from "@/lib/auth-session-persistence";
 import "server-only";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
@@ -28,7 +29,7 @@ export async function createSupabaseServerClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, authCookieOptions(options, value, cookieStore.get(sessionPersistenceCookie)?.value));
           });
         } catch {
           // Server Components cannot always write cookies. Middleware refreshes sessions.

@@ -1,3 +1,4 @@
+import { authCookieOptions, sessionPersistenceCookie } from "@/lib/auth-session-persistence";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { isDemoMode } from "@/lib/app-mode";
@@ -57,7 +58,7 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set("cookie", request.cookies.toString());
         response = createNextResponse();
         cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, authCookieOptions(options, value, request.cookies.get(sessionPersistenceCookie)?.value));
         });
       },
     },

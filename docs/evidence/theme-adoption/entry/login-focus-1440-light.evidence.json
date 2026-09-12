@@ -1,0 +1,31 @@
+{
+  "sourceSha": "59ea597af00e0f6a53f3018f18292d410f1be59e",
+  "sourceSha256": "28bb191674462569c21e93347414f5567bef4fbcce5bf379cca346f39b79482d",
+  "buildId": "oxcJLvjD9hgnuqzwBtOlQ",
+  "captureHelperSha256": "99ec165da32833bef763af2b8440e17036c46a91e5249d2e3f589064e4b91215",
+  "fonts": {
+    "requested": [
+      {
+        "path": "/_next/static/media/e2f11327907cb2b5.woff2",
+        "transferBytes": 0,
+        "encodedBytes": 169624
+      }
+    ],
+    "loaded": [
+      {
+        "family": "bodyFont",
+        "style": "normal",
+        "weight": "200 900"
+      }
+    ],
+    "preloads": []
+  },
+  "name": "login-focus-1440-light",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "151.0.7922.34",
+  "imageSha256": "585415fb973bc15822ea36c3bde6dbcacc0ca8ff4c0e3946b8d86d3dc5eeb204",
+  "stylesSha256": "559bf8dbf5cf1e597e064bd25885fea677ef7e1afe7f02feaaec27f93303010c"
+}

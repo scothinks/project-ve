@@ -1,5 +1,16 @@
 # Project Ve CMS/LMS Remediation Addendum
 
+## Identity and connected entry, 2026-09-12
+
+The approved identity B0–B6 and connected welcome/account journey are qualified
+under the existing project guardrails. See [current implementation, validation
+and release limits](evidence/theme-adoption/entry-integration.md). The earlier B6
+record remains exact-source historical evidence. Entry integration preserves
+organisation authorisation, invitations and return paths, and uses the existing
+XP ledger for server-verified sample awards. This is the explicitly approved #91
+extension; it does not reopen closed P1.5 architecture or authorise P2. Hosted
+migration application and rollout remain separate release steps.
+
 ## AI authoring Phase 6, 2026-09-06
 
 Phase 6 implementation and local validation are complete. The integrated

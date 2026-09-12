@@ -1,10 +1,11 @@
 import { expect as baseExpect, test } from "@playwright/test";
 import { checked, mediaFixture } from "../support/media-browser";
+import { captureIdentityStates } from "../support/theme-adoption/states";
 
 const expect = baseExpect.configure({ timeout: 60_000 });
 
 test("editor moves from saved pages to quiz setup and previews every layout and question type without learner writes", async ({ browser, baseURL }, testInfo) => {
-  test.setTimeout(420_000);
+  test.setTimeout(600_000);
   const f = await mediaFixture(browser, baseURL!);
   let taggedLessonId: string | undefined;
   try {
@@ -91,6 +92,7 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     await page.route(`${baseURL}${base}/values`, (route) => route.request().method() === "POST" ? route.abort("failed") : route.continue());
     await page.getByRole("button", { name: "Continue to Review", exact: true }).click();
     await expect(page.getByRole("alert").filter({ hasText: "They’re still here" })).toBeVisible();
+    await captureIdentityStates(page, 'values-error-retained');
     await expect(page.getByRole("checkbox", { name: secondDimension.label, exact: true })).toBeChecked();
     await page.unroute(`${baseURL}${base}/values`);
     await page.getByRole("button", { name: "Continue to Review", exact: true }).click();
@@ -123,6 +125,7 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     expect(checked(await f.editor.from("content_value_tags").select("dimension_id, weight").eq("content_id", lessonId))).toEqual([{ dimension_id: dimension.id, weight: 0.5 }]);
     for (let i = 0; i < types.length; i += 1) {
       await expect(page.locator(".learner-readable h1")).toHaveText(i === 0 ? "Saved before quiz setup" : `${types[i]} page`);
+      await captureIdentityStates(page, `lesson-${types[i]}`);
       for (const width of [1280, 390]) {
         await page.setViewportSize({ width, height: 900 });
         const card = page.locator(".learner-readable");
@@ -140,11 +143,18 @@ test("editor moves from saved pages to quiz setup and previews every layout and 
     await expect(page).toHaveURL(`${baseURL}${base}/preview?section=quiz`);
     await expect(page.getByRole("heading", { name: "Check your understanding", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check answer", exact: true })).toBeDisabled();
+    await captureIdentityStates(page, 'quiz-disabled');
+    await page.getByRole("button", { name: "False", exact: true }).click();
+    await captureIdentityStates(page, 'quiz-selected');
+    await page.getByRole("button", { name: "Check answer", exact: true }).click();
+    await expect(page.getByRole("status").getByText("Not quite", { exact: true })).toBeVisible();
+    await captureIdentityStates(page, 'quiz-wrong');
     for (let i = 0; i < 3; i += 1) {
       await page.getByRole("button", { name: i === 0 ? "True" : "Read", exact: true }).click();
       if (i === 2) await page.getByRole("button", { name: "Reflect", exact: true }).click();
       await page.getByRole("button", { name: "Check answer", exact: true }).click();
       await expect(page.getByRole("status").getByText("Correct", { exact: true })).toBeVisible();
+      if (i === 0) await captureIdentityStates(page, 'quiz-correct');
       await page.getByRole("button", { name: i === 2 ? "Finish preview" : "Next question", exact: true }).click();
     }
     await expect(page.getByRole("heading", { name: "Quiz preview complete", exact: true })).toBeVisible();

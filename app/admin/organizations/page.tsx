@@ -100,11 +100,11 @@ function firstSearchValue(value: string | string[] | undefined) {
 }
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function roleLabel(role: string) {
@@ -226,21 +226,21 @@ export default async function AdminOrganizationsPage({
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               alt=""
-                              className="h-10 w-10 rounded-[8px] border border-[var(--ve-line)] object-cover"
+                              className="h-10 w-10 rounded-[8px] border border-[var(--ui-border)] object-cover"
                               src={organization.logo_url}
                             />
                           ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-soft)] text-xs font-black text-[var(--ve-muted)]">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-[8px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] text-xs font-black text-[var(--ui-text-muted)]">
                               {organizationDisplayName(organization).slice(0, 2).toUpperCase()}
                             </div>
                           )}
                           <div>
                             <p className="font-black">{organizationDisplayName(organization)}</p>
                             {organization.short_name ? (
-                              <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{organization.name}</p>
+                              <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{organization.name}</p>
                             ) : null}
-                            <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{organization.slug}</p>
-                            <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{organization.id}</p>
+                            <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{organization.slug}</p>
+                            <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{organization.id}</p>
                           </div>
                         </div>
                       </td>
@@ -270,16 +270,16 @@ export default async function AdminOrganizationsPage({
                             {organization.lifecycle_status}
                           </AdminStatusBadge>
                         </div>
-                        <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+                        <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
                           {ORGANIZATION_ACCENT_LABELS[organization.accent_token]}
                         </p>
-                        <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+                        <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
                           Created by {organization.creation_source.replaceAll("_", " ")}
                         </p>
                       </td>
                       <td className="min-w-48 px-4 py-3">
                         <p className="text-sm font-bold">{organization.support_email ?? "No support email"}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                           {organization.support_phone ?? "No support phone"}
                         </p>
                       </td>
@@ -289,13 +289,13 @@ export default async function AdminOrganizationsPage({
                       <td className="px-4 py-3">
                         {isPlatformWorkspace ? (
                           <Link
-                            className="text-sm font-bold text-[var(--ve-green)] hover:underline"
+                            className="text-sm font-bold text-[var(--ui-action)] hover:underline"
                             href={`/admin/organizations/${organization.id}`}
                           >
                             Open Oversight
                           </Link>
                         ) : (
-                          <span className="text-xs font-semibold text-[var(--ve-muted)]">—</span>
+                          <span className="text-xs font-semibold text-[var(--ui-text-muted)]">—</span>
                         )}
                       </td>
                     </tr>
@@ -317,21 +317,21 @@ export default async function AdminOrganizationsPage({
                     <tr key={grant.id}>
                       <td className="min-w-52 px-4 py-3">
                         <p className="font-black">{organization?.name ?? grant.organization_id}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{grant.id}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{grant.id}</p>
                       </td>
                       <td className="min-w-72 px-4 py-3">
                         <p className="font-black">{grant.grant_type.replaceAll("_", " ")}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                           {grant.sourcePlan?.name ?? grant.source_plan_key ?? "Granular entitlement delta"}
                         </p>
                         {grant.reason ? (
-                          <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">{grant.reason}</p>
+                          <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">{grant.reason}</p>
                         ) : null}
-                        <pre className="mt-2 max-h-28 overflow-auto rounded-[8px] border border-[var(--ve-line)] bg-[var(--ve-soft)] p-2 text-[11px] font-semibold text-[var(--ve-muted)]">
+                        <pre className="mt-2 max-h-28 overflow-auto rounded-[8px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-2 text-[11px] font-semibold text-[var(--ui-text-muted)]">
                           {JSON.stringify(grant.entitlement_delta, null, 2)}
                         </pre>
                       </td>
-                      <td className="min-w-56 px-4 py-3 text-xs font-bold text-[var(--ve-muted)]">
+                      <td className="min-w-56 px-4 py-3 text-xs font-bold text-[var(--ui-text-muted)]">
                         <p>Starts {formatDateTime(grant.starts_at)}</p>
                         <p className="mt-1">Ends {formatDateTime(grant.expires_at)}</p>
                       </td>
@@ -354,7 +354,7 @@ export default async function AdminOrganizationsPage({
                             </button>
                           </form>
                         ) : (
-                          <span className="text-xs font-bold text-[var(--ve-muted)]">Read only</span>
+                          <span className="text-xs font-bold text-[var(--ui-text-muted)]">Read only</span>
                         )}
                       </td>
                     </tr>
@@ -362,7 +362,7 @@ export default async function AdminOrganizationsPage({
                 })}
               </AdminTable>
               {temporaryEntitlementGrants.length === 0 ? (
-                <p className="mt-4 text-sm font-semibold text-[var(--ve-muted)]">No temporary grants recorded.</p>
+                <p className="mt-4 text-sm font-semibold text-[var(--ui-text-muted)]">No temporary grants recorded.</p>
               ) : null}
             </div>
           </AdminCard>
@@ -377,7 +377,7 @@ export default async function AdminOrganizationsPage({
                       <p className="font-black">
                         {invitation.profile?.display_name ?? invitation.email ?? invitation.invited_user_id ?? "Email invite"}
                       </p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{invitation.id}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{invitation.id}</p>
                     </td>
                     <td className="min-w-44 px-4 py-3 font-bold">
                       {invitation.organization?.name ?? invitation.organization_id}
@@ -385,7 +385,7 @@ export default async function AdminOrganizationsPage({
                     <td className="min-w-44 px-4 py-3">
                       <p className="font-bold">{invitation.target_type}</p>
                       {invitation.target_id ? (
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{invitation.target_id}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{invitation.target_id}</p>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 font-bold">{roleLabel(invitation.role)}</td>
@@ -408,7 +408,7 @@ export default async function AdminOrganizationsPage({
                   <tr key={membership.id}>
                     <td className="min-w-56 px-4 py-3">
                       <p className="font-black">{displayUser(membership.profile?.display_name, membership.user_id)}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{membership.user_id}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{membership.user_id}</p>
                     </td>
                     <td className="min-w-48 px-4 py-3 font-bold">
                       {membership.organization?.name ?? membership.organization_id}
@@ -435,8 +435,8 @@ export default async function AdminOrganizationsPage({
                   <tr key={unit.id}>
                     <td className="min-w-64 px-4 py-3">
                       <p className="font-black">{unit.name}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.unit_type}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.id}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{unit.unit_type}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{unit.id}</p>
                     </td>
                     <td className="min-w-44 px-4 py-3 font-bold">
                       {unit.organization?.name ?? unit.organization_id}
@@ -473,7 +473,7 @@ export default async function AdminOrganizationsPage({
                 return (
                   <form
                     action={saveOrganizationUnitMembers}
-                    className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4"
+                    className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4"
                     key={`unit-members:${unit.id}`}
                   >
                     <input name="organizationId" type="hidden" value={unit.organization_id} />
@@ -481,7 +481,7 @@ export default async function AdminOrganizationsPage({
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h3 className="text-sm font-black">{unit.name}</h3>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{unit.unit_type}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{unit.unit_type}</p>
                       </div>
                       <button className={adminButtonClasses("secondary", "min-h-9 px-3 text-xs")} type="submit">
                         Save members
@@ -490,7 +490,7 @@ export default async function AdminOrganizationsPage({
                     <div className="mt-3 grid max-h-72 gap-2 overflow-auto pr-1">
                       {assignableMemberships.map((membership) => (
                         <label
-                          className="flex items-start gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 text-xs"
+                          className="flex items-start gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 text-xs"
                           key={`${unit.id}:${membership.user_id}:${membership.role}`}
                         >
                           <input
@@ -504,14 +504,14 @@ export default async function AdminOrganizationsPage({
                             <span className="block font-black">
                               {displayUser(membership.profile?.display_name, membership.user_id)}
                             </span>
-                            <span className="mt-1 block font-semibold text-[var(--ve-muted)]">
+                            <span className="mt-1 block font-semibold text-[var(--ui-text-muted)]">
                               {membership.roleDefinition?.label ?? roleLabel(membership.role)}
                             </span>
                           </span>
                         </label>
                       ))}
                       {assignableMemberships.length === 0 ? (
-                        <p className="text-xs font-semibold text-[var(--ve-muted)]">
+                        <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
                           Add organisation memberships before assigning unit members.
                         </p>
                       ) : null}
@@ -520,7 +520,7 @@ export default async function AdminOrganizationsPage({
                 );
               })}
               {units.length === 0 ? (
-                <p className="text-sm font-semibold text-[var(--ve-muted)]">
+                <p className="text-sm font-semibold text-[var(--ui-text-muted)]">
                   No organisation units have been created.
                 </p>
               ) : null}
@@ -532,24 +532,24 @@ export default async function AdminOrganizationsPage({
           {xpAccountOverview ? (
             <AdminCard>
               <h2 className="text-base font-black">XP account operations</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+              <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
                 {xpAccountOverview.account.name} · {xpAccountOverview.account.status}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div className="border border-[var(--ve-line)] p-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Circulation</p>
+                <div className="border border-[var(--ui-border)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Circulation</p>
                   <p className="mt-1 text-lg font-black">{xpAccountOverview.circulation}</p>
                 </div>
-                <div className="border border-[var(--ve-line)] p-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Issued</p>
+                <div className="border border-[var(--ui-border)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Issued</p>
                   <p className="mt-1 text-lg font-black">{xpAccountOverview.issuance}</p>
                 </div>
-                <div className="border border-[var(--ve-line)] p-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Redeemed</p>
+                <div className="border border-[var(--ui-border)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Redeemed</p>
                   <p className="mt-1 text-lg font-black">{xpAccountOverview.redemptions}</p>
                 </div>
-                <div className="border border-[var(--ve-line)] p-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Adjustments</p>
+                <div className="border border-[var(--ui-border)] p-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Adjustments</p>
                   <p className="mt-1 text-lg font-black">{xpAccountOverview.adjustments}</p>
                 </div>
               </div>
@@ -592,9 +592,9 @@ export default async function AdminOrganizationsPage({
                   Save XP account
                 </button>
               </form>
-              <div className="mt-6 border-t border-[var(--ve-line)] pt-5">
+              <div className="mt-6 border-t border-[var(--ui-border)] pt-5">
                 <h3 className="text-sm font-black">Issuance and exposure controls</h3>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   Caps apply to organisation-account earning transactions. Accounting currency is used internally to estimate the value of outstanding Points and exposure. It does not make Points cash-redeemable.
                 </p>
                 <form action={saveOrganizationXpAccountControls} className="mt-4 space-y-4">
@@ -699,7 +699,7 @@ export default async function AdminOrganizationsPage({
                       />
                     </label>
                   </div>
-                  <div className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                  <div className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-3 text-xs font-semibold text-[var(--ui-text-muted)]">
                     <p>Issued in current rolling period: {xpAccountOverview.controls.periodIssued}</p>
                     <p className="mt-1">Remaining period capacity: {xpAccountOverview.controls.periodRemaining}</p>
                     <p className="mt-1">
@@ -735,14 +735,14 @@ export default async function AdminOrganizationsPage({
                         xpAccountOverview.controls.accountingCurrency,
                       )}
                     </p>
-                    {xpAccountOverview.exposure.warning ? <p className="mt-1 font-black text-[var(--ve-store)]">Exposure warning threshold reached.</p> : null}
-                    {xpAccountOverview.exposure.hardBlocked ? <p className="mt-1 font-black text-[var(--foreground)]">New issuance is blocked by the exposure threshold.</p> : null}
+                    {xpAccountOverview.exposure.warning ? <p className="mt-1 font-black text-[var(--ui-reward)]">Exposure warning threshold reached.</p> : null}
+                    {xpAccountOverview.exposure.hardBlocked ? <p className="mt-1 font-black text-[var(--ui-text)]">New issuance is blocked by the exposure threshold.</p> : null}
                   </div>
                   <button className={adminButtonClasses("primary", "w-full")} type="submit">
                     Save issuance controls
                   </button>
                 </form>
-                <form action={saveOrganizationXpAccountAdjustment} className="mt-5 space-y-3 border-t border-[var(--ve-line)] pt-5">
+                <form action={saveOrganizationXpAccountAdjustment} className="mt-5 space-y-3 border-t border-[var(--ui-border)] pt-5">
                   <input name="organizationId" type="hidden" value={selectedOrganization.id} />
                   <input name="xpAccountId" type="hidden" value={xpAccountOverview.account.id} />
                   <h3 className="text-sm font-black">Adjust learner balance</h3>
@@ -765,7 +765,7 @@ export default async function AdminOrganizationsPage({
                   <button className={adminButtonClasses("secondary", "w-full")} type="submit">Save adjustment</button>
                 </form>
               </div>
-              <div className="mt-6 grid gap-4 border-t border-[var(--ve-line)] pt-5 sm:grid-cols-2">
+              <div className="mt-6 grid gap-4 border-t border-[var(--ui-border)] pt-5 sm:grid-cols-2">
                 <div>
                   <h3 className="text-sm font-black">Issuance by programme</h3>
                   <div className="mt-3 space-y-2">
@@ -775,7 +775,7 @@ export default async function AdminOrganizationsPage({
                         <span className="font-black">{programme.issued}</span>
                       </div>
                     ))}
-                    {xpAccountOverview.programmeIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ve-muted)]">No programme issuance yet.</p> : null}
+                    {xpAccountOverview.programmeIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ui-text-muted)]">No programme issuance yet.</p> : null}
                   </div>
                 </div>
                 <div>
@@ -787,23 +787,23 @@ export default async function AdminOrganizationsPage({
                         <span className="font-black">{learner.issued}</span>
                       </div>
                     ))}
-                    {xpAccountOverview.userIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ve-muted)]">No learner issuance yet.</p> : null}
+                    {xpAccountOverview.userIssuance.length === 0 ? <p className="text-xs font-semibold text-[var(--ui-text-muted)]">No learner issuance yet.</p> : null}
                   </div>
                 </div>
               </div>
-              <div className="mt-5 border-t border-[var(--ve-line)] pt-4">
+              <div className="mt-5 border-t border-[var(--ui-border)] pt-4">
                 <h3 className="text-sm font-black">Recent transactions</h3>
                 <div className="mt-3 space-y-2">
                   {xpAccountOverview.transactions.slice(0, 8).map((transaction) => (
                     <div className="flex items-center justify-between gap-3 text-xs" key={transaction.id}>
                       <span className="truncate font-bold">{transaction.sourceType}</span>
-                      <span className={transaction.direction === "earn" ? "font-black text-[var(--ve-green)]" : "font-black"}>
+                      <span className={transaction.direction === "earn" ? "font-black text-[var(--ui-action)]" : "font-black"}>
                         {transaction.direction === "earn" ? "+" : "-"}{transaction.amount}
                       </span>
                     </div>
                   ))}
                   {xpAccountOverview.transactions.length === 0 ? (
-                    <p className="text-xs font-semibold text-[var(--ve-muted)]">No transactions yet.</p>
+                    <p className="text-xs font-semibold text-[var(--ui-text-muted)]">No transactions yet.</p>
                   ) : null}
                 </div>
               </div>
@@ -1170,7 +1170,7 @@ export default async function AdminOrganizationsPage({
                 <div className="mt-2 grid gap-3 sm:grid-cols-2">
                   {INTEGER_OVERRIDE_FIELDS.map(([key, label]) => (
                     <label className="block" key={key}>
-                      <span className="text-xs font-bold text-[var(--ve-muted)]">{label}</span>
+                      <span className="text-xs font-bold text-[var(--ui-text-muted)]">{label}</span>
                       <input
                         className={fieldClasses()}
                         min="0"
@@ -1245,7 +1245,7 @@ export default async function AdminOrganizationsPage({
                     <div className="mt-2 grid gap-3 sm:grid-cols-2">
                       {TEMPORARY_NUMERIC_ENTITLEMENT_FIELDS.map(([key, label]) => (
                         <label className="block" key={key}>
-                          <span className="text-xs font-bold text-[var(--ve-muted)]">{label}</span>
+                          <span className="text-xs font-bold text-[var(--ui-text-muted)]">{label}</span>
                           <input
                             className={fieldClasses()}
                             min="0"

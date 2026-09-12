@@ -18,9 +18,9 @@ export default async function LessonValuesPage({ params, searchParams }: {
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <header className="space-y-3">
-        <p className="text-sm font-bold text-[var(--admin-on-surface-variant)]">{data.lesson.title}</p>
-        <div className="flex flex-wrap items-center gap-3"><h1 className="text-2xl font-black sm:text-3xl">Values</h1><span className="rounded-full bg-[var(--admin-surface-container-low)] px-3 py-1 text-xs font-bold text-[var(--admin-on-surface-variant)]">Optional</span></div>
-        <p className="text-sm leading-6 text-[var(--admin-on-surface-variant)]">Choose the values this lesson helps learners develop.</p>
+        <p className="text-sm font-bold text-[var(--ui-text-muted)]">{data.lesson.title}</p>
+        <div className="flex flex-wrap items-center gap-3"><h1 className="text-2xl font-black sm:text-3xl">Values</h1><span className="rounded-full bg-[var(--ui-surface-soft)] px-3 py-1 text-xs font-bold text-[var(--ui-text-muted)]">Optional</span></div>
+        <p className="text-sm leading-6 text-[var(--ui-text-muted)]">Choose the values this lesson helps learners develop.</p>
       </header>
       <LessonValuesEditor dimensions={data.dimensions} lessonId={id} tags={data.tags} />
 

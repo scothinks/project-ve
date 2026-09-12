@@ -14,6 +14,11 @@ const eslintConfig = [
     ignores: [".next/**", ".next-e2e/**", "next-env.d.ts", "test-results/**", "playwright-report/**", "supabase/.temp/**"],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    // Standalone design-preview verification scripts run directly as CommonJS.
+    files: ["scrollcraft/**/lab/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ];
 
 export default eslintConfig;

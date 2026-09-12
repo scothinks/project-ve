@@ -1,3 +1,4 @@
+import { displayFont } from "@/app/fonts/display";
 import type { Metadata } from "next";
 import Image from "@/components/media/MediaImage";
 import { BottomNav } from "@/components/navigation/BottomNav";
@@ -27,7 +28,7 @@ export default async function OrgModePage() {
   const name = displayName(profile?.display_name);
 
   return (
-    <main className="learner-system orgs-learner min-h-screen">
+    <main className={`${displayFont.variable} learner-system orgs-learner min-h-screen`}>
       {user ? (
         <LearnerTopChrome
           active="Orgs"

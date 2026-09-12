@@ -18,11 +18,11 @@ import type {
 import { saveCourse } from "@/app/admin/courses/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-bold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function getImageValue(image: Record<string, unknown> | null | undefined, key: "src" | "alt") {
@@ -32,7 +32,7 @@ function getImageValue(image: Record<string, unknown> | null | undefined, key: "
 
 function SubmitButton({ children }: { children: ReactNode }) {
   return (
-    <button className="rounded-[14px] bg-[var(--admin-primary)] px-5 py-3 text-sm font-black text-white" type="submit">
+    <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
       {children}
     </button>
   );
@@ -40,8 +40,8 @@ function SubmitButton({ children }: { children: ReactNode }) {
 
 function FlatCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-6 shadow-sm">
-      <h3 className="mb-4 border-b border-[var(--admin-border-warm)] pb-3 text-base font-black text-[var(--admin-brand-hero)]">
+    <div className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-6 shadow-sm">
+      <h3 className="mb-4 border-b border-[var(--ui-border-subtle)] pb-3 text-base font-black text-[var(--ui-text)]">
         {title}
       </h3>
       {children}
@@ -173,15 +173,15 @@ export function CourseForm({
                     ]}
                   />
                   {course?.ai_generated ? (
-                    <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                    <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                       Learners can see the course before all lessons are published.
                     </p>
                   ) : null}
                 </label>
-                <div className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-4 py-3">
+                <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] px-4 py-3">
                   <span className={labelClasses()}>Minutes</span>
                   <p className="mt-2 text-sm font-black tabular-nums">{estimatedMinutes}</p>
-                  <p className="mt-1 text-[11px] font-bold text-[var(--admin-on-surface-variant)]">From lessons</p>
+                  <p className="mt-1 text-[11px] font-bold text-[var(--ui-text-muted)]">From lessons</p>
                 </div>
               </div>
             </FlatCard>
@@ -217,7 +217,7 @@ export function CourseForm({
                   </div>
                 </>
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]">
                   <svg aria-hidden="true" className="h-6 w-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
                     <rect height="14" rx="2" width="18" x="3" y="5" />
                     <circle cx="9" cy="10" r="1.5" />
@@ -232,9 +232,9 @@ export function CourseForm({
       </div>
 
       {stickyFooter ? (
-        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-end gap-3 border-t border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]/95 p-4 backdrop-blur md:left-72">
+        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-end gap-3 border-t border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]/95 p-4 backdrop-blur md:left-72">
           <button
-            className="rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-3 text-sm font-bold text-[var(--admin-primary)] transition hover:bg-[var(--admin-surface-container-low)]"
+            className="rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-6 py-3 text-sm font-bold text-[var(--ui-action)] transition hover:bg-[var(--ui-surface-soft)]"
             name="returnTo"
             type="submit"
             value="index"
@@ -242,7 +242,7 @@ export function CourseForm({
             Save as Draft
           </button>
           <button
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--admin-primary)] px-8 py-3 text-sm font-bold text-white transition hover:brightness-95"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--ui-action)] px-8 py-3 text-sm font-bold text-[var(--ui-on-action)] transition hover:brightness-95"
             type="submit"
           >
             Create Workspace →

@@ -37,15 +37,15 @@ export default async function OrganizationQuizPage({ params, searchParams }: Org
   const courseHref = appendOrganizationDeliverySearchParam(orgHref(workspace, `/learn/${course.id}`), deliveryContext);
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       <AppHeader backHref={lessonHref} showMenu={false} title="Flash Quiz" />
       <section className="learner-page learner-page--spacious">
         <div className="learner-readable mb-6">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-muted)]">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">
             {lesson.title}
           </p>
           <h1 className="mt-2 text-2xl font-black leading-8">{lesson.quiz.title}</h1>
-          <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+          <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
             Up to {formatXpLabel(getQuizXP(lesson.quiz), workspace.xpAccount.label)} from unearned correct answers, subject to your daily limit.
           </p>
         </div>

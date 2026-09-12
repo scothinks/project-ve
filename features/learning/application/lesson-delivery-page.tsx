@@ -120,7 +120,7 @@ export async function LessonDeliveryPage({
   const progressPercent = Math.round((currentPageNumber / lesson.pages.length) * 100);
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       {refCode ? <ReferralCodeCapture code={refCode} /> : null}
       <LessonPageProgressMarker
         lessonId={lesson.id}
@@ -160,13 +160,13 @@ export async function LessonDeliveryPage({
         />
 
         <div className="mx-auto mt-7 max-w-3xl">
-          <div className="flex items-center justify-between text-xs font-bold text-[var(--ve-muted-strong)]">
+          <div className="flex items-center justify-between text-xs font-bold text-[var(--ui-text-muted)]">
             <span>Module Progress</span>
-            <span className="text-[var(--ve-green)]">{progressPercent}%</span>
+            <span className="text-[var(--ui-action)]">{progressPercent}%</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[color:color-mix(in_srgb,var(--ui-action)_10%,transparent)]">
             <div
-              className="h-full rounded-full bg-[var(--ve-green)] transition-all duration-500 ease-in-out"
+              className="h-full rounded-full bg-[var(--ui-action)] transition-all duration-500 ease-in-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>

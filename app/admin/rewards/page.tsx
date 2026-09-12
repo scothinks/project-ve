@@ -154,25 +154,25 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
         <CampaignFilterSelect campaigns={campaigns} value={campaign} />
         <div className="flex flex-wrap gap-2 md:justify-end">
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[var(--ve-violet)]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-5 text-sm font-black text-[var(--ui-on-action-soft)]"
             href="/admin/rewards/perks"
           >
             Manage Perks
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-panel)] px-5 text-sm font-black text-[var(--ve-muted-strong)]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ui-surface-inset)] px-5 text-sm font-black text-[var(--ui-text-muted)]"
             href="/admin/inventory/reallocate"
           >
             Reallocate
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-5 text-sm font-black text-[var(--ui-on-action-soft)]"
             href="/admin/inventory/new"
           >
             Add Inventory
           </Link>
           <Link
-            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-5 text-sm font-black text-white"
+            className="inline-flex h-12 min-w-36 items-center justify-center rounded-[14px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
             href="/admin/rewards/new"
           >
             Add Reward
@@ -194,10 +194,10 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
                 return (
                   <>
               <td className="min-w-[220px] px-4 py-4">
-                <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/rewards/${reward.id}`}>
+                <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/rewards/${reward.id}`}>
                   {reward.title}
                 </Link>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   {reward.description}
                 </p>
               </td>
@@ -251,8 +251,8 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
                   <button
                     className={`rounded-[12px] px-3 py-2 text-xs font-black ${
                       reward.is_enabled
-                        ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
-                        : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+                        ? "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
+                        : "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
                     }`}
                     type="submit"
                   >

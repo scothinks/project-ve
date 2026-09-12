@@ -1,0 +1,517 @@
+{
+  "doc": {
+    "height": 4127,
+    "vh": 900,
+    "acts": [
+      "flow",
+      "flow",
+      "pin",
+      "flow"
+    ],
+    "world": null
+  },
+  "report": [
+    {
+      "i": 0,
+      "y": 0,
+      "pct": 0,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1738
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 1,
+      "y": 45,
+      "pct": 1,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1693
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 2,
+      "y": 179,
+      "pct": 6,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1559
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 3,
+      "y": 376,
+      "pct": 12,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1362
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 4,
+      "y": 526,
+      "pct": 16,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1212
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 5,
+      "y": 708,
+      "pct": 22,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        1030
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 6,
+      "y": 874,
+      "pct": 27,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        864
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 7,
+      "y": 1040,
+      "pct": 32,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "flow",
+      "stages": [
+        698
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 8,
+      "y": 1372,
+      "pct": 43,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        366
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 9,
+      "y": 1703,
+      "pct": 53,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        35
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:0;mission:32"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 10,
+      "y": 1753,
+      "pct": 54,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-4;mission:36"
+      ],
+      "customHold": false,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 11,
+      "y": 1891,
+      "pct": 59,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-46;mission:71"
+      ],
+      "customHold": false,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 12,
+      "y": 2029,
+      "pct": 63,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-88;mission:105"
+      ],
+      "customHold": false,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 13,
+      "y": 2167,
+      "pct": 67,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "none"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-130;mission:140"
+      ],
+      "customHold": false,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 14,
+      "y": 2306,
+      "pct": 71,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 100% 0px 0px)"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-172;mission:175"
+      ],
+      "customHold": false,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 15,
+      "y": 2444,
+      "pct": 76,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 100% 0px 0px)"
+      ],
+      "act": "pin",
+      "stages": [
+        0
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-190;mission:190"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 16,
+      "y": 2492,
+      "pct": 77,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 98.51% 0px 0px)"
+      ],
+      "act": "pin",
+      "stages": [
+        -34
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-190;mission:190"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 17,
+      "y": 2812,
+      "pct": 87,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 14.85% 0px 0px)"
+      ],
+      "act": "pin",
+      "stages": [
+        -354
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-190;mission:190"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 18,
+      "y": 3132,
+      "pct": 97,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 0% 0px 0px)"
+      ],
+      "act": "flow",
+      "stages": [
+        -674
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-190;mission:190"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    },
+    {
+      "i": 19,
+      "y": 3227,
+      "pct": 100,
+      "settled": true,
+      "contrast": [],
+      "cues": [],
+      "clips": [],
+      "rails": [],
+      "wipes": [
+        "inset(0px 0% 0px 0px)"
+      ],
+      "act": "flow",
+      "stages": [
+        -769
+      ],
+      "segs": [],
+      "custom": [
+        "lesson:-190;mission:190"
+      ],
+      "customHold": true,
+      "seg": null,
+      "segp": null,
+      "bg": "#f7f5fa"
+    }
+  ],
+  "consoleErrors": [],
+  "failed": []
+}

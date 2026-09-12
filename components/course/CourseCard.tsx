@@ -84,7 +84,7 @@ export function CourseCard({
             <XPBadge
               xp={course.xp}
               unitLabel={unitLabel}
-              className="shrink-0 bg-[var(--ve-card)] text-[#008751]"
+              className="shrink-0 bg-[var(--ui-surface)] text-[var(--ui-reward)]"
             />
           </div>
         </div>
@@ -95,41 +95,41 @@ export function CourseCard({
             <div className="hidden lg:block">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#008751]">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ui-learning)]">
                     {course.category}
                   </p>
-                  <h3 className="mt-1 text-[1.18rem] font-semibold leading-7 tracking-[-0.025em] text-[var(--foreground)]">
+                  <h3 className="mt-1 text-[1.18rem] font-semibold leading-7 tracking-[-0.025em] text-[var(--ui-text)]">
                     {course.title}
                   </h3>
                 </div>
                 <XPBadge
                   xp={course.xp}
                   unitLabel={unitLabel}
-                  className="shrink-0 bg-[#dff2e9] text-[#008751]"
+                  className="shrink-0 bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]"
                 />
               </div>
             </div>
           ) : null}
           <p
             className={cn(
-              "text-[1.01rem] leading-8 text-[var(--ve-muted)] lg:text-[0.94rem] lg:leading-7",
+              "text-[1.01rem] leading-8 text-[var(--ui-text-muted)] lg:text-[0.94rem] lg:leading-7",
               desktopLayout === "horizontal" && "lg:mt-3 lg:line-clamp-3",
             )}
           >
             {course.description}
           </p>
           {contextLabel ? (
-            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-green)]">
+            <p className="mt-3 text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-learning)]">
               {contextLabel}
             </p>
           ) : null}
-          <div className="mt-5 h-2 rounded-full bg-[#e8e8e8]">
+          <div className="mt-5 h-2 rounded-full bg-[var(--ui-border-subtle)]">
             <div
-              className="h-full rounded-full bg-[#008751]"
+              className="h-full rounded-full bg-[var(--ui-action)]"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div className="mt-4 flex items-center justify-between text-[0.9rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)] lg:mt-auto lg:pt-4">
+          <div className="mt-4 flex items-center justify-between text-[0.9rem] font-medium tracking-[-0.01em] text-[var(--ui-text-muted)] lg:mt-auto lg:pt-4">
             <span>
               {completedLessons}/{lessonCount} lessons completed
             </span>

@@ -11,8 +11,8 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
   const f=await mediaFixture(browser,baseURL!);const page=await f.context.newPage();const resultIds:string[]=[];const calls:number[]=[];let savedCourse:string|undefined;let failNextDraft=partial;let dropApply=false;
   try{
     // Exercise real fallback reads so a buffered SSE response cannot make the
-    // concurrent-edit assertion depend on transport timing.
-    if(!partial)await page.route('**/api/admin/ai/authoring/events?**',route=>route.abort());
+    // concurrent-edit or partial-recovery assertion depend on transport timing.
+    await page.route('**/api/admin/ai/authoring/events?**',route=>route.abort());
     await page.route('**/api/admin/ai/authoring',async route=>{
       const body=route.request().method()==='POST'?route.request().postDataJSON():{};
       if(body.action==='apply'&&dropApply){dropApply=false;const replies=await Promise.all([route.fetch(),route.fetch()]);for(const r of replies)expect(r.ok(),await r.text()).toBeTruthy();return route.abort();}

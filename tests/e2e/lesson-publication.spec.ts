@@ -46,10 +46,11 @@ test("editor publishes saved drafts, reverts changes and rejects stale tabs", as
     }));
     value(await editor.rpc("admin_publish_lesson_checked", { p_lesson_id: lessonId, p_expected_revision: saved.draftRevision }));
     await page.goto(`/login?next=${encodeURIComponent(path)}`);
-    if (await page.getByPlaceholder("Enter Full Name").isVisible()) await page.getByRole("button", { name: "Login" }).last().click();
-    await page.getByPlaceholder("Enter Email Address").fill(email);
-    await page.getByPlaceholder("Enter Password").fill(password);
-    await page.getByRole("button", { name: "Login", exact: true }).click();
+    if (await page.getByLabel("Full name", { exact: true }).isVisible()) await page.getByRole("button", { name: "Sign in", exact: true }).last().click();
+    await expect(page.locator(".auth-form-wrap")).toHaveAttribute("aria-busy", "false");
+    await page.getByLabel("Email address", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${lessonId}$`), { timeout: 30_000 });
     await expect(page.getByRole("button", { name: "Publish changes", exact: true })).toBeDisabled();
 

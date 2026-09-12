@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Project VE · Your account</title>
+  <link rel="icon" href="assets/mark.svg"><link rel="stylesheet" href="experience.css"><link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+  <header class="auth-header">
+    <a class="brand" href="index.html"><img src="assets/mark.svg" width="28" height="28" alt=""><span>project v/e</span></a>
+    <a class="auth-back" href="index.html">← <span id="return-welcome">Back to welcome</span></a>
+  </header>
+  <main class="auth-layout">
+    <section class="auth-main" aria-label="Account preview">
+      <div class="auth-form-wrap">
+        <div class="auth-form-panel">
+        <div class="auth-xp-carry" id="auth-xp-carry" hidden><span id="auth-xp-label">Your progress so far</span><strong id="auth-xp-value">0 XP</strong></div>
+        <div id="auth-view"></div>
+        </div>
+        <aside class="auth-switch-panel" id="auth-switch-panel" aria-label="Switch between sign in and create account">
+          <div class="auth-invitation invitation-left"><div class="auth-switch-copy"><h3 id="switch-signup-title"></h3><p id="switch-signup-body"></p><button type="button" data-switch="signup"></button></div></div>
+          <div class="auth-invitation invitation-right"><div class="auth-switch-copy"><h3 id="switch-login-title"></h3><p id="switch-login-body"></p><button type="button" data-switch="login"></button></div></div>
+        </aside>
+      </div>
+      <nav class="auth-legal" aria-label="Help and policies"><a href="http://localhost:3000/terms" target="_blank" rel="noopener" id="legal-terms">Terms</a><a href="http://localhost:3000/privacy" target="_blank" rel="noopener" id="legal-privacy">Privacy</a><a href="http://localhost:3000/support" target="_blank" rel="noopener" id="legal-support">Support</a></nav>
+      <p class="auth-preview-notice" id="auth-preview-notice">Design preview only. Use made-up details. No real account is created, and sample XP cannot be redeemed.</p>
+      <details class="preview-controls"><summary id="preview-controls-label">Preview controls</summary><div id="preview-controls"></div></details>
+      <noscript><p class="auth-noscript">This form preview needs JavaScript. Return to the welcome page or read all screen text in the copy review.</p><a href="copy-review.html">Open copy review</a></noscript>
+    </section>
+  </main>
+  <script src="preview-session.js"></script><script src="auth-copy.js"></script><script src="auth-motion.js"></script><script src="auth.js"></script>
+</body>
+</html>

@@ -25,11 +25,11 @@ const initialInventoryBatchDryRunState: InventoryBatchDryRunState = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function BatchActionButtons({
@@ -46,7 +46,7 @@ function BatchActionButtons({
   return (
     <div className="flex flex-wrap gap-2">
       <button
-        className="rounded-[14px] bg-[var(--ve-panel)] px-5 py-3 text-sm font-black text-[var(--foreground)] disabled:opacity-60"
+        className="rounded-[14px] bg-[var(--ui-surface-inset)] px-5 py-3 text-sm font-black text-[var(--ui-text)] disabled:opacity-60"
         disabled={pending}
         formAction={dryRunAction}
         onClick={onDryRun}
@@ -55,7 +55,7 @@ function BatchActionButtons({
         {pending ? "Checking..." : "Dry run"}
       </button>
       <button
-        className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)] disabled:cursor-not-allowed disabled:opacity-40"
         disabled={pending || !canImport}
         type="submit"
       >
@@ -223,12 +223,12 @@ export function InventoryBatchUploadForm({
         <div
           className={`rounded-[16px] border p-4 text-sm font-bold ${
             state.ok
-              ? "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
-              : "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+              ? "border-[color:color-mix(in_srgb,var(--ui-action)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
+              : "border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
           }`}
         >
           <p>{state.message}</p>
-          <div className="mt-3 grid gap-2 text-[var(--foreground)] sm:grid-cols-4">
+          <div className="mt-3 grid gap-2 text-[var(--ui-text)] sm:grid-cols-4">
             <p>{state.totalRows} rows</p>
             <p>{state.validRows} valid</p>
             <p>{state.duplicateRows} duplicates</p>
@@ -238,15 +238,15 @@ export function InventoryBatchUploadForm({
       ) : null}
 
       {state.errors.length > 0 ? (
-        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] p-4">
-          <p className="text-sm font-black text-[var(--ve-danger)]">Issues to fix</p>
-          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ve-muted-strong)]">
+        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] p-4">
+          <p className="text-sm font-black text-[var(--ui-danger)]">Issues to fix</p>
+          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ui-text-muted)]">
             {state.errors.slice(0, 12).map((error) => (
               <li key={error}>{error}</li>
             ))}
           </ul>
           {state.errors.length > 12 ? (
-            <p className="mt-2 text-xs font-bold text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-bold text-[var(--ui-text-muted)]">
               {state.errors.length - 12} more issue(s) hidden.
             </p>
           ) : null}
@@ -254,9 +254,9 @@ export function InventoryBatchUploadForm({
       ) : null}
 
       {state.warnings.length > 0 ? (
-        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] p-4">
-          <p className="text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">Warnings</p>
-          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ve-muted-strong)]">
+        <div className="rounded-[16px] bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_82%,var(--ui-surface))] p-4">
+          <p className="text-sm font-black text-[var(--ui-reward)]">Warnings</p>
+          <ul className="mt-2 space-y-1 text-sm font-semibold text-[var(--ui-text-muted)]">
             {state.warnings.slice(0, 8).map((warning) => (
               <li key={warning}>{warning}</li>
             ))}
@@ -265,13 +265,13 @@ export function InventoryBatchUploadForm({
       ) : null}
 
       {state.sample.length > 0 ? (
-        <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+        <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
             Preview sample
           </p>
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
             {state.sample.map((item) => (
-              <p className="truncate rounded-[10px] bg-[var(--ve-card)] px-3 py-2 font-mono text-xs font-bold" key={item}>
+              <p className="truncate rounded-[10px] bg-[var(--ui-surface)] px-3 py-2 font-mono text-xs font-bold" key={item}>
                 {item}
               </p>
             ))}

@@ -1,0 +1,37 @@
+[
+  {
+    "profile": "desktop",
+    "passed": true,
+    "consoleErrors": [],
+    "failedRequests": [],
+    "externalRequests": []
+  },
+  {
+    "profile": "mobile",
+    "passed": true,
+    "consoleErrors": [],
+    "failedRequests": [],
+    "externalRequests": []
+  },
+  {
+    "profile": "compact",
+    "passed": true,
+    "consoleErrors": [],
+    "failedRequests": [],
+    "externalRequests": []
+  },
+  {
+    "profile": "reduced",
+    "passed": true,
+    "consoleErrors": [],
+    "failedRequests": [],
+    "externalRequests": []
+  },
+  {
+    "profile": "no-js",
+    "passed": true,
+    "consoleErrors": [],
+    "failedRequests": [],
+    "externalRequests": []
+  }
+]

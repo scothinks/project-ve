@@ -1,0 +1,32 @@
+[
+  {
+    "selector": "footer small",
+    "ratio": 5.34,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "selector": ".feedback-placeholder",
+    "ratio": 5.34,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "selector": ".answer",
+    "ratio": 3.5,
+    "min": 3,
+    "pass": true
+  },
+  {
+    "selector": ".together-copy .small-caption",
+    "ratio": 5.06,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "selector": ".preview-note",
+    "ratio": 5.57,
+    "min": 4.5,
+    "pass": true
+  }
+]

@@ -19,13 +19,13 @@ function tabClasses(active: boolean) {
   return cn(
     "rounded-full border px-[18px] py-[9px] text-[13px] transition",
     active
-      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] font-extrabold text-[var(--admin-on-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface)] hover:border-[var(--admin-primary)]",
+      ? "border-[var(--ui-current-text)] bg-[var(--ui-current-text)] font-extrabold text-[var(--ui-on-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] font-bold text-[var(--ui-text)] hover:border-[var(--ui-current-text)]",
   );
 }
 
 function labelClasses() {
-  return "text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]";
+  return "text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 export function MediaPickerScreen({
@@ -138,7 +138,7 @@ export function MediaPickerScreen({
           <label className="flex gap-2 text-sm"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} />I have permission for in-project reuse, cropping and derivation without mandatory attribution.</label>
           <label
             className={cn(
-              "flex cursor-pointer items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-[22px] text-sm font-extrabold text-[var(--admin-primary)]",
+              "flex cursor-pointer items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-[22px] text-sm font-extrabold text-[var(--ui-action)]",
               (isUploading || !canUpload) && "pointer-events-none opacity-60",
             )}
           >
@@ -160,7 +160,7 @@ export function MediaPickerScreen({
           </label>
 
           {!canUpload ? (
-            <p className="text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+            <p className="text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Direct upload currently supports images. Existing permitted audio and video can be selected from the library.
             </p>
           ) : null}
@@ -169,7 +169,7 @@ export function MediaPickerScreen({
             <label className="flex flex-col gap-2">
               <span className={labelClasses()}>Alt text</span>
               <input
-                className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-bold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+                className="rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
                 disabled={isUploading}
                 onChange={(event) => setAltText(event.target.value)}
                 value={altText}
@@ -179,10 +179,10 @@ export function MediaPickerScreen({
 
           {uploadError ? (
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-xs font-black text-[var(--admin-error)]">{uploadError}</p>
+              <p className="text-xs font-black text-[var(--ui-danger)]">{uploadError}</p>
               {uploadFile ? (
                 <button
-                  className="rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-2 text-xs font-extrabold text-[var(--admin-on-surface)] disabled:opacity-50"
+                  className="rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-2 text-xs font-extrabold text-[var(--ui-text)] disabled:opacity-50"
                   disabled={isUploading}
                   onClick={() => void uploadSelectedFile(uploadFile)}
                   type="button"
@@ -193,16 +193,16 @@ export function MediaPickerScreen({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-outline)]">
-            <span className="h-px flex-1 bg-[var(--admin-border-warm)]" />
+          <div className="flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
+            <span className="h-px flex-1 bg-[var(--ui-border-subtle)]" />
             or paste an external link
-            <span className="h-px flex-1 bg-[var(--admin-border-warm)]" />
+            <span className="h-px flex-1 bg-[var(--ui-border-subtle)]" />
           </div>
 
           <p className="text-xs">External links remain controlled by their host; organisation privacy applies to uploaded files.</p>
           <div className="flex gap-2.5">
             <input
-              className="min-w-0 flex-1 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+              className="min-w-0 flex-1 rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-semibold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
               onChange={(event) => setUrl(event.target.value)}
               placeholder={
                 mediaKind === "video"
@@ -214,7 +214,7 @@ export function MediaPickerScreen({
               value={url}
             />
             <button
-              className="shrink-0 rounded-[14px] bg-[var(--admin-primary)] px-5 text-[13px] font-extrabold text-[var(--admin-on-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="shrink-0 rounded-[14px] bg-[var(--ui-action)] px-5 text-[13px] font-extrabold text-[var(--ui-on-action)] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!url.trim()}
               onClick={useLink}
               type="button"

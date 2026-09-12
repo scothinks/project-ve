@@ -12,8 +12,8 @@ type SponsorInquiryPageProps = {
 };
 
 const fieldClasses =
-  "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3.5 py-3 text-sm font-semibold outline-none focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green-soft)_72%,transparent)]";
-const labelClasses = "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3.5 py-3 text-sm font-semibold outline-none focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
+const labelClasses = "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 
 const whyPartner = [
   "Align your brand with practical, values-based education.",
@@ -46,27 +46,27 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
 
   if (submitted === "1") {
     return (
-      <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
+      <main className="mobile-shell min-h-screen bg-[var(--ui-chrome)]">
         {topChrome}
         <AppHeader backHref="/advertise" hideTitle title="Sponsor inquiry" />
         <section className="learner-page learner-page--spacious flex flex-1 items-center justify-center">
-          <div className="relative flex w-full max-w-lg flex-col items-center overflow-hidden rounded-[24px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-8 text-center shadow-sm lg:p-12">
-            <span className="absolute inset-x-0 top-0 h-1 bg-[var(--ve-green)]" aria-hidden="true" />
-            <span className="grid size-16 place-items-center rounded-full bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
+          <div className="relative flex w-full max-w-lg flex-col items-center overflow-hidden rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-8 text-center shadow-sm lg:p-12">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[var(--ui-action)]" aria-hidden="true" />
+            <span className="grid size-16 place-items-center rounded-full bg-[var(--ui-action-soft)] text-[var(--ui-action)]">
               <CheckCircleIcon className="size-8" />
             </span>
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
               Inquiry received
             </p>
             <h1 className="mt-2 text-2xl font-black tracking-[-0.04em]">
               Thanks for your interest in supporting learner rewards.
             </h1>
-            <p className="mt-3 max-w-[26rem] text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-3 max-w-[26rem] text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               The Project VE team will review your goals, placement interest, and timing before
               following up with sponsor options.
             </p>
             <Link
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
               href="/advertise"
             >
               Back to sponsor overview
@@ -78,18 +78,18 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
   }
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-chrome)]">
       {topChrome}
       <AppHeader backHref="/advertise" hideTitle title="Sponsor inquiry" />
       <section className="learner-page learner-page--spacious">
         <div className="lg:hidden">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
             Sponsor inquiry
           </p>
           <h1 className="mt-2 text-3xl font-black leading-9 tracking-[-0.04em]">
             Tell us how your brand wants to support learner rewards.
           </h1>
-          <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+          <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             Use this form for direct sponsor placements, reward-backed campaigns, and values-aligned
             partnerships.
           </p>
@@ -98,18 +98,18 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
         <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-12">
           <aside className="hidden lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-5">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
                 Sponsorships
               </p>
               <h1 className="mt-2 text-3xl font-black leading-9 tracking-[-0.04em]">
                 Partner with Project VE.
               </h1>
-              <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+              <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                 Help us fund meaningful rewards for dedicated learners. Your sponsorship directly
                 supports a rewards ecosystem built on transparency and shared value.
               </p>
             </div>
-            <div className="relative aspect-video w-full overflow-hidden rounded-[20px] border border-[var(--ve-line-soft)]">
+            <div className="relative aspect-video w-full overflow-hidden rounded-[20px] border border-[var(--ui-border-subtle)]">
               <Image
                 alt="A calm, modern learning space with natural light and warm wood surfaces."
                 className="object-cover"
@@ -118,13 +118,13 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
                 src="/images/advertise-hero.jpg"
               />
             </div>
-            <div className="rounded-[20px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5">
+            <div className="rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5">
               <h3 className="text-sm font-black">Why partner?</h3>
               <ul className="mt-3 space-y-3">
                 {whyPartner.map((item) => (
                   <li className="flex items-start gap-2.5" key={item}>
-                    <ArrowRightIcon className="mt-0.5 size-4 shrink-0 text-[var(--ve-green)]" />
-                    <p className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                    <ArrowRightIcon className="mt-0.5 size-4 shrink-0 text-[var(--ui-action)]" />
+                    <p className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                       {item}
                     </p>
                   </li>
@@ -133,8 +133,8 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
             </div>
           </aside>
 
-          <div className="mt-5 rounded-[24px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm lg:mt-0 lg:p-8">
-            <h2 className="hidden border-b border-[var(--ve-line-soft)] pb-4 text-xl font-black tracking-[-0.03em] lg:block lg:mb-6">
+          <div className="mt-5 rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm lg:mt-0 lg:p-8">
+            <h2 className="hidden border-b border-[var(--ui-border-subtle)] pb-4 text-xl font-black tracking-[-0.03em] lg:block lg:mb-6">
               Sponsor inquiry
             </h2>
             <form action={submitSponsorInquiry} className="flex flex-col gap-4">
@@ -161,15 +161,15 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
                 </label>
               </div>
 
-              <hr className="my-1 border-[var(--ve-line-soft)]" />
+              <hr className="my-1 border-[var(--ui-border-subtle)]" />
 
-              <label className="block rounded-[16px] border-l-4 border-[var(--ve-green)] bg-[var(--ve-green-soft)] p-4">
+              <label className="block rounded-[16px] border-l-4 border-[var(--ui-action)] bg-[var(--ui-action-soft)] p-4">
                 <span className={labelClasses}>Campaign goal</span>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   What are you hoping to achieve with this partnership?
                 </p>
                 <textarea
-                  className={`${fieldClasses} bg-[var(--ve-card)]`}
+                  className={`${fieldClasses} bg-[var(--ui-surface)]`}
                   name="campaignGoal"
                   placeholder="Example: reach young learners, fund rewards, promote a scholarship, or support career readiness."
                   required
@@ -200,13 +200,13 @@ export default async function SponsorInquiryPage({ searchParams }: SponsorInquir
               </label>
 
               <button
-                className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ve-green)] px-5 text-sm font-black text-white"
+                className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
                 type="submit"
               >
                 Send sponsor inquiry
                 <SendIcon className="size-4" />
               </button>
-              <p className="text-center text-xs font-semibold text-[var(--ve-muted)]">
+              <p className="text-center text-xs font-semibold text-[var(--ui-text-muted)]">
                 Our partnerships team will review your inquiry and follow up with suitable options.
               </p>
             </form>

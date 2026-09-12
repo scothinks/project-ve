@@ -52,7 +52,7 @@ export default async function ProfilePage() {
       : "Learner";
 
   return (
-    <main className="learner-system profile-learner min-h-screen bg-[var(--ve-shell)]">
+    <main className="learner-system profile-learner min-h-screen bg-[var(--ui-chrome)]">
       <div className="hidden lg:block">
         <LearnerTopChrome
           active="Home"

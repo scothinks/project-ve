@@ -1,3 +1,5 @@
+import { PlatformEndorsement } from "@/components/brand/PlatformEndorsement";
+import { TenantIdentity } from "@/components/organizations/TenantIdentity";
 import Link from "next/link";
 import type React from "react";
 import { BottomNav } from "@/components/navigation/BottomNav";
@@ -44,15 +46,6 @@ export function OrgBottomNav({
   );
 }
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "PV";
-}
-
 export function OrgLearnerHeader({
   balance,
   logoUrl,
@@ -64,17 +57,9 @@ export function OrgLearnerHeader({
   return (
     <header className="org-learner-header">
       <div className="org-learner-header__identity">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img alt="" className="org-learner-header__logo" src={logoUrl} />
-        ) : (
-          <span className="org-learner-header__logo">{initials(organizationName)}</span>
-        )}
-        <div className="min-w-0">
-          <p>{organizationName}</p>
-          {title ? <span>{title}</span> : null}
-        </div>
+        <TenantIdentity logoUrl={logoUrl} name={organizationName} detail={title} />
       </div>
+      <div className="org-learner-header__endorsement"><PlatformEndorsement /></div>
       {typeof balance === "number" && pointsLabel ? (
         <OrgPointsPill balance={balance} label={pointsLabel} />
       ) : null}
@@ -112,18 +97,20 @@ export function OrgLearnerChrome({
         />
       ) : null}
       <header className="org-desktop-chrome">
-        <Link className="org-desktop-chrome__brand" href="/dashboard">
-          <strong>Project Ve</strong>
-        </Link>
+        <div className="org-desktop-chrome__identity">
+          <TenantIdentity logoUrl={logoUrl} name={organizationName} />
+          <Link className="org-desktop-chrome__endorsement" href="/dashboard">
+            <PlatformEndorsement />
+          </Link>
+        </div>
         <nav aria-label="Organisation learner sections" className="org-desktop-chrome__nav">
           {navItems.map((item) => (
-            <Link className={item === active ? "is-active" : undefined} href={hrefs[item]} key={item}>
+            <Link aria-current={item === active ? "page" : undefined} className={item === active ? "is-active" : undefined} href={hrefs[item]} key={item}>
               {item}
             </Link>
           ))}
         </nav>
         <div className="org-desktop-chrome__context">
-          <span className="org-desktop-chrome__org-name">{organizationName}</span>
           {typeof balance === "number" && pointsLabel ? (
             <span className="org-desktop-chrome__points">
               {pointsLabel}: {new Intl.NumberFormat("en-US").format(balance)}

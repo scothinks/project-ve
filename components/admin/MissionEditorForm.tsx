@@ -48,15 +48,15 @@ type MissionEditorFormProps = {
 };
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-mission)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function sectionSummaryClasses() {
-  return "cursor-pointer list-none text-sm font-black text-[var(--foreground)]";
+  return "cursor-pointer list-none text-sm font-black text-[var(--ui-text)]";
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -64,7 +64,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[var(--ve-mission)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ui-mission)] px-5 py-3 text-sm font-black text-[var(--ui-on-mission)] disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -222,17 +222,17 @@ export function MissionEditorForm({
       ) : null}
 
       <details
-        className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-mission)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-mission-soft)_84%,var(--ve-card))] p-4"
+        className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--ui-mission)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-mission-bg)_84%,var(--ui-surface))] p-4"
         open
       >
         <summary className={sectionSummaryClasses()}>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-mission)]">Mission setup</p>
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-reward)]">Mission setup</p>
           <h2 className="mt-2 text-lg font-black">What learners do</h2>
-          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             Define the task, choose whether the mission awards XP or a reward, and set the validation rule.
           </p>
         </summary>
-        <div className="mt-4 space-y-5 border-t border-[color:color-mix(in_srgb,var(--ve-mission)_18%,var(--ve-line-soft))] pt-4">
+        <div className="mt-4 space-y-5 border-t border-[color:color-mix(in_srgb,var(--ui-mission)_18%,var(--ui-border-subtle))] pt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Mission title</span>
@@ -251,7 +251,7 @@ export function MissionEditorForm({
                   <option value="reward">Reward</option>
                 </select>
               ) : (
-                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black">
                   Organisation XP
                 </div>
               )}
@@ -261,7 +261,7 @@ export function MissionEditorForm({
             <label className="block max-w-sm">
               <span className={labelClasses()}>Reward XP</span>
               {lockExecutionConfig ? (
-                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black">
                   {mission.rewardXp ?? 0}
                 </div>
               ) : (
@@ -286,7 +286,7 @@ export function MissionEditorForm({
                   </option>
                 ))}
               </select>
-              <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+              <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
                 Native rewards such as XP boosts are configured in Rewards and can be granted here.
               </p>
             </label>
@@ -305,13 +305,13 @@ export function MissionEditorForm({
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <span className={labelClasses()}>Category</span>
-                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black capitalize">
+                <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black capitalize">
                   {mission.category}
                 </div>
               </div>
               <div>
                 <span className={labelClasses()}>Repeatability</span>
-                <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+                <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black">
                   {mission.repeatability.replaceAll("_", " ")}
                 </div>
               </div>
@@ -351,11 +351,11 @@ export function MissionEditorForm({
         </div>
       </details>
 
-      <details className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4" open>
+      <details className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4" open>
         <summary className={sectionSummaryClasses()}>
           <h2 className="text-sm font-black">Availability</h2>
         </summary>
-        <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
+        <div className="mt-4 space-y-4 border-t border-[var(--ui-border-subtle)] pt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Starts</span>
@@ -370,7 +370,7 @@ export function MissionEditorForm({
             <div>
               <p className={labelClasses()}>Delivery</p>
               <div className="mt-2 grid gap-3 md:grid-cols-2">
-                <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-bold">
+                <label className="flex gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-bold">
                   <input
                     defaultChecked={(mission.deliveryScope ?? "catalog_only") !== "organization"}
                     name="deliveryScope"
@@ -379,12 +379,12 @@ export function MissionEditorForm({
                   />
                   <span>
                     <span className="block font-black">Catalogue only</span>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                       Available for programme attachment without direct learner delivery.
                     </span>
                   </span>
                 </label>
-                <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-bold">
+                <label className="flex gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-bold">
                   <input
                     defaultChecked={mission.deliveryScope === "organization"}
                     name="deliveryScope"
@@ -393,7 +393,7 @@ export function MissionEditorForm({
                   />
                   <span>
                     <span className="block font-black">All organisation learners</span>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                       Show this mission to active learners in the organisation.
                     </span>
                   </span>
@@ -404,33 +404,33 @@ export function MissionEditorForm({
         </div>
       </details>
 
-      <details className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4" open>
+      <details className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4" open>
         <summary className={sectionSummaryClasses()}>
           <h2 className="text-sm font-black">Validation rule</h2>
         </summary>
         {lockExecutionConfig ? (
-          <div className="mt-4 grid gap-4 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-4 border-t border-[var(--ui-border-subtle)] pt-4 md:grid-cols-2">
             <div>
               <span className={labelClasses()}>Validation type</span>
-              <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+              <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black">
                 {mission.validationType.replaceAll("_", " ")}
               </div>
             </div>
             <div>
               <span className={labelClasses()}>Source handler</span>
-              <div className="mt-1 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-2 text-sm font-black">
+              <div className="mt-1 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-2 text-sm font-black">
                 Preserved from platform mission
               </div>
             </div>
             <div className="md:col-span-2">
               <span className={labelClasses()}>Execution configuration</span>
-              <pre className="mt-1 overflow-x-auto rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+              <pre className="mt-1 overflow-x-auto rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 {JSON.stringify(mission.validationConfig, null, 2)}
               </pre>
             </div>
           </div>
         ) : (
-          <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
+          <div className="mt-4 space-y-4 border-t border-[var(--ui-border-subtle)] pt-4">
           <label className="block">
             <span className={labelClasses()}>Validation type</span>
             <select
@@ -536,7 +536,7 @@ export function MissionEditorForm({
                 <div className="mt-2 grid gap-3 md:grid-cols-3">
                   {["image", "video", "text", "link", "location"].map((field) => (
                     <label
-                      className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black"
+                      className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black"
                       key={field}
                     >
                       <input
@@ -551,7 +551,7 @@ export function MissionEditorForm({
                   ))}
                 </div>
               </div>
-              <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black">
+              <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black">
                 <input defaultChecked={requiresManualReview} name="requiresManualReview" type="checkbox" />
                 <span>Requires manual review before awarding the mission reward</span>
               </label>
@@ -560,7 +560,7 @@ export function MissionEditorForm({
 
           {validationType === "manual_review" ? (
             <div className="space-y-3">
-              <div className="rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-bold text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
+              <div className="rounded-[12px] border border-[color:color-mix(in_srgb,var(--ui-reward)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_82%,var(--ui-surface))] px-4 py-3 text-sm font-bold text-[var(--ui-reward)]">
                 Manual review missions use the existing enum and table values, but there is no learner-facing submission path yet. Keep this in draft unless you are running an operational workflow around it.
               </div>
               <label className="block">
@@ -580,11 +580,11 @@ export function MissionEditorForm({
       </details>
 
       {showPresentationConfig ? (
-        <details className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4" open>
+        <details className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4" open>
           <summary className={sectionSummaryClasses()}>
             <h2 className="text-sm font-black">Learner presentation</h2>
           </summary>
-          <div className="mt-4 grid gap-4 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-4 border-t border-[var(--ui-border-subtle)] pt-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Display title</span>
               <input className={fieldClasses()} defaultValue={presentationTitle} maxLength={140} name="presentationTitle" />
@@ -633,10 +633,10 @@ export function MissionEditorForm({
         </details>
       ) : null}
 
-      <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
-        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Publishing</p>
-        <p className="mt-2 text-sm font-black text-[var(--foreground)]">Managed from Missions overview</p>
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+      <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
+        <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Publishing</p>
+        <p className="mt-2 text-sm font-black text-[var(--ui-text)]">Managed from Missions overview</p>
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Save mission details here, then publish, pause, or move back to draft from the missions table.
         </p>
       </div>
@@ -645,8 +645,8 @@ export function MissionEditorForm({
         <div
           className={`rounded-[14px] border px-4 py-3 text-sm font-black ${
             state.ok
-              ? "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
-              : "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+              ? "border-[color:color-mix(in_srgb,var(--ui-action)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
+              : "border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
           }`}
         >
           {state.message}

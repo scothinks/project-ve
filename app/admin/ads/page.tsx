@@ -64,25 +64,25 @@ export default async function AdminAdsPage({ searchParams }: AdsRouteProps) {
                 </div>
               </div>
               <div className="mt-5 grid gap-3 md:grid-cols-3">
-                <div className="rounded-[18px] bg-[var(--ve-panel)] p-4">
+                <div className="rounded-[18px] bg-[var(--ui-surface-inset)] p-4">
                   <p className="text-sm font-black">Creative review</p>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     {pendingCreatives.length
                       ? `${pendingCreatives.length} creative version${pendingCreatives.length === 1 ? "" : "s"} waiting for approval.`
                       : "No creative approvals waiting."}
                   </p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--ve-panel)] p-4">
+                <div className="rounded-[18px] bg-[var(--ui-surface-inset)] p-4">
                   <p className="text-sm font-black">Partner readiness</p>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     {missingTermsPartners.length
                       ? `${missingTermsPartners.length} active partner${missingTermsPartners.length === 1 ? "" : "s"} missing accepted terms.`
                       : "All active partners have accepted terms."}
                   </p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--ve-panel)] p-4">
+                <div className="rounded-[18px] bg-[var(--ui-surface-inset)] p-4">
                   <p className="text-sm font-black">Safety controls</p>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     {pausedEntities
                       ? `${pausedEntities} partner/campaign/flight record${pausedEntities === 1 ? "" : "s"} paused.`
                       : "No active kill-switch pauses."}
@@ -92,7 +92,7 @@ export default async function AdminAdsPage({ searchParams }: AdsRouteProps) {
             </AdminCard>
 
             <AdminCard>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                 Launch checklist
               </p>
               <div className="mt-4 space-y-3">
@@ -104,10 +104,10 @@ export default async function AdminAdsPage({ searchParams }: AdsRouteProps) {
                   ["5", "Reporting snapshot ready"],
                 ].map(([step, label]) => (
                   <div className="flex items-center gap-3" key={step}>
-                    <span className="grid size-7 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ve-green-soft)_76%,var(--ve-card))] text-xs font-black text-[var(--ve-green)]">
+                    <span className="grid size-7 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-action-soft)_76%,var(--ui-surface))] text-xs font-black text-[var(--ui-action)]">
                       {step}
                     </span>
-                    <span className="text-sm font-bold text-[var(--ve-muted-strong)]">{label}</span>
+                    <span className="text-sm font-bold text-[var(--ui-text-muted)]">{label}</span>
                   </div>
                 ))}
               </div>
@@ -126,13 +126,13 @@ export default async function AdminAdsPage({ searchParams }: AdsRouteProps) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-black">{campaign.name}</p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                     {campaign.campaign_type} · {campaign.pricing_model}
                   </p>
                 </div>
                 <AdminStatusBadge tone={statusTone(campaign.status)}>{campaign.status}</AdminStatusBadge>
               </div>
-              <div className="mt-4 grid gap-3 text-xs font-bold text-[var(--ve-muted-strong)]">
+              <div className="mt-4 grid gap-3 text-xs font-bold text-[var(--ui-text-muted)]">
                 <p>Schedule: {formatDate(campaign.starts_at)} → {formatDate(campaign.ends_at)}</p>
                 <p>Priority: {campaign.priority}</p>
               </div>

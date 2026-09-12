@@ -1,0 +1,62 @@
+.signature {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  vertical-align: middle;
+  color: inherit;
+  font-family: var(--ui-font-body), Arial, sans-serif;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 600;
+  font-synthesis: none;
+  letter-spacing: -0.018em;
+  line-height: 1;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.mark {
+  display: block;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  forced-color-adjust: none;
+  mask: url("/brand/aperture-a2.svg") center / contain no-repeat;
+}
+
+.words {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22em;
+}
+
+.project,
+.ve {
+  display: block;
+}
+
+.slash {
+  margin-inline: 0.035em;
+  font-weight: 500;
+}
+
+.compact .words {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12em;
+}
+
+.endorsement {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--ui-text-muted);
+  font-family: var(--ui-font-body), Arial, sans-serif;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.5;
+  text-transform: none;
+}

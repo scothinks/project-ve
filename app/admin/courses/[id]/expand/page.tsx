@@ -14,6 +14,6 @@ export default async function ExpandPage({ params, searchParams }: { params: Pro
     <h1 className="text-3xl font-black">What could help learners next?</h1>
     <p className="text-sm leading-6">Review lesson suggestions, draft the ones you want, then add them to your course.</p>
     <AiAssistanceAuthoring courseId={id} kind="lesson_plan" enabled={availability.enabled} unavailableReason={availability.reason ?? undefined} initialResultId={aiResult} />
-    {!availability.enabled && <Link className="inline-flex rounded-full bg-[var(--admin-primary)] px-5 py-3 text-sm font-bold text-[var(--admin-on-primary)]" href={`/admin/courses/${id}`}>Back to course</Link>}
+    {!availability.enabled && <Link className="inline-flex rounded-full bg-[var(--ui-action)] px-5 py-3 text-sm font-bold text-[var(--ui-on-action)]" href={`/admin/courses/${id}`}>Back to course</Link>}
   </div>;
 }

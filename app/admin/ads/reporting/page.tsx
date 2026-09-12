@@ -48,34 +48,34 @@ export default async function AdminAdsReportingPage({ searchParams }: AdsRoutePr
         <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
           <AdminCard>
             <div className="grid gap-3 md:grid-cols-4">
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Recent events</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Recent events</p>
                 <p className="mt-2 text-2xl font-black">{eventItems.length}</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Viewable</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Viewable</p>
                 <p className="mt-2 text-2xl font-black">{viewableEvents.length}</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Clicks</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Clicks</p>
                 <p className="mt-2 text-2xl font-black">{clickEvents.length}</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Filtered</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Filtered</p>
                 <p className="mt-2 text-2xl font-black">{filteredEvents.length}</p>
               </div>
             </div>
             <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Fallback views</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallback views</p>
                 <p className="mt-2 text-2xl font-black">{houseFallbackViewableEvents.length}</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Fallback clicks</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallback clicks</p>
                 <p className="mt-2 text-2xl font-black">{houseFallbackClickEvents.length}</p>
               </div>
-              <div className="rounded-[16px] bg-[var(--ve-panel)] p-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Fallback CTR</p>
+              <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallback CTR</p>
                 <p className="mt-2 text-2xl font-black">{formatPercent(houseFallbackCtr)}</p>
               </div>
             </div>
@@ -107,18 +107,18 @@ export default async function AdminAdsReportingPage({ searchParams }: AdsRoutePr
           <AdminCard>
             <h3 className="text-lg font-black">Ops jobs</h3>
             <div className="mt-4 space-y-3">
-              <form action={createAdMakeGoodRecommendations} className="rounded-[18px] border border-[var(--ve-line-soft)] p-4">
+              <form action={createAdMakeGoodRecommendations} className="rounded-[18px] border border-[var(--ui-border-subtle)] p-4">
                 <p className="text-sm font-black">Make-good recommendations</p>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   Checks completed campaigns for under-delivery and creates draft recommendations.
                 </p>
                 <button className={secondaryButtonClasses} type="submit">
                   Recommend make-goods
                 </button>
               </form>
-              <form action={purgeOldAdRuntimeData} className="rounded-[18px] border border-[var(--ve-line-soft)] p-4">
+              <form action={purgeOldAdRuntimeData} className="rounded-[18px] border border-[var(--ui-border-subtle)] p-4">
                 <p className="text-sm font-black">Retention cleanup</p>
-                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   Aggregates eligible raw events, then purges expired runtime data.
                 </p>
                 <button className={secondaryButtonClasses} type="submit">
@@ -135,9 +135,9 @@ export default async function AdminAdsReportingPage({ searchParams }: AdsRoutePr
             {snapshotItems.length ? (
               <div className="space-y-3">
                 {snapshotItems.map((snapshot) => (
-                  <div className="rounded-[16px] bg-[var(--ve-panel)] p-4" key={snapshot.id}>
+                  <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4" key={snapshot.id}>
                     <p className="font-black">{snapshot.campaign_id}</p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                       {formatDate(snapshot.period_start)} → {formatDate(snapshot.period_end)}
                     </p>
                     <p className="mt-2 text-sm font-bold">
@@ -155,17 +155,17 @@ export default async function AdminAdsReportingPage({ searchParams }: AdsRoutePr
             <h3 className="mb-3 text-lg font-black">Sponsor inquiries</h3>
             <div className="space-y-3">
               {sponsorInquiryItems.length ? sponsorInquiryItems.map((inquiry) => (
-                <div className="rounded-[16px] bg-[var(--ve-panel)] p-4" key={inquiry.id}>
+                <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4" key={inquiry.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-black">{inquiry.organization_name}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                         {inquiry.contact_name} · {inquiry.email}
                       </p>
                     </div>
                     <AdminStatusBadge tone={statusTone(inquiry.status)}>{inquiry.status}</AdminStatusBadge>
                   </div>
-                  <p className="mt-3 line-clamp-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                  <p className="mt-3 line-clamp-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     {inquiry.campaign_goal}
                   </p>
                 </div>
@@ -177,23 +177,23 @@ export default async function AdminAdsReportingPage({ searchParams }: AdsRoutePr
             <h3 className="mb-3 text-lg font-black">Make-goods and audit trail</h3>
             <div className="grid gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Make-goods</p>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Make-goods</p>
                 <div className="mt-2 space-y-2">
                   {makeGoodItems.length ? makeGoodItems.map((makeGood) => (
-                    <p className="rounded-[14px] bg-[var(--ve-panel)] p-3 text-xs font-bold" key={makeGood.id}>
+                    <p className="rounded-[14px] bg-[var(--ui-surface-inset)] p-3 text-xs font-bold" key={makeGood.id}>
                       {makeGood.campaign_id}: {makeGood.status} · {makeGood.owed_impressions} impressions · {makeGood.owed_clicks} clicks
                     </p>
-                  )) : <p className="text-sm font-semibold text-[var(--ve-muted)]">No make-goods yet.</p>}
+                  )) : <p className="text-sm font-semibold text-[var(--ui-text-muted)]">No make-goods yet.</p>}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Audit log</p>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Audit log</p>
                 <div className="mt-2 space-y-2">
                   {auditItems.length ? auditItems.map((event) => (
-                    <p className="rounded-[14px] bg-[var(--ve-panel)] p-3 text-xs font-bold" key={event.id}>
+                    <p className="rounded-[14px] bg-[var(--ui-surface-inset)] p-3 text-xs font-bold" key={event.id}>
                       {event.event_type} · {event.entity_type}/{event.entity_id}
                     </p>
-                  )) : <p className="text-sm font-semibold text-[var(--ve-muted)]">No audit events yet.</p>}
+                  )) : <p className="text-sm font-semibold text-[var(--ui-text-muted)]">No audit events yet.</p>}
                 </div>
               </div>
             </div>

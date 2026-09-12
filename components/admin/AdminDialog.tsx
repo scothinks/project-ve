@@ -32,24 +32,24 @@ export function AdminDrawer({
         <Dialog.Content
           onCloseAutoFocus={onCloseAutoFocus}
           className={cn(
-            "fixed right-0 top-0 z-50 flex h-full flex-col overflow-y-auto border-l border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] shadow-2xl outline-none transition-transform",
+            "fixed right-0 top-0 z-50 flex h-full flex-col overflow-y-auto border-l border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] shadow-2xl outline-none transition-transform",
             widthClassName,
           )}
         >
-          <div className="flex items-start justify-between border-b border-[var(--admin-border-warm)] px-6 py-5">
+          <div className="flex items-start justify-between border-b border-[var(--ui-border-subtle)] px-6 py-5">
             <div>
-              <Dialog.Title className="text-lg font-black text-[var(--admin-ink-charcoal)]">
+              <Dialog.Title className="text-lg font-black text-[var(--ui-text)]">
                 {title}
               </Dialog.Title>
               {description ? (
-                <Dialog.Description className="mt-1 text-sm text-[var(--admin-on-surface-variant)]">
+                <Dialog.Description className="mt-1 text-sm text-[var(--ui-text-muted)]">
                   {description}
                 </Dialog.Description>
               ) : null}
             </div>
             <Dialog.Close
               aria-label="Close"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)]"
             >
               ✕
             </Dialog.Close>
@@ -83,17 +83,17 @@ export function AdminConfirmDialog({
       <AlertDialog.Trigger asChild>{trigger}</AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/30" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-6 shadow-2xl outline-none">
-          <AlertDialog.Title className="text-lg font-black text-[var(--admin-ink-charcoal)]">
+        <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-6 shadow-2xl outline-none">
+          <AlertDialog.Title className="text-lg font-black text-[var(--ui-text)]">
             {title}
           </AlertDialog.Title>
-          <AlertDialog.Description className="mt-2 text-sm text-[var(--admin-on-surface-variant)]">
+          <AlertDialog.Description className="mt-2 text-sm text-[var(--ui-text-muted)]">
             {description}
           </AlertDialog.Description>
           <div className="mt-6 flex justify-end gap-3">
             <AlertDialog.Cancel asChild>
               <button
-                className="rounded-[12px] border border-[var(--admin-border-warm)] px-4 py-2 text-sm font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"
+                className="rounded-[12px] border border-[var(--ui-border-subtle)] px-4 py-2 text-sm font-bold text-[var(--ui-text)] transition hover:bg-[var(--ui-surface-soft)]"
                 type="button"
               >
                 {cancelLabel}
@@ -102,10 +102,10 @@ export function AdminConfirmDialog({
             <AlertDialog.Action asChild>
               <button
                 className={cn(
-                  "rounded-[12px] px-4 py-2 text-sm font-bold text-white transition",
+                  "rounded-[12px] px-4 py-2 text-sm font-bold transition",
                   tone === "danger"
-                    ? "bg-[var(--admin-error)] hover:brightness-95"
-                    : "bg-[var(--admin-primary-container)] hover:brightness-95",
+                    ? "bg-[var(--ui-danger)] text-[var(--ui-on-danger)] hover:brightness-95"
+                    : "bg-[var(--ui-action)] text-[var(--ui-on-action)] hover:bg-[var(--ui-action-hover)] active:bg-[var(--ui-action-pressed)]",
                 )}
                 onClick={onConfirm}
                 type="button"

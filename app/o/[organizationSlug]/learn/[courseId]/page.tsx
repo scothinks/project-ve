@@ -94,7 +94,7 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
       />
       <section className="learner-page learner-page--standard">
         <article className="org-course-detail">
-          <div className="org-course-detail__hero relative h-36 w-full overflow-hidden rounded-lg bg-[var(--learner-surface-soft)]">
+          <div className="org-course-detail__hero relative h-36 w-full overflow-hidden rounded-lg bg-[var(--ui-surface-soft)]">
             <Image
               alt={heroImage.alt}
               className={getImageFitClass(heroImage)}
@@ -104,31 +104,31 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
               src={heroImage.src}
               style={getImagePresentationStyle(heroImage)}
             />
-            <span className="absolute bottom-2 left-2 rounded-full bg-[var(--learner-green-deep)] px-2.5 py-1 text-[0.58rem] font-extrabold text-white">
+            <span className="absolute bottom-2 left-2 rounded-full bg-[var(--ui-action)] px-2.5 py-1 text-[0.58rem] font-extrabold text-[var(--ui-on-action)]">
               {deliveryContext.label}
             </span>
           </div>
           <div className="org-course-detail__body pt-4">
-            <p className="inline-flex rounded border border-[var(--learner-border-soft)] bg-[var(--learner-surface)] px-2 py-1 text-[0.58rem] font-bold uppercase tracking-[0.06em] text-[var(--learner-text-muted)]">
+            <p className="inline-flex rounded border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-2 py-1 text-[0.58rem] font-bold uppercase tracking-[0.06em] text-[var(--ui-text-muted)]">
               Course
             </p>
-            <h1 className="mt-3 text-[1.08rem] font-[650] leading-5 text-[var(--learner-text)]">
+            <h1 className="mt-3 text-[1.08rem] font-[650] leading-5 text-[var(--ui-text)]">
               {course.title}
             </h1>
-            <p className="mt-2 text-[0.72rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+            <p className="mt-2 text-[0.72rem] font-medium leading-5 text-[var(--ui-text-muted)]">
               {course.description}
             </p>
             <div className="org-mobile-card org-course-detail__progress relative mt-4 overflow-hidden p-3 pb-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <span className="block text-[0.68rem] font-semibold text-[var(--learner-text-muted)]">
+                  <span className="block text-[0.68rem] font-semibold text-[var(--ui-text-muted)]">
                     Your Progress
                   </span>
-                  <p className="mt-1 text-[0.72rem] font-medium text-[var(--learner-text)]">
+                  <p className="mt-1 text-[0.72rem] font-medium text-[var(--ui-text)]">
                     {completedLessonIdList.length} of {course.lessons.length} lessons completed
                   </p>
                 </div>
-                <span className="text-[1.1rem] font-[650] leading-none text-[var(--learner-green-deep)]">
+                <span className="text-[1.1rem] font-[650] leading-none text-[var(--ui-action)]">
                   {progressPercent}%
                 </span>
               </div>
@@ -145,7 +145,7 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
         </article>
 
         <section className="org-course-syllabus mt-6">
-          <h2 className="text-[0.9rem] font-[650] text-[var(--learner-text)]">Syllabus</h2>
+          <h2 className="text-[0.9rem] font-[650] text-[var(--ui-text)]">Syllabus</h2>
           <div className="mt-3">
             {course.lessons.map((lesson, index) => {
               const completed = completedLessonIds.has(lesson.id);
@@ -169,12 +169,12 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
                     <span
                       className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[0.58rem] font-extrabold ${
                         completed
-                          ? "bg-[var(--learner-green-deep)] text-white"
+                          ? "bg-[var(--ui-action)] text-[var(--ui-on-action)]"
                           : upNext
-                            ? "bg-[var(--learner-green-deep)] text-white ring-4 ring-[color:color-mix(in_srgb,var(--learner-green)_20%,transparent)]"
+                            ? "bg-[var(--ui-action)] text-[var(--ui-on-action)] ring-4 ring-[color:color-mix(in_srgb,var(--ui-action)_20%,transparent)]"
                             : locked
-                              ? "border border-[var(--learner-border)] text-[var(--learner-text-muted)]"
-                              : "border border-[var(--learner-border)] text-[var(--learner-text-muted)]"
+                              ? "border border-[var(--ui-border)] text-[var(--ui-text-muted)]"
+                              : "border border-[var(--ui-border)] text-[var(--ui-text-muted)]"
                       }`}
                     >
                       {completed ? (
@@ -188,20 +188,20 @@ export default async function OrganizationCourseDetailPage({ params, searchParam
                       )}
                     </span>
                     {!isLast ? (
-                      <span className="my-0.5 w-px flex-1 bg-[color:color-mix(in_srgb,var(--learner-border)_60%,transparent)]" />
+                      <span className="my-0.5 w-px flex-1 bg-[color:color-mix(in_srgb,var(--ui-border)_60%,transparent)]" />
                     ) : null}
                   </span>
                   <span className="min-w-0 pb-4">
-                    <span className="block text-[0.68rem] font-[650] leading-4 text-[var(--learner-green-deep)]">
+                    <span className="block text-[0.68rem] font-[650] leading-4 text-[var(--ui-action)]">
                       Lesson {index + 1} - {completed ? "Completed" : upNext ? "Up Next" : locked ? "Locked" : "Lesson"}
                     </span>
-                    <span className="mt-1 block text-[0.74rem] font-[650] leading-4 text-[var(--learner-text)]">
+                    <span className="mt-1 block text-[0.74rem] font-[650] leading-4 text-[var(--ui-text)]">
                       {lesson.title}
                     </span>
-                    <span className="mt-1 line-clamp-2 block text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                    <span className="mt-1 line-clamp-2 block text-[0.62rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                       {lesson.summary}
                     </span>
-                    <span className="mt-2 block text-[0.58rem] font-semibold text-[var(--learner-text-muted)]">
+                    <span className="mt-2 block text-[0.58rem] font-semibold text-[var(--ui-text-muted)]">
                       {lesson.estimatedMinutes} min · {formatXpLabel(getLessonXP(lesson), workspace.xpAccount.label)}
                     </span>
                   </span>

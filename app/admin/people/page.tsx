@@ -63,8 +63,8 @@ export default async function AdminPeoplePage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-ink-charcoal)]">People</h1>
-          <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+          <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">People</h1>
+          <p className="text-sm font-medium text-[var(--ui-text-muted)]">
             Manage organisation members, invitations, and hierarchical units.
           </p>
         </div>
@@ -84,14 +84,14 @@ export default async function AdminPeoplePage({
           <form className="flex flex-wrap items-center gap-3" method="get">
             <input name="tab" type="hidden" value="members" />
             <input
-              className="min-w-[220px] flex-1 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
+              className="min-w-[220px] flex-1 rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)]"
               defaultValue={firstValue(params.q) ?? ""}
               name="q"
               placeholder="Search members by name…"
               type="search"
             />
             <select
-              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 text-sm font-semibold outline-none"
+              className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2.5 text-sm font-semibold outline-none"
               defaultValue={roleFilter}
               name="role"
             >
@@ -103,7 +103,7 @@ export default async function AdminPeoplePage({
               ))}
             </select>
             <select
-              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 text-sm font-semibold outline-none"
+              className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2.5 text-sm font-semibold outline-none"
               defaultValue={statusFilter}
               name="status"
             >
@@ -114,7 +114,7 @@ export default async function AdminPeoplePage({
               <option value="removed">Removed</option>
             </select>
             <select
-              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 text-sm font-semibold outline-none"
+              className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2.5 text-sm font-semibold outline-none"
               defaultValue={unitFilter}
               name="unit"
             >
@@ -126,13 +126,13 @@ export default async function AdminPeoplePage({
               ))}
             </select>
             <button
-              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-2.5 text-sm font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"
+              className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-2.5 text-sm font-bold text-[var(--ui-text)] transition hover:bg-[var(--ui-surface-soft)]"
               type="submit"
             >
               Filter
             </button>
           </form>
-          <p className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+          <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
             Showing {filteredMembers.length} of {members.length} members
           </p>
           <PeopleMembersTable members={filteredMembers} organizationId={organizationId} units={units} />

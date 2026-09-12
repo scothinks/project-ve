@@ -63,7 +63,7 @@ export default async function AdminProofsPage({
                       {submission.status.replaceAll("_", " ")}
                     </AdminStatusBadge>
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-[var(--ve-muted-strong)]">
+                  <p className="mt-2 text-sm font-semibold text-[var(--ui-text-muted)]">
                     {submission.profile?.display_name ?? "Unknown user"}
                     {submission.mission
                       ? ` · ${getMissionRewardLabel({
@@ -73,12 +73,12 @@ export default async function AdminProofsPage({
                         })}`
                       : ""}
                   </p>
-                  <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                     Scope: {submission.awardScope} · Submitted{" "}
                     {formatRewardDate(submission.createdAt)}
                   </p>
                   {submission.organizationId ? (
-                    <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                       Context: organisation {submission.organizationId}
                       {submission.programmeId ? ` · programme ${submission.programmeId}` : ""}
                     </p>
@@ -93,7 +93,7 @@ export default async function AdminProofsPage({
                       <input name="awardScope" type="hidden" value={submission.awardScope} />
                       <input name="status" type="hidden" value="approved" />
                       <button
-                        className="h-10 w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-green)]"
+                        className="h-10 w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-3 text-xs font-black text-[var(--ui-action)]"
                         type="submit"
                       >
                         Approve
@@ -105,13 +105,13 @@ export default async function AdminProofsPage({
                       <input name="awardScope" type="hidden" value={submission.awardScope} />
                       <input name="status" type="hidden" value="rejected" />
                       <input
-                        className="min-w-0 flex-1 rounded-[12px] border border-[var(--ve-line-soft)] px-3 text-xs font-semibold outline-none"
+                        className="min-w-0 flex-1 rounded-[12px] border border-[var(--ui-border-subtle)] px-3 text-xs font-semibold outline-none"
                         maxLength={500}
                         name="rejectionReason"
                         placeholder="Reason"
                       />
                       <button
-                        className="h-10 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
+                        className="h-10 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 text-xs font-black text-[var(--ui-danger)]"
                         type="submit"
                       >
                         Reject
@@ -121,10 +121,10 @@ export default async function AdminProofsPage({
                 ) : null}
               </div>
 
-              <div className="mt-4 grid gap-3 border-t border-[var(--ve-line-soft)] pt-4 md:grid-cols-2">
+              <div className="mt-4 grid gap-3 border-t border-[var(--ui-border-subtle)] pt-4 md:grid-cols-2">
                 {submission.proofs.map((proof) => (
-                  <div className="rounded-[14px] bg-[var(--ve-panel)] p-3" key={proof.id}>
-                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                  <div className="rounded-[14px] bg-[var(--ui-surface-inset)] p-3" key={proof.id}>
+                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                       {proof.proof_type}
                     </p>
                     <p className="mt-1 break-words text-sm font-bold leading-6">{proof.value}</p>

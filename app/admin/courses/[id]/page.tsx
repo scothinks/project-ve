@@ -61,31 +61,31 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
 
   return (
     <>
-      <div className="-mx-5 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border-warm)] px-5 py-6 md:-mx-8 md:px-16">
+      <div className="-mx-5 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ui-border-subtle)] px-5 py-6 md:-mx-8 md:px-16">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]"
           href="/admin/courses"
         >
           ← Courses
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="inline-flex items-center rounded-full bg-[var(--admin-surface-container-low)] px-4 py-[9px] text-[13px] font-bold text-[var(--admin-on-surface-variant)]">
+          <span className="inline-flex items-center rounded-full bg-[var(--ui-surface-soft)] px-4 py-[9px] text-[13px] font-bold text-[var(--ui-text-muted)]">
             {derivedMinutes} min total
           </span>
           <Link
-            className="inline-flex items-center justify-center rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-5 py-[10px] text-[13px] font-extrabold text-[var(--admin-on-surface)]"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-5 py-[10px] text-[13px] font-extrabold text-[var(--ui-text)]"
             href={`/admin/courses/${course.id}/insights`}
           >
             Insights
           </Link>
           <Link
-            className="inline-flex items-center justify-center rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-5 py-[10px] text-[13px] font-extrabold text-[var(--admin-on-surface)]"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-5 py-[10px] text-[13px] font-extrabold text-[var(--ui-text)]"
             href={`/admin/courses/${course.id}/preview`}
           >
             Preview
           </Link>
           <Link
-            className="inline-flex items-center justify-center rounded-full bg-[var(--admin-primary)] px-[22px] py-[10px] text-[13px] font-extrabold text-[var(--admin-on-primary)] shadow-[0_4px_14px_rgba(18,60,53,0.14)]"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--ui-action)] px-[22px] py-[10px] text-[13px] font-extrabold text-[var(--ui-on-action)] shadow-[0_4px_14px_rgba(var(--ui-shadow-rgb),0.14)]"
             href={`/admin/courses/${course.id}/review`}
           >
             Review &amp; Publish
@@ -98,26 +98,26 @@ export default async function CourseDetailPage({ params, searchParams }: CourseD
 
         <div className="mb-10 flex items-start gap-5">
           <Link
-            className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-[16px] bg-[var(--admin-primary-container)]"
+            className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-[16px] bg-[var(--ui-action)]"
             href={`/admin/courses/${course.id}/settings`}
             title="Change course cover in Course settings"
           >
             {thumbnailUrl ? (
               <Image alt={thumbnailAlt} className="object-cover" fill sizes="64px" src={thumbnailUrl} />
             ) : (
-              <span className="flex h-full items-center justify-center text-xl font-black text-white/90">
+              <span className="flex h-full items-center justify-center text-xl font-black text-[var(--ui-text)]">
                 {course.title.charAt(0).toUpperCase()}
               </span>
             )}
           </Link>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--admin-primary)]">
+            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--ui-text)]">
               Course workspace
             </p>
-            <h1 className="mt-2.5 text-[34px] font-black tracking-[-0.02em] text-[var(--admin-brand-hero)]">
+            <h1 className="mt-2.5 text-[34px] font-black tracking-[-0.02em] text-[var(--ui-text)]">
               {course.title}
             </h1>
-            <p className="mt-2.5 text-[15px] font-medium text-[var(--admin-on-surface-variant)]">
+            <p className="mt-2.5 text-[15px] font-medium text-[var(--ui-text-muted)]">
               {course.description || "Add a course description in Course settings."}
             </p>
           </div>
