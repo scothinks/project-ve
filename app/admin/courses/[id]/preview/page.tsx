@@ -28,10 +28,10 @@ export default async function CoursePreviewPage({ params }: CoursePreviewPagePro
     : undefined;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--admin-surface-container-low)]">
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-5 md:px-10">
+    <div className="flex min-h-screen flex-col bg-[var(--ui-surface-soft)]">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-6 py-5 md:px-10">
         <Link
-          className="flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)]"
+          className="flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)]"
           href={`/admin/courses/${course.id}`}
         >
           <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24">
@@ -39,7 +39,7 @@ export default async function CoursePreviewPage({ params }: CoursePreviewPagePro
           </svg>
           Back to editing
         </Link>
-        <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+        <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
           Previewing the real learner page
         </span>
       </div>
@@ -60,36 +60,36 @@ export default async function CoursePreviewPage({ params }: CoursePreviewPagePro
             <div className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-text)]">
                     {course.category}
                   </p>
                   <h1 className="mt-2 text-2xl font-black leading-8">{course.title}</h1>
                 </div>
                 <XPBadge className="shrink-0" xp={getCourseXP(course)} />
               </div>
-              <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+              <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                 {course.description}
               </p>
               <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                  <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Level</p>
-                  <p className="mt-1 text-xs font-black capitalize text-[var(--foreground)]">{course.level}</p>
+                <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Level</p>
+                  <p className="mt-1 text-xs font-black capitalize text-[var(--ui-text)]">{course.level}</p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                  <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Time</p>
-                  <p className="mt-1 text-xs font-black text-[var(--foreground)]">{course.estimatedMinutes}m</p>
+                <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Time</p>
+                  <p className="mt-1 text-xs font-black text-[var(--ui-text)]">{course.estimatedMinutes}m</p>
                 </div>
-                <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                  <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Lessons</p>
-                  <p className="mt-1 text-xs font-black text-[var(--foreground)]">{course.lessons.length}</p>
+                <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Lessons</p>
+                  <p className="mt-1 text-xs font-black text-[var(--ui-text)]">{course.lessons.length}</p>
                 </div>
               </div>
-              <div className="mt-5 h-2 rounded-full bg-[var(--ve-line-soft)]">
-                <div className="h-full w-0 rounded-full bg-[#008751]" />
+              <div className="mt-5 h-2 rounded-full bg-[var(--ui-border-subtle)]">
+                <div className="h-full w-0 rounded-full bg-[var(--ui-action)]" />
               </div>
               {firstLessonHref ? (
                 <Link
-                  className="mt-5 flex w-full items-center justify-center rounded-full bg-[#008751] px-4 py-3 text-sm font-extrabold text-white"
+                  className="mt-5 flex w-full items-center justify-center rounded-full bg-[var(--ui-action)] px-4 py-3 text-sm font-extrabold text-[var(--ui-on-action)]"
                   href={firstLessonHref}
                 >
                   Start Lesson 1
@@ -101,9 +101,9 @@ export default async function CoursePreviewPage({ params }: CoursePreviewPagePro
           <section>
             <h2 className="text-[17px] font-bold">Lessons</h2>
             {course.lessons.length === 0 ? (
-              <Card className="mt-3 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-5">
+              <Card className="mt-3 rounded-[18px] border border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-5">
                 <p className="text-sm font-black">No lessons currently.</p>
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   This course doesn&apos;t have any lessons yet.
                 </p>
               </Card>

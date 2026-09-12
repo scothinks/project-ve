@@ -256,7 +256,7 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
 
         <aside className="space-y-4">
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Availability</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Availability</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <AdminStatusBadge tone={badgeTone(storefrontState)}>{storefrontState}</AdminStatusBadge>
               <AdminStatusBadge tone={reward.is_enabled ? "good" : "danger"}>
@@ -265,28 +265,28 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
             </div>
             <dl className="mt-4 space-y-3 text-sm">
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Campaign</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Campaign</dt>
                 <dd className="mt-1 font-bold">{reward.campaign?.name ?? "No campaign"}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">XP cost</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">XP cost</dt>
                 <dd className="mt-1 font-black">{formatXpLabel(reward.cost_xp)}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Prize pool</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Prize pool</dt>
                 <dd className="mt-1 font-black">{perkAnalytics.activePrizeCount} active outcome{perkAnalytics.activePrizeCount === 1 ? "" : "s"}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Offer ends</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Offer ends</dt>
                 <dd className="mt-1 font-bold">{formatRewardDate(reward.offer_expires_at)}</dd>
               </div>
             </dl>
           </AdminCard>
 
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Fallback</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Fallback</p>
             <h2 className="mt-2 text-lg font-black">{fallback.title}</h2>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {fallback.prizeType === "xp_boost"
                 ? `${fallback.multiplier}x boost for ${fallback.durationHours}h (${fallback.uses} use${fallback.uses === 1 ? "" : "s"})`
                 : `${fallback.amount} XP if the live pool cannot award a released prize.`}
@@ -295,11 +295,11 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
 
           <AdminCard>
             <h2 className="text-lg font-black">Draw log</h2>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Open the dedicated draw view when you need to inspect winners, fallback behavior, and award timing in detail.
             </p>
             <Link
-              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-violet)]"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-on-action-soft)]"
               href={`/admin/rewards/perks/${encodeURIComponent(reward.id)}/draws`}
             >
               Open draw log
@@ -316,8 +316,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
       </section>
 
       {noticeCopy ? (
-        <AdminCard className="mt-6 border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))]">
-          <p className="text-sm font-black text-[var(--ve-green)]">{noticeCopy}</p>
+        <AdminCard className="mt-6 border-[color:color-mix(in_srgb,var(--ui-success)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_78%,var(--ui-surface))]">
+          <p className="text-sm font-black text-[var(--ui-success)]">{noticeCopy}</p>
         </AdminCard>
       ) : null}
 
@@ -326,9 +326,9 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
       <AdminCard className="mt-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Prize pool</p>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Prize pool</p>
             <h2 className="mt-2 text-xl font-black">What learners can win right now</h2>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Focus on what is released, how often it is being hit, and whether linked reward stock is under pressure.
             </p>
           </div>
@@ -344,7 +344,7 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                     <p className="font-black">
                       {prize.source_reward?.title ?? prize.title ?? "Prize"}
                     </p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                       {prize.source_reward ? `Linked to ${prize.source_reward.fulfillment_type.replaceAll("_", " ")}` : "Native fallback-style prize"}
                     </p>
                   </td>
@@ -362,7 +362,7 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                       ? "Open"
                       : prize.performance.remainingTotal}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                  <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-[var(--ui-text-muted)]">
                     {formatPrizeWindow(prize.available_from, prize.expires_at)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
@@ -383,8 +383,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                       <button
                         className={`rounded-full px-3 py-2 text-xs font-black ${
                           prize.is_enabled
-                            ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
-                            : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+                            ? "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
+                            : "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
                         }`}
                         type="submit"
                       >
@@ -431,11 +431,11 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                     <td className="whitespace-nowrap px-4 py-3">{formatRewardDate(draw.created_at)}</td>
                     <td className="px-4 py-3">
                       <p className="font-black">{draw.profile?.display_name ?? draw.profile?.referral_code ?? "Learner"}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{draw.profile?.id ?? draw.user_id}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{draw.profile?.id ?? draw.user_id}</p>
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-black">{draw.awarded_title}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)] capitalize">
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)] capitalize">
                         {draw.prize_id ? draw.awarded_fulfillment_type.replaceAll("_", " ") : "Fallback"}
                       </p>
                     </td>

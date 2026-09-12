@@ -203,6 +203,8 @@ record(
     && migrationFiles.has(recoveryMigration.file)
     && includesAll(hostedQualifier, [
       "deployment.identity",
+      "deployments?sha=${encodeURIComponent(expectedSha)}",
+      "vercelDeploymentUrl",
       "runtime.protection",
       "security.worker",
       "evidence.measurements",
@@ -221,7 +223,7 @@ record(
     && hostedThresholds.acknowledgementMs === 2_000
     && hostedThresholds.dispatchVisibleMs === 5_000
     && hostedThresholds.workerMaxDurationSeconds === 300,
-  "A manual, secret-scoped Preview gate audits migration, deployment, runtime, worker security and media; representative paid pilot evidence is advisory.",
+  "A manual, secret-scoped gate audits migration, resolves the exact Vercel deployment across environments, and checks runtime, worker security and media; representative paid pilot evidence is advisory.",
 );
 
 record(

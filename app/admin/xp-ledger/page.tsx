@@ -37,11 +37,11 @@ const directionOptions = [
 ] as const;
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 export default async function AdminXpLedgerPage({
@@ -128,16 +128,16 @@ export default async function AdminXpLedgerPage({
             </label>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+            <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
               Apply filters
             </button>
             <Link
-              className="rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
+              className="rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-5 py-3 text-sm font-black text-[var(--ui-on-action-soft)]"
               href="/admin/xp-ledger"
             >
               Reset
             </Link>
-            <p className="text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
               Showing {paginatedTransactions.startItem}-{paginatedTransactions.endItem} of {paginatedTransactions.totalItems} matching entries{hasFilters ? " for the current filter set" : ""}.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default async function AdminXpLedgerPage({
               </td>
               <td className="min-w-[220px] px-4 py-4">
                 <p className="font-black">{transaction.profile?.display_name ?? "Unknown user"}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   {transaction.profile?.referral_code ?? transaction.user_id.slice(0, 8)}
                 </p>
               </td>
@@ -171,7 +171,7 @@ export default async function AdminXpLedgerPage({
               <td className="whitespace-nowrap px-4 py-4 capitalize">
                 {transaction.source_type.replaceAll("_", " ")}
               </td>
-              <td className="min-w-[220px] px-4 py-4 text-xs font-semibold text-[var(--ve-muted-strong)]">
+              <td className="min-w-[220px] px-4 py-4 text-xs font-semibold text-[var(--ui-text-muted)]">
                 {transaction.award_scope ?? transaction.source_id}
               </td>
             </tr>

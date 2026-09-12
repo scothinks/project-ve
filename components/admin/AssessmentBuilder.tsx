@@ -86,17 +86,17 @@ function pillButtonClasses(active: boolean) {
   return cn(
     "inline-flex items-center justify-center rounded-full border px-[18px] py-[9px] text-[13px]",
     active
-      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] font-extrabold text-[var(--admin-on-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface)]",
+      ? "border-[var(--ui-action)] bg-[var(--ui-action)] font-extrabold text-[var(--ui-on-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] font-bold text-[var(--ui-text)]",
   );
 }
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary-container)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary-container)_12%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function getCoverImageValue(image: Record<string, unknown> | null | undefined, key: "src" | "alt") {
@@ -253,7 +253,7 @@ function QuestionCardFields({
       catch (error) { setSaveError(error instanceof Error ? error.message : "Question could not be saved."); }
       finally { setSaving(false); }
     }} className="mt-4 space-y-4">
-      {saveError && <p role="alert" className="text-sm text-[var(--admin-error)]">{saveError}</p>}
+      {saveError && <p role="alert" className="text-sm text-[var(--ui-danger)]">{saveError}</p>}
       <fieldset disabled={saving} className="contents">
       <input name="lessonId" type="hidden" value={lessonId} />
       <input name="quizId" type="hidden" value={quizId} />
@@ -275,7 +275,7 @@ function QuestionCardFields({
       </div>
 
       <input
-        className="w-full border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-2 text-base font-black text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary-container)]"
+        className="w-full border-0 border-b border-[var(--ui-control-border)] bg-transparent px-0.5 py-2 text-base font-black text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
         name="prompt"
         onChange={(event) => setPrompt(event.target.value)}
         placeholder="Write the question"
@@ -291,8 +291,8 @@ function QuestionCardFields({
               className={cn(
                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition",
                 option.isCorrect
-                  ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
-                  : "border-[var(--admin-border-warm)] text-transparent",
+                  ? "border-[var(--ui-action)] bg-[var(--ui-action)] text-[var(--ui-on-action)]"
+                  : "border-[var(--ui-border-subtle)] text-transparent",
               )}
               onClick={() => markCorrect(index)}
               type="button"
@@ -300,12 +300,12 @@ function QuestionCardFields({
               <CheckIcon className="h-3 w-3" />
             </button>
             {questionType === "true_false" ? (
-              <span className="flex-1 border-b border-[var(--admin-border-warm)] px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)]">
+              <span className="flex-1 border-b border-[var(--ui-border-subtle)] px-0.5 py-1.5 text-sm font-semibold text-[var(--ui-text)]">
                 {option.label}
               </span>
             ) : (
               <input
-                className="flex-1 border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary-container)]"
+                className="flex-1 border-0 border-b border-[var(--ui-control-border)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
                 name={`option${index + 1}`}
                 onChange={(event) =>
                   setOptions((current) =>
@@ -321,7 +321,7 @@ function QuestionCardFields({
             {options.length > 2 && questionType !== "true_false" ? (
               <button
                 aria-label="Remove option"
-                className="shrink-0 text-[var(--admin-outline)] hover:text-[var(--admin-secondary)]"
+                className="shrink-0 text-[var(--ui-text-muted)] hover:text-[var(--ui-warning)]"
                 onClick={() => removeOption(index)}
                 type="button"
               >
@@ -332,7 +332,7 @@ function QuestionCardFields({
         ))}
         {options.length < 4 && questionType !== "true_false" ? (
           <button
-            className="self-start text-xs font-black text-[var(--admin-primary)]"
+            className="self-start text-xs font-black text-[var(--ui-action)]"
             onClick={addOption}
             type="button"
           >
@@ -354,9 +354,9 @@ function QuestionCardFields({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Worth</span>
+          <span className="text-xs font-bold text-[var(--ui-text-muted)]">Worth</span>
           <input
-            className="w-[70px] rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-2.5 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+            className="w-[70px] rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] px-2.5 py-2 text-sm font-black text-[var(--ui-text)] outline-none"
             max={20}
             min={1}
             name="xp"
@@ -365,12 +365,12 @@ function QuestionCardFields({
             type="number"
             value={xp}
           />
-          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">XP</span>
+          <span className="text-xs font-bold text-[var(--ui-text-muted)]">XP</span>
         </div>
         <div className="flex items-center gap-2">
           {issues.length > 0 ? <AdminStatusBadge tone="warning">{issues.length} issue{issues.length === 1 ? "" : "s"}</AdminStatusBadge> : null}
           <PendingSubmitButton
-            className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+            className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--ui-action)] px-4 text-xs font-black text-[var(--ui-on-action)] transition hover:brightness-95"
             label={question ? "Save question" : "Create question"}
             pendingLabel="Saving question..."
             type="submit"
@@ -378,7 +378,7 @@ function QuestionCardFields({
         </div>
       </div>
       {issues.length > 0 ? (
-        <ul className="space-y-1 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+        <ul className="space-y-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           {issues.map((issue) => (
             <li key={issue.message}>{issue.message}</li>
           ))}
@@ -415,7 +415,7 @@ function SortableQuestionCard({
   return (
     <article
       className={cn(
-        "rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm",
+        "rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 shadow-sm",
         isDragging && "opacity-80 shadow-lg",
       )}
       ref={setNodeRef}
@@ -424,13 +424,13 @@ function SortableQuestionCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <AdminDragHandle attributes={attributes} label={`question ${question.question_order}`} listeners={listeners} />
-          <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+          <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
             Question {question.question_order}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
-            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--admin-border-warm)] px-2.5 text-xs font-black text-[var(--admin-on-surface-variant)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--ui-border-subtle)] px-2.5 text-xs font-black text-[var(--ui-text-muted)] disabled:cursor-not-allowed disabled:opacity-40"
             disabled={isFirst}
             onClick={() => onMove(question, "up")}
             title="Move question up"
@@ -439,7 +439,7 @@ function SortableQuestionCard({
             ↑
           </button>
           <button
-            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--admin-border-warm)] px-2.5 text-xs font-black text-[var(--admin-on-surface-variant)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex min-h-8 items-center justify-center rounded-[10px] border border-[var(--ui-border-subtle)] px-2.5 text-xs font-black text-[var(--ui-text-muted)] disabled:cursor-not-allowed disabled:opacity-40"
             disabled={isLast}
             onClick={() => onMove(question, "down")}
             title="Move question down"
@@ -448,14 +448,14 @@ function SortableQuestionCard({
             ↓
           </button>
           <button
-            className="text-xs font-black text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary)]"
+            className="text-xs font-black text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]"
             onClick={() => onDuplicate(question)}
             type="button"
           >
             Duplicate
           </button>
           <button
-            className="text-xs font-black text-[var(--admin-secondary)]"
+            className="text-xs font-black text-[var(--ui-warning)]"
             onClick={() => onDeleteRequest(question)}
             type="button"
           >
@@ -475,7 +475,7 @@ function RetakeRulesCard({ courseId, lesson }: { courseId: string; lesson: Admin
   );
 
   return (
-    <form data-unsaved={retryMode !== (lesson.retry_mode ?? "anytime") || cooldownHours !== Math.max(1, Math.round((lesson.retry_cooldown_seconds ?? 3600) / 3600))} action={saveLesson} className="space-y-4 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
+    <form data-unsaved={retryMode !== (lesson.retry_mode ?? "anytime") || cooldownHours !== Math.max(1, Math.round((lesson.retry_cooldown_seconds ?? 3600) / 3600))} action={saveLesson} className="space-y-4 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
       <input name="courseId" type="hidden" value={courseId} />
       <input name="returnTo" type="hidden" value="quiz" />
       <input name="lessonId" type="hidden" value={lesson.id} />
@@ -491,7 +491,7 @@ function RetakeRulesCard({ courseId, lesson }: { courseId: string; lesson: Admin
       <span className={labelClasses()}>Retake rules</span>
 
       <div className="space-y-2">
-        <span className="text-sm font-bold text-[var(--admin-on-surface)]">When can a learner retake this quiz?</span>
+        <span className="text-sm font-bold text-[var(--ui-text)]">When can a learner retake this quiz?</span>
         <div className="flex flex-wrap gap-2">
           {retryModeOptions.map((option) => (
             <button
@@ -510,34 +510,34 @@ function RetakeRulesCard({ courseId, lesson }: { courseId: string; lesson: Admin
       {retryMode === "cooldown" ? (
         <div className="flex items-center gap-2.5">
           <input
-            className="w-20 rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+            className="w-20 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] px-3 py-2 text-sm font-black text-[var(--ui-text)] outline-none"
             min={1}
             onChange={(event) => setCooldownHours(Math.max(1, Number(event.target.value) || 1))}
             type="number"
             value={cooldownHours}
           />
-          <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">hours before they can try again</span>
+          <span className="text-xs font-bold text-[var(--ui-text-muted)]">hours before they can try again</span>
         </div>
       ) : null}
 
       <label className="flex items-start gap-2.5">
         <input className="peer sr-only" defaultChecked={lesson.retry_requires_reread ?? true} name="retryRequiresReread" type="checkbox" />
-        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--admin-border-warm)] text-transparent peer-checked:border-[var(--admin-primary)] peer-checked:bg-[var(--admin-primary)] peer-checked:text-[var(--admin-on-primary)]">
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--ui-border-subtle)] text-transparent peer-checked:border-[var(--ui-action)] peer-checked:bg-[var(--ui-action)] peer-checked:text-[var(--ui-on-action)]">
           <CheckIcon className="h-3 w-3" />
         </span>
-        <span className="text-sm font-bold text-[var(--admin-on-surface)]">Require re-reading the lesson before a retry</span>
+        <span className="text-sm font-bold text-[var(--ui-text)]">Require re-reading the lesson before a retry</span>
       </label>
 
       <div className="flex items-center gap-2.5">
         <input
-          className="w-[100px] rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-3 py-2 text-sm font-black text-[var(--admin-on-surface)] outline-none"
+          className="w-[100px] rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] px-3 py-2 text-sm font-black text-[var(--ui-text)] outline-none"
           defaultValue={lesson.max_earning_attempts ?? ""}
           min={0}
           name="maxEarningAttempts"
           placeholder="Unlimited"
           type="number"
         />
-        <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">attempts that can earn XP (blank = unlimited)</span>
+        <span className="text-xs font-bold text-[var(--ui-text-muted)]">attempts that can earn XP (blank = unlimited)</span>
       </div>
 
       <label className="flex items-start gap-2.5">
@@ -547,19 +547,19 @@ function RetakeRulesCard({ courseId, lesson }: { courseId: string; lesson: Admin
           name="quizRequiresLessonCompletion"
           type="checkbox"
         />
-        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--admin-border-warm)] text-transparent peer-checked:border-[var(--admin-primary)] peer-checked:bg-[var(--admin-primary)] peer-checked:text-[var(--admin-on-primary)]">
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-[var(--ui-border-subtle)] text-transparent peer-checked:border-[var(--ui-action)] peer-checked:bg-[var(--ui-action)] peer-checked:text-[var(--ui-on-action)]">
           <CheckIcon className="h-3 w-3" />
         </span>
-        <span className="text-sm font-bold text-[var(--admin-on-surface)]">
+        <span className="text-sm font-bold text-[var(--ui-text)]">
           Quiz requires lesson completion
-          <span className="block text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+          <span className="block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Learners must read every page before the quiz becomes available.
           </span>
         </span>
       </label>
 
       <button
-        className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+        className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--ui-action)] px-4 text-xs font-black text-[var(--ui-on-action)] transition hover:brightness-95"
         type="submit"
       >
         Save retake rules
@@ -690,7 +690,7 @@ export function AssessmentBuilder({
 
   return (
     <section ref={editorRef} className="mt-6 space-y-5">
-      <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm">
+      <div className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 shadow-sm">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
           <form action={saveQuizSettings} className="space-y-4">
             <input name="lessonId" type="hidden" value={lesson.id} />
@@ -702,7 +702,7 @@ export function AssessmentBuilder({
             <div>
               <p className={labelClasses()}>Quiz</p>
               <input
-                className="mt-1 w-full border-0 bg-transparent p-0 text-2xl font-black text-[var(--admin-brand-hero)] outline-none"
+                className="mt-1 w-full border-0 bg-transparent p-0 text-2xl font-black text-[var(--ui-text)] outline-none"
                 defaultValue={quiz.title}
                 name="quizTitle"
                 required
@@ -710,13 +710,13 @@ export function AssessmentBuilder({
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <PendingSubmitButton
-                className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary)] px-4 text-xs font-black text-[var(--admin-on-primary)] transition hover:brightness-95"
+                className="inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--ui-action)] px-4 text-xs font-black text-[var(--ui-on-action)] transition hover:brightness-95"
                 label="Save quiz title"
                 pendingLabel="Saving title..."
                 type="submit"
               />
               <Link
-                className="inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--admin-border-warm)] px-4 text-xs font-black text-[var(--admin-on-surface-variant)] transition hover:text-[var(--admin-primary)]"
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--ui-border-subtle)] px-4 text-xs font-black text-[var(--ui-text-muted)] transition hover:text-[var(--ui-action)]"
                 href={`/admin/courses/lessons/${lesson.id}/preview?section=quiz`}
               >
                 Preview quiz
@@ -724,9 +724,9 @@ export function AssessmentBuilder({
             </div>
           </form>
 
-          <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] p-4">
+          <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] p-4">
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] px-3 text-xs font-black text-[var(--admin-primary)]">
+              <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-[color:color-mix(in_srgb,var(--ui-action)_16%,transparent)] px-3 text-xs font-black text-[var(--ui-action)]">
                 {formatXpLabel(totalXp)} total
               </span>
               <AdminStatusBadge tone={errorCount > 0 ? "danger" : "good"}>
@@ -736,7 +736,7 @@ export function AssessmentBuilder({
                 {warningCount} warning{warningCount === 1 ? "" : "s"}
               </AdminStatusBadge>
             </div>
-            <div className="mt-4 grid gap-2 text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+            <div className="mt-4 grid gap-2 text-sm font-semibold text-[var(--ui-text-muted)]">
               <p>Passing score: scored by existing quiz attempt rules.</p>
               <p>Quiz access: {lesson.quiz_requires_lesson_completion ? "after all lesson pages are read" : "available without page completion gate"}.</p>
               <p>
@@ -747,7 +747,7 @@ export function AssessmentBuilder({
             {issues.length > 0 ? (
               <ul className="mt-4 space-y-2 text-xs font-bold leading-5">
                 {issues.slice(0, 6).map((issue, index) => (
-                  <li className="rounded-[10px] bg-[var(--admin-surface-milk)] px-3 py-2" key={`${issue.message}-${index}`}>
+                  <li className="rounded-[10px] bg-[var(--ui-surface)] px-3 py-2" key={`${issue.message}-${index}`}>
                     {issue.message}
                   </li>
                 ))}
@@ -765,7 +765,7 @@ export function AssessmentBuilder({
             <p className={labelClasses()}>Question list</p>
             <h2 className="mt-1 text-lg font-black">{orderedQuestions.length} questions</h2>
             {orderMessage ? (
-              <p className="mt-2 text-xs font-black text-[var(--admin-on-surface-variant)]">{orderMessage}</p>
+              <p className="mt-2 text-xs font-black text-[var(--ui-text-muted)]">{orderMessage}</p>
             ) : null}
           </div>
           <AdminStatusBadge tone={isPending ? "warning" : "neutral"}>
@@ -808,13 +808,13 @@ export function AssessmentBuilder({
           )}
 
           {showNewQuestion ? (
-            <article className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4 shadow-sm">
+            <article className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+                <span className="text-xs font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                   New question
                 </span>
                 <button
-                  className="text-xs font-black text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-secondary)]"
+                  className="text-xs font-black text-[var(--ui-text-muted)] hover:text-[var(--ui-warning)]"
                   onClick={() => setShowNewQuestion(false)}
                   type="button"
                 >
@@ -828,7 +828,7 @@ export function AssessmentBuilder({
 
         <div className="mt-4 flex gap-2">
           <button
-            className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-3.5 text-xs font-bold text-[var(--admin-outline)] transition hover:border-[var(--admin-primary-container)] hover:text-[var(--admin-primary)]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] p-3.5 text-xs font-bold text-[var(--ui-text-muted)] transition hover:border-[var(--ui-action)] hover:text-[var(--ui-action)]"
             onClick={() => setShowNewQuestion(true)}
             type="button"
           >
@@ -850,25 +850,25 @@ export function AssessmentBuilder({
       >
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Delete question?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               This removes the question and its answer options when no learner attempt history references it.
             </AlertDialog.Description>
             {deleteMessage ? (
-              <p className="mt-3 rounded-[12px] border border-[var(--admin-error-container)] bg-[color:color-mix(in_srgb,var(--admin-error-container)_60%,var(--admin-surface-milk))] px-3 py-2 text-sm font-bold text-[var(--admin-error)]">
+              <p className="mt-3 rounded-[12px] border border-[var(--ui-danger-bg)] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_60%,var(--ui-surface))] px-3 py-2 text-sm font-bold text-[var(--ui-danger)]">
                 {deleteMessage}
               </p>
             ) : null}
             <div className="mt-5 flex flex-wrap justify-end gap-3">
               <AlertDialog.Cancel
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 text-sm font-black text-[var(--admin-on-surface-variant)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] px-4 text-sm font-black text-[var(--ui-text-muted)]"
                 type="button"
               >
                 Cancel
               </AlertDialog.Cancel>
               <button
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--admin-error)] px-4 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[var(--ui-danger)] px-4 text-sm font-black text-[var(--ui-on-danger)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isDeletePending}
                 onClick={confirmDeleteQuestion}
                 type="button"

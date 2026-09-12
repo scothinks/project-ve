@@ -23,8 +23,8 @@ function pillClasses(active: boolean) {
   return cn(
     "inline-flex items-center justify-center rounded-full border px-[18px] py-[9px] text-[13px]",
     active
-      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] font-extrabold text-[var(--admin-on-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface)]",
+      ? "border-[var(--ui-action)] bg-[var(--ui-action)] font-extrabold text-[var(--ui-on-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] font-bold text-[var(--ui-text)]",
   );
 }
 
@@ -68,10 +68,10 @@ export function CreateCourseForm({
 
   const remaining = TITLE_MAX_LENGTH - title.length;
   const titleCountClass = remaining <= 0
-    ? "text-[var(--admin-secondary)]"
+    ? "text-[var(--ui-warning)]"
     : remaining <= 10
-      ? "text-[var(--admin-tertiary)]"
-      : "text-[var(--admin-outline)]";
+      ? "text-[var(--ui-warning)]"
+      : "text-[var(--ui-text-muted)]";
 
   return (
     <form action={saveCourse}>
@@ -81,15 +81,15 @@ export function CreateCourseForm({
       <input name="category" type="hidden" value={category} />
       <input name="categoryCustom" type="hidden" value={showCustomCategory ? customCategory : ""} />
 
-      <div className="-mx-5 -mt-6 flex items-center justify-between gap-3 border-b border-[var(--admin-border-warm)] px-5 py-6 md:-mx-8 md:-mt-8 md:px-16">
+      <div className="-mx-5 -mt-6 flex items-center justify-between gap-3 border-b border-[var(--ui-border-subtle)] px-5 py-6 md:-mx-8 md:-mt-8 md:px-16">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)]"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)]"
           href="/admin/courses/choose"
         >
           ← Back
         </Link>
         <button
-          className="rounded-full bg-[var(--admin-primary)] px-7 py-[13px] text-sm font-extrabold text-[var(--admin-on-primary)] shadow-[0_6px_18px_rgba(18,60,53,0.14)]"
+          className="rounded-full bg-[var(--ui-action)] px-7 py-[13px] text-sm font-extrabold text-[var(--ui-on-action)] shadow-[0_6px_18px_rgba(var(--ui-shadow-rgb),0.14)]"
           type="submit"
         >
           Create course
@@ -126,7 +126,7 @@ export function CreateCourseForm({
                   </div>
                 </>
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2.5 rounded-[20px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2.5 rounded-[20px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]">
                   <svg aria-hidden="true" className="h-[30px] w-[30px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
                     <rect height="14" rx="2" width="18" x="3" y="5" />
                     <circle cx="9" cy="10" r="1.5" />
@@ -141,7 +141,7 @@ export function CreateCourseForm({
 
           <label className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                 Course title
               </span>
               <span className={cn("text-[11px] font-extrabold", titleCountClass)}>
@@ -149,7 +149,7 @@ export function CreateCourseForm({
               </span>
             </div>
             <input
-              className="border-0 border-b-2 border-[var(--admin-border-warm)] bg-transparent px-0.5 pb-3.5 pt-1.5 text-[34px] font-black tracking-[-0.01em] text-[var(--admin-brand-hero)] outline-none focus:border-[var(--admin-primary)]"
+              className="border-0 border-b-2 border-[var(--ui-control-border)] bg-transparent px-0.5 pb-3.5 pt-1.5 text-[34px] font-black tracking-[-0.01em] text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
               maxLength={TITLE_MAX_LENGTH}
               name="title"
               onChange={(event) => setTitle(event.target.value)}
@@ -157,17 +157,17 @@ export function CreateCourseForm({
               required
               value={title}
             />
-            <span className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+            <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
               Short titles read best on course cards — aim for 2 to 6 words.
             </span>
           </label>
 
           <label className="flex flex-col gap-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               What&apos;s it about?
             </span>
             <textarea
-              className="min-h-[76px] resize-none rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3.5 text-[15px] font-medium leading-[1.5] text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+              className="min-h-[76px] resize-none rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3.5 text-[15px] font-medium leading-[1.5] text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
               name="description"
               placeholder="One or two sentences a learner would read before enrolling."
               required
@@ -175,7 +175,7 @@ export function CreateCourseForm({
           </label>
 
           <div className="flex flex-col gap-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Category
             </span>
             <div className="flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ export function CreateCourseForm({
             </div>
             {showCustomCategory ? (
               <input
-                className="min-h-11 w-full max-w-xs rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 text-sm font-bold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+                className="min-h-11 w-full max-w-xs rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 text-sm font-bold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
                 onChange={(event) => setCustomCategory(event.target.value)}
                 placeholder="Type the new category name"
                 value={customCategory}
@@ -211,7 +211,7 @@ export function CreateCourseForm({
           </div>
 
           <div className="flex flex-col gap-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-on-surface-variant)]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Difficulty
             </span>
             <div className="flex gap-2">
@@ -230,7 +230,7 @@ export function CreateCourseForm({
           </div>
 
           <button
-            className="inline-flex items-center gap-2 self-start py-1 text-[13px] font-extrabold text-[var(--admin-primary)]"
+            className="inline-flex items-center gap-2 self-start py-1 text-[13px] font-extrabold text-[var(--ui-action)]"
             onClick={() => setDetailOpen((current) => !current)}
             type="button"
           >
@@ -245,7 +245,7 @@ export function CreateCourseForm({
             {detailOpen ? "Hide audience & outcomes" : "Add audience & outcomes"}
           </button>
 
-          <div className={cn("flex-col gap-6 rounded-[18px] bg-[var(--admin-surface-container-low)] p-6", detailOpen ? "flex" : "hidden")}>
+          <div className={cn("flex-col gap-6 rounded-[18px] bg-[var(--ui-surface-soft)] p-6", detailOpen ? "flex" : "hidden")}>
             <CourseAudienceField defaultValue="" />
             <CourseOutcomesField defaultValue={[]} />
           </div>

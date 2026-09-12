@@ -30,11 +30,11 @@ export function AdminWorkspaceTabs({
 
   return (
     <Tabs.Root onValueChange={selectTab} value={activeTab}>
-      <Tabs.List className="inline-flex items-center gap-1 rounded-[12px] bg-[var(--admin-surface-container-low)] p-1">
+      <Tabs.List className="inline-flex items-center gap-1 rounded-[12px] bg-[var(--ui-surface-soft)] p-1">
         {tabs.map((tab) => (
           <Tabs.Trigger
             className={cn(
-              "rounded-[10px] px-4 py-2 text-sm font-bold text-[var(--admin-on-surface-variant)] transition data-[state=active]:bg-[var(--admin-surface-milk)] data-[state=active]:text-[var(--admin-on-surface)] data-[state=active]:shadow-sm",
+              "rounded-[10px] px-4 py-2 text-sm font-bold text-[var(--ui-text-muted)] transition data-[state=active]:bg-[var(--ui-surface)] data-[state=active]:text-[var(--ui-text)] data-[state=active]:shadow-sm",
             )}
             key={tab.value}
             value={tab.value}

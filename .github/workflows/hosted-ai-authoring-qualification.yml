@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       app_url:
-        description: Protected Preview alias; probes resolve its exact immutable deployment
+        description: Vercel app alias; probes resolve the exact immutable deployment
         required: true
         default: https://project-ve-git-codex-ai-course-work-ec78ce-oby-douglas-projects.vercel.app
         type: string

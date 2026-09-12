@@ -1,0 +1,1943 @@
+{
+  "qualification": "Source/unit only. Production build, generated CSS, HTTP delivery and rendered state qualification remain deferred until #102 implementation is complete.",
+  "productionFiles": 577,
+  "occurrences": 6820,
+  "legacyReferencesBefore": 2125,
+  "legacyReferencesAfter": 0,
+  "remainingAdapters": 0,
+  "legacyAllowances": 0,
+  "retiredNames": 108,
+  "protectedModules": [
+    {
+      "path": "app/o/[organizationSlug]/workspace.ts",
+      "sha256": "97caa8d4133deac7b51334056e262d22e26e7b08565f9a08e8acd4ff758fc8a3"
+    },
+    {
+      "path": "features/app/repositories/contracts.ts",
+      "sha256": "f0f4f690f8bb1895332455b35ea1fbdbecbc4f9316d9db40a64c1ae4c19bf4d8"
+    },
+    {
+      "path": "features/app/repositories/learning-adapters.ts",
+      "sha256": "8674e25f59c353311de3789354a459f2f1b4b75178511d8e47b0c8720c6d5081"
+    },
+    {
+      "path": "features/app/repositories/learning.ts",
+      "sha256": "2faf90b87883d61e0742b3cd667cea7c5cda1101712cd771def18eb603d18c90"
+    },
+    {
+      "path": "features/app/repositories/mission-adapters.ts",
+      "sha256": "86b316b9150ab5c99b177a19dcdd28d9c029012a0e319e412a704070f216c86b"
+    },
+    {
+      "path": "features/app/repositories/missions.ts",
+      "sha256": "338987bc1ad75a849cc203bc389c804b310e33c70b14bb901ccf17d5638d472c"
+    },
+    {
+      "path": "features/app/repositories/progress-adapters.ts",
+      "sha256": "02b1ae5945b13b0de0a49bad77d2d3c402b223546227ff8978426266ddce9617"
+    },
+    {
+      "path": "features/app/repositories/progress.ts",
+      "sha256": "bdcaa12ec09253f1495166dfb6fc00933f01ca1e3dc155656d2bd446e6505189"
+    },
+    {
+      "path": "features/app/repositories/reward-adapters.ts",
+      "sha256": "614f11598ad6ea0d82bc99d6618872966b96992beeb98d7de972df7a980052e7"
+    },
+    {
+      "path": "features/app/repositories/rewards.ts",
+      "sha256": "c431155ccc77e46df034b5f730852a89b438e188185916e49be0bcbbeb50c2d3"
+    },
+    {
+      "path": "features/organizations/admin/activity.ts",
+      "sha256": "83f7f77e8685fb152c1d299aa3eebdf9010ca9f2f7cedcdbc7cf3fff1631a91e"
+    },
+    {
+      "path": "features/organizations/admin/data.ts",
+      "sha256": "0f85f41b01962b569dbe1005680d116ea53edf8be0a7c911cbaf8e56cf603219"
+    },
+    {
+      "path": "features/organizations/admin/entitlement-guards.ts",
+      "sha256": "0a36bdf7432eec63257488ffd777f139395b1e8766520d4fec8a3e345868f230"
+    },
+    {
+      "path": "features/organizations/admin/membership-commands.ts",
+      "sha256": "cb31f123ca45a62f857345722c7f00fc4b2104f2a293e95cbe5c680f6344c5d5"
+    },
+    {
+      "path": "features/organizations/application/entitlements.ts",
+      "sha256": "a6e280ed2a143d9581ee9418bebd28ee1e34eda854994274aaa39eb14fd2bf52"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-context.ts",
+      "sha256": "344eff3c81414c18613dfb7daf352ebfa4000a5cc0259aa3b4fb6d1ea609d873"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-domain.ts",
+      "sha256": "fd6c55485389d2adb5e36a747144c89ed16f94c622f6a60e641a3904599dfd94"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace.ts",
+      "sha256": "087e76d8ffb96c1a4074fd716987e481eb186be324752c7853f475ae40118ed5"
+    },
+    {
+      "path": "features/organizations/application/my-orgs.ts",
+      "sha256": "7b26eeb8132e3b8ec336ad2293ca6b85611e46016c52a0a416e67eb639426cd6"
+    },
+    {
+      "path": "features/organizations/application/self-service.ts",
+      "sha256": "c0285854896a3df03f952164befa1742e7ce87004c214cfe17a3e5f0ce34b802"
+    },
+    {
+      "path": "features/organizations/entitlements.ts",
+      "sha256": "d4ff76f2267071f16643be38c3eb0b88db24fd17b2a13775eb696cd2e1a1b528"
+    },
+    {
+      "path": "features/organizations/identity.ts",
+      "sha256": "f6eb855e891748f6b6eeabecf783cb05fb9699b899bb29fee78a428e41b8a1ca"
+    },
+    {
+      "path": "features/organizations/shared/roles.ts",
+      "sha256": "6a507ff0419cddc526d6424a953ee0072722f1378db6322c46c79ef6930d5e26"
+    },
+    {
+      "path": "lib/progress.ts",
+      "sha256": "5ff5e49c9beab00366994176dc4c6fccd7e7281c603795591e0a9e4bceebf381"
+    },
+    {
+      "path": "lib/supabase-server.ts",
+      "sha256": "3d022606e4f9e72de380d3e61c800da1865d7cf280731e470465b0f515701430"
+    }
+  ],
+  "approvedLiteralOnlyChanges": [
+    {
+      "path": "app/admin/activity/page.tsx",
+      "priorSha256": "486deacfbf50cc654c8a8ada4ce300418d93b71f203cbdfc02ee48a9f4d40753",
+      "sha256": "5451ab80ca340636e37d041660bbdbb95656174b32f3f6daacd0f76bbb6fdc21"
+    },
+    {
+      "path": "app/admin/ads/AdsShell.tsx",
+      "priorSha256": "354de19cffb13140d2886d94d7799f22fb1f59ba9204a354f6fcc078202917fe",
+      "sha256": "1177a7661c9247d970d1fe99bdb8ebd87875f403cd97a35b2ace77cb7092f0c6"
+    },
+    {
+      "path": "app/admin/ads/components.tsx",
+      "priorSha256": "4d7aa22aca2fdc9388ac6c85a4f216604a8d3f6f3bf84694194a68c18e376017",
+      "sha256": "5db9aa0704631e90e1f06ac386598d1943849f2ae85c21322ddd14f893c22520"
+    },
+    {
+      "path": "app/admin/ads/inventory/page.tsx",
+      "priorSha256": "dd3bcb00fd740dac9e29ca47f4d7112889dcf57346b1e063842a1aa7035ee283",
+      "sha256": "d1d11f33d3e8a5edc3fbbdfdc223f13c105bfd5d8695e620b5e297c606b45736"
+    },
+    {
+      "path": "app/admin/ads/launch/page.tsx",
+      "priorSha256": "5deca080db386aae63c259fbe6a1cc9be7ebc3511315d423dde0d6e1bd662a56",
+      "sha256": "23773c5f1f1f1f0fa76f3c66676b0408042c7aa689f61450e6bfc35c85834eeb"
+    },
+    {
+      "path": "app/admin/ads/page.tsx",
+      "priorSha256": "ddc926f4c928359cb3ef1881b1ed11af3d380c5f1defd5a6719324520cf5d557",
+      "sha256": "aaab3d1ce0b5ed90c3f93e55e0f710b832676eb9bcb2305e58a6f695537b48b7"
+    },
+    {
+      "path": "app/admin/ads/reporting/page.tsx",
+      "priorSha256": "5d8f00015f7cef2154bd463ea019d0dec089eb299c22dd69a10bd6609904c006",
+      "sha256": "421d95c9390c7818dc5220b28be1aaa17e72dd4f898f575f1c6cc4a47681c3f1"
+    },
+    {
+      "path": "app/admin/ads/review/page.tsx",
+      "priorSha256": "c692917b2d358c1f298b40f8382c10624b6bf151d2975aff3652e6b41305c530",
+      "sha256": "ede0009c627b8cc989c75a04fe5b026d0c18ff9be1483d7c79fdb2ee8adc1a48"
+    },
+    {
+      "path": "app/admin/campaigns/page.tsx",
+      "priorSha256": "6b8d459a769e298aab4e2df8db1ee78e4c7f76a4acf3885ccdd85ad23bb2d939",
+      "sha256": "460e4958a6d19216637910b9a2c906b20185af1edd2e3216a8955db040ff081a"
+    },
+    {
+      "path": "app/admin/catalog-people/page.tsx",
+      "priorSha256": "aaf2b7add4fd0c1e9365daca21d10f6808b33af82e68f3b92afb21b20b75a539",
+      "sha256": "543879e6d78c24b1584c111d71526fcfb03df18843c914f85c6c1233b1cb2500"
+    },
+    {
+      "path": "app/admin/cohorts/page.tsx",
+      "priorSha256": "6fc2ab689c992e55b00ae61c92362bd816ea5b7634141e347f62f1affc8341ff",
+      "sha256": "ad622cdff49373bf0b81d3f4bc53a84517108687115e40b89f512d3da7e15c39"
+    },
+    {
+      "path": "app/admin/courses/[id]/expand-result/page.tsx",
+      "priorSha256": "8486c30c0edc91eb9c0f7dbf012fc97d61bc18754fd79291e88af10182be38e9",
+      "sha256": "6b329b539f99e954d6163b4c1be260c3d95802cbe01a43096cea3dd8cf4f11c7"
+    },
+    {
+      "path": "app/admin/courses/[id]/insights/page.tsx",
+      "priorSha256": "95f1c57104a0f1df6cef3bf8e5a43242d6669aa95be2da24d3bbf2bacb406026",
+      "sha256": "b27c46bb833fc15d3de8359b0d9a70f17c4448ded95a2347f62625575c24c919"
+    },
+    {
+      "path": "app/admin/courses/[id]/page.tsx",
+      "priorSha256": "5a9bbf47d527961087f709f5b75824935d4b42d4202708455ccab6fe17cb11ce",
+      "sha256": "0d952a1392068eb482b84cfa87621b2c38beb9f8c754d98a00eb98c85aa7c761"
+    },
+    {
+      "path": "app/admin/courses/[id]/preview/page.tsx",
+      "priorSha256": "e66195bed40b09908c6435ad3abb9b652f92a2bf2a2210455e5c7ba7a1884ecb",
+      "sha256": "88f3cffe4c2894d57e3ea72564dc76892490183d5deadef0c6218dc4e01e12b6"
+    },
+    {
+      "path": "app/admin/courses/[id]/review/page.tsx",
+      "priorSha256": "feb7e227501201e9fb1858482ef0997a7dc1907f6fcfb4e3c0bf7362d837d537",
+      "sha256": "7669edbfc4bff1878bca5feb3bc9167406a53b545bc01bd3f12fdbc3d883fdd7"
+    },
+    {
+      "path": "app/admin/courses/[id]/settings/page.tsx",
+      "priorSha256": "ad9bfc2b5736093d9ccd330863b1690ba3d25ddfff18dd7f84fa7d05c13d56cf",
+      "sha256": "b5475a2f3bb2f28ccfb32ec7b9fa8ee9d195195693245d36bb177fbaaa04a69f"
+    },
+    {
+      "path": "app/admin/courses/ai-credits/page.tsx",
+      "priorSha256": "99dc92f7c2d2b5fa319ff328d33cd815b461c729eab9cb7294014c256373b0dd",
+      "sha256": "2038de68051ac4bf794edf2eae6a3f104868d06cf2ebcef5b95b72c5424d324d"
+    },
+    {
+      "path": "app/admin/courses/ai/result/page.tsx",
+      "priorSha256": "c01d9db9a694b2cbf567a403df728539e62bcd1483a3dec006083fc8a433ac94",
+      "sha256": "c2ad2340e3668a2f85036f089cd0c08adcbed6b8efc5f16c9d06fe5ffa475a11"
+    },
+    {
+      "path": "app/admin/courses/choose/page.tsx",
+      "priorSha256": "a27282c114cb4770b847ab471a26d6cd1e2d127d236b0f46a49aba3b42430c9c",
+      "sha256": "5f02f33ff07843b1a8ae9f6e61c284ec07b6c8fcfd37819f765d343231e4e6a1"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/preview/page.tsx",
+      "priorSha256": "971c03041705093a4344030dd68bf2d1edc687ff694755a9c21533bfa5aef870",
+      "sha256": "2a92e793c9fed3f8d377fa2e2462b3c73669b86b2f4a71d2013b260d303654b9"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/quiz/page.tsx",
+      "priorSha256": "2a5c1aeb46380621603f924080f8b0048ca0a77e097637196bfbba9529b3219a",
+      "sha256": "90db3a6c7213ce3e89dca8264eccd2926ba2be76da0971bb6e84def5b8ff45c3"
+    },
+    {
+      "path": "app/admin/courses/lessons/[id]/values/page.tsx",
+      "priorSha256": "e3e552a7b16d5e30bc291a864059f774ae7b97f6c26a05252cab18f6826a7424",
+      "sha256": "8746c53f9264385ec6f4e71c0ca235bfff01a468a4012489c95d613e240ede7b"
+    },
+    {
+      "path": "app/admin/courses/page.tsx",
+      "priorSha256": "b5a05c461839f881d72e01969b87d922de4062d4c0a1e3fc17232d5c3425694d",
+      "sha256": "71589475370d155095514009d8d7763b2fd80dfb0d1aa3c3e390b5ada09337ba"
+    },
+    {
+      "path": "app/admin/courses/pending-actions/page.tsx",
+      "priorSha256": "12a611b26b536cd59a839581a348769270d7c234661661dee2058499b4475e4d",
+      "sha256": "fd628bc15d0baba470c263f410cc6e3096e1c1b00e922306f8f0040d0ee37656"
+    },
+    {
+      "path": "app/admin/courses/remix/page.tsx",
+      "priorSha256": "472185d60e0e4e7aecb3a43a7532fd107fc37b45e6e4b80b4b1b03adeae57952",
+      "sha256": "3a79cdad2a512cb4e3728cf0a42d99562824782754c10b94c431ca7fe5dba7bb"
+    },
+    {
+      "path": "app/admin/instructor/page.tsx",
+      "priorSha256": "386fc7f36a8592daf95af9fb0626db6b135f8eaa499387bd4df49133b83a5897",
+      "sha256": "5748ccd355abc561c4eeee56d435270a06159b1483fa14f39e8a7e2ab2568053"
+    },
+    {
+      "path": "app/admin/interventions/page.tsx",
+      "priorSha256": "5919f58d077ad4eff164360f5036c1292d21911cd2048e7b1297ff5349d7cbf5",
+      "sha256": "cbfe2bd05be26cd54695455250f739d9352ab7fe3dd375cfce7c2cdb66367d61"
+    },
+    {
+      "path": "app/admin/inventory/new/page.tsx",
+      "priorSha256": "7f5b7cc4abfdfe5802ce0b0dcc7586eca1a78fe0bbe8d29f9826edfd08ab5577",
+      "sha256": "7b336fa8315f9e3dfc3d4919dd4d5364d1b02507bf2dca60e823cd1d5c3268c7"
+    },
+    {
+      "path": "app/admin/inventory/reallocate/page.tsx",
+      "priorSha256": "0526a3b83814b1aa022fec8fdf7afa5dc037978a07d7de43cbd6966353349eb0",
+      "sha256": "1d7fdb6a257430f7a6fc5491536469de64bb46a796240ffb35ac4d4b5d1028ef"
+    },
+    {
+      "path": "app/admin/missions/[id]/page.tsx",
+      "priorSha256": "5290628443a0b9f9548789de9578fe091ff71e37ebd4a63a13298b593ae3ea9c",
+      "sha256": "663a22f36a0099724a62251b3ef2981c8f554a4344f7f729bf5132eebd20e85f"
+    },
+    {
+      "path": "app/admin/missions/page.tsx",
+      "priorSha256": "f84b456aa44b9bcb92ed1fb42aba4644976586883c09ba7724f8c2e1e428a15d",
+      "sha256": "89404f96610a869746f9b0710f1907f15393a45316a3ea99e5a22752527692ef"
+    },
+    {
+      "path": "app/admin/organizations/[id]/page.tsx",
+      "priorSha256": "4b6a87d001b4e46a5cfa17b283f63cb7ac79ac0af84677f926513a17ee8f52a3",
+      "sha256": "95a943e6d2c5cc5eafe870499d7bf26434dc1ffdc431dfa861f127eecd49328a"
+    },
+    {
+      "path": "app/admin/organizations/page.tsx",
+      "priorSha256": "eefb9508927f3bdaf5e7d752620d38f53f39da4cb420f3708b3ec215a2a4574f",
+      "sha256": "9c11218acfc1c02fe1f272b375c2bfb3df4e5802d5d934655f865717e72e596f"
+    },
+    {
+      "path": "app/admin/people/page.tsx",
+      "priorSha256": "c8ecd0ef2f1a2c253686d0ad2ffb378de373e47471e83370b2e7aacdb855b05d",
+      "sha256": "610849245cba94528a40d7267ac7a4bdf5d7d568cd34ea87e5202cffaaa0bdf9"
+    },
+    {
+      "path": "app/admin/programmes/page.tsx",
+      "priorSha256": "bc0437d5da186e1f5c3d46348bbfb8ba12236455c917a25aed11efdebb3dfa54",
+      "sha256": "a6049ac1a69f691e96bc083643055ce876d02cb136f452d8287fc6e022a87352"
+    },
+    {
+      "path": "app/admin/proofs/page.tsx",
+      "priorSha256": "56f7c8eebf37de2550ecbdca4c878b8e1c3665fa5922db015bcba9a667b7fe16",
+      "sha256": "13e1a8b93a57a132b4e23481ae62449516f76190a33f7cce949c2e661b737d3b"
+    },
+    {
+      "path": "app/admin/recommendations/page.tsx",
+      "priorSha256": "03257ded9044872f1fd892ae687ccccdb594e93a8af4ee9e809a6a831fe28ea0",
+      "sha256": "d744afb84fa5068a60ad9f2632ac2a543ae915d1bd067808f4040a77698343da"
+    },
+    {
+      "path": "app/admin/redemptions/page.tsx",
+      "priorSha256": "14b38b585a3b971d8265a00c553ed31b46993205143ade58fc50e1de6ddcc94f",
+      "sha256": "b805c9b8ed2f58673c4a2b644f6c363e3482b0d3da134abb63f7e20c72be990c"
+    },
+    {
+      "path": "app/admin/reporting/page.tsx",
+      "priorSha256": "8e6bf223b5dc5f2ad8e714bb798f393546345282880a703a867cabfadd4c1a9a",
+      "sha256": "51b5fc6f99769e7fc2adafed7c39b1c109dfd3084dad63c64a9d6965b3a78cba"
+    },
+    {
+      "path": "app/admin/rewards/[id]/page.tsx",
+      "priorSha256": "609a3860db952b28b8bb1e3faa4f0014dd2b4d12c0f8cda2420f7c2b61a67752",
+      "sha256": "9c51ade8a8cd15b2342801983beae268c5db4d5a53514d96576c277e27f831c3"
+    },
+    {
+      "path": "app/admin/rewards/page.tsx",
+      "priorSha256": "37144288db7cd6ec287b82bd712b1feffbb28725760cb04b0b5f84431f2905b9",
+      "sha256": "03f46ee45a5d947d1f8cde3c850a07e762430c87c3409935aef73beee8c30324"
+    },
+    {
+      "path": "app/admin/rewards/perks/[id]/draws/page.tsx",
+      "priorSha256": "2a3686c259eb8072b2b8317cac4a0deca831cd46fbe530c9d1c6874b06ce34ed",
+      "sha256": "6bfe5a91b456e2c60e3c6a4efc3a1eec037aed02551625c573f83dadc70b6f63"
+    },
+    {
+      "path": "app/admin/rewards/perks/[id]/page.tsx",
+      "priorSha256": "d5568bb6c0a92e1059c023590f6a921bb59449dc0fead0fcd1fa79cf116596c9",
+      "sha256": "b4f48f676809686ba314d6413cdbdd2a430cda949c1342f9554bd3b67447d0f9"
+    },
+    {
+      "path": "app/admin/rewards/perks/page.tsx",
+      "priorSha256": "600690729e431c020ff0b627ec82671362c5d525fb7d5523fe424c6adb49f96d",
+      "sha256": "b741a8cc46cd7a21b5d4f288242a95d47d36638ed11e51d8eb8fac37bd9361cf"
+    },
+    {
+      "path": "app/admin/users/page.tsx",
+      "priorSha256": "26b11262aeac3d18d9e41b064c9e24feb009241287e64de9d7e50ff8fe68abfe",
+      "sha256": "fae090a74cd61f2fb87c61ac4ea9c7abe24ee232f085fa7dbf1c614d580a7f05"
+    },
+    {
+      "path": "app/admin/xp-ledger/page.tsx",
+      "priorSha256": "b964bc9545a4dff108f826c020a4afb8616600a40b3b79d4ee49b996ab3becb8",
+      "sha256": "1cf649ca05f2e8c684a51af256f11f7ee72b2fd9ca6cc90fd6b2542e8e8c0ba6"
+    },
+    {
+      "path": "app/admin/xp-settings/page.tsx",
+      "priorSha256": "9783bfc137a31d6d6d3e5203555d7412dde86e5eb8fe981e3e7547b8b182c69d",
+      "sha256": "cf2ea29dd759b2aef29ae7577725c85a3772d35c2a746ee392ff47f79664ab5f"
+    },
+    {
+      "path": "app/advertise/inquiry/page.tsx",
+      "priorSha256": "c8fda6271fe4a2fccd2fdb8845dba0c4c65c96d1933099fe77448a708a26eaaa",
+      "sha256": "e7ccd9cbea54b9b741513b3ad8ceca2c7ee751cb834639633eeba637415c6893"
+    },
+    {
+      "path": "app/advertise/page.tsx",
+      "priorSha256": "98c5cb3ee1dca831bd1db548730390dc6e78b8bed2b8511411634dcebf2f7d52",
+      "sha256": "335455110977653648dc3a4d374608c160f6a64f7111180998699592f17e0c2d"
+    },
+    {
+      "path": "app/contact/page.tsx",
+      "priorSha256": "d2aa249d1d94259fb571a55ffddff85872e92f91a4ce1f442f4d0750a080d0dd",
+      "sha256": "6ed0f193b52f5c57aaf98ed4872931e4f2719f4689455514274155553491d13a"
+    },
+    {
+      "path": "app/faq/page.tsx",
+      "priorSha256": "ba27857165d9dbc56b2265f0b91a8fe29e3100b462c3dda4eaf813ab421dc1c9",
+      "sha256": "d930d2608a16e87c714d51890a40ea128288592d492aca97c1f96ce761f98326"
+    },
+    {
+      "path": "app/globals.css",
+      "priorSha256": "f62b332e8e0433aaf50b75fa79d96209e259e3348812ebb3575a503de10cb513",
+      "sha256": "2381da66190a1f7e61c70955c5d20f89cb99f3f80390eaf064e176665a321e6a"
+    },
+    {
+      "path": "app/invite/[code]/page.tsx",
+      "priorSha256": "4e4060026cca95a55b7dac72d5f9cb57868d26a1e504fef9c8dfb55d75565b5f",
+      "sha256": "721a35f3d480db6d520ca0535fa05ef6cd14fba8f10f34338f9b1c22353cead8"
+    },
+    {
+      "path": "app/login/LoginForm.tsx",
+      "priorSha256": "a32dc53521b6bc328618cd991a566002ee6571c90c6a783b2e099f569654ec97",
+      "sha256": "02ccc76d61431f1133df468a1d9da86570450c39ded6ecf2cc5ad32354133db6"
+    },
+    {
+      "path": "app/login/LoginPageClient.tsx",
+      "priorSha256": "3e0c8d81eacbfae086fe7272465771295b0582b5762fe6fda2ded8f024b25f3b",
+      "sha256": "c64ffe32b572318df97f5f8ddde3169acbe0a273937e28e275efd6065627f4f7"
+    },
+    {
+      "path": "app/onboarding/assessment/page.tsx",
+      "priorSha256": "5c8769b50c87e87b22e2c5905775a0af361473fb70fd6bc14945591ef73e2e32",
+      "sha256": "79effb75ac404ad5084165158043e070983d7c3b22e8b63414cf34673da181b5"
+    },
+    {
+      "path": "app/privacy/page.tsx",
+      "priorSha256": "d33ef2281c5c7d6cdbe29ccfb05070f1cdd81eecf31e4ac2bf9de339dbfaf9e6",
+      "sha256": "c9607dd0ee6aed03ee3a091ba8f2978c7e9f70bf9811698ca465a490953535e1"
+    },
+    {
+      "path": "app/support/page.tsx",
+      "priorSha256": "55e4ed3e94eb2262c5c46def0e0c9db19d6349a73ccab5c0d2ed93345684a14e",
+      "sha256": "b30ce339aa85aa596fcab06b2e89ef1d72bdc4b13275e0e32ed18884e362d2db"
+    },
+    {
+      "path": "app/sw.js/route.ts",
+      "priorSha256": "b743eb1c5debe651fd5e764a21bcef760c70dd0288fbf517bbb882f54a4c491a",
+      "sha256": "9bc041ad1b2ba4e0c05679cdfcaf7b86700d7b490ff35e91581f5163b4fdf271"
+    },
+    {
+      "path": "app/terms/page.tsx",
+      "priorSha256": "83826b4e3cec9e5c44142b1a5fc00ce2ac886a3224e4c617d7807dd55b908e3b",
+      "sha256": "3831632a3158d996941a10d8b2186b554349d42c01e642d34a132b7fe3811589"
+    },
+    {
+      "path": "components/admin/AdminCourseCard.tsx",
+      "priorSha256": "3f8355f631e1fc34ff8e7c024e4aaf77b232363fecaefb92725741a55cd325d6",
+      "sha256": "b60db578513a03026e76aca0fe9c7f8e7815c5bc1aee2e32aacf158ccffca99c"
+    },
+    {
+      "path": "components/admin/AdminDialog.tsx",
+      "priorSha256": "f48490e363dbe6cbaa18e69acfaa5c3db33905084282eefa19bb7e95770533c9",
+      "sha256": "ebdfcf9aee64d610bb839653b2ca56f6633b312811ecc635681439f6d770d67d"
+    },
+    {
+      "path": "components/admin/AdminDragHandle.tsx",
+      "priorSha256": "b672e020704bf919b45dc6cb956fca0e070c781b3c5e5dfb9d2733f609657030",
+      "sha256": "bb44ff56efb85ab640d1207503f69c75f3f824f07ba710330e4c6ae8cdd0da4c"
+    },
+    {
+      "path": "components/admin/AdminPrimitives.tsx",
+      "priorSha256": "a564cb6a1526eb187c7bd1321b28b93491e6eb78e1326262436db70222e330ac",
+      "sha256": "8055dfe691fb4a8a66ee2d4dd46d691e2f0327d212e078cebab5ad06acb2e7ca"
+    },
+    {
+      "path": "components/admin/AdminSelect.tsx",
+      "priorSha256": "80453e7774d88fb9656a64536cd5acd3dc9daf3d45749354fb2ff15460a92fd4",
+      "sha256": "0a7e67613213c392c5e111abdbef35aabdc1185714b04be627eff8d7c5f9bf41"
+    },
+    {
+      "path": "components/admin/AdminShell.tsx",
+      "priorSha256": "62e12f47143adac68ca3f02c8a84e2402c845a4046ef9fbd27210cd2c2d5efda",
+      "sha256": "9aec2072d6983b674ed29ddf56b2e878d2c55d9d23b4bc1b9e57db04acb2142a"
+    },
+    {
+      "path": "components/admin/AdminWorkspaceTabs.tsx",
+      "priorSha256": "9c395d9c5c047d9e7c95c055ea2c856bec38d61bd410d6beebe36695ffa577aa",
+      "sha256": "e4c3d7efc588244bd7d934fbf2f4e1e504ecee0e312e0af2f7759f13e943edad"
+    },
+    {
+      "path": "components/admin/AssessmentBuilder.tsx",
+      "priorSha256": "e638d85649de91b11f27ed4d8f5574161dd7df5163582110f0f2f06939d7547f",
+      "sha256": "23ae7456c1604b8a0614236d654a7ef8b73f61cc165561f0446e7539fd4f4021"
+    },
+    {
+      "path": "components/admin/AssessmentWorkspace.tsx",
+      "priorSha256": "afaf5b489f61a51fcdf59e551b82238a0e18eb28614ea8a2f4f7ae671e85fdaa",
+      "sha256": "0d9c9c901552f7d92b4d7d846a47fb57d3842f5f665e2bbb707ed65a86058540"
+    },
+    {
+      "path": "components/admin/CampaignFilterSelect.tsx",
+      "priorSha256": "4ad7e7e982f690c80af1dd9c45a4418dca4a6750f230be8a56c96eb163d98df8",
+      "sha256": "13fcfbfb82d849d563ce25adc5a8dd7895d74aa7cefdaadc161183fd2016f56b"
+    },
+    {
+      "path": "components/admin/CampaignForm.tsx",
+      "priorSha256": "1e5a133f1e3a483ea73e83b47fa425d8032351fdd004f6bbb121b7feab733449",
+      "sha256": "b1cb0417429053fe65ed5927937a2500e654e24bfbf88b3bbd4b32ae68430625"
+    },
+    {
+      "path": "components/admin/CatalogOverviewView.tsx",
+      "priorSha256": "76305967264277e52753db441076d9f6cfeee40fd8398df9032f4c85ee4ab2fc",
+      "sha256": "b4d7e55f42e11c3cb585932a1e6e78d2df84ef52df64fe1b252c4fe76be80fe9"
+    },
+    {
+      "path": "components/admin/CatalogPeopleInvitationsTable.tsx",
+      "priorSha256": "99a5803d2dfad8b1925dda74dd3bc7382b8c4b84250a8da08a12ddba8312069b",
+      "sha256": "d1ea0fa7f43c335b45a22ea16f11ed2b5ba488abb978bd9b407ce0164c5bbb65"
+    },
+    {
+      "path": "components/admin/CatalogPeopleInviteDrawer.tsx",
+      "priorSha256": "a28fefbc096ad47178ec75aac8dd6ebc8b8a987facfec11034b6938fc12a3aa3",
+      "sha256": "6d5bbc2a5f737336302d741be4f37af42d4fd8313c82ede69c1a8e9ca564dde1"
+    },
+    {
+      "path": "components/admin/CatalogPeopleMemberDetailDrawer.tsx",
+      "priorSha256": "5ab6dc85e61a4a371cd4e7dc2ec6055d676c75ee2ad622a42b2657613fa95d61",
+      "sha256": "67104d3cefeac81a81b0f603a35e21141f38d3252dbf3cd63f44aabdb2333c8b"
+    },
+    {
+      "path": "components/admin/CatalogPeopleMembersTable.tsx",
+      "priorSha256": "c5c6a3361a0720600e3e295d15599b3890f7b99a5e20249b57a58aa4f38b2599",
+      "sha256": "c390d43cc364fa3c73e5f6eed69a1da38ad77a7a752733411a7c8381804e31c8"
+    },
+    {
+      "path": "components/admin/CohortEditorForm.tsx",
+      "priorSha256": "3a367926d83a1826bf3581502685eb41524a29656d5062a7a7b56c37ea0f2ac1",
+      "sha256": "fbb7f1846fab156c752a3d44740a57a0dd7335360036d676d7cab3b1a23438a2"
+    },
+    {
+      "path": "components/admin/ContentValueTagEditor.tsx",
+      "priorSha256": "67efc4328b65471ed001716861785fb99002630df5efc0705b2fd77373efb034",
+      "sha256": "07d0a151ff14444f7f151cc0b7f1a1593821a413ce63b006536cab44384ff0f3"
+    },
+    {
+      "path": "components/admin/CourseAudienceField.tsx",
+      "priorSha256": "77ededa1a87ebe86b9bbc582f65fa668074d0db0ec1a9b584633b691f7b0f1f6",
+      "sha256": "fdf8d32eed0c41abd9498354358cfd20d7217a63797b51dcd7ff3027af52784a"
+    },
+    {
+      "path": "components/admin/CourseCategoryField.tsx",
+      "priorSha256": "3c10a21d69622511ac847d4dce4b858009c3e1bebf2073d8d8fcf280685f30a6",
+      "sha256": "3ab11b86fe06572e244d455c97519d4368b86dfe37e9cad1a599bbfbb13941d8"
+    },
+    {
+      "path": "components/admin/CourseIndexWorkspace.tsx",
+      "priorSha256": "561e02e0ea6462a8dbee826c139cd98576a3cd535a3601b2a29ac6aee6401d00",
+      "sha256": "22c6ebcfe8a9e13e647ef0e40379748ef2265a98653cab1a51e63330e06c5eab"
+    },
+    {
+      "path": "components/admin/CourseOutcomesField.tsx",
+      "priorSha256": "5a04b6a95d43e5d9c9b8b91ce89f48fc157646ad84e579c66a53abd24ec64c77",
+      "sha256": "88c3433f1ad07c17a02dd5f2beb7f564d3e6bcc9e4caefa579cbfa46f8218946"
+    },
+    {
+      "path": "components/admin/CourseTitleField.tsx",
+      "priorSha256": "5c8b822a6daf8eebcb32ac85504cceebe145b28b11ff4a8b7575f0000cba26f7",
+      "sha256": "c732b9c3ee7f7eaa711fb442ec8f32046de46d95c17a3c67822c97b656e4220d"
+    },
+    {
+      "path": "components/admin/CreateCourseForm.tsx",
+      "priorSha256": "0fb77b44fa7e68d1dac1ec33f8e253b42e089e8378f0155acab31f5dff766bed",
+      "sha256": "51ec6eab6ba6ed81c1313ca399374914853ed280d6fec834edb3016b632a6b66"
+    },
+    {
+      "path": "components/admin/CurriculumOutlineEditor.tsx",
+      "priorSha256": "fa1a49f266883d9504b80f3b6dcdb6392b9c81e09f96582e084ee6644a256ee8",
+      "sha256": "ec576018aa4763349daa9399d1792f972b521e7336dcf98b73d381b82bc47754"
+    },
+    {
+      "path": "components/admin/InventoryBatchUploadForm.tsx",
+      "priorSha256": "e40c9898eb57a4e8eea99debabd6e35450c1daff24015263864ba8fe71934b4d",
+      "sha256": "f3601f3e06b6022205ae8e5622c157350c1d96503e7d632b09e1a8896df66d4e"
+    },
+    {
+      "path": "components/admin/LearningForms.tsx",
+      "priorSha256": "2778befe9feb52a6a8f8548058e3a3ecf0681f2e2e66f0323541b3247ae05d4f",
+      "sha256": "eb5b087417cd1256b05717ca700a1d0b26e3629a4ddd221384b694f3844326a8"
+    },
+    {
+      "path": "components/admin/LessonAuthoringSteps.tsx",
+      "priorSha256": "a41a5b5f32387c7cbd31b15ee07523c97d4a35a2cd140cb1dd9b14fe95b98a32",
+      "sha256": "007ef65a38a99b07df71d2368402b28e63cffed118a308571c6f1fe57235daf8"
+    },
+    {
+      "path": "components/admin/LessonPageBuilder.tsx",
+      "priorSha256": "d9ed4a66cfea07f23e33d359795ee93d93b5981fffbe1f01848d396a2aa7355e",
+      "sha256": "34a8de33b0fa06e83f115fb4061fc83ff466a06b2fc6d38777da674691d92f91"
+    },
+    {
+      "path": "components/admin/LessonQuizPreview.tsx",
+      "priorSha256": "a07e86bfe0d397aca9e0e269fa91b10164c9ca2a5525118e4c17440673e3fbc3",
+      "sha256": "16859b179b8ee2757b9b8189e7cfbe6d84b1c8638d47688e5ba78bcfba48fac5"
+    },
+    {
+      "path": "components/admin/LessonReviewSummary.tsx",
+      "priorSha256": "8a8aa30e8a826738b1f2a66a1b2048f78734cb48e10cac20f56799464f90e2ba",
+      "sha256": "6a5cc4d6167b5e79cd196d2c9378830a9dc831daa8d5798073defb7ba6c2ee19"
+    },
+    {
+      "path": "components/admin/LessonValuesEditor.tsx",
+      "priorSha256": "f7c6e548d6cb9cc6d67a7de04567f6859cea3730890594c5bd58e9548829ae96",
+      "sha256": "625af1fb6818d09184266c8395f423ad84fc3f87b71231b8be6811f2e151b209"
+    },
+    {
+      "path": "components/admin/MediaPicker.tsx",
+      "priorSha256": "06db7405d133e6eb5ecb04011a674866bcaab5f69f0e841411a4cd7d70e8b47a",
+      "sha256": "5bdcf9502e1d24a3a659016a468a0496b044aac1bec83ccc71d3c86b23418077"
+    },
+    {
+      "path": "components/admin/MediaPickerScreen.tsx",
+      "priorSha256": "0637f44eb819ff8b7c1fa185c380b1da090d509fa9d5446e2aedb29aa17b3700",
+      "sha256": "97aff40f0cdf9d7cd7a5293fb0e1f98a47bdebcc1646f71147030f87ab0e6449"
+    },
+    {
+      "path": "components/admin/MissionEditorForm.tsx",
+      "priorSha256": "5adcd4fe4491b858c94026cb3778cbd14277f64c1d86473c0e34b888eb876919",
+      "sha256": "6f54cd28ade47bf27e43c866919c9b6ce1b464d8036bd4f81eee2a3db621ef0d"
+    },
+    {
+      "path": "components/admin/OrganizationMissionWorkflowForm.tsx",
+      "priorSha256": "d48673e3a161dd5997ffc9aca0bbe21c02ed4d3bcb65c130e85c6aec4dbb317a",
+      "sha256": "e508de48935759e8db0adc645c518d40f7c171c816f917be96b9f189c4afef6a"
+    },
+    {
+      "path": "components/admin/OrganizationOverviewView.tsx",
+      "priorSha256": "fac64b8e6b07eb189d4d31e2c07ecd56e2ee41623cdabd556d822e79e2233dc1",
+      "sha256": "6c16a26db76c1db7229e2e7236f8ceeeb9eceea752533a60a1d740a0c21cb47f"
+    },
+    {
+      "path": "components/admin/PeopleInvitationsTable.tsx",
+      "priorSha256": "03a87a0f514a22fcd61bf102d75b1245ae337152d49a9bcba6e87e70bf24feb4",
+      "sha256": "da1cace5864447cd62fb255c7d1fa32e69318535e061655d8ce69e9310180406"
+    },
+    {
+      "path": "components/admin/PeopleInviteDrawer.tsx",
+      "priorSha256": "57440c1eea56214e25ed6f10f5f89fde4629d357cd5d16dbab63731ae963e632",
+      "sha256": "bd73a1778771164c31ff39aade67f544fc0a2b0cfa04d196d4071490e65853f2"
+    },
+    {
+      "path": "components/admin/PeopleMemberDetailDrawer.tsx",
+      "priorSha256": "3f7b3962d4494047f13f928af7ea52588c728725fc3c6950d0bb331475a6973a",
+      "sha256": "f5cbf9f5d5709c8d4919e0bec53b007230cab885c896bb49dba8bbf3ad12d1b4"
+    },
+    {
+      "path": "components/admin/PeopleMembersTable.tsx",
+      "priorSha256": "d42f9812ffe91e5ad8d058c4d1e38e3cda7c78422fa3b8d87fd796a2c0893b18",
+      "sha256": "6e924d1f9a254ee7e613324fc3bb9ee728089b58a161981bff65bbad17caebb1"
+    },
+    {
+      "path": "components/admin/PeopleUnitsPanel.tsx",
+      "priorSha256": "ab77176e03b355939e6c039117d7bd209249ba4365680c33d4cf831ded6751e5",
+      "sha256": "ed7c41b777b850869b86d340de65401ef271eca7b9d47121509c190e7e0e77be"
+    },
+    {
+      "path": "components/admin/PerkAnalyticsPanel.tsx",
+      "priorSha256": "f9d10a647be1b592c8407d295415d42a56eac505a675456aea669b2e2a7a0a36",
+      "sha256": "5289e5f2c5f5dea7b0834d8417ed85dd281b242c242055da36bdd8bb7b583df7"
+    },
+    {
+      "path": "components/admin/PerkEditorForm.tsx",
+      "priorSha256": "0322ba80248430c3ae5ddb063b5ca79a3bbd045aa27b39a6a3959175d2e090bd",
+      "sha256": "5da5baeb4cab93c27b37ef4092e17e1e32a8524320348e91f87a34e0a96c803f"
+    },
+    {
+      "path": "components/admin/PerkPrizeManager.tsx",
+      "priorSha256": "7dc0534db30606602b8aaa4974707b528c57ae6346cbcb36cd75c0ff521bf409",
+      "sha256": "3d6ff60c85516073c12291127418e9378335a1b994c43234ec27bca3f5c18538"
+    },
+    {
+      "path": "components/admin/PlatformOverviewView.tsx",
+      "priorSha256": "f220ffe77c04ba4cacae5d1b14005fa6dfc7f2901d603c3dbc49299f991443f0",
+      "sha256": "707c9f722f59ee13f0a2fcfe99f097d6a6d0d3d8a7152a0fcce1bc9866ebf5bf"
+    },
+    {
+      "path": "components/admin/ProgrammeEditorForm.tsx",
+      "priorSha256": "e9659f3fd3f3730414b68cce89123a9c4d8d812d4d2c0a12433deaafc56fedbc",
+      "sha256": "b78c3cbb605a48b6387f3e669aef78739b594f440360eb30c3f00e7770c4871c"
+    },
+    {
+      "path": "components/admin/RewardEditorForm.tsx",
+      "priorSha256": "0426b1422656cb92a1085f51d4acf5934bdb808d5e3fa51ad8e3466076338bd8",
+      "sha256": "d2c09451853b42c634b97fc2da837aff344895edee7f83fb482485d76099f676"
+    },
+    {
+      "path": "components/admin/RewardThumbnailFields.tsx",
+      "priorSha256": "944dee06425a53b5c24d715baaac72988da202e9f69c1a50b7214bfc45f6b532",
+      "sha256": "44e9df1d69b8ca9a72cd87f0bfe5b2bad71ebf393ddc4d28efcd64d5e022d8fd"
+    },
+    {
+      "path": "components/admin/RichTextBlockEditor.tsx",
+      "priorSha256": "3e6e5a6290898cb0eb7028db046c6ab060690ad83db40d7b49540848a8e11d58",
+      "sha256": "cb45fa1b02a3cb36f5d357ebbf332fa2dcc1fe3c54721d440e9e9a9455d33818"
+    },
+    {
+      "path": "components/admin/RichTextEditorLoading.tsx",
+      "priorSha256": "ac5cd52b1e444e3d39e8e3d16c44834dc22439de202e9e586935c8b5008f4f0f",
+      "sha256": "067bd7037132ebe70e37eb3b6cd72141048b386b14d35ef03386dbf406b70297"
+    },
+    {
+      "path": "components/admin/StaticContentEditor.tsx",
+      "priorSha256": "9cbf20d74d754f40cb7bd235a101364d35c40f88a2fc820bfc9aa4ef5093678b",
+      "sha256": "8782e8cfbf0ada9196eb0e3e867a6dc1faa33d8adb98b3e9d810ffce8986ee15"
+    },
+    {
+      "path": "components/admin/ai/AiAssistanceAuthoring.tsx",
+      "priorSha256": "8ca85c06c69851a4a07e5eb0668f961a4dda3c21cef0d8ac9502b4f905519adf",
+      "sha256": "bd5cbb729a12e4765a9bbd1f17a5fb4fd519391abed3e7515dcfcf3a522b5b47"
+    },
+    {
+      "path": "components/admin/ai/AiAssistancePreview.tsx",
+      "priorSha256": "6a5713ddd5e944b4e9012b1866c4fbd7160f2e91374dbac93e3922a0038ef453",
+      "sha256": "ffde92e4fc04090131bb59f7401867be62559885965a04c6a11d4c0647f372aa"
+    },
+    {
+      "path": "components/admin/ai/AiCourseArtwork.tsx",
+      "priorSha256": "c927d05b63a36a5d71e50736e6c71844539718d3a043d228bf989b74a3848d0f",
+      "sha256": "689ea3170014d0206ec44db2788b7c16c2e30685c9b9475da99fa011a18dce41"
+    },
+    {
+      "path": "components/admin/ai/AiCourseOutlineEditor.tsx",
+      "priorSha256": "af4888ac329459ad6939d8886109b4c74b468f2abd1dfb786d56a0e1c89385cb",
+      "sha256": "beb381c711b86c97797625570f12f8afa99ae0cff4ed4741e4dcd6441cd7ddf7"
+    },
+    {
+      "path": "components/admin/ai/AiCoursePreview.tsx",
+      "priorSha256": "d2a9b89980788c060ded1b826009f50e866bd0d750afa8479d178710a15b1457",
+      "sha256": "d7273d829bf19d2ae00bc7be05a22bfa7f020182bfebb2021a55f468df0065e6"
+    },
+    {
+      "path": "components/admin/ai/AiPageAuthoring.tsx",
+      "priorSha256": "8dca548d81db5684ba603ccd3906f6c487072cf5237a2dc0af0b410d1935dd81",
+      "sha256": "04443faa345d42fda2fd15cb0908c24209315bce7b402adbcbd09d62923d24be"
+    },
+    {
+      "path": "components/admin/ai/AiPageResult.tsx",
+      "priorSha256": "f5fe9cf33639173420410065bda44f33a21d5c44027550ac085c8a0b1c3bea51",
+      "sha256": "f67b070aa40244f29891647d12509ba821ca78992172836bebf30c1c3d0ba08c"
+    },
+    {
+      "path": "components/admin/ai/CourseLeaveGuard.tsx",
+      "priorSha256": "1408fc8136aae8f7ced14eb4a101abe49ddff1bf9ee5c10e9e3818166aa6c57f",
+      "sha256": "6ed1f21a51458c33dc414760770a08234d0c7ee1fa58d9a039c50a006620220f"
+    },
+    {
+      "path": "components/ads/DirectAdCard.tsx",
+      "priorSha256": "92dfd2833b153359030101c7b50f6480cf2541cdf774fe50fcd442a42bffea96",
+      "sha256": "936499c56d2583db6dcab7f4759ab48b851283ea4523c6df5081c03aff812f37"
+    },
+    {
+      "path": "components/advertise/BudgetRadioGroup.tsx",
+      "priorSha256": "f450684114ab0fca8d4fa3e64fc387f0c8fcc3d07a350c3d1bb1bd6d33741fe5",
+      "sha256": "26efd37d7ffe1bd1e2a135d70ed2fe2d56b0f08b119a63e946cbe881e4bd3be7"
+    },
+    {
+      "path": "components/onboarding/ValuesAssessmentFlow.tsx",
+      "priorSha256": "047164dfea310f2ddf1cc6c2fdecb54700edcf607f4b5080626d38a214f8c916",
+      "sha256": "6fef4abcdd54591ecd026902bae5b5e705057928a3e053d5284ce3721f0c8044"
+    },
+    {
+      "path": "components/pwa/AppInstallPrompt.tsx",
+      "priorSha256": "296d83d13c03035bb62fe2b8a709d8087d599a7e242f02ada1266a2b54fec5df",
+      "sha256": "2a084578e73840cfe045d120f6365b4ebbfc50a0b4903b1d5675e6b6e5338a22"
+    },
+    {
+      "path": "components/pwa/BottomPromptCard.tsx",
+      "priorSha256": "a301eb3f5e6f106b3a5438375a281a47940a6317c0089ea813bd39a9aed1715a",
+      "sha256": "22ba4db4a58dbc062ac531416b36dfac567f0c19e0702c5ad93b7d7611586b6c"
+    },
+    {
+      "path": "components/support/SupportEmbed.tsx",
+      "priorSha256": "0a22c52b14df5f0765dd6122932188804b0cf406331839121790547a7eff9e5a",
+      "sha256": "4a1213f12592204337c3c1d7561b21b06e4e7c83293d985580f9f4fb27a6b975"
+    },
+    {
+      "path": "components/ui/Button.tsx",
+      "priorSha256": "2d58622cdaaf2a510f572ff5c76a2fe85a5195249dd8e5fe18198ca21e2ce3b4",
+      "sha256": "02259f22ed586d1c374047f5e370d55af09b1c3fd216d14d1b37eb42bcc0bf37"
+    },
+    {
+      "path": "components/ui/Card.tsx",
+      "priorSha256": "5622a3b60585cd8787293054c2c7d15b1d9436190479d6f28f205daad750bf82",
+      "sha256": "48d33a29b1841fe5d059f2882e7f43abeef177a00ffd03b74b2bc6c7611d7bb7"
+    },
+    {
+      "path": "components/ui/ExperienceHeader.tsx",
+      "priorSha256": "dccff4e1d1a4c7efba3056bbb3f86edc5aaa6a8ae8be69c4f54763a3fc00eae2",
+      "sha256": "30f61d82f94ead706547f70704c422cc3321b595ec4c90dae1975b116aea2541"
+    },
+    {
+      "path": "components/ui/PaginationControls.tsx",
+      "priorSha256": "8d04ede8e723bac4a6c4aed0db2424768fa42535e900edf3cc9630bfee2f456c",
+      "sha256": "f165b327a511398ff92abff498810308e72901f88249e6e4d9c4e41e1beccacb"
+    },
+    {
+      "path": "components/ui/SectionHeader.tsx",
+      "priorSha256": "4ec9fa2c4fa25e2e6721e1392420b602eed3ca2ecbc875c56a62e3961e627257",
+      "sha256": "4333bed549755f962188a43ae7b0a8681cc22dd7a355ef49c6b9a9e6a02e19df"
+    },
+    {
+      "path": "components/ui/StatusBadge.tsx",
+      "priorSha256": "db85814db42e72cad823a91350d876b0eaf1d10f73d35451713b858c006769d8",
+      "sha256": "b42d25ccdf5ed233d39fa9ffd847a0004230acf85f929c435232e3de1e770ff3"
+    },
+    {
+      "path": "components/welcome/WelcomeCarousel.module.css",
+      "priorSha256": "7d4511b9334b52a68fa4501dfb553ce63d2041d3a5a567ffad7f5252586fffa6",
+      "sha256": "279d213628590dc113398b341e8168cc8dcfa8a71e17dcc86119383f31dcb005"
+    },
+    {
+      "path": "components/welcome/WelcomeCarousel.tsx",
+      "priorSha256": "64cf67fe3d1d12d7a788ed2f66fc4227fb2ac049c12d544144813627fe585eee",
+      "sha256": "78266a966b47d00766a477bfd2671f9e2cceb281c5e1977cfc5f3b4d0c61537a"
+    },
+    {
+      "path": "features/learning/admin/course-detail-completion-section.tsx",
+      "priorSha256": "a53b878acc178d97ec87d07f18a873dcca918f62c5eb31fb487c9a5d81fef30d",
+      "sha256": "222f974a97f54d8fe1f5421ebc76ef54b21d626a3e81ff94c94a82a8070597ca"
+    },
+    {
+      "path": "features/learning/admin/lesson-page-builder-ui.tsx",
+      "priorSha256": "a51bdc14db29beaaae2f74ba374e5ee45cd6e3984156c7ad90474b2bb828bc71",
+      "sha256": "77146ee5b2601761a9b132e6a3ad3a162e87a1c66bc426f962f530cfadbb4c5c"
+    },
+    {
+      "path": "features/rewards/admin/perk-prize-manager-ui.tsx",
+      "priorSha256": "905c290280fc1c4c8deef1d14b49bc2041e6519be8572713cae4d8b698cbc8bb",
+      "sha256": "f42f813263aa96913534335977495e302d72449e71386b71e3389327a0dba429"
+    }
+  ],
+  "browserOrCompatibilityChanges": [
+    "app/apple-icon.tsx",
+    "app/icon.tsx",
+    "app/layout.tsx",
+    "app/manifest.ts",
+    "app/styles/theme-compat.css"
+  ],
+  "icons": [
+    {
+      "path": "public/brand/aperture-a2-180.png",
+      "bytes": 3044,
+      "width": 180,
+      "height": 180,
+      "format": "png",
+      "sha256": "473ab58b5e55a65f6b91dd4bcb37c97a82c6dda0688300fc041b711536e27437"
+    },
+    {
+      "path": "public/brand/aperture-a2-192.png",
+      "bytes": 3291,
+      "width": 192,
+      "height": 192,
+      "format": "png",
+      "sha256": "a2c713639d5b0ddd9c18a74c5e9929e286f416333b97de3b95cf06be121ac4ca"
+    },
+    {
+      "path": "public/brand/aperture-a2-32.png",
+      "bytes": 585,
+      "width": 32,
+      "height": 32,
+      "format": "png",
+      "sha256": "28050eda70ec6a7a1e091c005764df6f5e2c1d6efa946ad0c52c33e4d8fa82f1"
+    },
+    {
+      "path": "public/brand/aperture-a2-512.png",
+      "bytes": 13007,
+      "width": 512,
+      "height": 512,
+      "format": "png",
+      "sha256": "cd54447e403916b546ac29cf021781ddffae51a9fe702965e5f7f0169e74a018"
+    },
+    {
+      "path": "public/brand/aperture-a2-badge-96.png",
+      "bytes": 1015,
+      "width": 96,
+      "height": 96,
+      "format": "png",
+      "sha256": "2b51b5bdfacfe380663b2eff53ec5f4c33101098e021417cf11e0b51bebd34e6"
+    }
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 14.062649829753608,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 6.0230620518515865,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 5.3800667276494805,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 8.459542878059187,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 4.2825440268505535,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 6.236450593140524,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 15.329610483710834,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 6.565703924359376,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 5.864778566607055,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 9.221697102669703,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 4.668375633734436,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 6.798317497138921,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 13.006343014672835,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 5.570643654888865,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 4.97594650715011,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 7.824109805150302,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 3.96086351171218,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 5.768003654391407,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 13.8517341324158,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 5.9327264217851,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 5.2993749277878885,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 8.33266420249764,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 4.218313190504763,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 6.142914499894286,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 12.349699740435247,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 5.289401980343572,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 4.72472894328915,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 7.429098765179083,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 3.760893821369187,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 5.476797986421469,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 15.574333312239538,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 6.670519218743965,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 5.958404246205352,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 9.36891283272353,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 4.742901864582632,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 6.906846248662246,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 13.226898839086747,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 5.6651081713508775,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 5.060326411853986,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 7.956787606007403,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 4.028030086992499,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 5.8658149146189436,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 12.09209674355408,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 5.17907008317328,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 4.626175588889978,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 7.274134827086702,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 5.362557186704246,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action",
+      "minimum": 4.5,
+      "ratio": 9.221697102669703,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-hover",
+      "minimum": 4.5,
+      "ratio": 11.307985987901812,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-pressed",
+      "minimum": 4.5,
+      "ratio": 13.582766947712589,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action-soft",
+      "background": "--ui-action-soft",
+      "minimum": 4.5,
+      "ratio": 7.570278196578039,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-current-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 8.919813108477804,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-current-rail",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 7.274134827086702,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-support-bg",
+      "minimum": 4.5,
+      "ratio": 10.839608947809207,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-success",
+      "background": "--ui-success-bg",
+      "minimum": 4.5,
+      "ratio": 6.304407456446964,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-success",
+      "background": "--ui-success",
+      "minimum": 4.5,
+      "ratio": 7.288377494073514,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-warning",
+      "background": "--ui-warning-bg",
+      "minimum": 4.5,
+      "ratio": 6.106301169157172,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-warning",
+      "background": "--ui-warning",
+      "minimum": 4.5,
+      "ratio": 6.848054725237174,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-danger",
+      "background": "--ui-danger-bg",
+      "minimum": 4.5,
+      "ratio": 6.048717447077599,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-danger",
+      "background": "--ui-danger",
+      "minimum": 4.5,
+      "ratio": 7.0737184518197855,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-info",
+      "background": "--ui-info-bg",
+      "minimum": 4.5,
+      "ratio": 6.015215889460074,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-info",
+      "background": "--ui-info",
+      "minimum": 4.5,
+      "ratio": 7.004650970094487,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-learning",
+      "background": "--ui-learning-bg",
+      "minimum": 4.5,
+      "ratio": 5.828984010830415,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-learning",
+      "background": "--ui-learning",
+      "minimum": 4.5,
+      "ratio": 6.784664098736551,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-mission",
+      "background": "--ui-mission-bg",
+      "minimum": 4.5,
+      "ratio": 5.995598322790765,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-mission",
+      "background": "--ui-mission",
+      "minimum": 4.5,
+      "ratio": 7.305476262589596,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-reward",
+      "background": "--ui-reward-bg",
+      "minimum": 4.5,
+      "ratio": 5.902307879784133,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-reward",
+      "background": "--ui-reward",
+      "minimum": 4.5,
+      "ratio": 6.795833332628374,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 15.147699613096288,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 8.898953362729797,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 7.803099071699738,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 9.706697056939264,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 5.032979666401491,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 10.643941299082751,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 13.44776262721627,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 7.900276313189762,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 6.927403285852489,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 8.61737169670056,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 4.468158043143204,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 9.449434545449813,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 14.667805486506905,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 8.617025706343302,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 7.555889164628024,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 9.39917928030074,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 4.873529885719171,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 10.30673069657148,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 12.790684555579324,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 7.514256834026457,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 6.588919857887517,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 8.196313849829648,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 4.249837066476367,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 8.987720846204589,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 11.531651388974954,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 6.774601459420563,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 5.940348735901717,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 7.3895211456555066,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 3.8315102915404324,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 8.103027099878314,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 12.081824685348186,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 7.097816642642957,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 6.2237618512827675,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 7.742074051582919,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 4.014311052340412,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 8.489621264041473,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 14.511385232842068,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 8.525132113394951,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 7.475311732586009,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 9.29894465361317,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 4.821557640677565,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 10.19681776982208,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 10.353346773684015,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 6.082372402442319,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 5.3333636566750995,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 6.63445956973582,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 7.275059456081646,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action",
+      "minimum": 4.5,
+      "ratio": 9.445166552413696,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-hover",
+      "minimum": 4.5,
+      "ratio": 11.048002125105514,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-pressed",
+      "minimum": 4.5,
+      "ratio": 7.773718869276339,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action-soft",
+      "background": "--ui-action-soft",
+      "minimum": 4.5,
+      "ratio": 7.956958510850849,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-current-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 7.768142667498037,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-current-rail",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 6.63445956973582,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-support-bg",
+      "minimum": 4.5,
+      "ratio": 7.65882337294901,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-success",
+      "background": "--ui-success-bg",
+      "minimum": 4.5,
+      "ratio": 7.305599980060723,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-success",
+      "background": "--ui-success",
+      "minimum": 4.5,
+      "ratio": 8.641177342852458,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-warning",
+      "background": "--ui-warning-bg",
+      "minimum": 4.5,
+      "ratio": 7.07298442668877,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-warning",
+      "background": "--ui-warning",
+      "minimum": 4.5,
+      "ratio": 8.983852459842394,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-danger",
+      "background": "--ui-danger-bg",
+      "minimum": 4.5,
+      "ratio": 7.570632225196835,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-danger",
+      "background": "--ui-danger",
+      "minimum": 4.5,
+      "ratio": 9.099435204394052,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-info",
+      "background": "--ui-info-bg",
+      "minimum": 4.5,
+      "ratio": 7.470160641481468,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-info",
+      "background": "--ui-info",
+      "minimum": 4.5,
+      "ratio": 8.6236606632012,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-learning",
+      "background": "--ui-learning-bg",
+      "minimum": 4.5,
+      "ratio": 7.675275552809438,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-learning",
+      "background": "--ui-learning",
+      "minimum": 4.5,
+      "ratio": 8.902590446440838,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-mission",
+      "background": "--ui-mission-bg",
+      "minimum": 4.5,
+      "ratio": 7.096131698948111,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-mission",
+      "background": "--ui-mission",
+      "minimum": 4.5,
+      "ratio": 9.239152180827952,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-reward",
+      "background": "--ui-reward-bg",
+      "minimum": 4.5,
+      "ratio": 6.948037918485356,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-reward",
+      "background": "--ui-reward",
+      "minimum": 4.5,
+      "ratio": 9.350186190936371,
+      "passes": true
+    }
+  ]
+}

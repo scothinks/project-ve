@@ -1,0 +1,132 @@
+/* Terminal semantic roles. Both modes are literal; compatibility is separate. */
+:root {
+  --ui-canvas: #f6f3ed;
+  --ui-surface: #fffdf9;
+  --ui-text: #252327;
+  --ui-text-muted: #625968;
+  --ui-action: #583c63;
+  --ui-on-action: #fffdf9;
+  --ui-current-bg: #e8e0ec;
+  --ui-support-bg: #f0d2b8;
+  --ui-border: #918794;
+  --ui-chrome: #f0ebef;
+  --ui-surface-inset: #eee9ef;
+  --ui-surface-soft: #f5f0f6;
+  --ui-surface-muted: #e9e3eb;
+  --ui-surface-raised: #ffffff;
+  --ui-text-subtle: #6a6071;
+  --ui-border-subtle: #ded5e2;
+  --ui-action-hover: #493052;
+  --ui-action-pressed: #3b2444;
+  --ui-action-soft: #ede4f1;
+  --ui-on-action-soft: #583c63;
+  --ui-current-rail: #583c63;
+  --ui-current-text: #493052;
+  --ui-focus: #78458e;
+  --ui-success: #21623e;
+  --ui-success-bg: #e4f2e8;
+  --ui-on-success: #ffffff;
+  --ui-warning: #7c5206;
+  --ui-warning-bg: #fff1ce;
+  --ui-on-warning: #ffffff;
+  --ui-danger: #a22d38;
+  --ui-danger-bg: #fbe9eb;
+  --ui-on-danger: #ffffff;
+  --ui-info: #265d87;
+  --ui-info-bg: #e5eff8;
+  --ui-on-info: #ffffff;
+  --ui-learning: #315f83;
+  --ui-learning-bg: #e6eff6;
+  --ui-mission: #83462a;
+  --ui-mission-bg: #f5e6dc;
+  --ui-reward: #77550e;
+  --ui-reward-bg: #f8efcf;
+  --ui-shadow-rgb: 37, 35, 39;
+  --ui-shadow-opacity: 0.14;
+  --ui-on-learning: #ffffff;
+  --ui-on-mission: #ffffff;
+  --ui-on-reward: #ffffff;
+  --ui-on-media: #fffdf8;
+  --ui-control-border: #7b6f80;
+  --ui-artwork-ink: #252327;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ui-canvas: #201c23;
+    --ui-surface: #2b2530;
+    --ui-text: #f6f3ed;
+    --ui-text-muted: #c4b9ca;
+    --ui-action: #d6bce2;
+    --ui-on-action: #281b2e;
+    --ui-current-bg: #43344b;
+    --ui-support-bg: #624737;
+    --ui-border: #95889f;
+    --ui-chrome: #251f29;
+    --ui-surface-inset: #241e29;
+    --ui-surface-soft: #302836;
+    --ui-surface-muted: #382f3e;
+    --ui-surface-raised: #342c3b;
+    --ui-text-subtle: #b8adbf;
+    --ui-border-subtle: #514658;
+    --ui-action-hover: #e2cdef;
+    --ui-action-pressed: #c7a8d6;
+    --ui-action-soft: #43314e;
+    --ui-on-action-soft: #e5ccf0;
+    --ui-current-rail: #d6bce2;
+    --ui-current-text: #e5ccf0;
+    --ui-focus: #edbdff;
+    --ui-success: #9dd8af;
+    --ui-success-bg: #203d2a;
+    --ui-on-success: #15311e;
+    --ui-warning: #edc36a;
+    --ui-warning-bg: #443614;
+    --ui-on-warning: #322509;
+    --ui-danger: #ffb0b6;
+    --ui-danger-bg: #4b252e;
+    --ui-on-danger: #40141b;
+    --ui-info: #abd4f5;
+    --ui-info-bg: #203b50;
+    --ui-on-info: #173145;
+    --ui-learning: #b8d6ef;
+    --ui-learning-bg: #253b4d;
+    --ui-mission: #edc0a5;
+    --ui-mission-bg: #493328;
+    --ui-reward: #e6c779;
+    --ui-reward-bg: #43391f;
+    --ui-shadow-rgb: 0, 0, 0;
+    --ui-shadow-opacity: 0.34;
+    --ui-on-learning: #173145;
+    --ui-on-mission: #362013;
+    --ui-on-reward: #302309;
+    --ui-on-media: #fffdf8;
+    --ui-control-border: #95889f;
+    --ui-artwork-ink: #252327;
+    color-scheme: dark;
+  }
+}
+
+/* Approved entry composition: scoped colours, shared semantic controls. */
+:root {
+  --ui-entry-canvas: #f7f5fa;
+  --ui-entry-hero: #251c2e;
+  --ui-entry-hero-text: #fffdf9;
+  --ui-entry-hero-muted: #ded4e4;
+  --ui-entry-highlight: #d6bce2;
+  --ui-entry-glow: #ece5f5;
+  --ui-entry-shared: #e8deee;
+  --ui-entry-panel: #583c63;
+  --ui-entry-panel-text: #fffdf9;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --ui-entry-canvas: #211b26;
+  --ui-entry-hero: #251c2e;
+  --ui-entry-hero-text: #fffdf9;
+  --ui-entry-hero-muted: #ded4e4;
+  --ui-entry-highlight: #d6bce2;
+  --ui-entry-glow: #32273c;
+  --ui-entry-shared: #302438;
+  --ui-entry-panel: #583c63;
+  --ui-entry-panel-text: #fffdf9;
+} }

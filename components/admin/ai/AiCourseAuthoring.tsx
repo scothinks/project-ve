@@ -68,7 +68,7 @@ export function AiCourseAuthoring({ availability, initialId }: { availability: C
       {terminal && !(result.kind === 'course_outline' && result.stage === 'ready' && outline) && <CourseRefineAction key={result.id} lessons={result.brief.lessonCount} enabled={enabled} busy={busy} error={error} onRefine={(direction, price) => void run(() => journey.refine(direction, price))} />}
       {active && <button className={aiButton} disabled={busy || result.stopRequested} onClick={() => void run(async () => { await journey.request({ action: 'stop', id: result.id }); progressRef.current?.focus(); })}>Stop remaining work</button>}
     </>}
-    <div role="group" aria-label="Saved work actions" className="flex items-center gap-4 border-t border-[var(--admin-border-warm)] pt-4 text-sm">
+    <div role="group" aria-label="Saved work actions" className="flex items-center gap-4 border-t border-[var(--ui-border-subtle)] pt-4 text-sm">
       <Link className="font-bold underline underline-offset-4" href="/admin/courses/ai-results">Resume earlier work</Link>
       {result && !result.deleted && !active && <AdminConfirmDialog title="Delete this result?" description="Completed draft content in this result will be deleted. Saved courses stay in place. Generation credits are not refunded." confirmLabel="Delete result" onConfirm={() => run(async () => { await authoringRequest({ action: 'delete', id: result.id }); await journey.read(); })} trigger={<button type="button" className={aiButton} disabled={busy || checking || result.applicationState === 'checking'}>Delete</button>} />}
     </div>

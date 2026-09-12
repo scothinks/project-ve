@@ -154,7 +154,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
 
         <aside className="space-y-4">
           <AdminCard>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
               Status
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -167,33 +167,33 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
             </div>
             <dl className="mt-4 space-y-3 text-sm">
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Campaign</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Campaign</dt>
                 <dd className="mt-1 font-bold">{reward.campaign?.name ?? "No campaign"}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Mode</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Mode</dt>
                 <dd className="mt-1 font-bold">{reward.distribution_mode.replaceAll("_", " ")}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Cost</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Cost</dt>
                 <dd className="mt-1 font-black">{formatXpLabel(reward.cost_xp)}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Inventory</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Inventory</dt>
                 <dd className="mt-1 font-black tabular-nums">
                   {reward.total_available}/{reward.total_uploaded}
                 </dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Owner</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Owner</dt>
                 <dd className="mt-1 font-bold">{reward.owner_scope.replaceAll("_", " ")}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Visibility</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Visibility</dt>
                 <dd className="mt-1 font-bold">{reward.visibility_mode.replaceAll("_", " ")}</dd>
               </div>
               <div>
-                <dt className="font-black text-[var(--ve-muted)]">Offer ends</dt>
+                <dt className="font-black text-[var(--ui-text-muted)]">Offer ends</dt>
                 <dd className="mt-1 font-bold">{formatRewardDate(reward.offer_expires_at)}</dd>
               </div>
             </dl>
@@ -201,11 +201,11 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
 
           <AdminCard>
             <h2 className="text-lg font-black">Inventory</h2>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Add stock, assign batches, and track partner uploads from the central inventory page.
             </p>
             <Link
-              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-on-action-soft)]"
               href={`/admin/inventory/new?rewardId=${encodeURIComponent(reward.id)}&mode=${inventoryMode}`}
             >
               Manage inventory
@@ -228,7 +228,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
                       <p className="truncate font-bold">
                         {getInventoryValue(item.payload, item.item_type)}
                       </p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                         {item.item_type.replaceAll("_", " ")}
                       </p>
                     </td>
@@ -266,7 +266,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
                       {adjustment.delta > 0 ? "+" : ""}
                       {adjustment.delta}
                     </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-[var(--ve-muted-strong)]">
+                    <td className="px-4 py-3 text-sm font-semibold text-[var(--ui-text-muted)]">
                       {adjustment.reason}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">{formatRewardDate(adjustment.created_at)}</td>
@@ -286,16 +286,16 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
       </section>
 
       <AdminCard className="mt-6">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
           Perks
         </p>
         <h2 className="mt-2 text-xl font-black">Manage low-XP perks separately</h2>
-        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           Perk bundles have their own admin experience. Use the perks area to control prize pools,
           weights, release timing, and assigned rewards.
         </p>
         <Link
-          className="mt-4 inline-flex rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-violet)]"
+          className="mt-4 inline-flex rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-on-action-soft)]"
           href="/admin/rewards/perks"
         >
           Open perks

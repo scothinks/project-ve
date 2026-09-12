@@ -66,7 +66,7 @@ export default async function AdminCampaignsPage({
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-4 flex justify-end">
         <Link
-          className="rounded-[14px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
+          className="rounded-[14px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)]"
           href="/admin/campaigns/new"
         >
           Add Campaign
@@ -85,10 +85,10 @@ export default async function AdminCampaignsPage({
             return (
               <tr key={campaign.id}>
                 <td className="min-w-[260px] px-4 py-4">
-                  <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/campaigns/${campaign.id}`}>
+                  <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/campaigns/${campaign.id}`}>
                     {campaign.name}
                   </Link>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{campaign.slug}</p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{campaign.slug}</p>
                 </td>
                 <td className="whitespace-nowrap px-4 py-4">
                   <AdminStatusBadge tone={campaignTone(state)}>{state}</AdminStatusBadge>
@@ -108,8 +108,8 @@ export default async function AdminCampaignsPage({
                     <button
                       className={`rounded-[12px] px-3 py-2 text-xs font-black ${
                         isEnabled
-                          ? "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
-                          : "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
+                          ? "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
+                          : "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
                       }`}
                       type="submit"
                     >

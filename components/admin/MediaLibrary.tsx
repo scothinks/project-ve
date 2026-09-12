@@ -32,7 +32,7 @@ export function MediaLibrary({ mediaType, onPick, courseId }: { courseId?: strin
   }, [source, query, mediaType, offset, thisCourse, courseId]);
   return <div className="space-y-4">
     {<div className="flex flex-wrap gap-2" aria-label="Media source">
-      {[["organization", "Workspace media"], ...(organizationId !== null ? [["platform", "Platform media"]] : []), ["generated", "Generated"], ["unused", "Unused"]].map(([value, label]) => <button key={value} type="button" aria-pressed={source === value} className="rounded-lg border px-3 py-2 text-sm aria-pressed:bg-green-100" onClick={() => { setSource(value); setOffset(0); }}>{label}</button>)}
+      {[["organization", "Workspace media"], ...(organizationId !== null ? [["platform", "Platform media"]] : []), ["generated", "Generated"], ["unused", "Unused"]].map(([value, label]) => <button key={value} type="button" aria-pressed={source === value} className="rounded-lg border px-3 py-2 text-sm aria-pressed:bg-[var(--ui-success-bg)]" onClick={() => { setSource(value); setOffset(0); }}>{label}</button>)}
     </div>}
     <div className="flex gap-2">
       <input aria-label="Search media" className="min-w-0 flex-1 rounded-lg border p-2" placeholder="Search media" value={search} onChange={(event) => setSearch(event.target.value)} />
@@ -44,7 +44,7 @@ export function MediaLibrary({ mediaType, onPick, courseId }: { courseId?: strin
     {!loading && !error && assets.length === 0 && <p className="rounded-lg border border-dashed p-5">No matching media is available.</p>}
     <div className="grid grid-cols-2 gap-3">
       {assets.map((asset) => <button key={asset.id} type="button" className="overflow-hidden rounded-xl border text-left" onClick={() => onPick(asset)}>
-        <div className="relative h-24 bg-neutral-100">{asset.asset_type === "image" ? <Image src={asset.url} alt={asset.alt_text} fill className="object-cover" /> : <span className="block p-4">{asset.asset_type === "audio" ? "Audio" : "Video"}</span>}</div>
+        <div className="relative h-24 bg-[var(--ui-surface-muted)]">{asset.asset_type === "image" ? <Image src={asset.url} alt={asset.alt_text} fill className="object-cover" /> : <span className="block p-4">{asset.asset_type === "audio" ? "Audio" : "Video"}</span>}</div>
         <span className="block p-3 text-sm font-semibold">{asset.title}<span className="block text-xs font-normal">{asset.organization_id ? "Organisation media" : "Platform media"}</span></span>
       </button>)}
     </div>

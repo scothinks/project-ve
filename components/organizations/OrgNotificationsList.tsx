@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 import type { UserNotification } from "@/lib/notifications";
 
 const categoryMeta = {
-  account: { icon: PersonCircleIcon, label: "Account", tone: "text-[#a65319]" },
-  missions: { icon: TrophyIcon, label: "Missions", tone: "text-[#946400]" },
-  rewards: { icon: GiftIcon, label: "Rewards", tone: "text-[var(--ve-green)]" },
-  system: { icon: InfoIcon, label: "System", tone: "text-[var(--ve-muted-strong)]" },
+  account: { icon: PersonCircleIcon, label: "Account", tone: "text-[var(--ui-mission)]" },
+  missions: { icon: TrophyIcon, label: "Missions", tone: "text-[var(--ui-reward)]" },
+  rewards: { icon: GiftIcon, label: "Rewards", tone: "text-[var(--ui-reward)]" },
+  system: { icon: InfoIcon, label: "System", tone: "text-[var(--ui-text-muted)]" },
 } as const;
 
 const filters = ["all", "account", "missions", "rewards", "system"] as const;
@@ -64,8 +64,8 @@ export function OrgNotificationsList({ notifications }: { notifications: UserNot
               className={cn(
                 "shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-black capitalize transition-colors",
                 filter === item
-                  ? "border-[var(--ve-green)] bg-[var(--ve-green-soft)] text-[var(--ve-green)]"
-                  : "border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)]",
+                  ? "border-[var(--ui-current-text)] bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]"
+                  : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)]",
               )}
               key={item}
               onClick={() => setFilter(item)}
@@ -77,7 +77,7 @@ export function OrgNotificationsList({ notifications }: { notifications: UserNot
         </div>
         {unreadIds.length > 0 ? (
           <button
-            className="shrink-0 text-xs font-black text-[var(--ve-green)] disabled:opacity-60"
+            className="shrink-0 text-xs font-black text-[var(--ui-action)] disabled:opacity-60"
             disabled={isMarkingAll}
             onClick={handleMarkAllRead}
             type="button"
@@ -98,8 +98,8 @@ export function OrgNotificationsList({ notifications }: { notifications: UserNot
                 className={cn(
                   "rounded-[8px] p-0",
                   unread
-                    ? "border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[var(--ve-card)]"
-                    : "bg-[var(--ve-card-muted)]",
+                    ? "border border-[color:color-mix(in_srgb,var(--ui-current-text)_24%,var(--ui-border-subtle))] bg-[var(--ui-surface)]"
+                    : "bg-[var(--ui-surface-muted)]",
                 )}
                 key={notification.id}
               >
@@ -113,15 +113,15 @@ export function OrgNotificationsList({ notifications }: { notifications: UserNot
                         {meta.label}
                       </span>
                     </div>
-                    <h2 className="mt-1 text-base font-black text-[var(--foreground)]">{notification.title}</h2>
-                    <p className="mt-1 text-sm font-medium leading-6 text-[var(--ve-muted-strong)]">
+                    <h2 className="mt-1 text-base font-black text-[var(--ui-text)]">{notification.title}</h2>
+                    <p className="mt-1 text-sm font-medium leading-6 text-[var(--ui-text-muted)]">
                       {notification.body}
                     </p>
                   </div>
-                  <div className="text-right text-[11px] font-medium text-[var(--ve-muted)]">
+                  <div className="text-right text-[11px] font-medium text-[var(--ui-text-muted)]">
                     <span className="block">{formatNotificationTime(notification.createdAt)}</span>
                     {unread ? (
-                      <span className="mt-2 inline-flex size-2 rounded-full bg-[var(--ve-green)]" />
+                      <span className="mt-2 inline-flex size-2 rounded-full bg-[var(--ui-current-text)]" />
                     ) : null}
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export function OrgNotificationsList({ notifications }: { notifications: UserNot
       ) : (
         <Card className="mt-6 p-5">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-full bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]">
+            <span className="grid size-9 place-items-center rounded-full bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]">
               <BellIcon className="size-4" />
             </span>
             <h2 className="text-base font-black">No organisation notifications</h2>

@@ -19,7 +19,7 @@ export function AdminDragHandle({
     <button
       aria-label={`Drag to reorder ${label}`}
       className={cn(
-        "flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-[10px] text-[var(--admin-outline)] hover:text-[var(--admin-on-surface-variant)]",
+        "flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-[10px] text-[var(--ui-text-muted)] hover:text-[var(--ui-text-muted)]",
         className,
       )}
       type="button"

@@ -4,10 +4,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { gunzipSync } from "node:zlib";
 
 const evidenceRoot = fileURLToPath(new URL("../../docs/evidence/", import.meta.url));
 const sha256Value = /^[a-f0-9]{64}$/i;
-const sha256Field = /^(?:[a-z][a-z0-9]*)?sha256$/i;
+const sha256Field = /^(?:[a-z][a-z0-9_]*)?sha256$/i;
 
 // This is an evidence-format contract, not a replacement for secret scanning.
 // File paths are data: a path containing "auth" must not become the name of
@@ -56,5 +57,65 @@ test("guided journey screenshot bytes still match the historical evidence manife
     assert.equal(path.basename(entry.path), entry.path);
     const digest = createHash("sha256").update(readFileSync(path.join(directory, entry.path))).digest("hex");
     assert.equal(digest, entry.sha256, entry.path);
+  }
+});
+
+test("explicit checksum fields accept historical snake case while rejecting path-shaped keys", () => {
+  const digest = createHash("sha256").update("checksum format fixture").digest("hex");
+  for (const field of ["sha256", "sourceSha256", "source_sha256", "globals_css_sha256"]) {
+    assert.doesNotThrow(() => checkChecksumFields({ [field]: digest }, "fixture"));
+  }
+  for (const field of ["hash", "app/auth.ts", "app/globals.css"]) {
+    assert.throws(() => checkChecksumFields({ [field]: digest }, "fixture"), /explicit sha256 field/);
+  }
+  assert.throws(() => checkChecksumFields({ source_sha256: "invalid" }, "fixture"), /invalid SHA-256/);
+});
+
+test("G0 screenshots, computed styles and build CSS match their exact-source evidence", () => {
+  const root = path.join(evidenceRoot, "theme-adoption");
+  const manifest = JSON.parse(readFileSync(path.join(root, "g0-captures.json"), "utf8"));
+  assert.equal(manifest.captures.length, manifest.summary.captureCount);
+  assert.ok(manifest.captures.length > 0);
+  function verify(entry) {
+    assert.match(entry.path, /^(captures|build-css)\//);
+    assert.ok(!entry.path.includes(".."));
+    const bytes = readFileSync(path.join(root, entry.path));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256, entry.path);
+    if (entry.contentSha256) assert.equal(createHash("sha256").update(gunzipSync(bytes)).digest("hex"), entry.contentSha256);
+  }
+  for (const capture of manifest.captures) {
+    [capture.before, capture.after, capture.styles].forEach(verify);
+    assert.equal(capture.before.sha256, capture.reference.imageSha256);
+    assert.equal(capture.after.sha256, capture.candidate.imageSha256);
+    assert.equal(capture.styles.contentSha256, capture.reference.stylesSha256);
+    assert.equal(capture.styles.contentSha256, capture.candidate.stylesSha256);
+    assert.equal(capture.comparison.passed, true);
+    assert.equal(capture.comparison.disallowedPixels, 0);
+    assert.equal(capture.reference.sourceSha, manifest.builds.find(b => b.label === "before").sourceSha);
+    assert.equal(capture.candidate.sourceSha, manifest.builds.find(b => b.label === "after").sourceSha);
+  }
+  for (const build of manifest.builds) build.css.forEach(verify);
+});
+
+test("G6 qualification artifacts retain their recorded bytes and complete G1 comparisons", () => {
+  const root = path.join(evidenceRoot, "theme-adoption");
+  const manifest = JSON.parse(readFileSync(path.join(root, "g6-artifacts.json"), "utf8"));
+  assert.equal(manifest.summary.g1Comparisons, 33);
+  assert.equal(manifest.summary.g1Passed, manifest.summary.g1Comparisons);
+  assert.equal(manifest.summary.flatPairsFailed, 0);
+  assert.ok(manifest.summary.flatPairsPassed > 0, "Flat-background evidence must not be empty");
+  assert.equal(new Set(manifest.artifacts.map(entry => entry.path)).size, manifest.artifacts.length);
+  for (const entry of manifest.artifacts) {
+    assert.ok(entry.path.startsWith("g6/") && !entry.path.includes(".."));
+    const bytes = readFileSync(path.join(root, entry.path));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256, entry.path);
+    if (entry.contentSha256) assert.equal(createHash("sha256").update(gunzipSync(bytes)).digest("hex"), entry.contentSha256, entry.path);
+  }
+  const captures = manifest.artifacts.filter(entry => /^g6\/candidate\/.*\.evidence\.json\.gz$/.test(entry.path));
+  assert.equal(captures.length, manifest.summary.candidateCaptures);
+  for (const capture of captures) {
+    const record = JSON.parse(gunzipSync(readFileSync(path.join(root, capture.path))).toString());
+    assert.equal(record.sourceSha256, manifest.candidateSourceSha256);
+    assert.equal(record.buildId, manifest.buildId);
   }
 });

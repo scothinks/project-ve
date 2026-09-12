@@ -70,7 +70,7 @@ export function QuizResultDetails({
       <section className="learner-page learner-page--spacious">
         <Card className="p-6 text-center">
           <p className="text-lg font-black">No quiz result yet</p>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             Complete the lesson and finish the quiz to see your {unitLabel} result.
           </p>
           <Button className="mt-5 w-full" href={retryHref}>
@@ -103,16 +103,16 @@ export function QuizResultDetails({
     <section className="learner-page learner-page--spacious">
       <div className="quiz-result-layout learner-readable">
         <div className="quiz-result-layout__summary">
-          <Card className="overflow-hidden border-l-4 border-l-[#e7c268] p-5">
+          <Card className="overflow-hidden border-l-4 border-l-[var(--ui-reward-bg)] p-5">
             <div className="flex items-start gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#fff0bd] text-[#946400]">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[var(--ui-reward-bg)] text-[var(--ui-reward)]">
                 <TrophyIcon className="size-5" />
               </span>
               <div>
-                <h1 className="text-lg font-black text-[var(--foreground)]">
+                <h1 className="text-lg font-black text-[var(--ui-text)]">
                   You earned {formatXpLabel(visibleResult.earnedXp, unitLabel)}
                 </h1>
-                <p className="mt-1 text-sm font-semibold text-[var(--ve-muted-strong)]">
+                <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
                   Use {unitLabel} for rewards or keep learning to earn more.
                 </p>
               </div>
@@ -121,22 +121,22 @@ export function QuizResultDetails({
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Card className="flex flex-col items-center gap-1.5 p-4 text-center">
-              <CheckCircleIcon className="size-7 text-[#008751]" />
-              <p className="text-[28px] font-black leading-none text-[#008751]">
+              <CheckCircleIcon className="size-7 text-[var(--ui-success)]" />
+              <p className="text-[28px] font-black leading-none text-[var(--ui-success)]">
                 {visibleResult.correctCount}
               </p>
-              <p className="text-xs font-bold text-[var(--ve-muted)]">Correct</p>
+              <p className="text-xs font-bold text-[var(--ui-text-muted)]">Correct</p>
             </Card>
             <Card className="flex flex-col items-center gap-1.5 p-4 text-center">
-              <AlertCircleIcon className="size-7 text-[#c94f2e]" />
-              <p className="text-[28px] font-black leading-none text-[var(--foreground)]">
+              <AlertCircleIcon className="size-7 text-[var(--ui-danger)]" />
+              <p className="text-[28px] font-black leading-none text-[var(--ui-text)]">
                 {visibleResult.wrongCount}
               </p>
-              <p className="text-xs font-bold text-[#c94f2e]">Needs review</p>
+              <p className="text-xs font-bold text-[var(--ui-danger)]">Needs review</p>
             </Card>
           </div>
 
-          <section className="mt-6 flex flex-col gap-2.5 border-t border-[var(--ve-line-soft)] pt-6">
+          <section className="mt-6 flex flex-col gap-2.5 border-t border-[var(--ui-border-subtle)] pt-6">
             <Button href={retryHref}>Retry Quiz</Button>
             <div className="grid grid-cols-2 gap-2.5">
               <Button className="px-2 !text-[0.8rem]" href={lessonsHref} variant="outline">
@@ -155,14 +155,14 @@ export function QuizResultDetails({
             {reviewQuestions.length > 0 ? (
               reviewQuestions.map((question) => (
                 <Card className="flex items-start gap-3 px-5 py-4" key={question.id}>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#fbe4e0] text-[#c00000]">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]">
                     <AlertCircleIcon className="size-4" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                    <p className="text-sm font-semibold leading-5 text-[var(--ui-text-muted)]">
                       {question.prompt}
                     </p>
-                    <p className="mt-1 text-[11px] font-bold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-[11px] font-bold text-[var(--ui-text-muted)]">
                       {question.status === "daily_cap_deferred"
                         ? `Available after reset: ${formatXpLabel(question.xp, unitLabel)}`
                         : `Missed ${formatXpLabel(question.xp, unitLabel)}`}
@@ -173,7 +173,7 @@ export function QuizResultDetails({
             ) : (
               <Card className="p-5">
                 <p className="text-sm font-bold">No missed questions</p>
-                <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">
+                <p className="mt-2 text-xs leading-5 text-[var(--ui-text-muted)]">
                   You answered every question correctly.
                 </p>
               </Card>

@@ -30,7 +30,7 @@ export function CourseDetailLessonList({
 
   return (
     <div className="space-y-3">
-      <p className="text-[0.9rem] font-medium tracking-[-0.01em] text-[#959595]">
+      <p className="text-[0.9rem] font-medium tracking-[-0.01em] text-[var(--ui-text-muted)]">
         Showing {paginatedLessons.startItem}-{paginatedLessons.endItem} of{" "}
         {paginatedLessons.totalItems}{" "}
         {paginatedLessons.totalItems === 1 ? "lesson" : "lessons"}
@@ -47,7 +47,7 @@ export function CourseDetailLessonList({
                 lesson={lesson}
                 unitLabel={unitLabel}
               />
-              <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ve-muted)]">
+              <p className="mt-2 px-1 text-[11px] font-bold text-[var(--ui-text-muted)]">
                 {lesson.pages.length} pages · {completed ? "Lesson complete" : `${formatXpLabel(getLessonXP(lesson), unitLabel)} total`}
               </p>
             </div>

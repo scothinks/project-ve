@@ -1,0 +1,72 @@
+import { expect, test } from '@playwright/test';
+import { checked, mediaFixture } from '../support/media-browser';
+import { captureTheme } from '../support/theme-adoption/capture';
+
+test('theme baseline covers public, learner, platform and organization scopes with portals', async ({ browser, baseURL }) => {
+  test.setTimeout(600_000);
+  const admin = await mediaFixture(browser, baseURL!);
+  const org = await mediaFixture(browser, baseURL!, true);
+  const anonymous = await browser.newContext();
+  try {
+    for (const fixture of [admin, org]) {
+      checked(await fixture.service.from('profiles').update({ display_name: 'Theme Review' }).eq('id', fixture.userId));
+      checked(await fixture.service.from('user_value_profiles').insert({ user_id: fixture.userId, context_scope: 'platform', organization_id: null, assessment_completed_at: new Date().toISOString() }));
+    }
+    const publicPage = await anonymous.newPage();
+    const adminPage = await admin.context.newPage();
+    const orgPage = await org.context.newPage();
+    for (const width of [390, 1440]) for (const mode of ['light', 'dark'] as const) {
+      for (const page of [publicPage, adminPage, orgPage]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
+      }
+      const suffix = `${width}-${mode}`;
+      await publicPage.goto(baseURL!);
+      await expect(publicPage.getByRole('heading', { name: 'Live what you learn.' })).toBeVisible();
+      await captureTheme(publicPage, `welcome-${suffix}`);
+      await publicPage.goto(`${baseURL}/login`);
+      await publicPage.locator('input[type="email"]').focus();
+      await captureTheme(publicPage, `login-focus-${suffix}`);
+      await adminPage.goto(`${baseURL}/dashboard`);
+      await expect(adminPage.getByRole('heading', { name: 'No Active Learning' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Active Missions', exact: true })).toBeVisible({ timeout: 60_000 });
+      await expect(adminPage.locator('[data-dashboard-secondary-fallback]')).toHaveCount(0, { timeout: 60_000 });
+      await captureTheme(adminPage, `dashboard-${suffix}`);
+      await adminPage.goto(`${baseURL}/admin/courses/new`);
+      await expect(adminPage.locator('input[name="title"]')).toBeVisible();
+      if (process.env.THEME_CANDIDATE_MANIFEST) {
+        const header = adminPage.locator('header').filter({ visible: true }).first();
+        await expect(header.getByRole('img', { name: 'Project VE', exact: true })).toBeVisible();
+        await expect(header.getByRole('img', { name: 'Learning on Project VE', exact: true })).toHaveCount(0);
+      }
+      await captureTheme(adminPage, `admin-course-${suffix}`);
+      await adminPage.getByRole('combobox').first().focus();
+      await adminPage.keyboard.press('Space');
+      await expect(adminPage.getByRole('listbox')).toBeInViewport();
+      await captureTheme(adminPage, `admin-select-${suffix}`);
+      await adminPage.keyboard.press('Escape');
+      await expect(adminPage.getByRole('listbox')).toHaveCount(0);
+      await adminPage.getByRole('button', { name: /Add a cover image/ }).click();
+      await expect(adminPage.getByRole('heading', { name: 'Choose a cover image' })).toBeVisible();
+      await expect(adminPage.getByText('Loading media…', { exact: true })).toHaveCount(0);
+      await expect(adminPage.getByRole('alert')).toHaveCount(0);
+      await captureTheme(adminPage, `admin-drawer-${suffix}`);
+      await adminPage.keyboard.press('Escape');
+      await expect(adminPage.getByRole('heading', { name: 'Choose a cover image' })).toHaveCount(0);
+      await orgPage.goto(`${baseURL}/admin/courses/new`);
+      await expect(orgPage.locator('input[name="title"]')).toBeVisible();
+      await captureTheme(orgPage, `organization-course-${suffix}`);
+      await orgPage.goto(`${baseURL}/o/media-${org.organizationId}`);
+      await expect(orgPage.locator('main')).toContainText('Media release fixture');
+      await captureTheme(orgPage, `organization-learner-${suffix}`);
+    }
+    await publicPage.setViewportSize({ width: 320, height: 900 });
+    await publicPage.goto(`${baseURL}/login`);
+    await publicPage.locator('input[type="email"]').focus();
+    await captureTheme(publicPage, 'login-focus-320-dark');
+  } finally {
+    await anonymous.close();
+    await org.cleanup();
+    await admin.cleanup();
+  }
+});

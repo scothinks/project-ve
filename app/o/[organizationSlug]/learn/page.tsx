@@ -189,28 +189,28 @@ export default async function OrganizationLearnPage({
           <span>{organizationName}</span>
         </div>
         {assessmentCompletionNotice ? (
-          <section className="org-completion-notice mb-6 rounded-lg border border-[color:color-mix(in_srgb,var(--learner-green)_16%,var(--learner-border))] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_36%,var(--learner-surface))] p-3">
+          <section className="org-completion-notice mb-6 rounded-lg border border-[color:color-mix(in_srgb,var(--ui-success)_16%,var(--ui-border))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_36%,var(--ui-surface))] p-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_18%,transparent)] text-[var(--learner-green-deep)]">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-action)_18%,transparent)] text-[var(--ui-action)]">
                   <CheckIcon className="size-4" />
                 </span>
                 <div className="min-w-0">
                   <h1 className="org-completion-notice__desktop-title">Assessment Complete</h1>
-                  <h2 className="org-completion-notice__mobile-title text-[0.78rem] font-[700] leading-4 text-[var(--learner-text)]">
+                  <h2 className="org-completion-notice__mobile-title text-[0.78rem] font-[700] leading-4 text-[var(--ui-text)]">
                     {assessmentCompletionNotice.title} Complete
                   </h2>
-                  <p className="mt-0.5 text-[0.58rem] font-medium leading-3 text-[var(--learner-text-muted)]">
+                  <p className="mt-0.5 text-[0.58rem] font-medium leading-3 text-[var(--ui-text-muted)]">
                     {assessmentCompletionNotice.completionCopy}
                   </p>
                 </div>
               </div>
               {completedCheckpoint ? (
                 <div className="shrink-0 text-right">
-                  <strong className="block text-[0.72rem] leading-3 text-[var(--learner-reward)]">
+                  <strong className="block text-[0.72rem] leading-3 text-[var(--ui-success)]">
                     +{completedCheckpoint.xpAward}
                   </strong>
-                  <span className="block text-[0.5rem] font-bold uppercase leading-3 text-[var(--learner-text-muted)]">
+                  <span className="block text-[0.5rem] font-bold uppercase leading-3 text-[var(--ui-text-muted)]">
                     {workspace.xpAccount.label}
                   </span>
                 </div>
@@ -220,38 +220,38 @@ export default async function OrganizationLearnPage({
         ) : null}
 
         {requiredCheckpoint ? (
-          <section className="org-learning-required-state mb-5 rounded-lg bg-[var(--learner-background-cream)]">
-            <p className="org-learning-required-state__label mb-2 text-[0.64rem] font-semibold text-[var(--learner-text-muted)]">
+          <section className="org-learning-required-state mb-5 rounded-lg bg-[var(--ui-surface-soft)]">
+            <p className="org-learning-required-state__label mb-2 text-[0.64rem] font-semibold text-[var(--ui-text-muted)]">
               Assessment checkpoints
             </p>
-            <span className="inline-flex rounded-full bg-[color:color-mix(in_srgb,var(--learner-attention-soft)_80%,white)] px-2.5 py-1 text-[0.58rem] font-extrabold text-[var(--learner-attention)]">
+            <span className="inline-flex rounded-full bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_80%,var(--ui-surface))] px-2.5 py-1 text-[0.58rem] font-extrabold text-[var(--ui-danger)]">
               Required Assessment
             </span>
-            <h1 className="mt-4 text-[1.38rem] font-[650] leading-tight text-[var(--learner-text)]">
+            <h1 className="mt-4 text-[1.38rem] font-[650] leading-tight text-[var(--ui-text)]">
               {requiredCheckpoint.title}
             </h1>
-            <p className="org-learning-required-state__checkpoint mt-3 text-[0.78rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+            <p className="org-learning-required-state__checkpoint mt-3 text-[0.78rem] font-medium leading-5 text-[var(--ui-text-muted)]">
               {requiredCheckpoint.introductionCopy || requiredCheckpoint.description || "Complete this checkpoint to tune your organisation recommendations."}
             </p>
-            <div className="org-learning-required-state__card mt-4 rounded-lg border border-[var(--learner-border-soft)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_24%,var(--learner-surface))] p-4">
+            <div className="org-learning-required-state__card mt-4 rounded-lg border border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_24%,var(--ui-surface))] p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex rounded-full bg-[var(--learner-attention-soft)] px-2.5 py-1 text-[0.58rem] font-bold leading-3 text-[var(--learner-attention)]">
+                <span className="inline-flex rounded-full bg-[var(--ui-danger-bg)] px-2.5 py-1 text-[0.58rem] font-bold leading-3 text-[var(--ui-danger)]">
                   Required Assessment
                 </span>
-                <span className="inline-flex items-center gap-1 text-[0.72rem] font-[650] text-[var(--learner-green-deep)]">
+                <span className="inline-flex items-center gap-1 text-[0.72rem] font-[650] text-[var(--ui-action)]">
                   {requiredCheckpoint.xpAward} {workspace.xpAccount.label}
                 </span>
               </div>
-              <p className="mt-3 text-[0.78rem] font-[650] leading-5 text-[var(--learner-text)]">
+              <p className="mt-3 text-[0.78rem] font-[650] leading-5 text-[var(--ui-text)]">
                 {requiredCheckpoint.title}
               </p>
-              <p className="mt-0.5 text-[0.66rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+              <p className="mt-0.5 text-[0.66rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                 {requiredCheckpoint.programmeTitle}
               </p>
             </div>
-            <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--learner-green-deep)] bg-[color:color-mix(in_srgb,var(--learner-green-soft)_30%,white)] p-3">
-              <p className="text-[0.74rem] font-[650] text-[var(--learner-text)]">Before you begin</p>
-              <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+            <div className="org-learning-required-state__before mt-4 border-l-2 border-[var(--ui-success)] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_30%,var(--ui-surface))] p-3">
+              <p className="text-[0.74rem] font-[650] text-[var(--ui-text)]">Before you begin</p>
+              <p className="mt-1 text-[0.62rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                 Choose the response that best reflects what you would do in each scenario. Complete
                 all questions to finish the assessment.
               </p>
@@ -264,10 +264,10 @@ export default async function OrganizationLearnPage({
 
         {assessmentCompletionNotice && recommendationItems.length > 0 ? (
           <section className="org-recommendations-section mb-5">
-            <h2 className="text-[1.28rem] font-[650] leading-tight text-[var(--learner-text)]">
+            <h2 className="text-[1.28rem] font-[650] leading-tight text-[var(--ui-text)]">
               Recommended Next Learning
             </h2>
-            <p className="mt-2 text-[0.74rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+            <p className="mt-2 text-[0.74rem] font-medium leading-5 text-[var(--ui-text-muted)]">
               Based on your recent assessment profile.
             </p>
             <div className="mt-4 grid gap-3">
@@ -277,23 +277,23 @@ export default async function OrganizationLearnPage({
 
                 return (
                   <Link
-                    className="rounded-lg border border-[color:color-mix(in_srgb,var(--learner-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--learner-surface)_78%,transparent)] p-3"
+                    className="rounded-lg border border-[color:color-mix(in_srgb,var(--ui-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-surface)_78%,transparent)] p-3"
                     href={item.href}
                     key={`${item.content_type}:${item.id}`}
                   >
                     <div className="grid grid-cols-[minmax(0,1fr)_4rem] gap-3">
                       <div className="min-w-0">
-                        <p className="text-[0.56rem] font-semibold italic leading-3 text-[var(--learner-reward)]">
+                        <p className="text-[0.56rem] font-semibold italic leading-3 text-[var(--ui-reward)]">
                           {item.reason}
                         </p>
-                        <h3 className="mt-1 text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                        <h3 className="mt-1 text-[1rem] font-[650] leading-5 text-[var(--ui-text)]">
                           {item.title}
                         </h3>
-                        <p className="mt-1 line-clamp-2 text-[0.64rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                        <p className="mt-1 line-clamp-2 text-[0.64rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                           {item.description}
                         </p>
                       </div>
-                      <div className="relative h-16 overflow-hidden rounded bg-[var(--learner-surface-soft)]">
+                      <div className="relative h-16 overflow-hidden rounded bg-[var(--ui-surface-soft)]">
                         {image ? (
                           <Image
                             alt={image.alt}
@@ -305,16 +305,16 @@ export default async function OrganizationLearnPage({
                         ) : null}
                       </div>
                     </div>
-                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-[color:color-mix(in_srgb,var(--learner-border)_60%,transparent)] pt-3">
+                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-[color:color-mix(in_srgb,var(--ui-border)_60%,transparent)] pt-3">
                       {durationMinutes ? (
-                        <span className="inline-flex items-center gap-1 text-[0.64rem] font-[650] text-[var(--learner-text-muted)]">
+                        <span className="inline-flex items-center gap-1 text-[0.64rem] font-[650] text-[var(--ui-text-muted)]">
                           <ClockIcon className="size-3.5" />
                           {durationMinutes} Min
                         </span>
                       ) : (
                         <span />
                       )}
-                      <span className="inline-flex items-center gap-1 text-[0.68rem] font-[650] text-[var(--learner-green-deep)]">
+                      <span className="inline-flex items-center gap-1 text-[0.68rem] font-[650] text-[var(--ui-action)]">
                         Open
                         <ArrowRightIcon className="size-3.5" />
                       </span>

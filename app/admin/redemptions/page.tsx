@@ -26,20 +26,20 @@ function claimTone(claimState: string) {
 
 function renderClaimData(claimData: Record<string, unknown> | null) {
   if (!claimData) {
-    return <p className="text-xs font-semibold text-[var(--ve-muted)]">No submitted details yet.</p>;
+    return <p className="text-xs font-semibold text-[var(--ui-text-muted)]">No submitted details yet.</p>;
   }
 
   const entries = Object.entries(claimData);
 
   if (entries.length === 0) {
-    return <p className="text-xs font-semibold text-[var(--ve-muted)]">No submitted details yet.</p>;
+    return <p className="text-xs font-semibold text-[var(--ui-text-muted)]">No submitted details yet.</p>;
   }
 
   return (
     <dl className="grid gap-2 md:grid-cols-2">
       {entries.map(([key, value]) => (
-        <div className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2" key={key}>
-          <dt className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+        <div className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2" key={key}>
+          <dt className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
             {key}
           </dt>
           <dd className="mt-1 break-words text-xs font-bold">{String(value)}</dd>
@@ -63,7 +63,7 @@ type AdminRedemptionsPageProps = {
 };
 
 function fieldClasses() {
-  return "h-11 rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "h-11 rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 export default async function AdminRedemptionsPage({ searchParams }: AdminRedemptionsPageProps) {
@@ -90,7 +90,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
         subtitle="Review reward purchases, submitted fulfillment details, and refund eligible pending rewards."
       />
       {params.notice ? <AdminNoticeBanner>{params.notice}</AdminNoticeBanner> : null}
-      <form className="mb-4 grid gap-3 rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4 md:grid-cols-3 xl:grid-cols-6">
+      <form className="mb-4 grid gap-3 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 md:grid-cols-3 xl:grid-cols-6">
         <select className={fieldClasses()} name="claimState" defaultValue={params.claimState ?? ""}>
           <option value="">All states</option>
           <option value="purchased">Purchased</option>
@@ -124,10 +124,10 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
         <input className={fieldClasses()} name="dateFrom" type="date" defaultValue={params.dateFrom ?? ""} />
         <input className={fieldClasses()} name="dateTo" type="date" defaultValue={params.dateTo ?? ""} />
         <div className="flex gap-2 md:col-span-3 xl:col-span-6">
-          <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white" type="submit">
+          <button className="rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-xs font-black text-[var(--ui-on-action)]" type="submit">
             Apply filters
           </button>
-          <Link className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-2 text-xs font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]" href={exportHref}>
+          <Link className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 py-2 text-xs font-black text-[var(--ui-on-action-soft)]" href={exportHref}>
             Export CSV
           </Link>
         </div>
@@ -156,12 +156,12 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                           {redemption.claim_state.replaceAll("_", " ")}
                         </AdminStatusBadge>
                       </div>
-                      <p className="mt-2 text-sm font-semibold text-[var(--ve-muted-strong)]">
+                      <p className="mt-2 text-sm font-semibold text-[var(--ui-text-muted)]">
                         {redemption.profile?.display_name ?? "Unknown user"} ·{" "}
                         {formatXpLabel(redemption.xp_cost_at_redemption ?? 0)} ·{" "}
                         {formatRewardDate(redemption.requested_at)}
                       </p>
-                      <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                      <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                         {redemption.fulfillment_type?.replaceAll("_", " ") ?? "unknown fulfillment"}
                         {redemption.redemption_expires_at
                           ? ` · Redeem by ${formatRewardDate(redemption.redemption_expires_at)}`
@@ -170,19 +170,19 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                     </div>
 
                     <div className="flex items-center justify-between gap-3 lg:justify-end">
-                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                         View details
                       </span>
-                      <span className="grid size-10 place-items-center rounded-full bg-[var(--ve-panel)] text-lg font-black text-[var(--ve-muted-strong)] transition group-open:rotate-180">
+                      <span className="grid size-10 place-items-center rounded-full bg-[var(--ui-surface-inset)] text-lg font-black text-[var(--ui-text-muted)] transition group-open:rotate-180">
                         ˅
                       </span>
                     </div>
                   </summary>
 
-                  <div className="mt-4 border-t border-[var(--ve-line-soft)] pt-4">
+                  <div className="mt-4 border-t border-[var(--ui-border-subtle)] pt-4">
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                       <div>
-                        <p className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                        <p className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                           Submitted details
                         </p>
                         {renderClaimData(redemption.claim_data)}
@@ -193,13 +193,13 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                           <form action={fulfillRedemption} className="space-y-2">
                             <input name="redemptionId" type="hidden" value={redemption.id} />
                             <input
-                              className="w-full rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
+                              className="w-full rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
                               name="note"
                               placeholder="Fulfillment note"
                             />
                             <button
-                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
+                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-action)]"
                               type="submit"
                             >
                               Mark fulfilled
@@ -211,13 +211,13 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                           <form action={refundRedemption} className="space-y-2">
                             <input name="redemptionId" type="hidden" value={redemption.id} />
                             <input
-                              className="w-full rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-semibold outline-none"
+                              className="w-full rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
                               name="reason"
                               placeholder="Refund reason"
                             />
                             <button
-                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
+                              className="w-full rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-danger)]"
                               type="submit"
                             >
                               Refund XP

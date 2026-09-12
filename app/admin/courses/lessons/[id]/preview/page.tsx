@@ -17,7 +17,7 @@ type LessonPreviewPageProps = {
   searchParams?: Promise<{ page?: string; section?: string; notice?: string }>;
 };
 
-const navigationClass = "rounded-full border border-[var(--admin-border-warm)] px-4 py-2 text-sm font-extrabold text-[var(--admin-on-surface)]";
+const navigationClass = "rounded-full border border-[var(--ui-border-subtle)] px-4 py-2 text-sm font-extrabold text-[var(--ui-text)]";
 
 export default async function LessonPreviewPage({ params, searchParams }: LessonPreviewPageProps) {
   const { id } = await params;
@@ -53,22 +53,22 @@ export default async function LessonPreviewPage({ params, searchParams }: Lesson
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--admin-surface-container-low)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-6 py-5 md:px-10">
-        <Link className="text-sm font-bold text-[var(--admin-on-surface-variant)]" href={showQuiz ? `${base}/quiz` : `${base}${currentPage ? `?page=${currentPage.id}` : ""}`}>
+    <div className="flex min-h-screen flex-col bg-[var(--ui-surface-soft)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-6 py-5 md:px-10">
+        <Link className="text-sm font-bold text-[var(--ui-text-muted)]" href={showQuiz ? `${base}/quiz` : `${base}${currentPage ? `?page=${currentPage.id}` : ""}`}>
           {showQuiz ? "Back to quiz editing" : "Back to editing"}
         </Link>
-        <p className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Saved lesson preview · No progress or XP recorded</p>
+        <p className="text-xs font-bold text-[var(--ui-text-muted)]">Saved lesson preview · No progress or XP recorded</p>
       </div>
       <LessonAuthoringSteps current="preview" lessonId={lesson.id} pageCount={pages.length} questionCount={questions.length} />
       <nav aria-label="Preview contents" className="flex flex-wrap justify-center gap-2 px-4 pt-5">
         {sortedPages.map((page, index) => (
-          <Link aria-current={!showQuiz && !showReview && index + 1 === currentPageNumber ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--admin-surface-milk)] aria-[current=page]:border-[var(--admin-primary)]`} href={`${preview}?page=${index + 1}`} key={page.id} title={page.title}>
+          <Link aria-current={!showQuiz && !showReview && index + 1 === currentPageNumber ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--ui-surface)] aria-[current=page]:border-[var(--ui-action)]`} href={`${preview}?page=${index + 1}`} key={page.id} title={page.title}>
             Page {index + 1}
           </Link>
         ))}
-        <Link aria-current={showQuiz ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--admin-surface-milk)] aria-[current=page]:border-[var(--admin-primary)]`} href={`${preview}?section=quiz`}>Quiz</Link>
-        <Link aria-current={showReview ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--admin-surface-milk)] aria-[current=page]:border-[var(--admin-primary)]`} href={`${preview}?section=review`}>Review</Link>
+        <Link aria-current={showQuiz ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--ui-surface)] aria-[current=page]:border-[var(--ui-action)]`} href={`${preview}?section=quiz`}>Quiz</Link>
+        <Link aria-current={showReview ? "page" : undefined} className={`${navigationClass} aria-[current=page]:bg-[var(--ui-surface)] aria-[current=page]:border-[var(--ui-action)]`} href={`${preview}?section=review`}>Review</Link>
       </nav>
       {notice ? <div className="mx-auto w-full max-w-3xl px-4 pt-4"><AdminNoticeBanner>{notice}</AdminNoticeBanner></div> : null}
 
@@ -77,7 +77,7 @@ export default async function LessonPreviewPage({ params, searchParams }: Lesson
           {showReview ? <LessonReviewSummary data={data} mediaReady={mediaReady} valueCount={valueTags.length} /> : showQuiz ? (
             <section aria-label="Lesson quiz preview" className="space-y-5">
               <div>
-                <p className="text-xs font-bold text-[var(--ve-muted)]">{lesson.title} · Quiz</p>
+                <p className="text-xs font-bold text-[var(--ui-text-muted)]">{lesson.title} · Quiz</p>
                 <h1 className="mt-2 text-2xl font-black">{quiz?.title ?? "Lesson quiz"}</h1>
               </div>
               {questions.length > 0 ? (
@@ -85,8 +85,8 @@ export default async function LessonPreviewPage({ params, searchParams }: Lesson
               ) : (
                 <Card className="space-y-3 p-6">
                   <h2 className="text-lg font-black">No quiz questions yet</h2>
-                  <p className="text-sm text-[var(--ve-muted-strong)]">Add questions after writing your lesson pages, then return here to try the full lesson.</p>
-                  <Link className="inline-block font-bold text-[var(--admin-primary)]" href={`${base}/quiz`}>Go to quiz setup</Link>
+                  <p className="text-sm text-[var(--ui-text-muted)]">Add questions after writing your lesson pages, then return here to try the full lesson.</p>
+                  <Link className="inline-block font-bold text-[var(--ui-action)]" href={`${base}/quiz`}>Go to quiz setup</Link>
                 </Card>
               )}
             </section>
@@ -95,14 +95,14 @@ export default async function LessonPreviewPage({ params, searchParams }: Lesson
           ) : (
             <Card className="space-y-3 p-6">
               <h1 className="text-xl font-black">No lesson pages yet</h1>
-              <p className="text-sm text-[var(--ve-muted-strong)]">Start with the lesson pages, then add a quiz to check what learners understood.</p>
-              <Link className="inline-block font-bold text-[var(--admin-primary)]" href={base}>Create lesson pages</Link>
+              <p className="text-sm text-[var(--ui-text-muted)]">Start with the lesson pages, then add a quiz to check what learners understood.</p>
+              <Link className="inline-block font-bold text-[var(--ui-action)]" href={base}>Create lesson pages</Link>
             </Card>
           )}
         </div>
       </div>
 
-      <nav aria-label="Preview navigation" className="flex flex-wrap items-center justify-center gap-3 border-t border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-4">
+      <nav aria-label="Preview navigation" className="flex flex-wrap items-center justify-center gap-3 border-t border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-4">
         {showReview ? (
           <>
             <Link className={navigationClass} href={`${preview}?section=quiz`}>Back to quiz preview</Link>
@@ -116,7 +116,7 @@ export default async function LessonPreviewPage({ params, searchParams }: Lesson
         ) : (
           <>
             {currentPageNumber > 1 ? <Link className={navigationClass} href={`${preview}?page=${currentPageNumber - 1}`}>Previous page</Link> : null}
-            {currentPage ? <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Page {currentPageNumber} of {pages.length}</span> : null}
+            {currentPage ? <span className="text-xs font-bold text-[var(--ui-text-muted)]">Page {currentPageNumber} of {pages.length}</span> : null}
             <Link className={navigationClass} href={currentPageNumber < pages.length ? `${preview}?page=${currentPageNumber + 1}` : `${preview}?section=quiz`}>
               {currentPageNumber < pages.length ? "Next page" : "Continue to quiz"}
             </Link>

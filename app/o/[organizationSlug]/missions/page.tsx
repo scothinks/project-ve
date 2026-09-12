@@ -51,15 +51,15 @@ export default async function OrganizationMissionsPage({
       <section className="learner-page learner-page--standard">
         <div className="mb-5 flex flex-col gap-1.5">
           <div className="flex items-end justify-between gap-3">
-            <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+            <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
               Missions
             </h1>
-            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--ve-card-muted)] px-3 py-1.5 text-[0.78rem] font-black tabular-nums text-[var(--ve-muted-strong)]">
-              <StarBadgeIcon className="size-3.5 text-[#a66d00]" />
+            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--ui-surface-muted)] px-3 py-1.5 text-[0.78rem] font-black tabular-nums text-[var(--ui-text-muted)]">
+              <StarBadgeIcon className="size-3.5 text-[var(--ui-reward)]" />
               {formatXpLabel(workspace.xpAccount.balance, workspace.xpAccount.label)}
             </span>
           </div>
-          <p className="max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ve-muted)]">
+          <p className="max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ui-text-muted)]">
             Complete missions to earn {workspace.xpAccount.label} and reinforce your organisation learning.
           </p>
         </div>
@@ -71,7 +71,7 @@ export default async function OrganizationMissionsPage({
             pointsLabel={workspace.xpAccount.label}
           />
         ) : (
-          <Card className="p-5 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]" variant="quiet">
+          <Card className="p-5 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]" variant="quiet">
             No missions are assigned in this organisation workspace yet.
           </Card>
         )}

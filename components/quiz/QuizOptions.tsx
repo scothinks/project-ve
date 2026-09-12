@@ -245,7 +245,7 @@ export function QuizOptions({
     return (
       <Card className="p-6">
         <p className="text-sm font-bold">Preparing your quiz...</p>
-        <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">
+        <p className="mt-2 text-xs leading-5 text-[var(--ui-text-muted)]">
           We are checking your lesson progress and {unitLabel} eligibility.
         </p>
       </Card>
@@ -257,13 +257,13 @@ export function QuizOptions({
 
     return (
       <Card className="p-6 text-center">
-        <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] px-2 text-center text-xs font-black leading-tight text-[#008751]">
+        <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[20px] bg-[var(--ui-warning-bg)] px-2 text-center text-xs font-black leading-tight text-[var(--ui-warning)]">
           {unitLabel}
         </div>
         <p className="text-lg font-black">
           {isDailyCapBlock ? `Daily ${unitLabel} checkpoint reached` : "Quiz not ready yet"}
         </p>
-        <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">{blockedMessage}</p>
+        <p className="mt-2 text-xs leading-5 text-[var(--ui-text-muted)]">{blockedMessage}</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <Button href={lessonHref ?? `/lessons/${lessonId}`} variant="outline">
             Review
@@ -288,14 +288,14 @@ export function QuizOptions({
       />
 
       {selectedOptionIds.length > 0 ? (
-        <Card className="border border-[#dff2e9] p-5">
-          <p className="text-sm font-bold text-[var(--foreground)]">
+        <Card className="border border-[var(--ui-action-soft)] p-5">
+          <p className="text-sm font-bold text-[var(--ui-text)]">
             {current.type === "multiple_choice"
               ? `${selectedOptionIds.length} choice${selectedOptionIds.length === 1 ? "" : "s"} selected`
               : "Answer saved"}
           </p>
           {current.type === "multiple_choice" ? (
-            <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
               Select every answer that applies, then continue.
             </p>
           ) : null}
@@ -303,7 +303,7 @@ export function QuizOptions({
       ) : null}
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[var(--ve-muted)]">
+        <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
           {answeredCount}/{liveQuestions.length} submitted
         </span>
         <Button
@@ -325,14 +325,14 @@ export function QuizOptions({
       {dailyLimitModal ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 px-6">
           <Card className="max-w-[340px] p-6 text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-[20px] bg-[#dff2e9] px-2 text-center text-xs font-black leading-tight text-[#008751]">
+            <div className="mx-auto grid size-14 place-items-center rounded-[20px] bg-[var(--ui-warning-bg)] px-2 text-center text-xs font-black leading-tight text-[var(--ui-warning)]">
               {unitLabel}
             </div>
             <h2 className="mt-4 text-xl font-black">Daily {unitLabel} limit reached</h2>
-            <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {dailyLimitModal.message}
             </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
               Quiz {unitLabel} unlocks at {formatResetAt(dailyLimitModal.nextResetAt)}.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">

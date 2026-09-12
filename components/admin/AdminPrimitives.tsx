@@ -11,16 +11,16 @@ export function adminButtonClasses(
   className?: string,
 ) {
   const base =
-    "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition outline-none focus-visible:ring-4 focus-visible:ring-[color:color-mix(in_srgb,var(--ve-green)_14%,transparent)] disabled:cursor-not-allowed disabled:opacity-60";
+    "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition outline-none focus-visible:ring-4 focus-visible:ring-[var(--ui-focus)] disabled:cursor-not-allowed disabled:opacity-60";
 
   if (tone === "primary") {
-    return cn(base, "bg-[var(--ve-green)] text-white hover:brightness-95", className);
+    return cn(base, "bg-[var(--ui-action)] text-[var(--ui-on-action)] hover:bg-[var(--ui-action-hover)] active:bg-[var(--ui-action-pressed)]", className);
   }
 
   if (tone === "danger") {
     return cn(
       base,
-      "border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)] hover:brightness-95 focus-visible:ring-[color:color-mix(in_srgb,var(--ve-danger)_14%,transparent)]",
+      "border border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)] hover:brightness-95 focus-visible:ring-[var(--ui-focus)]",
       className,
     );
   }
@@ -28,14 +28,14 @@ export function adminButtonClasses(
   if (tone === "success") {
     return cn(
       base,
-      "border border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)] hover:brightness-95",
+      "border border-[color:color-mix(in_srgb,var(--ui-success)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_82%,var(--ui-surface))] text-[var(--ui-success)] hover:brightness-95",
       className,
     );
   }
 
   return cn(
     base,
-    "border border-[var(--ve-line-soft)] bg-[var(--ve-card)] text-[var(--ve-muted-strong)] hover:border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] hover:text-[var(--ve-green)]",
+    "border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)] hover:border-[color:color-mix(in_srgb,var(--ui-action)_24%,var(--ui-border-subtle))] hover:text-[var(--ui-action)]",
     className,
   );
 }
@@ -57,7 +57,7 @@ export function AdminPageHeader({
     <header className="mb-6">
       {backHref ? (
         <Link
-          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)] shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--ve-green)_24%,var(--ve-line-soft))] hover:text-[var(--ve-green)]"
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-black text-[var(--ui-text-muted)] shadow-sm transition hover:border-[color:color-mix(in_srgb,var(--ui-action)_24%,var(--ui-border-subtle))] hover:text-[var(--ui-action)]"
           href={backHref}
         >
           <ArrowLeftIcon className="h-4 w-4" />
@@ -65,13 +65,13 @@ export function AdminPageHeader({
         </Link>
       ) : null}
       {eyebrow ? (
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
           {eyebrow}
         </p>
       ) : null}
       <h1 className="mt-2 text-3xl font-black tracking-[-0.01em]">{title}</h1>
       {subtitle ? (
-        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+        <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           {subtitle}
         </p>
       ) : null}
@@ -81,7 +81,7 @@ export function AdminPageHeader({
 
 export function AdminCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm", className)}>
+    <div className={cn("rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm", className)}>
       {children}
     </div>
   );
@@ -96,13 +96,13 @@ export function AdminNoticeBanner({
 }) {
   const tones = {
     success:
-      "border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]",
+      "border-[color:color-mix(in_srgb,var(--ui-success)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_78%,var(--ui-surface))] text-[var(--ui-success)]",
     warning:
-      "border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_78%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
+      "border-[color:color-mix(in_srgb,var(--ui-warning)_24%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_78%,var(--ui-surface))] text-[var(--ui-warning)]",
     danger:
-      "border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]",
+      "border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]",
     info:
-      "border-[color:color-mix(in_srgb,var(--ve-violet)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_72%,var(--ve-card))] text-[var(--ve-violet)]",
+      "border-[color:color-mix(in_srgb,var(--ui-info)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-info-bg)_72%,var(--ui-surface))] text-[var(--ui-info)]",
   };
 
   return (
@@ -127,16 +127,16 @@ export function AdminStatCard({
   tone?: "default" | "mission" | "store" | "risk" | "warning";
 }) {
   const tones = {
-    default: "text-[var(--ve-green)]",
-    mission: "text-[var(--ve-mission)]",
-    store: "text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
-    risk: "text-[var(--ve-danger)]",
-    warning: "text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
+    default: "text-[var(--ui-text)]",
+    mission: "text-[var(--ui-mission)]",
+    store: "text-[var(--ui-reward)]",
+    risk: "text-[var(--ui-danger)]",
+    warning: "text-[var(--ui-warning)]",
   };
 
   return (
     <AdminCard>
-      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">{label}</p>
+      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">{label}</p>
       <p className={cn("mt-3 text-3xl font-black tabular-nums", tones[tone])}>{value}</p>
     </AdminCard>
   );
@@ -150,15 +150,15 @@ export function AdminStatusBadge({
   tone?: "neutral" | "good" | "warning" | "danger" | "store";
 }) {
   const tones = {
-    neutral: "bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]",
+    neutral: "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]",
     good:
-      "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-success-bg)_82%,var(--ui-surface))] text-[var(--ui-success)]",
     warning:
-      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
+      "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_82%,var(--ui-surface))] text-[var(--ui-warning)]",
     danger:
-      "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]",
     store:
-      "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]",
+      "bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_82%,var(--ui-surface))] text-[var(--ui-reward)]",
   };
 
   return (
@@ -181,10 +181,10 @@ export function AdminTable({
   columns: string[];
 }) {
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)]">
+    <div className="overflow-hidden rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="bg-[var(--ve-panel)] text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+          <thead className="bg-[var(--ui-surface-inset)] text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
             <tr>
               {columns.map((column) => (
                 <th className="whitespace-nowrap px-4 py-3" key={column}>
@@ -193,7 +193,7 @@ export function AdminTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--ve-line-soft)]">{children}</tbody>
+          <tbody className="divide-y divide-[var(--ui-border-subtle)]">{children}</tbody>
         </table>
       </div>
     </div>
@@ -222,21 +222,21 @@ export function AdminMetricCard({
   action?: { label: string; href: string };
 }) {
   const toneClasses = {
-    default: "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]",
+    default: "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]",
     attention:
-      "border-[color:color-mix(in_srgb,var(--admin-secondary)_20%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_18%,var(--admin-surface-milk))]",
+      "border-[color:color-mix(in_srgb,var(--ui-warning)_20%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_18%,var(--ui-surface))]",
     warning:
-      "border-[color:color-mix(in_srgb,var(--admin-tertiary)_20%,var(--admin-border-warm))] bg-[var(--admin-surface-milk)]",
+      "border-[color:color-mix(in_srgb,var(--ui-warning)_20%,var(--ui-border-subtle))] bg-[var(--ui-surface)]",
   };
   const valueTone = {
-    default: "text-[var(--admin-ink-charcoal)]",
-    attention: "text-[var(--admin-secondary)]",
-    warning: "text-[var(--admin-ink-charcoal)]",
+    default: "text-[var(--ui-text)]",
+    attention: "text-[var(--ui-warning)]",
+    warning: "text-[var(--ui-text)]",
   };
 
   const content = (
     <>
-      <div className="mb-2 flex items-center gap-2 text-[var(--admin-on-surface-variant)]">
+      <div className="mb-2 flex items-center gap-2 text-[var(--ui-text-muted)]">
         {icon}
         <span className="text-[11px] font-black uppercase tracking-[0.14em]">{label}</span>
       </div>
@@ -249,19 +249,19 @@ export function AdminMetricCard({
             <span
               className={cn(
                 "mb-1 flex items-center text-sm font-bold",
-                trend.direction === "up" ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-secondary)]",
+                trend.direction === "up" ? "text-[var(--ui-success)]" : "text-[var(--ui-success)]",
               )}
             >
               {trend.direction === "up" ? "↑" : "↓"} {trend.label}
             </span>
           ) : null}
           {helpText && !trend ? (
-            <span className="mb-1 text-sm text-[var(--admin-on-surface-variant)]">{helpText}</span>
+            <span className="mb-1 text-sm text-[var(--ui-text-muted)]">{helpText}</span>
           ) : null}
         </div>
         {action ? (
           <Link
-            className="mb-0.5 shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--admin-secondary)_30%,transparent)] bg-[var(--admin-surface-milk)] px-3 py-1 text-xs font-bold text-[var(--admin-secondary)] transition hover:bg-[var(--admin-secondary)] hover:text-white"
+            className="mb-0.5 shrink-0 rounded-full border border-[color:color-mix(in_srgb,var(--ui-warning)_30%,transparent)] bg-[var(--ui-surface)] px-3 py-1 text-xs font-bold text-[var(--ui-warning)] transition hover:bg-[var(--ui-warning)] hover:text-[var(--ui-on-warning)]"
             href={action.href}
             onClick={(event) => event.stopPropagation()}
           >
@@ -270,9 +270,9 @@ export function AdminMetricCard({
         ) : null}
       </div>
       {typeof progress === "number" ? (
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--ui-surface-raised)]">
           <div
-            className="h-full rounded-full bg-[var(--admin-tertiary)]"
+            className="h-full rounded-full bg-[var(--ui-warning)]"
             style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
         </div>
@@ -301,12 +301,12 @@ export function AdminBadge({
   tone?: "neutral" | "good" | "warning" | "danger" | "info";
 }) {
   const tones = {
-    neutral: "bg-[var(--admin-surface-container-high)] text-[var(--admin-on-surface-variant)]",
-    good: "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] text-[var(--admin-primary)]",
+    neutral: "bg-[var(--ui-surface-raised)] text-[var(--ui-text-muted)]",
+    good: "bg-[color:color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-[var(--ui-success)]",
     warning:
-      "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_60%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]",
-    danger: "bg-[var(--admin-error-container)] text-[var(--admin-on-error-container)]",
-    info: "bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_30%,transparent)] text-[var(--admin-secondary)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_60%,transparent)] text-[var(--ui-warning)]",
+    danger: "bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]",
+    info: "bg-[color:color-mix(in_srgb,var(--ui-info-bg)_30%,transparent)] text-[var(--ui-info)]",
   };
 
   return (
@@ -338,13 +338,13 @@ export function AdminAlertCard({
 }) {
   const toneClasses = {
     attention:
-      "bg-[color:color-mix(in_srgb,var(--admin-secondary-fixed)_30%,var(--admin-surface-milk))] border-[color:color-mix(in_srgb,var(--admin-secondary)_20%,transparent)] text-[var(--admin-on-secondary-container)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_30%,var(--ui-surface))] border-[color:color-mix(in_srgb,var(--ui-warning)_20%,transparent)] text-[var(--ui-warning)]",
     warning:
-      "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_30%,var(--admin-surface-milk))] border-[color:color-mix(in_srgb,var(--admin-tertiary)_20%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_30%,var(--ui-surface))] border-[color:color-mix(in_srgb,var(--ui-warning)_20%,transparent)] text-[var(--ui-warning)]",
   };
   const linkTone = {
-    attention: "text-[var(--admin-secondary)]",
-    warning: "text-[var(--admin-tertiary)]",
+    attention: "text-[var(--ui-warning)]",
+    warning: "text-[var(--ui-warning)]",
   };
 
   return (
@@ -375,9 +375,9 @@ export function AdminChecklist({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-surface-container-high)]">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--ui-surface-raised)]">
         <div
-          className="h-full rounded-full bg-[var(--admin-primary-container)]"
+          className="h-full rounded-full bg-[var(--ui-action)]"
           style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
         />
       </div>
@@ -387,20 +387,20 @@ export function AdminChecklist({
             <CheckCircleIcon
               className={cn(
                 "h-5 w-5 shrink-0",
-                item.complete ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-outline)]",
+                item.complete ? "text-[var(--ui-success)]" : "text-[var(--ui-text-muted)]",
               )}
             />
             <span
               className={cn(
-                "flex-1 text-sm text-[var(--admin-on-surface)]",
-                item.complete ? "text-[var(--admin-on-surface-variant)] line-through opacity-70" : "font-bold",
+                "flex-1 text-sm text-[var(--ui-text)]",
+                item.complete ? "text-[var(--ui-text-muted)] line-through opacity-70" : "font-bold",
               )}
             >
               {item.label}
             </span>
             {!item.complete && item.href ? (
               <Link
-                className="text-xs font-bold text-[var(--admin-primary)] hover:underline"
+                className="text-xs font-bold text-[var(--ui-action)] hover:underline"
                 href={item.href}
               >
                 Fix →
@@ -420,7 +420,7 @@ export function AdminActivityList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+      <p className="py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
         No recent activity yet.
       </p>
     );
@@ -429,18 +429,18 @@ export function AdminActivityList({
   return (
     <div className="flex flex-col gap-1">
       {items.map((item) => (
-        <div className="flex items-start gap-4 rounded-lg p-3 transition hover:bg-[var(--admin-surface-container-low)]" key={item.id}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--admin-surface-container-low)] text-[var(--admin-on-surface-variant)]">
+        <div className="flex items-start gap-4 rounded-lg p-3 transition hover:bg-[var(--ui-surface-soft)]" key={item.id}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]">
             {item.icon}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
-              <p className="truncate text-sm font-bold text-[var(--admin-ink-charcoal)]">{item.title}</p>
-              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+              <p className="truncate text-sm font-bold text-[var(--ui-text)]">{item.title}</p>
+              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                 {item.timeLabel}
               </span>
             </div>
-            <p className="text-sm text-[var(--admin-on-surface-variant)]">{item.detail}</p>
+            <p className="text-sm text-[var(--ui-text-muted)]">{item.detail}</p>
           </div>
         </div>
       ))}
@@ -464,8 +464,8 @@ export function AdminQuickActionButton({
       className={cn(
         "group flex w-full items-center justify-between rounded-[12px] border p-3 transition",
         emphasis
-          ? "border-[color:color-mix(in_srgb,var(--admin-primary-container)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_10%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--admin-primary-container)_18%,transparent)]"
-          : "border-[var(--admin-border-warm)] bg-[var(--admin-surface)] hover:bg-[var(--admin-surface-container-low)]",
+          ? "border-[color:color-mix(in_srgb,var(--ui-action)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--ui-action)_10%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--ui-action)_18%,transparent)]"
+          : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] hover:bg-[var(--ui-surface-soft)]",
       )}
       href={href}
     >
@@ -473,7 +473,7 @@ export function AdminQuickActionButton({
         <span
           className={cn(
             "transition-transform group-hover:scale-110",
-            emphasis ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-on-surface-variant)]",
+            emphasis ? "text-[var(--ui-action)]" : "text-[var(--ui-text-muted)]",
           )}
         >
           {icon}
@@ -481,7 +481,7 @@ export function AdminQuickActionButton({
         <span
           className={cn(
             "font-bold",
-            emphasis ? "text-[var(--admin-primary-container)]" : "text-[var(--admin-on-surface)]",
+            emphasis ? "text-[var(--ui-action)]" : "text-[var(--ui-text)]",
           )}
         >
           {label}
@@ -490,7 +490,7 @@ export function AdminQuickActionButton({
       <ChevronRightIcon
         className={cn(
           "h-[18px] w-[18px]",
-          emphasis ? "text-[var(--admin-primary-container)]/60" : "text-[var(--admin-outline)]",
+          emphasis ? "text-[var(--ui-action)]/60" : "text-[var(--ui-text-muted)]",
         )}
       />
     </Link>
@@ -500,7 +500,7 @@ export function AdminQuickActionButton({
 export function EmptyAdminState({ children }: { children: ReactNode }) {
   return (
     <AdminCard className="text-center">
-      <p className="text-sm font-bold text-[var(--ve-muted)]">{children}</p>
+      <p className="text-sm font-bold text-[var(--ui-text-muted)]">{children}</p>
     </AdminCard>
   );
 }
@@ -540,12 +540,12 @@ export function AdminPagination({
 
   return (
     <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div className="text-xs font-semibold text-[var(--ve-muted)]">{summary ?? "\u00A0"}</div>
+      <div className="text-xs font-semibold text-[var(--ui-text-muted)]">{summary ?? "\u00A0"}</div>
       {totalPages > 1 ? (
         <div className="flex flex-wrap items-center gap-2 md:justify-end">
           <Link
             className={cn(
-              "rounded-[12px] border border-[var(--ve-line)] px-3 py-2 text-xs font-black",
+              "rounded-[12px] border border-[var(--ui-border)] px-3 py-2 text-xs font-black",
               currentPage === 1 && "pointer-events-none opacity-40",
             )}
             href={buildHref(Math.max(1, currentPage - 1))}
@@ -554,10 +554,10 @@ export function AdminPagination({
           </Link>
           {pageWindow[0] && pageWindow[0] > 1 ? (
             <>
-              <Link className="rounded-[12px] border border-[var(--ve-line)] px-3 py-2 text-xs font-black" href={buildHref(1)}>
+              <Link className="rounded-[12px] border border-[var(--ui-border)] px-3 py-2 text-xs font-black" href={buildHref(1)}>
                 1
               </Link>
-              {pageWindow[0] > 2 ? <span className="px-1 text-xs font-black text-[var(--ve-muted)]">…</span> : null}
+              {pageWindow[0] > 2 ? <span className="px-1 text-xs font-black text-[var(--ui-text-muted)]">…</span> : null}
             </>
           ) : null}
           {pageWindow.map((page) => (
@@ -565,8 +565,8 @@ export function AdminPagination({
               className={cn(
                 "rounded-[12px] border px-3 py-2 text-xs font-black",
                 page === currentPage
-                  ? "border-[color:color-mix(in_srgb,var(--ve-green)_30%,var(--ve-line))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_82%,var(--ve-card))] text-[var(--ve-green)]"
-                  : "border-[var(--ve-line)] text-[var(--ve-muted-strong)]",
+                  ? "border-[color:color-mix(in_srgb,var(--ui-current-text)_30%,var(--ui-border))] bg-[color:color-mix(in_srgb,var(--ui-current-bg)_82%,var(--ui-surface))] text-[var(--ui-current-text)]"
+                  : "border-[var(--ui-border)] text-[var(--ui-text-muted)]",
               )}
               href={buildHref(page)}
               key={page}
@@ -577,16 +577,16 @@ export function AdminPagination({
           {pageWindow[pageWindow.length - 1] && pageWindow[pageWindow.length - 1] < totalPages ? (
             <>
               {pageWindow[pageWindow.length - 1] < totalPages - 1 ? (
-                <span className="px-1 text-xs font-black text-[var(--ve-muted)]">…</span>
+                <span className="px-1 text-xs font-black text-[var(--ui-text-muted)]">…</span>
               ) : null}
-              <Link className="rounded-[12px] border border-[var(--ve-line)] px-3 py-2 text-xs font-black" href={buildHref(totalPages)}>
+              <Link className="rounded-[12px] border border-[var(--ui-border)] px-3 py-2 text-xs font-black" href={buildHref(totalPages)}>
                 {totalPages}
               </Link>
             </>
           ) : null}
           <Link
             className={cn(
-              "rounded-[12px] border border-[var(--ve-line)] px-3 py-2 text-xs font-black",
+              "rounded-[12px] border border-[var(--ui-border)] px-3 py-2 text-xs font-black",
               currentPage === totalPages && "pointer-events-none opacity-40",
             )}
             href={buildHref(Math.min(totalPages, currentPage + 1))}

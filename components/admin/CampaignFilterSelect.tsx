@@ -20,11 +20,11 @@ export function CampaignFilterSelect({
 
   return (
     <label className="block w-full max-w-sm">
-      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
         Campaign
       </span>
       <select
-        className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-3 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+        className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
         name="campaign"
         onChange={(event) => {
           setSelectedValue(event.target.value);

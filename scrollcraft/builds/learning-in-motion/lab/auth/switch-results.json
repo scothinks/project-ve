@@ -1,0 +1,26 @@
+[
+  {
+    "profile": "desktop",
+    "switchBothDirections": true,
+    "retainsEmail": true,
+    "keyboardAndFocus": true,
+    "panelsDoNotOverlap": true,
+    "noOverflow": true
+  },
+  {
+    "profile": "mobile",
+    "switchBothDirections": true,
+    "retainsEmail": true,
+    "keyboardAndFocus": true,
+    "panelsDoNotOverlap": true,
+    "noOverflow": true
+  },
+  {
+    "profile": "reduced",
+    "switchBothDirections": true,
+    "retainsEmail": true,
+    "keyboardAndFocus": true,
+    "panelsDoNotOverlap": true,
+    "noOverflow": true
+  }
+]

@@ -130,19 +130,19 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
       onCloseAutoFocus={(event) => { if (openerRef.current?.isConnected) { event.preventDefault(); openerRef.current.focus(); } }}
       description={mode === "setup" ? parent ? "I’ll refine your draft." : "I’ll suggest what your lesson needs next." : "Saved in AI results."} widthClassName="w-full max-w-[720px]">
       <div className="space-y-6">
-        {error && <p role="alert" className="rounded-xl border border-[var(--admin-error)] p-4 text-sm">{error}</p>}
+        {error && <p role="alert" className="rounded-xl border border-[var(--ui-danger)] p-4 text-sm">{error}</p>}
         {mode === "result" && <button className="text-sm font-bold underline" onClick={() => { setMode("list"); void run(loadList); }} type="button">All results</button>}
         {mode === "setup" && <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); void quote(); }}>
-          {!parent && <details className="rounded-xl border border-[var(--admin-border-warm)] p-4">
+          {!parent && <details className="rounded-xl border border-[var(--ui-border-subtle)] p-4">
             <summary className="cursor-pointer text-sm font-bold">Add direction (optional)</summary>
             <label className="mt-4 block text-sm font-bold">Anything to keep in mind?<textarea className={aiField} disabled={busy} maxLength={1000} rows={3} placeholder="For example, use an everyday situation." value={focus} onChange={(e) => { setFocus(e.target.value); setResult(null); }} /></label>
           </details>}
           {parent?.candidate && <label className="block text-sm font-bold">What would you like to change?<textarea className={aiField} disabled={busy} maxLength={1000} rows={3} value={refinement} onChange={(e) => { setRefinement(e.target.value); setResult(null); }} /></label>}
-          {result ? <div className="space-y-4 rounded-2xl bg-[var(--admin-surface-container-low)] p-5">
+          {result ? <div className="space-y-4 rounded-2xl bg-[var(--ui-surface-soft)] p-5">
             <div className="space-y-1">
-              {result.metered && <p className="text-sm text-[var(--admin-on-surface-variant)]">Includes the recommendation, even if no page is needed.</p>}
+              {result.metered && <p className="text-sm text-[var(--ui-text-muted)]">Includes the recommendation, even if no page is needed.</p>}
             </div>
-            <details className="text-sm text-[var(--admin-on-surface-variant)]">
+            <details className="text-sm text-[var(--ui-text-muted)]">
               <summary className="cursor-pointer font-semibold">Cost details</summary>
               <div className="mt-3 space-y-2 leading-6">
                 <p>Includes the recommendation and any page draft. Images are added separately.</p>
@@ -154,10 +154,10 @@ export function AiPageAuthoring({ lessonId, courseId, enabled = false, initialRe
         </form>}
         {mode === "list" && <>
           <p className="text-sm leading-6">Return to a suggestion or draft, or continue work you left running.</p>
-          {listState === "error" && <p role="alert" className="rounded-xl border border-[var(--admin-error)] p-4 text-sm">Your saved results could not be loaded. Try refreshing the list.</p>}
+          {listState === "error" && <p role="alert" className="rounded-xl border border-[var(--ui-danger)] p-4 text-sm">Your saved results could not be loaded. Try refreshing the list.</p>}
           {listState === "loading" && <p role="status" className="text-sm">Loading your saved results…</p>}
-          {listState === "ready" && !results.items.length && <p className="rounded-2xl bg-[var(--admin-surface-container-low)] p-6 text-sm">No results yet. Suggestions and drafts will appear here.</p>}
-          <ul className="space-y-3">{results.items.map((r) => <li key={r.id}><button data-result-id={r.id} className="w-full rounded-2xl border border-[var(--admin-border-warm)] p-4 text-left hover:border-[var(--admin-primary)]" onClick={() => { setResult(r); setSelectedId(r.id); setMode("result"); }} type="button">
+          {listState === "ready" && !results.items.length && <p className="rounded-2xl bg-[var(--ui-surface-soft)] p-6 text-sm">No results yet. Suggestions and drafts will appear here.</p>}
+          <ul className="space-y-3">{results.items.map((r) => <li key={r.id}><button data-result-id={r.id} className="w-full rounded-2xl border border-[var(--ui-border-subtle)] p-4 text-left hover:border-[var(--ui-action)]" onClick={() => { setResult(r); setSelectedId(r.id); setMode("result"); }} type="button">
             <p className="font-bold">{r.title}</p><p className="mt-2 text-sm">{r.kind === "image" ? "Image" : r.kind === "course_outline" ? "Course outline" : r.kind === "course_draft" ? "Course draft" : r.kind === "quiz" ? "Quiz" : r.kind === "lesson_plan" ? "Lesson suggestion" : r.kind === "lesson_draft" ? "Lesson draft" : "Page"} · {resultLabel(r)} · {new Date(r.createdAt).toLocaleDateString()}</p>
           </button></li>)}</ul>
           <div className="flex gap-3"><button className={aiButton} disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))} type="button">Previous</button><button className={aiButton} disabled={results.items.length < 20} onClick={() => setOffset(offset + 20)} type="button">Next</button><button className={aiButton} onClick={() => { void run(loadList); }} type="button">Refresh results</button></div>

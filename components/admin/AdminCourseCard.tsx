@@ -7,12 +7,12 @@ import type { CourseIndexCourse } from "@/components/admin/CourseIndexWorkspace"
 
 function statusPillClasses(status: string) {
   if (status === "published") {
-    return "bg-[#e6f4ea] text-[#0b5a3a]";
+    return "bg-[var(--ui-success-bg)] text-[var(--ui-success)]";
   }
   if (status === "archived") {
-    return "bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]";
+    return "bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]";
   }
-  return "bg-[var(--admin-surface-container)] text-[var(--admin-on-surface-variant)]";
+  return "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]";
 }
 
 function statusLabel(status: string) {
@@ -23,12 +23,12 @@ function statusLabel(status: string) {
 
 function scopePillClasses(scope: string) {
   if (scope === "organization_private") {
-    return "bg-[color:color-mix(in_srgb,var(--admin-accent-sky,#6fa8ff)_16%,var(--admin-surface-milk))] text-[color:color-mix(in_srgb,var(--admin-accent-sky,#6fa8ff)_65%,black)]";
+    return "bg-[color:color-mix(in_srgb,var(--ui-info)_16%,var(--ui-surface))] text-[var(--ui-info)]";
   }
   if (scope === "adapted_platform") {
-    return "bg-[var(--admin-tertiary-fixed)] text-[var(--admin-on-tertiary-fixed-variant)]";
+    return "bg-[var(--ui-warning-bg)] text-[var(--ui-warning)]";
   }
-  return "bg-[var(--admin-surface-container)] text-[var(--admin-on-surface-variant)]";
+  return "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]";
 }
 
 function scopeLabel(scope: string) {
@@ -41,9 +41,9 @@ function readiness(course: CourseIndexCourse) {
   const issueCount = (course.readiness_issues ?? []).length;
   const ready = issueCount === 0;
   return {
-    fillClass: ready ? "bg-[var(--admin-primary)]" : "bg-[var(--admin-secondary)]",
+    fillClass: ready ? "bg-[var(--ui-success)]" : "bg-[var(--ui-success)]",
     label: ready ? "Ready to publish" : `${issueCount} thing${issueCount === 1 ? "" : "s"} to finish`,
-    labelClass: ready ? "text-[var(--admin-primary)]" : "text-[var(--admin-on-surface-variant)]",
+    labelClass: ready ? "text-[var(--ui-success)]" : "text-[var(--ui-text-muted)]",
     widthPercent: ready ? 100 : Math.max(15, 100 - issueCount * 20),
   };
 }
@@ -60,7 +60,7 @@ export function AdminCourseCard({
   const courseReadiness = readiness(course);
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] shadow-[0_2px_8px_rgba(18,60,53,0.04)]">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] shadow-[0_2px_8px_rgba(var(--ui-shadow-rgb),0.04)]">
       <div
         className="relative flex h-[120px] shrink-0 items-center justify-center"
         style={{ background: thumbnailUrl ? undefined : `linear-gradient(135deg, ${coverAccent(course.id)})` }}
@@ -75,7 +75,7 @@ export function AdminCourseCard({
             style={getImagePresentationStyle(course.thumbnail as { positionX?: number | null; positionY?: number | null })}
           />
         ) : (
-          <span className="text-3xl font-black text-white/90">{course.title.charAt(0).toUpperCase()}</span>
+          <span className="text-3xl font-black text-[var(--ui-text)]">{course.title.charAt(0).toUpperCase()}</span>
         )}
       </div>
 
@@ -87,29 +87,29 @@ export function AdminCourseCard({
           <span className={cn("rounded-full px-2.5 py-[3px] text-[10px] font-extrabold uppercase tracking-[0.06em]", scopePillClasses(course.catalog_scope))}>
             {scopeLabel(course.catalog_scope)}
           </span>
-          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--admin-outline)]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ui-text-muted)]">
             {course.category || "Uncategorised"}
           </span>
         </div>
 
-        <Link className="text-lg font-extrabold leading-[1.3] text-[var(--admin-on-surface)]" href={`/admin/courses/${course.id}`}>
+        <Link className="text-lg font-extrabold leading-[1.3] text-[var(--ui-text)]" href={`/admin/courses/${course.id}`}>
           <span className="absolute inset-0" />
           {course.title}
         </Link>
 
-        <p className="text-[13px] font-semibold text-[var(--admin-on-surface-variant)]">
+        <p className="text-[13px] font-semibold text-[var(--ui-text-muted)]">
           {course.lesson_count ?? 0} lessons &middot; {course.estimated_minutes} min
         </p>
 
         <div className="mt-auto flex flex-col gap-1.5 pt-2">
-          <div className="h-[5px] w-full overflow-hidden rounded-full bg-[var(--admin-surface-container)]">
+          <div className="h-[5px] w-full overflow-hidden rounded-full bg-[var(--ui-surface-muted)]">
             <div className={cn("h-full rounded-full", courseReadiness.fillClass)} style={{ width: `${courseReadiness.widthPercent}%` }} />
           </div>
           <span className={cn("text-[11px] font-extrabold", courseReadiness.labelClass)}>{courseReadiness.label}</span>
         </div>
       </div>
 
-      {actions ? <div className="relative z-10 border-t border-[var(--admin-border-warm)] px-5 py-2.5">{actions}</div> : null}
+      {actions ? <div className="relative z-10 border-t border-[var(--ui-border-subtle)] px-5 py-2.5">{actions}</div> : null}
     </article>
   );
 }

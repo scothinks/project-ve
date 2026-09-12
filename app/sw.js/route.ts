@@ -32,8 +32,8 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title, {
       body,
       data: { url },
-      icon: "/icon",
-      badge: "/icon",
+      icon: "/brand/aperture-a2-192.png",
+      badge: "/brand/aperture-a2-badge-96.png",
     }),
   );
 });

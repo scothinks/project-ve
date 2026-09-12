@@ -6,10 +6,15 @@ export function getSafeAuthNextPath(
 ) {
   const next = Array.isArray(value) ? value[0] : value;
 
-  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+  if (!next || next.length > 2048 || !next.startsWith("/") || next.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(next)) {
     return fallback;
   }
 
+  try {
+    const decoded = decodeURIComponent(next);
+    if (decoded.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(decoded)) return fallback;
+    if (new URL(next, "https://project-ve.local").origin !== "https://project-ve.local") return fallback;
+  } catch { return fallback; }
   return next;
 }
 
@@ -42,5 +47,5 @@ export function shouldRouteAuthNextToPublicAssessment(nextPath: string) {
   const safeNextPath = getSafeAuthNextPath(nextPath);
   const nextUrl = new URL(safeNextPath, "https://project-ve.local");
 
-  return nextUrl.pathname !== "/onboarding/assessment" && !isOrganizationAuthNextPath(safeNextPath);
+  return !["/login", "/welcome/save", "/onboarding/assessment"].includes(nextUrl.pathname) && !isOrganizationAuthNextPath(safeNextPath);
 }

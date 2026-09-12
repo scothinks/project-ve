@@ -125,11 +125,11 @@ export default async function AdminLmsInterventionsPage({
       <AdminCard className="mb-5">
         <form className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
           <label>
-            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Organisation
             </span>
             <select
-              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)] disabled:opacity-60"
+              className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)] disabled:opacity-60"
               defaultValue={selectedOrganizationId || "all"}
               disabled={isOrgWorkspace}
               name={isOrgWorkspace ? undefined : "organizationId"}
@@ -146,11 +146,11 @@ export default async function AdminLmsInterventionsPage({
             ) : null}
           </label>
           <label>
-            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Programme
             </span>
             <select
-              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+              className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
               defaultValue={selectedProgrammeId || "all"}
               name="programmeId"
             >
@@ -163,11 +163,11 @@ export default async function AdminLmsInterventionsPage({
             </select>
           </label>
           <label>
-            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+            <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
               Status
             </span>
             <select
-              className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+              className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
               defaultValue={status}
               name="status"
             >
@@ -193,14 +193,14 @@ export default async function AdminLmsInterventionsPage({
             <tr key={intervention.id}>
               <td className="min-w-[230px] px-4 py-4">
                 <p className="font-black">{intervention.displayName ?? "Unnamed learner"}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{intervention.userId}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{intervention.userId}</p>
                 {intervention.cohortTitle ? (
-                  <p className="mt-2 text-xs font-bold text-[var(--ve-muted-strong)]">{intervention.cohortTitle}</p>
+                  <p className="mt-2 text-xs font-bold text-[var(--ui-text-muted)]">{intervention.cohortTitle}</p>
                 ) : null}
               </td>
               <td className="min-w-[220px] px-4 py-4">
                 <p className="font-black">{intervention.programmeTitle ?? intervention.programmeId}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   {intervention.organizationName ?? intervention.organizationId}
                 </p>
               </td>
@@ -213,14 +213,14 @@ export default async function AdminLmsInterventionsPage({
                     {interventionLabel(intervention.type)}
                   </AdminStatusBadge>
                 </div>
-                <p className="mt-2 text-sm font-semibold text-[var(--ve-muted-strong)]">{intervention.reason}</p>
+                <p className="mt-2 text-sm font-semibold text-[var(--ui-text-muted)]">{intervention.reason}</p>
               </td>
               <td className="min-w-[190px] px-4 py-4 text-sm font-bold">
                 <p>Triggered {formatRewardDate(intervention.triggeredAt)}</p>
-                <p className="mt-1 text-xs text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs text-[var(--ui-text-muted)]">
                   Due {intervention.dueAt ? formatRewardDate(intervention.dueAt) : "not set"}
                 </p>
-                <p className="mt-1 text-xs text-[var(--ve-muted)]">
+                <p className="mt-1 text-xs text-[var(--ui-text-muted)]">
                   Activity {intervention.lastActivityAt ? formatRewardDate(intervention.lastActivityAt) : "none"}
                 </p>
               </td>
@@ -234,7 +234,7 @@ export default async function AdminLmsInterventionsPage({
                   <input name="interventionId" type="hidden" value={intervention.id} />
                   <input name="redirectTo" type="hidden" value={redirectTo} />
                   <input
-                    className="h-9 min-w-[150px] rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-xs font-semibold outline-none focus:border-[var(--ve-green)]"
+                    className="h-9 min-w-[150px] rounded-[10px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 text-xs font-semibold outline-none focus:border-[var(--ui-focus)]"
                     name="note"
                     placeholder="Internal note"
                     type="text"

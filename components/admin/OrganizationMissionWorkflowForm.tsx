@@ -44,15 +44,15 @@ const missionTypeToCategory: Record<string, string> = {
 const defaultState: MissionActionState = { ok: false, message: "" };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-mission)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-mission)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function helperClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]";
 }
 
 function SubmitButton({ children }: { children: string }) {
@@ -60,7 +60,7 @@ function SubmitButton({ children }: { children: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[var(--ve-mission)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ui-mission)] px-5 py-3 text-sm font-black text-[var(--ui-on-mission)] disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -76,8 +76,8 @@ function ActionNotice({ state }: { state: MissionActionState }) {
     <div
       className={
         state.ok
-          ? "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]"
-          : "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]"
+          ? "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ui-action)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-action)]"
+          : "rounded-[14px] border border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-danger)]"
       }
     >
       {state.message}
@@ -231,7 +231,7 @@ function ValidationFields({
           <div className="mt-2 grid gap-3 md:grid-cols-3">
             {["image", "video", "text", "link", "location"].map((field) => (
               <label
-                className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black"
+                className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black"
                 key={field}
               >
                 <input defaultChecked={field === "text"} name="requiredFields" type="checkbox" value={field} />
@@ -240,7 +240,7 @@ function ValidationFields({
             ))}
           </div>
         </div>
-        <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black">
+        <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black">
           <input name="requiresManualReview" type="checkbox" />
           <span>Requires manual review before awarding points</span>
         </label>
@@ -287,7 +287,7 @@ export function OrganizationMissionWorkflowForm({
       <AdminCard>
         <form action={createAction} className="space-y-5">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-mission)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-mission)]">
               Organisation-private mission
             </p>
             <h2 className="mt-2 text-xl font-black">Create from an entitled mission type</h2>
@@ -297,7 +297,7 @@ export function OrganizationMissionWorkflowForm({
           </div>
 
           {availableMissionTypes.length === 0 ? (
-            <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--ve-danger)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]">
+            <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--ui-danger)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-danger)]">
               This organisation does not have any mission type entitlements.
             </div>
           ) : (
@@ -367,23 +367,23 @@ export function OrganizationMissionWorkflowForm({
                   <input className={fieldClasses()} defaultValue={0} name="sortOrder" type="number" />
                 </label>
               </div>
-              <div className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+              <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
                 <p className={labelClasses()}>Delivery</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-bold">
+                  <label className="flex gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-bold">
                     <input defaultChecked name="deliveryScope" type="radio" value="catalog_only" />
                     <span>
                       <span className="block font-black">Catalogue only</span>
-                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                         Keep this mission available for programmes without showing it directly to learners.
                       </span>
                     </span>
                   </label>
-                  <label className="flex gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-bold">
+                  <label className="flex gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-bold">
                     <input name="deliveryScope" type="radio" value="organization" />
                     <span>
                       <span className="block font-black">All organisation learners</span>
-                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                         Deliver this mission to active members of the organisation.
                       </span>
                     </span>
@@ -402,7 +402,7 @@ export function OrganizationMissionWorkflowForm({
       <AdminCard>
         <form action={adaptAction} className="space-y-5">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-mission)]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-mission)]">
               Adapt Project Ve mission
             </p>
             <h2 className="mt-2 text-xl font-black">Keep the handler, localise the wording</h2>
@@ -430,20 +430,20 @@ export function OrganizationMissionWorkflowForm({
             <textarea className={`${fieldClasses()} min-h-24 resize-none`} maxLength={500} name="description" />
           </label>
           <PresentationFields prefix="Adapted mission" />
-          <div className="rounded-[14px] bg-[var(--ve-panel)] p-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          <div className="rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Adapted missions are saved as drafts. Publish from the mission list after reviewing entitlement and programme use.
           </div>
           <ActionNotice state={adaptState} />
           <SubmitButton>Adapt platform mission</SubmitButton>
         </form>
 
-        <div className="mt-5 space-y-2 border-t border-[var(--ve-line-soft)] pt-5">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Available platform missions</p>
+        <div className="mt-5 space-y-2 border-t border-[var(--ui-border-subtle)] pt-5">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Available platform missions</p>
           {platformMissions.slice(0, 6).map((mission) => (
-            <div className="flex items-start justify-between gap-3 rounded-[12px] bg-[var(--ve-shell)] px-3 py-2 text-xs" key={mission.id}>
+            <div className="flex items-start justify-between gap-3 rounded-[12px] bg-[var(--ui-chrome)] px-3 py-2 text-xs" key={mission.id}>
               <div>
                 <p className="font-black">{mission.title}</p>
-                <p className="mt-1 font-semibold text-[var(--ve-muted)]">{mission.mission_type_key}</p>
+                <p className="mt-1 font-semibold text-[var(--ui-text-muted)]">{mission.mission_type_key}</p>
               </div>
               <AdminStatusBadge tone={mission.status === "published" ? "good" : "warning"}>
                 {mission.status}

@@ -56,18 +56,18 @@ export default async function AdminCohortsPage({
           {cohorts.map((cohort) => (
             <tr key={cohort.id}>
               <td className="min-w-[260px] px-4 py-4">
-                <Link className="font-black hover:text-[var(--ve-green)]" href={`/admin/cohorts/${cohort.id}`}>
+                <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/cohorts/${cohort.id}`}>
                   {cohort.title}
                 </Link>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{cohort.slug}</p>
-                <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{cohort.slug}</p>
+                <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   {cohort.description || "No description set."}
                 </p>
               </td>
               <td className="whitespace-nowrap px-4 py-4 font-bold">
                 {cohort.organization?.name ?? cohort.organization_id}
               </td>
-              <td className="min-w-[180px] px-4 py-4 text-xs font-bold text-[var(--ve-muted-strong)]">
+              <td className="min-w-[180px] px-4 py-4 text-xs font-bold text-[var(--ui-text-muted)]">
                 {cohort.units && cohort.units.length > 0
                   ? cohort.units.map((unit) => unit.name).join(", ")
                   : "No unit"}

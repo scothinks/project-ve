@@ -10,10 +10,10 @@ type StatusBadgeProps = {
 };
 
 const tones: Record<Tone, string> = {
-  trust: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
-  mission: "bg-[var(--ve-mission-soft)] text-[#c94f2e]",
-  store: "bg-[color:color-mix(in_srgb,var(--ve-store-soft)_84%,var(--ve-card))] text-[color:color-mix(in_srgb,var(--ve-store)_72%,var(--foreground))]",
-  neutral: "bg-[var(--ve-card-muted)] text-[var(--ve-muted-strong)]",
+  trust: "bg-[var(--ui-success-bg)] text-[var(--ui-success)]",
+  mission: "bg-[var(--ui-mission-bg)] text-[var(--ui-danger)]",
+  store: "bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_84%,var(--ui-surface))] text-[var(--ui-reward)]",
+  neutral: "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]",
 };
 
 export function StatusBadge({ children, className, tone = "trust" }: StatusBadgeProps) {

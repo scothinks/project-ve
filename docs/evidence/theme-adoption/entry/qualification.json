@@ -1,0 +1,164 @@
+{
+  "sourceSha256": "28bb191674462569c21e93347414f5567bef4fbcce5bf379cca346f39b79482d",
+  "baseCommit": "59ea597af00e0f6a53f3018f18292d410f1be59e",
+  "buildId": "oxcJLvjD9hgnuqzwBtOlQ",
+  "node": "22.17.1",
+  "status": "Local qualification passed; hosted checks are recorded on PR 111.",
+  "unitTests": 297,
+  "guardrails": 45,
+  "databaseAssertions": 1463,
+  "browserTestsPassingAcrossAffectedReruns": 53,
+  "browserTests": [
+    "tests/e2e/admin-workspace-release.spec.ts \u203a Phase 1 admin workspace release coverage \u203a gives catalog managers the dedicated Catalog Staff workflow",
+    "tests/e2e/admin-workspace-release.spec.ts \u203a Phase 1 admin workspace release coverage \u203a keeps organization administration scoped to its People workspace",
+    "tests/e2e/admin-workspace-release.spec.ts \u203a Phase 1 admin workspace release coverage \u203a renders the redesigned platform attention dashboard",
+    "tests/e2e/ai-assistance-authoring.spec.ts \u203a a lesson without a quiz can add its first reviewed AI question",
+    "tests/e2e/ai-assistance-authoring.spec.ts \u203a lesson suggestions quote drafting separately, retain refinements and add a reviewable draft",
+    "tests/e2e/ai-assistance-authoring.spec.ts \u203a quiz assistance preserves manual drafts, selects questions and recovers a lost save response",
+    "tests/e2e/ai-authoring-release.spec.ts \u203a silent worker shows a timed delay; keyboard cancellation releases unstarted work on mobile",
+    "tests/e2e/ai-course-authoring.spec.ts \u203a editable outline, separate quote, explicit course save, review and publish",
+    "tests/e2e/ai-course-authoring.spec.ts \u203a partial course recovery keeps completed lessons and retries only unfinished work",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a a complete idea needs no redundant guidance question and keeps the supplied learners",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a adaptive guidance uses supplied context and late answers cannot replace an author correction",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a metered price changes require a new click; double clicks and a lost Start keep one intent",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a plan-unavailable entry explains the reason and preserves manual creation",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a reopened expired requests refresh without starting and can return to an editable brief",
+    "tests/e2e/ai-course-discovery.spec.ts \u203a uncertain authors shape an idea and learners; complete briefs take the direct path",
+    "tests/e2e/ai-image-authoring.spec.ts \u203a contextual image styles, retained preview and explicit use survive navigation",
+    "tests/e2e/ai-legacy-cutover.spec.ts \u203a legacy media maps in context, keeps published content and reviews without a seed batch",
+    "tests/e2e/ai-page-authoring.spec.ts \u203a assistant can suggest reviewing the quiz without adding a page",
+    "tests/e2e/ai-page-authoring.spec.ts \u203a page generation retains candidates, recovers navigation and saves once",
+    "tests/e2e/ai-page-authoring.spec.ts \u203a ready results recover a lost save response and retain failed refinements",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a a browser-supplied verified-auth marker cannot bypass middleware",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a contextual referral-link actions require a real authenticated session",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a next returns an authenticated learner to protected learner routes",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a organisation discovery, invitations and auth callbacks remain public entry routes",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a protected lesson redirects preserve referral parameters for auth return",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a signed-in learner still receives learner navigation on public information pages",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a signed-out informational pages use the public shell",
+    "tests/e2e/auth-route-boundary.spec.ts \u203a public shell and authenticated learner route boundary \u203a signed-out learner destinations redirect to login with a safe next path",
+    "tests/e2e/identity-release.spec.ts \u203a identity assets, two-tenant switching and narrow fallback presentation qualify on the built app",
+    "tests/e2e/identity-typography.spec.ts \u203a organisation entry loads the real display italic only on its expressive route",
+    "tests/e2e/learning-card-read-models.spec.ts \u203a screen-specific learning card read models \u203a Dashboard and Courses render from the shared focused card model",
+    "tests/e2e/lesson-preview.spec.ts \u203a editor moves from saved pages to quiz setup and previews every layout and question type without learner writes",
+    "tests/e2e/lesson-publication.spec.ts \u203a editor publishes saved drafts, reverts changes and rejects stale tabs",
+    "tests/e2e/media-library.spec.ts \u203a org uploads are private and only permitted platform stock is reusable",
+    "tests/e2e/media-picker-navigation.spec.ts \u203a media picker drawer retains the editor and reopens cleanly",
+    "tests/e2e/media-release.spec.ts \u203a real audio/video play and seek in 16:9 frames; revocation renders unavailable states without blocking lesson",
+    "tests/e2e/media-release.spec.ts \u203a replacement preserves bytes and rights in catalog workspace",
+    "tests/e2e/media-release.spec.ts \u203a replacement preserves bytes and rights in org workspace",
+    "tests/e2e/organization-missions.spec.ts \u203a organization mission browser acceptance \u203a renders organisation-wide, programme, and manual referral mission journeys",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a admin CMS workspace covers current creation, authoring, review, remix, and AI entry routes",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a admin can use the course status workflow for owned fixture content",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a institutional LMS journey covers memberships, assignment, completion, reporting, and tenant denial",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a learner can create an account through the real signup flow",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a learner completes a lesson page and earns quiz XP through supported APIs",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a learner redeems a reward and sees it in history",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a password login stays reachable",
+    "tests/e2e/remediation-flows.spec.ts \u203a remediation browser flows \u203a self-service Starter owner can manage org setup and create only five lessons",
+    "tests/e2e/theme-adoption.spec.ts \u203a theme baseline covers public, learner, platform and organization scopes with portals",
+    "tests/e2e/welcome-entry.spec.ts \u203a account switch, recovery and organisation destination at 1440px",
+    "tests/e2e/welcome-entry.spec.ts \u203a account switch, recovery and organisation destination at 320px",
+    "tests/e2e/welcome-entry.spec.ts \u203a account switch, recovery and organisation destination at 390px",
+    "tests/e2e/welcome-entry.spec.ts \u203a session-only login and password recovery retain the organisation destination",
+    "tests/e2e/welcome-entry.spec.ts \u203a welcome lesson, server-graded quiz, signup and one-time ledger saving reach real rewards"
+  ],
+  "artifacts": [
+    {
+      "path": "welcome-1440-light.png",
+      "sha256": "2c52ca37f55043583f3ab107f5b9a8ed7ab7dc89c2556dda5e4cace122987b70"
+    },
+    {
+      "path": "welcome-1440-light.evidence.json",
+      "sha256": "a0623234ed38fd22fa5ec0a3149dbe141a1fecd19226e4abf29ef017dac77dd6"
+    },
+    {
+      "path": "welcome-1440-light.contrast.json",
+      "sha256": "244d77a969a251f96bcdccf5c9426f4b790139f83cd28ea68825c37503cf0d6e"
+    },
+    {
+      "path": "welcome-390-light.png",
+      "sha256": "34d7a21f305568d4abda398378b00236f90cc545b7661d207a50b00f75155bc7"
+    },
+    {
+      "path": "welcome-390-light.evidence.json",
+      "sha256": "657715abdb69cb84a41bad291fddbf09d8f49f7851d408105f1e454e19e6fffb"
+    },
+    {
+      "path": "welcome-390-light.contrast.json",
+      "sha256": "3d988ac8afc32bcddd99076c24e0c32ed63543bd4927c71a96915ede33a74ef4"
+    },
+    {
+      "path": "welcome-1440-dark.png",
+      "sha256": "4e35b9ea98671c7b4a3aae08bbf15e355680ba4d86b4d7f9e3b83896fafe6c92"
+    },
+    {
+      "path": "welcome-1440-dark.evidence.json",
+      "sha256": "de1b827a0e1e35cb81fb0cd911fa57cdafcea3d45d64bc0c29af82ec54748bb3"
+    },
+    {
+      "path": "welcome-1440-dark.contrast.json",
+      "sha256": "74e4a2bba47793b589809f1d14040b3c617b81651a3d49fb6efc29eb75eaec49"
+    },
+    {
+      "path": "login-focus-1440-light.png",
+      "sha256": "585415fb973bc15822ea36c3bde6dbcacc0ca8ff4c0e3946b8d86d3dc5eeb204"
+    },
+    {
+      "path": "login-focus-1440-light.evidence.json",
+      "sha256": "9f7a5adb05e967bab25a1e221e493048288716c250d1b38ae0a66b577ed2f0b6"
+    },
+    {
+      "path": "login-focus-1440-light.contrast.json",
+      "sha256": "2b0ad9a978903237416e2b7e05524cb2518643b07b5a82c95091dcd447aa69f1"
+    },
+    {
+      "path": "login-focus-390-light.png",
+      "sha256": "47d264f4343f669be640b9bb7b171a3048ebc59c6ca61dbf64cafbf70cff1723"
+    },
+    {
+      "path": "login-focus-390-light.evidence.json",
+      "sha256": "f65b3b5421e1a3917291de07e98dc92f46fd5b48a32e7a4ec21570b328f45412"
+    },
+    {
+      "path": "login-focus-390-light.contrast.json",
+      "sha256": "f9d69110a97aa3e1059b7eaa06438f0f52acc0f2a69452615dbfe764679ca903"
+    },
+    {
+      "path": "login-focus-320-dark.png",
+      "sha256": "46785105b49875a76865a1adbfca5b1486cf493cc65a826bde972e80e70707ba"
+    },
+    {
+      "path": "login-focus-320-dark.evidence.json",
+      "sha256": "033601bfea4bde29013cb4a5063e02d622f86fe5aa31b94ce111f0a29b4c68e5"
+    },
+    {
+      "path": "login-focus-320-dark.contrast.json",
+      "sha256": "ef716b7f9ba8537051cf8409c6e00dd46df2cd3805d2e77f2ecdea008c19224e"
+    },
+    {
+      "path": "ci.log.gz",
+      "sha256": "1116cc3e7087e9823b93b87d766b4023eb5e1ac0961d7a559d98945574b25a32"
+    },
+    {
+      "path": "database.log.gz",
+      "sha256": "c474034275d503852ac077d4a41764ac26d46467e5a665e9fab4f124bc002fd4"
+    },
+    {
+      "path": "browser-initial.log.gz",
+      "sha256": "282ed9ec9aa575729cf7f6cfd194cb3dfd148175f213e5b2b989c34eb782c54d"
+    },
+    {
+      "path": "browser-affected.log.gz",
+      "sha256": "c721c5b6d158bb2ef1c66928ea3aad20ffb052dee199ff7c8e6625a87d769b1e"
+    },
+    {
+      "path": "browser-final.log.gz",
+      "sha256": "1418f49a84021228e69412e8be4ef11dd7e5bc190129298222e5baf1fb8e5b0b"
+    },
+    {
+      "path": "generated-css.log.gz",
+      "sha256": "fba1357ab0c5de2aefa8e4af6967baafe97bf85b39499e6a9f1dc339a9a4554c"
+    }
+  ]
+}

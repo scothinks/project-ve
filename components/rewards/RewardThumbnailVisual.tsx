@@ -97,14 +97,14 @@ export function RewardThumbnailVisual({
     >
       {iconName ? (
         <TablerRewardIcon
-          className={cn("h-[55%] w-[55%] text-[var(--ve-green)]", iconClassName)}
+          className={cn("h-[55%] w-[55%] text-[var(--ui-artwork-ink)]", iconClassName)}
           name={iconName}
           stroke={1.9}
           style={accentColor ? { color: accentColor } : undefined}
         />
       ) : (
         <span
-          className={cn("text-[11px] font-black text-[var(--ve-green)]", textClassName)}
+          className={cn("text-[11px] font-black text-[var(--ui-artwork-ink)]", textClassName)}
           style={accentColor ? { color: accentColor } : undefined}
         >
           {fallbackText}

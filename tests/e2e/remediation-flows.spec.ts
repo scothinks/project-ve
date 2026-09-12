@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { captureIdentityStates } from "../support/theme-adoption/states";
 
 const authCredential = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
 const runId = randomUUID().slice(0, 8);
@@ -401,6 +402,18 @@ async function seedContent() {
     }),
     "seed lesson content block",
   );
+
+  if (process.env.THEME_EVIDENCE_DIR) {
+    // Two pages create a real partially-read library item before completion.
+    await assertNoError(await supabase.from("lesson_pages").insert({
+      id: `${pageId}-second`, lesson_id: lessonId, page_number: 2,
+      title: "Finish the supported reading", page_type: "summary", cover_image: null,
+    }), "seed second qualification page");
+    await assertNoError(await supabase.from("lesson_content_blocks").insert({
+      page_id: `${pageId}-second`, block_type: "text", sort_order: 1,
+      payload: { body: "Finish the reading, then check your understanding." },
+    }), "seed second qualification page content");
+  }
 
   await assertNoError(
     await supabase.from("quizzes").insert({
@@ -812,9 +825,9 @@ async function seedInstitutionalContent(organizationId: string) {
 
 async function signIn(page: Page, email: string, expectedUrl: RegExp = /\/dashboard$/) {
   await page.goto("/login");
-  await page.getByPlaceholder("Enter Email Address").fill(email);
-  await page.getByPlaceholder("Enter Password").fill(authCredential);
-  await page.getByRole("button", { name: "Login" }).click();
+  await page.getByLabel("Email address", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(authCredential);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(expectedUrl, { timeout: 60_000 });
 }
 
@@ -914,10 +927,11 @@ test.describe.serial("remediation browser flows", () => {
 
   test("learner can create an account through the real signup flow", async ({ page }) => {
     await page.goto("/login");
-    await page.getByRole("button", { name: "Sign up" }).click();
-    await page.getByPlaceholder("Enter Full Name").fill(signupName);
-    await page.getByPlaceholder("Enter Email Address").fill(signupEmail);
-    await page.getByPlaceholder("Enter Password").fill(authCredential);
+    await page.getByRole("button", { name: "Create an account", exact: true }).click();
+    await expect(page.locator(".auth-form-wrap")).toHaveAttribute("aria-busy", "false");
+    await page.getByLabel("Full name", { exact: true }).fill(signupName);
+    await page.getByLabel("Email address", { exact: true }).fill(signupEmail);
+    await page.getByLabel("Password", { exact: true }).fill(authCredential);
     await page.getByLabel(/I agree to the Terms/).check();
 
     const signupResponsePromise = page.waitForResponse(
@@ -926,7 +940,7 @@ test.describe.serial("remediation browser flows", () => {
         response.request().method() === "POST",
     );
 
-    await page.getByRole("button", { name: "Create Account" }).click();
+    await page.getByRole("button", { name: "Create account", exact: true }).click();
     const signupResponse = await signupResponsePromise;
 
     expect(signupResponse.status()).toBe(200);
@@ -1196,6 +1210,7 @@ test.describe.serial("remediation browser flows", () => {
   });
 
   test("learner completes a lesson page and earns quiz XP through supported APIs", async ({ page }) => {
+    test.setTimeout(180_000);
     await signIn(page, learnerEmail);
 
     const progressResponse = page.waitForResponse(
@@ -1206,6 +1221,19 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByText("This page lets the E2E suite exercise normal lesson progress.")).toBeVisible();
     await progressResponse;
 
+    if (process.env.THEME_EVIDENCE_DIR) {
+      await page.goto('/dashboard');
+      await expect(page.locator('.dashboard-hero-card').first()).toBeVisible();
+      await captureIdentityStates(page, 'learning-current-dashboard');
+      await page.goto('/courses');
+      await expect(page.locator('.learning-current').first()).toBeVisible();
+      await captureIdentityStates(page, 'learning-current-library');
+      const lastPageProgress = page.waitForResponse(response => response.url().includes('/api/lesson-progress') && response.status() === 200);
+      await page.goto(`/lessons/${lessonId}?page=2`);
+      await expect(page.getByText('Finish the reading, then check your understanding.')).toBeVisible();
+      await lastPageProgress;
+    }
+
     await page.getByRole("link", { name: "Take Quiz" }).click();
     await expect(page).toHaveURL(new RegExp(`/quiz/${lessonId}$`));
     await expect(page.getByText(questionPrompt)).toBeVisible();
@@ -1215,6 +1243,12 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page).toHaveURL(new RegExp(`/results/${lessonId}$`));
     await expect(page.getByRole("heading", { name: "You earned 5 XP" })).toBeVisible();
     await expect(page.getByText("No missed questions")).toBeVisible();
+    await captureIdentityStates(page, 'learner-result-completed');
+    if (process.env.THEME_EVIDENCE_DIR) {
+      await page.goto('/courses');
+      await expect(page.locator('.learning-current')).toHaveCount(0);
+      await captureIdentityStates(page, 'learning-completed-library');
+    }
   });
 
   test("learner redeems a reward and sees it in history", async ({ page }) => {
@@ -1506,8 +1540,9 @@ test.describe.serial("remediation browser flows", () => {
         .eq("lesson_id", duplicatedLessons[0].id),
       "load duplicated pages",
     );
-    expect(duplicatedPages).toHaveLength(1);
-    expect(duplicatedPages[0].id).not.toBe(pageId);
+    const sourcePageIds = process.env.THEME_EVIDENCE_DIR ? [pageId, `${pageId}-second`] : [pageId];
+    expect(duplicatedPages).toHaveLength(sourcePageIds.length);
+    for (const duplicatedPage of duplicatedPages) expect(sourcePageIds).not.toContain(duplicatedPage.id);
 
     await page.goto("/admin/courses/ai/brief");
     await expect(page.getByRole("heading", { name: "Good courses start with a little help" })).toBeVisible();
@@ -1534,7 +1569,7 @@ test.describe.serial("remediation browser flows", () => {
   });
 
   test("institutional LMS journey covers memberships, assignment, completion, reporting, and tenant denial", async ({ page }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(process.env.THEME_EVIDENCE_DIR ? 360_000 : 180_000);
 
     if (!programmeManager || !reportViewer || !institutionalLearner || !programmeOnlyLearner || !outsider) {
       throw new Error("Institutional E2E users were not seeded.");
@@ -1896,6 +1931,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(sharedCourseLinks).toHaveCount(2);
     await expect(sharedCourseLinks.filter({ hasText: institutionalProgrammeTitle })).toBeVisible();
     await expect(sharedCourseLinks.filter({ hasText: institutionalSecondProgrammeTitle })).toBeVisible();
+    await captureIdentityStates(page, 'two-programme-deliveries');
     await sharedCourseLinks.filter({ hasText: institutionalProgrammeTitle }).click();
     await expect(page).toHaveURL(new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}\\?programmeId=${programme?.id}$`));
     await expect(page.getByRole("heading", { name: institutionalCourseTitle }).first()).toBeVisible();
@@ -1923,6 +1959,7 @@ test.describe.serial("remediation browser flows", () => {
       new RegExp(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}/results/${institutionalLessonId}(\\?programmeId=[^&]+)?$`),
     );
     await expect(page.getByText("You earned 5 Police Points")).toBeVisible();
+    await captureIdentityStates(page, 'tenant-points-completed');
     const scopedQuizTransaction = await assertNoError(
       await supabase
         .from("xp_transactions")
@@ -1955,7 +1992,7 @@ test.describe.serial("remediation browser flows", () => {
     await expect(page.getByRole("heading", { name: institutionalNotificationTitle })).toBeVisible();
     await expect(page.getByRole("heading", { name: institutionalGlobalNotificationTitle })).toHaveCount(0);
     await page.goto(`/o/${institutionalOrgSlug}`);
-    await page.getByRole("link", { name: "Project Ve", exact: true }).click();
+    await page.getByRole("link", { name: "Learning on Project VE", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
     await page.goto(`/o/${institutionalOrgSlug}/learn/${institutionalCourseId}?programmeId=${programme?.id}`);

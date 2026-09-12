@@ -60,11 +60,11 @@ type RewardEditorFormProps = {
 const fieldTypes = ["text", "tel", "email", "textarea", "select"] as const;
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -72,7 +72,7 @@ function SubmitButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+      className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)] disabled:opacity-60"
       disabled={pending}
       type="submit"
     >
@@ -292,7 +292,7 @@ export function RewardEditorForm({
           <span className={labelClasses()}>Name</span>
           <input className={fieldClasses()} maxLength={140} name="title" required defaultValue={reward.title} />
           {mode === "create" ? (
-            <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+            <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
               Reward ID is generated automatically from the name.
             </span>
           ) : null}
@@ -393,10 +393,10 @@ export function RewardEditorForm({
           </select>
         </label>
         ) : (
-          <div className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3">
+          <div className="rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3">
             <span className={labelClasses()}>Fulfillment</span>
-            <p className="mt-2 text-sm font-black text-[var(--foreground)]">Prize pool wrapper</p>
-            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-sm font-black text-[var(--ui-text)]">Prize pool wrapper</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Learners redeem this item to reveal a prize. The actual won reward keeps its own fulfillment type.
             </p>
             <input name="fulfillmentType" type="hidden" value="manual" />
@@ -422,8 +422,8 @@ export function RewardEditorForm({
         </label>
       </div>
 
-      <div className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3">
-        <p className="text-sm font-black text-[var(--foreground)]">
+      <div className="rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3">
+        <p className="text-sm font-black text-[var(--ui-text)]">
           {visibilityMode === "store"
             ? "Learners can discover and redeem this reward in the XP Store."
             : visibilityMode === "system_only"
@@ -434,9 +434,9 @@ export function RewardEditorForm({
         </p>
       </div>
 
-      <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+      <section className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
         <h2 className="text-sm font-black">Programme ownership</h2>
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Controls whether programmes can attach this reward for missions and engagement.
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -494,7 +494,7 @@ export function RewardEditorForm({
         </div>
 
         {ownerScope === "platform_owned" ? (
-          <label className="mt-4 flex items-start gap-3 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
+          <label className="mt-4 flex items-start gap-3 rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-sm font-black">
             <input
               checked={sharedWithProgrammes}
               className="mt-1"
@@ -504,7 +504,7 @@ export function RewardEditorForm({
             />
             <span>
               Share with programmes
-              <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <span className="block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Allows selected programmes to attach this Project VE reward.
               </span>
             </span>
@@ -531,10 +531,10 @@ export function RewardEditorForm({
         </label>
         {limitPeriod === "none" ? (
           <>
-            <div className="rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3">
+            <div className="rounded-[12px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3">
               <span className={labelClasses()}>Per-user limit</span>
-              <p className="mt-2 text-sm font-black text-[var(--foreground)]">No per-user limit</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-2 text-sm font-black text-[var(--ui-text)]">No per-user limit</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Anyone with enough XP can redeem this reward whenever stock and campaign rules allow.
               </p>
             </div>
@@ -596,16 +596,16 @@ export function RewardEditorForm({
         />
       </label>
 
-      <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+      <section className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-black">Claim steps</h2>
-            <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
               Learners see these after redeeming.
             </p>
           </div>
           <button
-            className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black"
+            className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black"
             onClick={() => setClaimSteps((current) => [...current, ""])}
             type="button"
           >
@@ -628,7 +628,7 @@ export function RewardEditorForm({
                 value={step}
               />
               <button
-                className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
+                className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 text-xs font-black text-[var(--ui-danger)]"
                 onClick={() =>
                   setClaimSteps((current) => current.filter((_, stepIndex) => stepIndex !== index))
                 }
@@ -641,14 +641,14 @@ export function RewardEditorForm({
         </div>
       </section>
 
-      <section className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+      <section className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
         <h2 className="text-sm font-black">
           {distributionMode === "perk_bundle" ? "Perk setup" : "Fulfillment setup"}
         </h2>
         {distributionMode === "direct" && fulfillmentType === "manual" ? (
           <div className="mt-4 space-y-3">
             {fields.map((field, index) => (
-              <div className="grid gap-2 rounded-[14px] bg-[var(--ve-panel)] p-3 md:grid-cols-[1fr_1fr_8rem_5rem_auto]" key={`field-${index}`}>
+              <div className="grid gap-2 rounded-[14px] bg-[var(--ui-surface-inset)] p-3 md:grid-cols-[1fr_1fr_8rem_5rem_auto]" key={`field-${index}`}>
                 <input
                   className={fieldClasses()}
                   onChange={(event) => updateField(index, { id: event.target.value })}
@@ -695,7 +695,7 @@ export function RewardEditorForm({
                   Required
                 </label>
                 <button
-                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 text-xs font-black text-[var(--ve-danger)]"
+                  className="mt-1 rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 text-xs font-black text-[var(--ui-danger)]"
                   onClick={() => setFields((current) => current.filter((_, fieldIndex) => fieldIndex !== index))}
                   type="button"
                 >
@@ -704,7 +704,7 @@ export function RewardEditorForm({
               </div>
             ))}
             <button
-              className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black"
+              className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black"
               onClick={() =>
                 setFields((current) => [
                   ...current,
@@ -766,9 +766,9 @@ export function RewardEditorForm({
 
         {distributionMode === "perk_bundle" ? (
           <div className="mt-4 space-y-4">
-            <div className="rounded-[14px] bg-[var(--ve-panel)] p-4">
+            <div className="rounded-[14px] bg-[var(--ui-surface-inset)] p-4">
               <h3 className="text-sm font-black">Fallback prize</h3>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Used if every configured perk prize is sold out, capped, or not yet released.
               </p>
             </div>
@@ -841,7 +841,7 @@ export function RewardEditorForm({
                 </label>
               </div>
             )}
-            <p className="text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Configure the actual prize pool after saving this reward.
             </p>
           </div>
@@ -853,14 +853,14 @@ export function RewardEditorForm({
               <span className={labelClasses()}>Partner label</span>
               <input className={fieldClasses()} onChange={(event) => setPartner(event.target.value)} value={partner} />
             </label>
-            <p className="mt-2 text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold text-[var(--ui-text-muted)]">
               Codes and QR payloads are uploaded as batches from the inventory page.
             </p>
           </div>
         ) : null}
       </section>
 
-      <label className="flex items-center gap-3 rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black">
+      <label className="flex items-center gap-3 rounded-[14px] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-black">
         <input name="isEnabled" type="checkbox" defaultChecked={reward.isEnabled} />
         Enabled
       </label>
@@ -869,8 +869,8 @@ export function RewardEditorForm({
         <p
           className={`rounded-[14px] px-4 py-3 text-sm font-black ${
             state.ok
-              ? "bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] text-[var(--ve-green)]"
-              : "bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] text-[var(--ve-danger)]"
+              ? "bg-[color:color-mix(in_srgb,var(--ui-surface-soft)_78%,var(--ui-surface))] text-[var(--ui-text)]"
+              : "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]"
           }`}
         >
           {state.message}

@@ -18,15 +18,15 @@ export default async function TermsPage() {
 
   return (
     <PublicInfoShell title="Terms">
-      <article className="lg:rounded-[24px] lg:border lg:border-[var(--ve-line-soft)] lg:bg-[var(--ve-card)] lg:p-8 lg:shadow-sm">
-        <header className="border-b border-[var(--ve-line-soft)] pb-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-green)]">Legal</p>
+      <article className="lg:rounded-[24px] lg:border lg:border-[var(--ui-border-subtle)] lg:bg-[var(--ui-surface)] lg:p-8 lg:shadow-sm">
+        <header className="border-b border-[var(--ui-border-subtle)] pb-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-text)]">Legal</p>
           <h1 className="mt-2 text-3xl font-black leading-9 lg:text-4xl lg:leading-[1.1]">{page.title}</h1>
           {page.subtitle ? (
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">{page.subtitle}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">{page.subtitle}</p>
           ) : null}
           {page.updatedAt ? (
-            <p className="mt-3 text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="mt-3 text-xs font-semibold text-[var(--ui-text-muted)]">
               Last updated:{" "}
               <time dateTime={page.updatedAt}>{formatUpdatedAt(page.updatedAt)}</time>
             </p>
@@ -35,7 +35,7 @@ export default async function TermsPage() {
 
         <div className="mt-5 space-y-4">
           {paragraphs.map((paragraph, index) => (
-            <p className="text-sm font-semibold leading-7 text-[var(--ve-muted-strong)]" key={`terms-paragraph-${index}`}>
+            <p className="text-sm font-semibold leading-7 text-[var(--ui-text-muted)]" key={`terms-paragraph-${index}`}>
               {paragraph}
             </p>
           ))}

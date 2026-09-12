@@ -1,0 +1,109 @@
+token,disposition,removal_gate,owner,target_or_classification,reference_count,reference_file_count
+--admin-accent-sky,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,4,3
+--admin-accent-violet,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,9,6
+--admin-border-warm,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-border-subtle,296,59
+--admin-brand-hero,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,brand action or ordinary heading ink: classify each use,17,17
+--admin-error,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-danger,42,20
+--admin-error-container,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-danger-soft,17,12
+--admin-ink-charcoal,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text,19,10
+--admin-on-error-container,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-on-danger-soft,10,8
+--admin-on-primary,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,40,22
+--admin-on-primary-container,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--admin-on-secondary-container,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,warning / danger / editorial support / reward: classify each use and pair,1,1
+--admin-on-secondary-fixed,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--admin-on-surface,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text,134,43
+--admin-on-surface-variant,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text-muted,290,57
+--admin-on-tertiary-fixed-variant,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,7,6
+--admin-outline,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,border / secondary icon-text: classify each use,27,14
+--admin-primary,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,191,49
+--admin-primary-container,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,74,20
+--admin-primary-fixed,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,5,3
+--admin-secondary,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,warning / danger / editorial support / reward: classify each use and pair,35,15
+--admin-secondary-container,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--admin-secondary-fixed,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,warning / danger / editorial support / reward: classify each use and pair,3,1
+--admin-surface,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-inset,24,12
+--admin-surface-container,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-muted,5,3
+--admin-surface-container-high,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-raised,13,9
+--admin-surface-container-highest,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--admin-surface-container-low,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-soft,117,46
+--admin-surface-milk,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface,158,48
+--admin-tertiary,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,5,2
+--admin-tertiary-container,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--admin-tertiary-fixed,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,7,6
+--background,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-canvas,5,3
+--font-geist,DIRECT_REWRITE_NO_ADAPTER,G3,B3 implementer,--ui-font-body; next/font definition is the terminal font-family source,3,2
+--foreground,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text,181,64
+--learner-atmosphere-mint,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--learner-atmosphere-warm,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--learner-attention,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,warning / danger / editorial support / reward: classify each use and pair,8,4
+--learner-attention-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,warning / danger / editorial support / reward: classify each use and pair,6,3
+--learner-background-base,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-canvas,8,1
+--learner-background-cream,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-surface-soft,10,4
+--learner-background-desktop,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-canvas,2,1
+--learner-body-font,DIRECT_REWRITE_NO_ADAPTER,G3,B3 implementer,--ui-font-body; next/font definition is the terminal font-family source,12,1
+--learner-border,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-border,57,7
+--learner-border-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-border-subtle,9,5
+--learner-green,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,54,7
+--learner-green-deep,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,54,6
+--learner-green-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,3,1
+--learner-green-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,10,5
+--learner-mission,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,mission category / progress / current / editorial support: classify each use,4,2
+--learner-mission-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,mission category / progress / current / editorial support: classify each use,3,2
+--learner-mission-text,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,mission category / progress / current / editorial support: classify each use,2,1
+--learner-reward,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,20,4
+--learner-reward-rgb,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,1,1
+--learner-reward-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,6,3
+--learner-shadow-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-shadow-rgb,4,1
+--learner-success,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--learner-surface,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-surface,29,6
+--learner-surface-elevated,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-surface-raised,17,1
+--learner-surface-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-surface-soft,16,4
+--learner-text,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-text,66,6
+--learner-text-muted,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-text-muted,82,7
+--learner-text-subtle,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-text-subtle,2,1
+--ve-card,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface,266,84
+--ve-card-muted,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-muted,48,16
+--ve-card-subtle,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-raised,18,6
+--ve-danger,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-danger,35,19
+--ve-danger-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-danger-soft,25,17
+--ve-green,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,300,81
+--ve-green-action,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,1,1
+--ve-green-label,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,1,1
+--ve-green-on-accent,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,1,1
+--ve-green-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,3,3
+--ve-green-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,action / on-action / current / focus / success / reward / text: classify each use,63,42
+--ve-ink,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-text,2,1
+--ve-intro-card,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-surface,1,1
+--ve-intro-control,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--ve-intro-dot,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-text-subtle,1,1
+--ve-intro-line,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-border,1,1
+--ve-intro-panel,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--ve-intro-shadow-alpha,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,component-local shadow opacity,1,1
+--ve-intro-shadow-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,--ui-shadow-rgb,1,1
+--ve-line,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-border,105,45
+--ve-line-soft,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-border-subtle,255,56
+--ve-mission,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,mission category / progress / current / editorial support: classify each use,24,10
+--ve-mission-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,mission category / progress / current / editorial support: classify each use,6,6
+--ve-muted,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text-muted,444,95
+--ve-muted-soft,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text-subtle,7,4
+--ve-muted-strong,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-text-muted,218,75
+--ve-panel,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-inset,83,39
+--ve-panel-soft,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-surface-soft,6,4
+--ve-shadow-rgb,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-shadow-rgb,25,11
+--ve-shell,TEMPORARY_DIRECT_ADAPTER,G5 (earlier at zero uses),B4 learner/org consumers; B5 all remaining consumers and adapter deletion,--ui-chrome,102,29
+--ve-sky,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,3,2
+--ve-sky-action,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-sky-label,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-sky-on-accent,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-sky-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-sky-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,"--ui-surface-soft; currently undefined, replace both admin organization backgrounds directly",2,1
+--ve-store,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,26,19
+--ve-store-rgb,DELETE_UNUSED,G0,B0 implementer,none; delete definitions and dead alias edge,0,0
+--ve-store-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,reward category / reward progress / warning: classify each use and pair,18,15
+--ve-violet,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,24,10
+--ve-violet-action,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-violet-label,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-violet-on-accent,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-violet-rgb,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,1,1
+--ve-violet-soft,DIRECT_REWRITE_NO_ADAPTER,G2,B2 implementer,information / learning category / action / editorial support: classify each use,15,11

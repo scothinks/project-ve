@@ -38,9 +38,9 @@ async function createTestUser(email: string, displayName: string) {
 
 async function signIn(page: Page, nextPath = "/courses") {
   await page.goto(`/login?next=${encodeURIComponent(nextPath)}`);
-  await page.getByPlaceholder("Enter Email Address").fill(learnerEmail);
-  await page.getByPlaceholder("Enter Password").fill(authCredential);
-  await page.getByRole("button", { name: "Login" }).click();
+  await page.getByLabel("Email address", { exact: true }).fill(learnerEmail);
+  await page.getByLabel("Password", { exact: true }).fill(authCredential);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${nextPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), {
     timeout: 30_000,
   });
@@ -64,7 +64,7 @@ async function expectLearnerTopNavigationVisible(page: Page) {
 
 async function expectLoginRedirectTo(page: Page, expectedNextPath: string) {
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByPlaceholder("Enter Email Address")).toBeVisible();
+  await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
   const url = new URL(page.url());
 
   expect(url.pathname).toBe("/login");

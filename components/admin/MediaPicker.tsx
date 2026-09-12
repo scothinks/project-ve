@@ -83,19 +83,19 @@ type MediaPickerProps = {
 };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function tabClasses(active = false) {
   return cn(
     "rounded-full border px-4 py-2 text-xs font-extrabold transition",
     active
-      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface)] hover:border-[var(--admin-primary)]",
+      ? "border-[var(--ui-current-text)] bg-[var(--ui-current-text)] text-[var(--ui-on-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text)] hover:border-[var(--ui-current-text)]",
   );
 }
 
@@ -290,7 +290,7 @@ export function MediaPicker({
   }
 
   return (
-    <div className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-4">
+    <div className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
       {renderFormFields ? (
         <>
           <input name={names.url} type="hidden" value={url} />
@@ -315,7 +315,7 @@ export function MediaPicker({
           {renderFormFields ? <input name={libraryFieldName} type="hidden" value={selectedLibraryAsset?.id ?? ""} /> : null}
           {useLibraryAction && renderFormFields ? (
             <PendingSubmitButton
-              className="mt-4 rounded-[12px] bg-[var(--admin-primary)] px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+              className="mt-4 rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-sm font-black text-[var(--ui-on-action)] disabled:opacity-50"
               disabled={!selectedLibraryAsset}
               formAction={useLibraryAction}
               label="Use selected media"
@@ -340,26 +340,26 @@ export function MediaPicker({
           {mediaKind === "image" ? (
             previewImage ? (
               previewVariant === "course-thumbnail" ? (
-                <div className="overflow-hidden rounded-[18px] bg-[var(--admin-surface-container-low)] shadow-sm">
+                <div className="overflow-hidden rounded-[18px] bg-[var(--ui-surface-soft)] shadow-sm">
                   <div className="h-28">{previewImage}</div>
                   <div className="p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--admin-primary)]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
                       {previewEyebrow || "Values Education"}
                     </p>
                     <h4 className="mt-2 text-lg font-black leading-6">{previewTitle || "Course title"}</h4>
-                    <p className="mt-2 line-clamp-3 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+                    <p className="mt-2 line-clamp-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                       {previewDescription || "Short learner-facing course description."}
                     </p>
-                    <p className="mt-3 text-[11px] font-black text-[var(--admin-on-surface-variant)]">{previewMinutes ?? 0} min from lessons</p>
+                    <p className="mt-3 text-[11px] font-black text-[var(--ui-text-muted)]">{previewMinutes ?? 0} min from lessons</p>
                   </div>
                 </div>
               ) : (
-                <div className="h-48 overflow-hidden rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-high)]">
+                <div className="h-48 overflow-hidden rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-raised)]">
                   {previewImage}
                 </div>
               )
             ) : (
-              <div className="rounded-[16px] border border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-high)] px-4 py-6 text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+              <div className="rounded-[16px] border border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-raised)] px-4 py-6 text-sm font-semibold text-[var(--ui-text-muted)]">
                 Add a media URL or choose from the library to preview it here.
               </div>
             )
@@ -415,7 +415,7 @@ export function MediaPicker({
           {mediaKind === "image" ? (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label>
-                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                   <span>Horizontal focus</span>
                   <span>{positionX}%</span>
                 </span>
@@ -433,7 +433,7 @@ export function MediaPicker({
                 />
               </label>
               <label>
-                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+                <span className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                   <span>Vertical focus</span>
                   <span>{positionY}%</span>
                 </span>
@@ -471,9 +471,9 @@ export function MediaPicker({
         <Tabs.Content className="mt-4" value="upload">
           <label className="mb-3 flex gap-2 text-sm"><input type="checkbox" checked={rightsConfirmed} onChange={e => setRightsConfirmed(e.target.checked)} />I have permission for in-project reuse, cropping and derivation without mandatory attribution.</label>
           {!uploadContext?.courseId && !uploadContext?.lessonId ? (
-            <div className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4">
+            <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-4">
               <p className="text-sm font-black">Upload not available yet</p>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 File uploads need a saved course to attach to. Save this course as a draft first, then come back here to
                 upload directly — or use Choose from library or External URL for now.
               </p>
@@ -482,7 +482,7 @@ export function MediaPicker({
             <div className="flex max-w-[480px] flex-col gap-4">
               <label
                 className={cn(
-                  "flex cursor-pointer items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-[22px] text-sm font-extrabold text-[var(--admin-primary)]",
+                  "flex cursor-pointer items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-[22px] text-sm font-extrabold text-[var(--ui-action)]",
                   isUploading && "pointer-events-none opacity-60",
                 )}
               >
@@ -529,13 +529,13 @@ export function MediaPicker({
                 </label>
               ) : null}
               {uploadError ? (
-                <p className="text-xs font-black text-[var(--admin-error)]">{uploadError}</p>
+                <p className="text-xs font-black text-[var(--ui-danger)]">{uploadError}</p>
               ) : null}
               {uploadStatus ? (
-                <p className="text-xs font-black text-[var(--admin-primary)]">{uploadStatus}</p>
+                <p className="text-xs font-black text-[var(--ui-text)]">{uploadStatus}</p>
               ) : null}
               <button
-                className="self-start rounded-full bg-[var(--admin-primary)] px-[22px] py-3 text-[13px] font-extrabold text-[var(--admin-on-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="self-start rounded-full bg-[var(--ui-action)] px-[22px] py-3 text-[13px] font-extrabold text-[var(--ui-on-action)] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isUploading || !uploadFile}
                 onClick={uploadSelectedAsset}
                 type="button"

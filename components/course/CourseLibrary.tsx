@@ -349,11 +349,11 @@ export function CourseLibrary({
     return (
       <div className="space-y-5">
         <div>
-          <div className="flex min-h-[5.25rem] flex-col justify-center rounded-[18px] border border-[#d8ded9] bg-[var(--ve-card)] px-4 focus-within:border-[var(--ve-green)] lg:min-h-[4.75rem] lg:px-5">
+          <div className="flex min-h-[5.25rem] flex-col justify-center rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-4 focus-within:border-[var(--ui-focus)] lg:min-h-[4.75rem] lg:px-5">
             <div className="flex items-center gap-3">
               <svg
                 aria-hidden="true"
-                className="size-4 shrink-0 text-[var(--ve-green)]"
+                className="size-4 shrink-0 text-[var(--ui-action)]"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -366,7 +366,7 @@ export function CourseLibrary({
               </svg>
               <input
                 aria-label="Search courses"
-                className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-medium tracking-[-0.01em] text-[#171717] outline-none placeholder:font-medium placeholder:text-[#b9b9b9]"
+                className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--ui-text)] outline-none placeholder:font-medium placeholder:text-[var(--ui-text-muted)]"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search courses, lessons, values"
                 type="search"
@@ -374,7 +374,7 @@ export function CourseLibrary({
               />
               {query ? (
                 <button
-                  className="text-xs font-semibold text-[var(--ve-muted)]"
+                  className="text-xs font-semibold text-[var(--ui-text-muted)]"
                   onClick={() => setQuery("")}
                   type="button"
                 >
@@ -382,7 +382,7 @@ export function CourseLibrary({
                 </button>
               ) : null}
             </div>
-            <p className="mt-3 text-[0.9rem] font-medium tracking-[-0.01em] text-[#959595]">
+            <p className="mt-3 text-[0.9rem] font-medium tracking-[-0.01em] text-[var(--ui-text-muted)]">
               Showing {paginatedCourses.startItem}-{paginatedCourses.endItem} of{" "}
               {paginatedCourses.totalItems}{" "}
               {paginatedCourses.totalItems === 1 ? "course" : "courses"}
@@ -390,14 +390,14 @@ export function CourseLibrary({
           </div>
         </div>
 
-        <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden bg-[color:color-mix(in_srgb,var(--ve-card)_95%,transparent)] py-3 backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:backdrop-blur-0">
+        <div className="sticky top-[107px] z-10 -mx-6 overflow-hidden bg-[color:color-mix(in_srgb,var(--ui-surface)_95%,transparent)] py-3 backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:backdrop-blur-0">
           <div className="hide-scrollbar flex flex-nowrap gap-2 overflow-x-auto px-6 lg:flex-wrap lg:px-0">
             {categories.map((item) => (
               <button
                 className={cn(
-                  "min-h-11 min-w-11 shrink-0 rounded-[14px] border border-[var(--ve-line)] px-4 text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ve-muted-strong)]",
+                  "min-h-11 min-w-11 shrink-0 rounded-[14px] border border-[var(--ui-border)] px-4 text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ui-text-muted)]",
                   category === item &&
-                    "border-[var(--ve-green)] bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+                    "border-[var(--ui-action)] bg-[var(--ui-action-soft)] text-[var(--ui-action)]",
                 )}
                 key={item}
                 onClick={() => setCategory(item)}
@@ -426,9 +426,9 @@ export function CourseLibrary({
               />
             ))
           ) : (
-            <div className="rounded-[24px] border border-dashed border-[var(--ve-line)] p-6 text-center">
+            <div className="rounded-[24px] border border-dashed border-[var(--ui-border)] p-6 text-center">
               <p className="text-sm font-bold">No courses found</p>
-              <p className="mt-2 text-xs leading-5 text-[var(--ve-muted)]">
+              <p className="mt-2 text-xs leading-5 text-[var(--ui-text-muted)]">
                 Try another search term or category.
               </p>
               {hasActiveSearch ? (
@@ -513,7 +513,7 @@ export function CourseLibrary({
               {featuredItem.isInProgress ? "In Progress" : "New"}
             </span>
           </div>
-          <div className="course-library-feature__body">
+          <div className={`course-library-feature__body${featuredItem.isInProgress ? " learning-current" : ""}`}>
             <div className="course-library-feature__title-row">
               <div>
                 <p>{featuredItem.course.category}</p>
@@ -555,7 +555,7 @@ export function CourseLibrary({
           <div className="course-library-pickup-grid">
             {pickUpItems.map((item) => (
               <Link
-                className="course-library-pickup-card"
+                className="course-library-pickup-card learning-current"
                 href={item.resumeTarget?.href ?? item.href}
                 key={item.key}
               >

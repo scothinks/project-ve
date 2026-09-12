@@ -1,0 +1,38 @@
+{
+  "baseCommit": "59ea597af00e0f6a53f3018f18292d410f1be59e",
+  "status": "uncommitted; no push or deployment",
+  "selfManifestExcluded": true,
+  "directory": "/private/tmp/project-ve-identity-checkpoints/b6",
+  "candidateSourceSha256": "5a424a3fde4f1c476b7f6ef26988db7a21f4a654273a0eb1d1da0f60129c5a87",
+  "candidateBuildId": "-IgIVfc-mbDPohrBnQ2Wk",
+  "previousCommit": "9538a5be09cd7b1db235a383fc1bdffe359fccf5",
+  "previousBuildId": "m1sstmH820gGa5e3WFM7j",
+  "restore": "For source review, apply changes.patch to an isolated baseCommit checkout then extract new-files.tar.gz. For rollback, extract previous-application.tar.gz as a complete application and use the pinned package-lock dependencies. The checkpoint node_modules directory preserves the installed dependency copy used in rehearsal. Never replace only theme files.",
+  "artifacts": [
+    {
+      "path": "/private/tmp/project-ve-identity-checkpoints/b6/changes.patch",
+      "sha256": "edb0f9aa86482cb9dd8def67a82eec20a4fdbcc28e184957ca71dbf4bb21ab25",
+      "bytes": 8621761
+    },
+    {
+      "path": "/private/tmp/project-ve-identity-checkpoints/b6/new-files.tar.gz",
+      "sha256": "a4c2bb3f10e3858fed0f90df2c26297cca99ec41392e62c119c893c08472458a",
+      "bytes": 37923941
+    },
+    {
+      "path": "/private/tmp/project-ve-identity-checkpoints/b6/previous-application.tar.gz",
+      "sha256": "12008e04789f7fdf749ad7b0a00642eba66e473b3e7f6ddd02fb90ab418a61b5",
+      "bytes": 22720288
+    },
+    {
+      "path": "/private/tmp/project-ve-identity-checkpoints/b6/candidate-application.tar.gz",
+      "sha256": "9a0ad03a451056f804205170725f0a4665a4d7ffc298e5d5ba5efe89f61a7d96",
+      "bytes": 75091805
+    }
+  ],
+  "verification": {
+    "matchedProductionFiles": 577,
+    "matchedBuildFiles": 959,
+    "archiveMatchesQualifiedBytes": true
+  }
+}

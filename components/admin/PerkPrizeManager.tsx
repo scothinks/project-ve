@@ -72,19 +72,19 @@ function PrizeEditorCard({
   const inlineNotice = getFocusedPrizeNotice(focusedPrizeId, noticeCode, prize.id);
 
   return (
-    <details className="rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4" open={isFocusedPrize}>
+    <details className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4" open={isFocusedPrize}>
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
         <div>
           <p className="text-base font-black">{describePrize(prize)}</p>
           <PrizeSummaryBadges prize={prize} />
         </div>
-        <span className="rounded-full bg-[var(--ve-card)] px-3 py-2 text-xs font-black text-[var(--ve-violet)]">
+        <span className="rounded-full bg-[var(--ui-surface)] px-3 py-2 text-xs font-black text-[var(--ui-info)]">
           Edit
         </span>
       </summary>
 
       {inlineNotice ? (
-        <div className="mt-4 rounded-[12px] border border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]">
+        <div className="mt-4 rounded-[12px] border border-[color:color-mix(in_srgb,var(--ui-success)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_78%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-success)]">
           {inlineNotice}
         </div>
       ) : null}
@@ -97,10 +97,10 @@ function PrizeEditorCard({
             value={prizeTypeLabel(prizeType)}
           />
         ) : (
-          <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-4 py-3 md:col-span-2">
+          <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3 md:col-span-2">
             <div className="flex flex-wrap items-center gap-2">
               <AdminStatusBadge tone="store">{prizeTypeLabel(prizeType)}</AdminStatusBadge>
-              <span className="text-xs font-semibold text-[var(--ve-muted)]">
+              <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
                 Outcome type is fixed after this prize is added to the pool.
               </span>
             </div>
@@ -173,9 +173,9 @@ function PrizeEditorCard({
           <input name="sourceRewardId" type="hidden" value={prize.source_reward_id ?? ""} />
           <input name="redirectTo" type="hidden" value={redirectTo} />
 
-          <details className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
+          <details className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
             <summary className={detailSummaryClasses()}>Optional learner card override</summary>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Leave this untouched unless the perk should present the linked reward with a different label or tile.
             </p>
             <div className="mt-3 space-y-4">
@@ -221,12 +221,12 @@ function PrizeEditorCard({
       ) : null}
 
       {canSaveDetails || canRemovePrize ? (
-        <div className="mt-6 border-t border-[var(--ve-line-soft)] pt-5">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Final actions</p>
+        <div className="mt-6 border-t border-[var(--ui-border-subtle)] pt-5">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Final actions</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {canSaveDetails ? (
               <button
-                className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white"
+                className="rounded-[12px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)]"
                 form={saveFormId}
                 type="submit"
               >
@@ -238,7 +238,7 @@ function PrizeEditorCard({
                 <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
                 <input name="prizeId" type="hidden" value={prize.id} />
                 <button
-                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-danger)]"
+                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-danger)]"
                   type="submit"
                 >
                   Remove prize
@@ -275,7 +275,7 @@ function AddPrizeCard({
   const helperCopy = useMemo(() => getAddPrizeHelperCopy(prizeType), [prizeType]);
 
   return (
-    <section className="mt-6 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+    <section className="mt-6 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
       <button
         className="flex w-full items-start justify-between gap-4 text-left"
         onClick={() => setOpen((value) => !value)}
@@ -283,11 +283,11 @@ function AddPrizeCard({
       >
         <div>
           <h3 className="text-lg font-black">Add prize</h3>
-          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">{helperCopy}</p>
+          <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">{helperCopy}</p>
         </div>
         <span
           aria-hidden="true"
-          className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] text-[var(--ve-violet)] transition-transform ${
+          className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-info-bg)_82%,var(--ui-surface))] text-[var(--ui-info)] transition-transform ${
             open ? "rotate-90" : ""
           }`}
         >
@@ -304,7 +304,7 @@ function AddPrizeCard({
       </button>
 
       {open ? (
-        <div className="mt-4 space-y-4 border-t border-[var(--ve-line-soft)] pt-4">
+        <div className="mt-4 space-y-4 border-t border-[var(--ui-border-subtle)] pt-4">
           <form action={savePerkPrize} className="space-y-4">
             <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
             <input name="prizeType" type="hidden" value={prizeType} />
@@ -358,14 +358,14 @@ function AddPrizeCard({
             )}
 
             {prizeType !== "reward" ? (
-              <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white" type="submit">
+              <button className="rounded-[12px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
                 Add prize
               </button>
             ) : null}
           </form>
 
           {prizeType === "reward" ? (
-            <form action={saveBulkPerkRewardPrizes} className="space-y-4 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+            <form action={saveBulkPerkRewardPrizes} className="space-y-4 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
               <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
               <input name="redirectTo" type="hidden" value={redirectTo} />
               {selectedRewardIds.map((rewardId) => (
@@ -374,7 +374,7 @@ function AddPrizeCard({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h4 className="text-sm font-black">Add selected rewards</h4>
-                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     This only creates the prize records. After that, assign stock to each one. Chance weight, caps, and release buckets stay hidden until a prize has an assigned pool.
                   </p>
                 </div>
@@ -383,7 +383,7 @@ function AddPrizeCard({
                 </AdminStatusBadge>
               </div>
               <button
-                className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                className="rounded-[12px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)] disabled:opacity-50"
                 disabled={selectedRewardIds.length === 0}
                 type="submit"
               >
@@ -415,17 +415,17 @@ export function PerkPrizeManager({
   return (
     <AdminCard className="mt-6">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
           Perk Prize Pool
         </p>
         <h2 className="mt-2 text-xl font-black">What this perk can award</h2>
-        <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+        <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           Configure each outcome by type. Keep the prize itself simple, then open distribution or release controls only when you need them.
         </p>
       </div>
 
       {notice ? (
-        <div className="mt-4 rounded-[16px] border border-[color:color-mix(in_srgb,var(--ve-green)_22%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-4 py-3 text-sm font-black text-[var(--ve-green)]">
+        <div className="mt-4 rounded-[16px] border border-[color:color-mix(in_srgb,var(--ui-success)_22%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-success-bg)_78%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-success)]">
           {notice}
         </div>
       ) : null}
@@ -434,7 +434,7 @@ export function PerkPrizeManager({
 
       <div className="mt-5 space-y-4">
         {prizes.length === 0 ? (
-          <div className="rounded-[16px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-shell)] px-4 py-5 text-sm font-semibold text-[var(--ve-muted)]">
+          <div className="rounded-[16px] border border-dashed border-[var(--ui-border)] bg-[var(--ui-chrome)] px-4 py-5 text-sm font-semibold text-[var(--ui-text-muted)]">
             No prize pool configured yet. Start by adding one outcome.
           </div>
         ) : (

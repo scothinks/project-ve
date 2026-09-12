@@ -1,3 +1,4 @@
+import { BrandSignature } from "@/components/brand/BrandSignature";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { getCurrentUserProfile } from "@/lib/supabase-server";
@@ -20,7 +21,7 @@ export async function PublicInfoShell({
   const isAuthenticated = Boolean(user);
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-shell)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-chrome)]">
       <div className="hidden lg:block">
         <LearnerTopChrome
           active="Home"
@@ -38,18 +39,18 @@ export async function PublicInfoShell({
       <section className="learner-page learner-page--spacious space-y-8">
         <div className={wide ? "space-y-5" : "learner-readable space-y-5"}>{children}</div>
 
-        <footer className="flex flex-col items-center gap-3 border-t border-[var(--ve-line-soft)] pt-6 text-center lg:flex-row lg:justify-between lg:text-left">
-          <p className="text-sm font-black">Project VE</p>
-          <div className="flex items-center gap-4 text-xs font-bold text-[var(--ve-muted)]">
-            <Link className="hover:text-[var(--foreground)]" href="/privacy">
+        <footer className="flex flex-col items-center gap-3 border-t border-[var(--ui-border-subtle)] pt-6 text-center lg:flex-row lg:justify-between lg:text-left">
+          <BrandSignature />
+          <div className="flex items-center gap-4 text-xs font-bold text-[var(--ui-text-muted)]">
+            <Link className="hover:text-[var(--ui-text)]" href="/privacy">
               Privacy
             </Link>
             <span aria-hidden="true">•</span>
-            <Link className="hover:text-[var(--foreground)]" href="/terms">
+            <Link className="hover:text-[var(--ui-text)]" href="/terms">
               Terms
             </Link>
             <span aria-hidden="true">•</span>
-            <Link className="hover:text-[var(--foreground)]" href="/contact">
+            <Link className="hover:text-[var(--ui-text)]" href="/contact">
               Contact
             </Link>
           </div>

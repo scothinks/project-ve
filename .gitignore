@@ -5,6 +5,8 @@ out
 dist
 .DS_Store
 coverage
+# Production glyph fallback is not test coverage output.
+!public/fonts/coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo

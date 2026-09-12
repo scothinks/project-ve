@@ -245,38 +245,38 @@ const recommendedMissionTheme: Record<
   }
 > = {
   course: {
-    card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
-    pill: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
-    label: "bg-[var(--learner-green-soft)] text-[var(--learner-green)]",
-    progress: "bg-[var(--learner-mission)]",
+    card: "border-[var(--ui-border)] bg-[var(--ui-surface)]",
+    pill: "bg-transparent text-[var(--ui-text-muted)]",
+    label: "bg-transparent text-[var(--ui-text-muted)]",
+    progress: "bg-[var(--ui-current-text)]",
     icon: GraduationCapIcon,
   },
   referral: {
-    card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
-    pill: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
-    label: "bg-[var(--learner-reward-soft)] text-[var(--learner-reward)]",
-    progress: "bg-[var(--learner-reward)]",
+    card: "border-[var(--ui-border)] bg-[var(--ui-surface)]",
+    pill: "bg-transparent text-[var(--ui-text-muted)]",
+    label: "bg-transparent text-[var(--ui-text-muted)]",
+    progress: "bg-[var(--ui-current-text)]",
     icon: HubIcon,
   },
   feedback: {
-    card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
-    pill: "bg-[var(--learner-attention-soft)] text-[var(--learner-attention)]",
-    label: "bg-[var(--learner-attention-soft)] text-[var(--learner-attention)]",
-    progress: "bg-[var(--learner-attention)]",
+    card: "border-[var(--ui-border)] bg-[var(--ui-surface)]",
+    pill: "bg-transparent text-[var(--ui-text-muted)]",
+    label: "bg-transparent text-[var(--ui-text-muted)]",
+    progress: "bg-[var(--ui-current-text)]",
     icon: ChatIcon,
   },
   campaign: {
-    card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
-    pill: "bg-[var(--learner-mission-soft)] text-[var(--learner-mission-text)]",
-    label: "bg-[var(--learner-mission-soft)] text-[var(--learner-mission-text)]",
-    progress: "bg-[var(--learner-mission)]",
+    card: "border-[var(--ui-border)] bg-[var(--ui-surface)]",
+    pill: "bg-transparent text-[var(--ui-text-muted)]",
+    label: "bg-transparent text-[var(--ui-text-muted)]",
+    progress: "bg-[var(--ui-current-text)]",
     icon: FlagIcon,
   },
   custom: {
-    card: "border-[var(--learner-border)] bg-[var(--learner-surface)]",
-    pill: "bg-[var(--learner-surface-soft)] text-[var(--learner-text-muted)]",
-    label: "bg-[var(--learner-surface-soft)] text-[var(--learner-text-muted)]",
-    progress: "bg-[var(--learner-text-muted)]",
+    card: "border-[var(--ui-border)] bg-[var(--ui-surface)]",
+    pill: "bg-transparent text-[var(--ui-text-muted)]",
+    label: "bg-transparent text-[var(--ui-text-muted)]",
+    progress: "bg-[var(--ui-current-text)]",
     icon: MedalIcon,
   },
 };
@@ -354,7 +354,7 @@ function RecommendedMissionCard({
 
           <div className={`${compact ? "mt-4" : "mt-5"} dashboard-mission-card__content min-w-0`}>
             <h3
-              className={`${compact ? "text-[1.05rem]" : "text-[1.24rem]"} dashboard-mission-card__title font-semibold tracking-[-0.025em] text-[var(--foreground)]`}
+              className={`${compact ? "text-[1.05rem]" : "text-[1.24rem]"} dashboard-mission-card__title font-semibold tracking-[-0.025em] text-[var(--ui-text)]`}
             >
               {mission.title}
             </h3>
@@ -363,7 +363,7 @@ function RecommendedMissionCard({
                 compact
                   ? "mt-2 line-clamp-3 text-[0.86rem] leading-6"
                   : "mt-3 text-[0.98rem] leading-[1.7] sm:max-w-[34ch]"
-              } dashboard-mission-card__body max-w-none font-medium text-[var(--ve-muted-strong)]`}
+              } dashboard-mission-card__body max-w-none font-medium text-[var(--ui-text-muted)]`}
             >
               {mission.description}
             </p>
@@ -372,7 +372,7 @@ function RecommendedMissionCard({
           {hasStructuredProgress ? (
             <div className={`${compact ? "mt-4" : "mt-5"} dashboard-mission-card__progress`}>
               <div
-                className={`flex flex-wrap items-center justify-between gap-2 font-semibold tracking-[-0.01em] text-[var(--ve-muted)] ${
+                className={`flex flex-wrap items-center justify-between gap-2 font-semibold tracking-[-0.01em] text-[var(--ui-text-muted)] ${
                   compact ? "text-[0.8rem]" : "text-[0.9rem]"
                 }`}
               >
@@ -386,7 +386,7 @@ function RecommendedMissionCard({
                   {Math.round(progressPercent)}%
                 </span>
               </div>
-              <div className="mt-3 h-2 rounded-full bg-[color:color-mix(in_srgb,var(--ve-card)_65%,transparent)]">
+              <div className="mt-3 h-2 rounded-full bg-[color:color-mix(in_srgb,var(--ui-surface)_65%,transparent)]">
                 <div
                   className={`h-full rounded-full ${theme.progress}`}
                   style={{ width: `${progressPercent}%` }}
@@ -552,7 +552,7 @@ function SecondarySectionFallback({ label }: { label: string }) {
   return (
     <div
       aria-label={`${label} loading`}
-      className="min-h-24 animate-pulse rounded-[18px] bg-[var(--learner-surface-soft)]"
+      className="min-h-24 animate-pulse rounded-[18px] bg-[var(--ui-surface-soft)]"
       data-dashboard-secondary-fallback={label}
       role="status"
     />
@@ -654,9 +654,9 @@ async function EditorialRecommendationSections({
             </div>
           </div>
         ) : null}
-        <Card className="mt-3 p-5">
+        <Card className="mt-3 p-5" variant="quiet">
           <h2 className="text-base font-black">Browse the course library</h2>
-          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Focus area recommendations stay empty until a tutor curates them. You can still
             browse all published courses any time.
           </p>
@@ -672,9 +672,9 @@ async function EditorialRecommendationSections({
 
   if (catalog.length > 0) {
     return (
-      <Card className="p-5" data-dashboard-secondary="editorial-recommendations">
+      <Card className="p-5" variant="quiet" data-dashboard-secondary="editorial-recommendations">
         <h2 className="text-base font-black">You are caught up</h2>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           You have finished the current recommendations. Browse the full library to replay
           lessons or go deeper.
         </p>
@@ -688,9 +688,9 @@ async function EditorialRecommendationSections({
   }
 
   return (
-    <Card className="p-5" data-dashboard-secondary="editorial-recommendations">
+    <Card className="p-5" variant="quiet" data-dashboard-secondary="editorial-recommendations">
       <h2 className="text-base font-black">No lessons yet</h2>
-      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
         New values education courses will appear here when they are published.
       </p>
     </Card>

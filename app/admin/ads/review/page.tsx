@@ -27,11 +27,11 @@ export default async function AdminAdsReviewPage({ searchParams }: AdsRouteProps
             <h3 className="text-lg font-black">Creative approvals</h3>
             <div className="mt-4 space-y-3">
               {versionItems.length ? versionItems.map((version) => (
-                <div className="rounded-[18px] border border-[var(--ve-line-soft)] p-4" key={version.id}>
+                <div className="rounded-[18px] border border-[var(--ui-border-subtle)] p-4" key={version.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-black">{version.headline ?? "Untitled creative"}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                         {version.sponsor_label} · version {version.version_number} · {version.disclosure_label}
                       </p>
                     </div>
@@ -47,7 +47,7 @@ export default async function AdminAdsReviewPage({ searchParams }: AdsRouteProps
 
           <AdminCard>
             <h3 className="text-lg font-black">Emergency controls</h3>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Pause an entire sponsor, campaign, placement, or flight when there is a brand issue, broken redirect, or delivery concern.
             </p>
             <div className="mt-4 space-y-3">
@@ -57,11 +57,11 @@ export default async function AdminAdsReviewPage({ searchParams }: AdsRouteProps
                 ...placementItems.map((item) => ({ id: item.key, label: item.name, meta: "Placement", status: item.status, type: "placement" })),
                 ...flightItems.map((item) => ({ id: item.id, label: item.placement_key, meta: "Flight", status: item.status, type: "flight" })),
               ].slice(0, 12).map((item) => (
-                <div className="rounded-[18px] border border-[var(--ve-line-soft)] p-4" key={`${item.type}-${item.id}`}>
+                <div className="rounded-[18px] border border-[var(--ui-border-subtle)] p-4" key={`${item.type}-${item.id}`}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-black">{item.label}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{item.meta}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{item.meta}</p>
                     </div>
                     <AdminStatusBadge tone={statusTone(item.status)}>{item.status}</AdminStatusBadge>
                   </div>

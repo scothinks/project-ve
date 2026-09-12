@@ -1,4 +1,6 @@
+import { BrandSignature } from "@/components/brand/BrandSignature";
 import Link from "next/link";
+import { TenantLogo } from "@/components/organizations/TenantIdentity";
 import type { MyOrganizationSummary } from "@/features/organizations/application/my-orgs";
 import { cn } from "@/lib/utils";
 
@@ -9,15 +11,6 @@ type LearnerWorkspaceSwitcherProps = {
 
 function organizationName(organization: MyOrganizationSummary["organization"]) {
   return organization.short_name || organization.name;
-}
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "PV";
 }
 
 function GridIcon() {
@@ -41,32 +34,6 @@ function CheckIcon() {
   );
 }
 
-function WorkspaceLogo({
-  className,
-  organization,
-}: {
-  className?: string;
-  organization?: MyOrganizationSummary["organization"];
-}) {
-  if (!organization) {
-    return (
-      <span className={cn("workspace-switcher__logo workspace-switcher__logo--project", className)}>
-        <GridIcon />
-      </span>
-    );
-  }
-
-  const name = organizationName(organization);
-  if (organization.logo_url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img alt="" className={cn("workspace-switcher__logo object-cover", className)} src={organization.logo_url} />
-    );
-  }
-
-  return <span className={cn("workspace-switcher__logo", className)}>{initials(name)}</span>;
-}
-
 export function LearnerWorkspaceSwitcher({
   currentOrganizationSlug = null,
   organizations,
@@ -82,13 +49,10 @@ export function LearnerWorkspaceSwitcher({
       <div className="workspace-switcher__sheet">
         <div className="workspace-switcher__handle" />
 
-        <section className="workspace-switcher__section" aria-label="Project Ve workspace">
-          <p className="workspace-switcher__eyebrow">Project Ve</p>
-          <Link className="workspace-switcher__row" href="/dashboard">
-            <WorkspaceLogo />
-            <span className="min-w-0">
-              <span className="workspace-switcher__name">Project Ve</span>
-            </span>
+        <section className="workspace-switcher__section" aria-label="Project VE workspace">
+          <p className="workspace-switcher__eyebrow">Project VE</p>
+          <Link aria-current={isProjectVeActive ? "page" : undefined} className="workspace-switcher__row workspace-switcher__row--platform" href="/dashboard">
+            <BrandSignature />
             {isProjectVeActive ? (
               <span className="workspace-switcher__check">
                 <CheckIcon />
@@ -105,11 +69,12 @@ export function LearnerWorkspaceSwitcher({
               const isActive = item.organization.slug === currentOrganizationSlug;
               return (
                 <Link
+                  aria-current={isActive ? "page" : undefined}
                   className={cn("workspace-switcher__row workspace-switcher__row--flat", isActive && "is-active")}
                   href={`/o/${encodeURIComponent(item.organization.slug)}`}
                   key={item.organization.id}
                 >
-                  <WorkspaceLogo organization={item.organization} />
+                  <TenantLogo logoUrl={item.organization.logo_url} name={name} />
                   <span className="min-w-0">
                     <span className="workspace-switcher__name">{name}</span>
                   </span>

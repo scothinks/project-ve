@@ -14,7 +14,7 @@ export default async function RemixCoursePage() {
     <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-10">
       <div>
         <Link
-          className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--admin-on-surface-variant)]"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--ui-text-muted)]"
           href="/admin/courses/choose"
         >
           <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24">
@@ -22,13 +22,13 @@ export default async function RemixCoursePage() {
           </svg>
           Back
         </Link>
-        <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--admin-secondary)]">
+        <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--ui-warning)]">
           Remix a course
         </p>
-        <h1 className="mt-2.5 text-[32px] font-black leading-[1.15] tracking-[-0.01em] text-[var(--admin-brand-hero)]">
+        <h1 className="mt-2.5 text-[32px] font-black leading-[1.15] tracking-[-0.01em] text-[var(--ui-text)]">
           Which course do you want to remix?
         </h1>
-        <p className="mt-2.5 max-w-[520px] text-[15px] font-medium leading-[1.6] text-[var(--admin-on-surface-variant)]">
+        <p className="mt-2.5 max-w-[520px] text-[15px] font-medium leading-[1.6] text-[var(--ui-text-muted)]">
           We&apos;ll copy its structure so you can adjust it without starting from zero.
         </p>
       </div>
@@ -42,7 +42,7 @@ export default async function RemixCoursePage() {
             <form action={duplicateCourseShell} key={course.id}>
               <input name="courseId" type="hidden" value={course.id} />
               <PendingSubmitButton
-                className="flex w-full flex-col overflow-hidden rounded-[20px] border-[1.5px] border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-0 text-left transition hover:border-[var(--admin-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full flex-col overflow-hidden rounded-[20px] border-[1.5px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-0 text-left transition hover:border-[var(--ui-action)] disabled:cursor-not-allowed disabled:opacity-60"
                 label={
                   <>
                     <div
@@ -59,12 +59,12 @@ export default async function RemixCoursePage() {
                           style={getImagePresentationStyle(course.thumbnail as { positionX?: number | null; positionY?: number | null })}
                         />
                       ) : (
-                        <span className="text-[26px] font-black text-white/90">{course.title.charAt(0).toUpperCase()}</span>
+                        <span className="text-[26px] font-black text-[var(--ui-text)]">{course.title.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     <div className="flex flex-col gap-1 px-[18px] pb-[18px] pt-4">
-                      <h3 className="text-[15px] font-extrabold leading-[1.3] text-[var(--admin-on-surface)]">{course.title}</h3>
-                      <p className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+                      <h3 className="text-[15px] font-extrabold leading-[1.3] text-[var(--ui-text)]">{course.title}</h3>
+                      <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
                         {course.lesson_count ?? 0} lessons
                       </p>
                     </div>

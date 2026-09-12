@@ -13,11 +13,11 @@ function firstSearchValue(value: string | string[] | undefined) {
 }
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[16px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[16px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 export default async function CreateOrganizationPage({
@@ -29,15 +29,15 @@ export default async function CreateOrganizationPage({
 
   if (isLiveMode && !user) {
     return (
-      <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+      <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
         <AppHeader title="Create organisation" backHref="/org" showMenu={false} />
         <section className="px-5 py-8">
           <Card className="p-5" variant="quiet">
-            <p className="text-sm font-bold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="text-sm font-bold leading-6 text-[var(--ui-text-muted)]">
               Sign in to create a private Starter organisation workspace.
             </p>
             <Link
-              className="mt-4 inline-flex h-11 items-center justify-center rounded-[30px] bg-[var(--ve-green)] px-5 text-sm font-black !text-white"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-[30px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]"
               href={createLoginHref("/org/create")}
             >
               Sign in
@@ -52,25 +52,25 @@ export default async function CreateOrganizationPage({
   const error = firstSearchValue((await searchParams)?.error);
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       <AppHeader title="Create organisation" backHref="/org" showMenu={false} />
       <section className="px-5 py-6 lg:px-[clamp(2rem,4vw,4.5rem)]">
         <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[1fr_20rem]">
           <Card className="p-5 sm:p-6" variant="quiet">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
                 Starter workspace
               </p>
-              <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[var(--foreground)]">
+              <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[var(--ui-text)]">
                 Create a private organisation
               </h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                 The creator becomes organisation owner. Starter limits and unverified status are applied automatically.
               </p>
             </div>
 
             {error ? (
-              <div className="mt-5 rounded-[16px] border border-[#f3b2a1] bg-[#fff2ee] px-4 py-3 text-sm font-bold text-[#a13b20]">
+              <div className="mt-5 rounded-[16px] border border-[var(--ui-danger-bg)] bg-[var(--ui-danger-bg)] px-4 py-3 text-sm font-bold text-[var(--ui-danger)]">
                 {error}
               </div>
             ) : null}
@@ -113,15 +113,15 @@ export default async function CreateOrganizationPage({
                 <input autoComplete="email" className={fieldClasses()} maxLength={254} name="supportEmail" type="email" />
               </label>
 
-              <label className="flex items-start gap-3 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-4">
-                <input className="mt-1 size-4 accent-[var(--ve-green)]" name="termsAccepted" type="checkbox" required />
-                <span className="text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+              <label className="flex items-start gap-3 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-4">
+                <input className="mt-1 size-4 accent-[var(--ui-action)]" name="termsAccepted" type="checkbox" required />
+                <span className="text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   I confirm I can create this organisation workspace and will manage members, content, points and rewards responsibly.
                 </span>
               </label>
 
               <PendingSubmitButton
-                className="h-12 w-full rounded-[30px] bg-[var(--ve-green)] px-5 text-sm font-black text-white shadow-[0_12px_24px_rgba(8,127,91,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-12 w-full rounded-[30px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)] shadow-[0_12px_24px_rgba(var(--ui-shadow-rgb),0.22)] disabled:cursor-not-allowed disabled:opacity-60"
                 label="Create organisation"
                 pendingLabel="Creating organisation..."
                 type="submit"
@@ -131,31 +131,31 @@ export default async function CreateOrganizationPage({
 
           <aside className="space-y-4">
             <Card className="p-5" variant="lesson">
-              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                 Included
               </p>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="font-semibold text-[var(--ve-muted-strong)]">Plan</dt>
-                  <dd className="font-black text-[var(--foreground)]">Starter</dd>
+                  <dt className="font-semibold text-[var(--ui-text-muted)]">Plan</dt>
+                  <dd className="font-black text-[var(--ui-text)]">Starter</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="font-semibold text-[var(--ve-muted-strong)]">Visibility</dt>
-                  <dd className="font-black text-[var(--foreground)]">Private</dd>
+                  <dt className="font-semibold text-[var(--ui-text-muted)]">Visibility</dt>
+                  <dd className="font-black text-[var(--ui-text)]">Private</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="font-semibold text-[var(--ve-muted-strong)]">Role</dt>
-                  <dd className="font-black text-[var(--foreground)]">Owner</dd>
+                  <dt className="font-semibold text-[var(--ui-text-muted)]">Role</dt>
+                  <dd className="font-black text-[var(--ui-text)]">Owner</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="font-semibold text-[var(--ve-muted-strong)]">Verification</dt>
-                  <dd className="font-black text-[var(--foreground)]">Unverified</dd>
+                  <dt className="font-semibold text-[var(--ui-text-muted)]">Verification</dt>
+                  <dd className="font-black text-[var(--ui-text)]">Unverified</dd>
                 </div>
               </dl>
             </Card>
 
             <Card className="p-5" variant="quiet">
-              <p className="text-sm font-bold leading-6 text-[var(--ve-muted-strong)]">
+              <p className="text-sm font-bold leading-6 text-[var(--ui-text-muted)]">
                 After creation, setup continues in the organisation management workspace.
               </p>
             </Card>

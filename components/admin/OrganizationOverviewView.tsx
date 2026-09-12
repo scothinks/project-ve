@@ -110,21 +110,21 @@ export function OrganizationOverviewView({
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-ink-charcoal)]">Overview</h1>
-        <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">Overview</h1>
+        <p className="text-sm font-medium text-[var(--ui-text-muted)]">
           Manage {organizationName}&rsquo;s operational health and ongoing activities.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <div className="flex items-center justify-between border-b border-[var(--admin-border-warm)] pb-2">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--admin-on-surface)]">
-              <AdminErrorIcon className="text-[var(--admin-secondary)]" />
+        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[var(--ui-border-subtle)] pb-2">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--ui-text)]">
+              <AdminErrorIcon className="text-[var(--ui-warning)]" />
               Attention Required
             </h2>
             {attentionItems.length > 0 ? (
-              <span className="rounded-full bg-[var(--admin-error-container)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--admin-on-error-container)]">
+              <span className="rounded-full bg-[var(--ui-danger-bg)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ui-danger)]">
                 {attentionItems.length} {attentionItems.length === 1 ? "alert" : "alerts"}
               </span>
             ) : null}
@@ -144,26 +144,26 @@ export function OrganizationOverviewView({
               ))}
             </div>
           ) : (
-            <p className="py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+            <p className="py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
               Nothing needs your attention right now.
             </p>
           )}
         </div>
 
-        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <div className="flex items-center justify-between border-b border-[var(--admin-border-warm)] pb-2">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--admin-on-surface)]">
-              <AdminFlagIcon className="text-[var(--admin-primary)]" />
+        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[var(--ui-border-subtle)] pb-2">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--ui-text)]">
+              <AdminFlagIcon className="text-[var(--ui-text)]" />
               Onboarding Progress
             </h2>
-            <span className="text-2xl font-black text-[var(--admin-primary)]">{onboardingProgress}%</span>
+            <span className="text-2xl font-black text-[var(--ui-action)]">{onboardingProgress}%</span>
           </div>
           <AdminChecklist items={onboardingItems} progressPercent={onboardingProgress} />
         </div>
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold text-[var(--admin-on-surface)]">Operational Health</h2>
+        <h2 className="mb-3 text-lg font-bold text-[var(--ui-text)]">Operational Health</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <AdminMetricCard
             helpText={`+${overview.learnerGrowthLastThirtyDays} in 30d`}
@@ -195,8 +195,8 @@ export function OrganizationOverviewView({
             value={
               overview.points ? (
                 <span className="flex flex-col leading-tight">
-                  <span>{formatCompactNumber(overview.points.awarded)} <span className="text-sm font-medium text-[var(--admin-on-surface-variant)]">awarded</span></span>
-                  <span className="text-lg text-[var(--admin-on-surface-variant)]">{formatCompactNumber(overview.points.spent)} spent</span>
+                  <span>{formatCompactNumber(overview.points.awarded)} <span className="text-sm font-medium text-[var(--ui-text-muted)]">awarded</span></span>
+                  <span className="text-lg text-[var(--ui-text-muted)]">{formatCompactNumber(overview.points.spent)} spent</span>
                 </span>
               ) : (
                 "—"
@@ -206,7 +206,7 @@ export function OrganizationOverviewView({
           <AdminMetricCard
             action={overview.pendingRewardClaims > 0 ? { label: "Fulfill now", href: "/admin/redemptions" } : undefined}
             helpText="Pending fulfillment"
-            icon={<AdminRewardsIcon className="text-[18px] text-[var(--admin-secondary)]" />}
+            icon={<AdminRewardsIcon className="text-[18px] text-[var(--ui-warning)]" />}
             label="Reward Claims"
             tone={overview.pendingRewardClaims > 0 ? "attention" : "default"}
             value={overview.pendingRewardClaims}
@@ -215,10 +215,10 @@ export function OrganizationOverviewView({
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm lg:col-span-2">
-          <div className="mb-3 flex items-center justify-between border-b border-[var(--admin-border-warm)] pb-2">
-            <h2 className="text-lg font-bold text-[var(--admin-on-surface)]">Recent Activity</h2>
-            <Link className="text-sm font-bold text-[var(--admin-primary)] hover:underline" href="/admin/activity">
+        <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between border-b border-[var(--ui-border-subtle)] pb-2">
+            <h2 className="text-lg font-bold text-[var(--ui-text)]">Recent Activity</h2>
+            <Link className="text-sm font-bold text-[var(--ui-action)] hover:underline" href="/admin/activity">
               View full log
             </Link>
           </div>
@@ -233,8 +233,8 @@ export function OrganizationOverviewView({
           />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <h2 className="border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
+        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <h2 className="border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
             Workspace Actions
           </h2>
           <AdminQuickActionButton emphasis href="/admin/programmes/new" icon={<AdminAddBoxIcon />} label="New Programme" />

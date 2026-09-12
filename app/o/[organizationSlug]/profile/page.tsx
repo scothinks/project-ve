@@ -70,7 +70,7 @@ export default async function OrganizationProfilePage({
         }
       />
       <section className="learner-page learner-page--standard pb-28">
-        <h1 className="org-profile-heading text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+        <h1 className="org-profile-heading text-[1.55rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
           Profile
         </h1>
 
@@ -84,27 +84,27 @@ export default async function OrganizationProfilePage({
                   name={profile.display_name ?? ""}
                 />
                 <div className="min-w-0 org-profile-identity__copy">
-                  <h2 className="text-2xl font-black text-[var(--foreground)]">
+                  <h2 className="text-2xl font-black text-[var(--ui-text)]">
                     {profile.display_name || "Project Ve learner"}
                   </h2>
-                  <div className="mt-1 flex items-center gap-1.5 text-sm font-black text-[var(--ve-green)]">
+                  <div className="mt-1 flex items-center gap-1.5 text-sm font-black text-[var(--ui-action)]">
                     <CheckCircleIcon className="size-3.5" />
                     {primaryRole}
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">{organizationName}</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">{organizationName}</p>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[16px] bg-[var(--ve-panel)] p-4 text-center">
-                  <p className="text-2xl font-black text-[var(--ve-green)]">{workspace.programmeIds.length}</p>
-                  <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4 text-center">
+                  <p className="text-2xl font-black text-[var(--ui-text)]">{workspace.programmeIds.length}</p>
+                  <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                     Assigned Programmes
                   </p>
                 </div>
-                <div className="rounded-[16px] bg-[var(--ve-panel)] p-4 text-center">
-                  <p className="text-2xl font-black text-[var(--ve-green)]">{workspace.courseIds.length}</p>
-                  <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <div className="rounded-[16px] bg-[var(--ui-surface-inset)] p-4 text-center">
+                  <p className="text-2xl font-black text-[var(--ui-text)]">{workspace.courseIds.length}</p>
+                  <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                     Assigned Courses
                   </p>
                 </div>
@@ -114,7 +114,7 @@ export default async function OrganizationProfilePage({
                 <div className="mt-4 flex flex-wrap gap-2">
                   {workspace.membershipRoles.map((role) => (
                     <span
-                      className="rounded-full bg-[var(--ve-card)] px-3 py-1 text-[11px] font-black text-[var(--ve-muted)]"
+                      className="rounded-full bg-[var(--ui-surface)] px-3 py-1 text-[11px] font-black text-[var(--ui-text-muted)]"
                       key={role}
                     >
                       {roleLabel(role)}
@@ -126,7 +126,7 @@ export default async function OrganizationProfilePage({
           </div>
 
           <div className="org-profile-layout__records">
-            <h2 className="text-[1.05rem] font-black tracking-[-0.01em] text-[var(--foreground)]">
+            <h2 className="text-[1.05rem] font-black tracking-[-0.01em] text-[var(--ui-text)]">
               Learning Records
             </h2>
             <div className="mt-3 flex flex-col gap-3">
@@ -141,14 +141,14 @@ export default async function OrganizationProfilePage({
                     {record.showDot ? <span className="org-profile-record__dot" /> : null}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[0.98rem] font-black text-[var(--foreground)]">
+                    <span className="block text-[0.98rem] font-black text-[var(--ui-text)]">
                       {record.title}
                     </span>
-                    <span className="mt-0.5 block text-[0.8rem] font-medium text-[var(--ve-muted)]">
+                    <span className="mt-0.5 block text-[0.8rem] font-medium text-[var(--ui-text-muted)]">
                       {record.description}
                     </span>
                   </span>
-                  <ChevronRightIcon className="size-5 shrink-0 text-[var(--ve-muted)]" />
+                  <ChevronRightIcon className="size-5 shrink-0 text-[var(--ui-text-muted)]" />
                 </a>
               ))}
             </div>

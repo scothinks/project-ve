@@ -117,18 +117,18 @@ function TrashIcon() {
 function actionButtonClasses(tone: "neutral" | "danger" = "neutral") {
   const toneClasses =
     tone === "danger"
-      ? "bg-[color:color-mix(in_srgb,var(--admin-error-container)_82%,var(--admin-surface-milk))] text-[var(--admin-error)] hover:bg-[color:color-mix(in_srgb,var(--admin-error-container)_92%,var(--admin-surface-milk))]"
-      : "bg-[var(--admin-surface-container-low)] text-[var(--admin-on-surface)] hover:bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_76%,var(--admin-surface-container-low))] hover:text-[var(--admin-primary)]";
+      ? "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_82%,var(--ui-surface))] text-[var(--ui-danger)] hover:bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_92%,var(--ui-surface))]"
+      : "bg-[var(--ui-surface-soft)] text-[var(--ui-text)] hover:bg-[color:color-mix(in_srgb,var(--ui-action-soft)_76%,var(--ui-surface-soft))] hover:text-[var(--ui-action)]";
 
   return `inline-flex h-8 w-8 items-center justify-center rounded-full ${toneClasses} transition disabled:cursor-not-allowed disabled:opacity-35`;
 }
 
 function compactFieldClasses() {
-  return "mt-2 w-full rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]";
+  return "mt-2 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function BlockActionButtons({
@@ -149,7 +149,7 @@ function BlockActionButtons({
   if (block.isDraft) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-[var(--admin-on-surface-variant)]">Unsaved</span>
+        <span className="text-xs font-bold text-[var(--ui-text-muted)]">Unsaved</span>
         <button
           aria-label="Duplicate draft block"
           className={actionButtonClasses()}
@@ -316,7 +316,7 @@ function PageSettingsEditor({
       </div>
       <div>
         <span className={labelClasses()}>Page cover</span>
-        <p className="mt-1 text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
           Optional — shown above this page&apos;s content. The first page falls back to the lesson cover if empty.
         </p>
         <button
@@ -341,7 +341,7 @@ function PageSettingsEditor({
               </div>
             </>
           ) : (
-            <div className="flex h-full w-full items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]">
+            <div className="flex h-full w-full items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] text-[var(--ui-border)]">
               <AdminDesignIcon className="h-5 w-5" />
               <span className="text-xs font-bold">Add a page cover</span>
             </div>
@@ -363,13 +363,13 @@ function pillToggleClasses(active: boolean) {
   return cn(
     "rounded-full border px-3 py-1.5 text-xs font-extrabold transition",
     active
-      ? "border-[var(--admin-primary)] bg-[var(--admin-primary)] text-[var(--admin-on-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface)] hover:border-[var(--admin-primary)]",
+      ? "border-[var(--ui-action)] bg-[var(--ui-action)] text-[var(--ui-on-action)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text)] hover:border-[var(--ui-action)]",
   );
 }
 
 function underlineFieldClasses() {
-  return "w-full border-0 border-b border-[var(--admin-border-warm)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]";
+  return "w-full border-0 border-b border-[var(--ui-control-border)] bg-transparent px-0.5 py-1.5 text-sm font-semibold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]";
 }
 
 function BlockCardShell({
@@ -402,8 +402,8 @@ function BlockCardShell({
   return (
     <div
       className={cn(
-        "space-y-2.5 rounded-[16px] border bg-[var(--admin-surface-milk)] p-4",
-        isSelected ? "border-[var(--admin-primary)]" : "border-[var(--admin-border-warm)]",
+        "space-y-2.5 rounded-[16px] border bg-[var(--ui-surface)] p-4",
+        isSelected ? "border-[var(--ui-current-text)]" : "border-[var(--ui-border-subtle)]",
       )}
       id={`block-${block.id}`}
       onFocus={() => onSelect(block.id)}
@@ -411,7 +411,7 @@ function BlockCardShell({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <AdminDragHandle attributes={dragAttributes} className="h-6 w-6" label={`${kindLabel} block`} listeners={dragListeners} />
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--ui-border)]">
             {kindLabel} block
           </span>
         </div>
@@ -455,8 +455,8 @@ function MediaBlockChooser({
   if (hasMedia && kind === "video") {
     return (
       <div className="space-y-2">
-        <MediaVideo className="w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-black" controls src={src} />
-        <button disabled={!interactive} className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={onOpen} type="button">
+        <MediaVideo className="w-full rounded-[14px] border border-[var(--ui-border-subtle)] bg-black" controls src={src} />
+        <button disabled={!interactive} className="text-xs font-extrabold text-[var(--ui-action)]" onClick={onOpen} type="button">
           Change video
         </button>
       </div>
@@ -465,9 +465,9 @@ function MediaBlockChooser({
 
   if (hasMedia && kind === "audio") {
     return (
-      <div className="flex items-center gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-3.5">
+      <div className="flex items-center gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-3.5">
         <MediaAudio className="min-w-0 flex-1" controls src={src} />
-        <button disabled={!interactive} className="shrink-0 text-xs font-extrabold text-[var(--admin-primary)]" onClick={onOpen} type="button">
+        <button disabled={!interactive} className="shrink-0 text-xs font-extrabold text-[var(--ui-action)]" onClick={onOpen} type="button">
           Change
         </button>
       </div>
@@ -477,7 +477,7 @@ function MediaBlockChooser({
   return (
     <button
       disabled={!interactive}
-      className={`relative flex ${kind === "video" ? "aspect-video" : "min-h-[140px]"} w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[14px] border border-dashed border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]`}
+      className={`relative flex ${kind === "video" ? "aspect-video" : "min-h-[140px]"} w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[14px] border border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] text-[var(--ui-border)] transition hover:border-[var(--ui-action)] hover:text-[var(--ui-action)]`}
       onClick={onOpen}
       type="button"
     >
@@ -539,21 +539,21 @@ function TableGridEditor({
 
   return (
     <div className="space-y-2.5">
-      <div className="overflow-x-auto rounded-[12px] border border-[var(--admin-border-warm)]">
+      <div className="overflow-x-auto rounded-[12px] border border-[var(--ui-border-subtle)]">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-[var(--admin-surface-container-low)]">
+            <tr className="bg-[var(--ui-surface-soft)]">
               {columns.map((column, columnIndex) => (
-                <th className="border-b border-r border-[var(--admin-border-warm)] p-0 text-left last:border-r-0" key={columnIndex}>
+                <th className="border-b border-r border-[var(--ui-border-subtle)] p-0 text-left last:border-r-0" key={columnIndex}>
                   <div className="flex items-center gap-1 px-2.5 py-2">
                     <input
-                      className="min-w-0 flex-1 bg-transparent text-xs font-extrabold uppercase tracking-[0.04em] text-[var(--admin-on-surface)] outline-none"
+                      className="min-w-0 flex-1 bg-transparent text-xs font-extrabold uppercase tracking-[0.04em] text-[var(--ui-text)] outline-none"
                       onChange={(event) => updateColumnLabel(columnIndex, event.target.value)}
                       value={column}
                     />
                     <button
                       aria-label="Remove column"
-                      className="shrink-0 text-[var(--admin-outline)] hover:text-[var(--admin-error)]"
+                      className="shrink-0 text-[var(--ui-border)] hover:text-[var(--ui-danger)]"
                       onClick={() => removeColumn(columnIndex)}
                       type="button"
                     >
@@ -565,7 +565,7 @@ function TableGridEditor({
                 </th>
               ))}
               <th className="p-2">
-                <button className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={addColumn} type="button">
+                <button className="text-xs font-extrabold text-[var(--ui-action)]" onClick={addColumn} type="button">
                   + Column
                 </button>
               </th>
@@ -573,11 +573,11 @@ function TableGridEditor({
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr className="border-t border-[var(--admin-border-warm)]" key={rowIndex}>
+              <tr className="border-t border-[var(--ui-border-subtle)]" key={rowIndex}>
                 {columns.map((_, columnIndex) => (
-                  <td className="border-r border-[var(--admin-border-warm)] p-0 last:border-r-0" key={columnIndex}>
+                  <td className="border-r border-[var(--ui-border-subtle)] p-0 last:border-r-0" key={columnIndex}>
                     <input
-                      className="w-full bg-transparent px-2.5 py-2 text-sm font-medium text-[var(--admin-on-surface)] outline-none"
+                      className="w-full bg-transparent px-2.5 py-2 text-sm font-medium text-[var(--ui-text)] outline-none"
                       onChange={(event) => updateCell(rowIndex, columnIndex, event.target.value)}
                       value={row[columnIndex] ?? ""}
                     />
@@ -586,7 +586,7 @@ function TableGridEditor({
                 <td className="p-2">
                   <button
                     aria-label="Remove row"
-                    className="text-[var(--admin-outline)] hover:text-[var(--admin-error)]"
+                    className="text-[var(--ui-border)] hover:text-[var(--ui-danger)]"
                     onClick={() => removeRow(rowIndex)}
                     type="button"
                   >
@@ -600,7 +600,7 @@ function TableGridEditor({
           </tbody>
         </table>
       </div>
-      <button className="text-xs font-extrabold text-[var(--admin-primary)]" onClick={addRow} type="button">
+      <button className="text-xs font-extrabold text-[var(--ui-action)]" onClick={addRow} type="button">
         + Add row
       </button>
     </div>
@@ -645,7 +645,7 @@ function BlockEditor({
   const { requestMedia } = useMediaPicker();
   const payload = block.payload ?? {};
   const intent = mediaIntent(payload);
-  const placeholderDetails = isEmptyMediaPlaceholder(block) && intent ? <div className="rounded-xl bg-[var(--admin-surface-container-low)] p-4 text-sm">
+  const placeholderDetails = isEmptyMediaPlaceholder(block) && intent ? <div className="rounded-xl bg-[var(--ui-surface-soft)] p-4 text-sm">
     <p className="font-bold">Optional media</p>
     <p className="mt-2 leading-6">{intent.purpose}</p>
     <p className="mt-2 text-xs">Choose media below, or leave this out. Empty optional placeholders aren’t shown to learners.</p>
@@ -710,7 +710,7 @@ function BlockEditor({
     return (
       <BlockCardShell {...shellProps}>
         {typeof payload.aiManagedByAssetId === "string" && payload.aiManagedByAssetId ? (
-          <div className="rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+          <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] px-3 py-2 text-xs font-semibold text-[var(--ui-text-muted)]">
             This image block is linked to an AI media brief. Editing the content here keeps that link intact.
           </div>
         ) : null}
@@ -767,7 +767,7 @@ function BlockEditor({
         {placeholderDetails}
         <MediaBlockChooser kind={blockKind} onOpen={() => void pickMedia()} src={src} />
         <textarea
-          className="min-h-16 w-full resize-none rounded-[12px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] px-3 py-2 text-sm font-semibold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]"
+          className="min-h-16 w-full resize-none rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]"
           onChange={(event) => onPayloadChange("body", event.target.value)}
           placeholder={block.block_type === "video" ? "Caption (optional)" : "Transcript (optional)"}
           value={body}
@@ -816,9 +816,9 @@ function BlockEditor({
             </button>
           ))}
         </div>
-        <div className="rounded-[14px] bg-[var(--admin-surface-container-low)] p-3.5">
+        <div className="rounded-[14px] bg-[var(--ui-surface-soft)] p-3.5">
           <textarea
-            className="min-h-14 w-full resize-none border-0 bg-transparent text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)] outline-none"
+            className="min-h-14 w-full resize-none border-0 bg-transparent text-sm font-semibold leading-6 text-[var(--ui-text-muted)] outline-none"
             onChange={(event) => onPayloadChange("body", event.target.value)}
             placeholder="Callout text"
             value={body}
@@ -879,12 +879,12 @@ export function LessonBuilderPagesPanel({
   }
 
   return (
-    <div className="flex flex-col gap-1.5 border-r border-[var(--admin-border-warm)] px-4 py-6">
-      <p className="px-2.5 pb-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-outline)]">
+    <div className="flex flex-col gap-1.5 border-r border-[var(--ui-border-subtle)] px-4 py-6">
+      <p className="px-2.5 pb-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--ui-border)]">
         Pages
       </p>
       {pages.length === 0 ? (
-        <p className="px-2.5 py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">No pages yet.</p>
+        <p className="px-2.5 py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">No pages yet.</p>
       ) : (
         <DndContext collisionDetection={closestCenter} id="lesson-pages-dnd" onDragEnd={handleDragEnd} sensors={sensors}>
           <SortableContext items={pages.map((page) => page.id)} strategy={verticalListSortingStrategy}>
@@ -905,7 +905,7 @@ export function LessonBuilderPagesPanel({
       )}
 
       <button
-        className="mt-1.5 flex items-center gap-2 rounded-[10px] px-2.5 py-2.5 text-[13px] font-extrabold text-[var(--admin-primary)] transition hover:bg-[var(--admin-surface-container-low)]"
+        className="mt-1.5 flex items-center gap-2 rounded-[10px] px-2.5 py-2.5 text-[13px] font-extrabold text-[var(--ui-action)] transition hover:bg-[var(--ui-surface-soft)]"
         onClick={onAddPage}
         type="button"
       >
@@ -950,8 +950,8 @@ function SortablePageRow({
         className={cn(
           "flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] px-2 py-2 text-left transition",
           isSelected
-            ? "bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_70%,var(--admin-surface-milk))]"
-            : "hover:bg-[var(--admin-surface-container-low)]",
+            ? "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_70%,var(--ui-surface))]"
+            : "hover:bg-[var(--ui-surface-soft)]",
         )}
         onClick={() => onSelectPage(page.id)}
         type="button"
@@ -959,17 +959,17 @@ function SortablePageRow({
         <span
           className={cn(
             "shrink-0 text-[13px] font-extrabold",
-            isSelected ? "text-[var(--admin-primary)]" : "text-[var(--admin-outline)]",
+            isSelected ? "text-[var(--ui-action)]" : "text-[var(--ui-border)]",
           )}
         >
           {index + 1}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--admin-on-surface)]">{page.title}</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--ui-text)]">{page.title}</span>
       </button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger
           aria-label={`More actions for ${page.title}`}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--admin-outline)] opacity-0 transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)] focus-visible:opacity-100 group-hover:opacity-100"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--ui-border)] opacity-0 transition hover:bg-[var(--ui-surface-soft)] hover:text-[var(--ui-action)] focus-visible:opacity-100 group-hover:opacity-100"
           type="button"
         >
           ⋯
@@ -977,22 +977,22 @@ function SortablePageRow({
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             align="end"
-            className="z-50 min-w-44 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+            className="z-50 min-w-44 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-2 shadow-xl"
             sideOffset={6}
           >
             <DropdownMenu.Item asChild>
               <button
-                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--ui-surface-soft)]"
                 onClick={() => onDuplicatePage(page.id)}
                 type="button"
               >
                 Duplicate page
               </button>
             </DropdownMenu.Item>
-            <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
+            <DropdownMenu.Separator className="my-1 h-px bg-[var(--ui-border-subtle)]" />
             <DropdownMenu.Item asChild>
               <button
-                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--ui-danger)] outline-none hover:bg-[var(--ui-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!canDelete}
                 onClick={() => onRequestDeletePage(page)}
                 title={canDelete ? undefined : "A lesson needs at least one page."}
@@ -1071,12 +1071,12 @@ export function LessonBuilderEditorPanel({
         {selectedPage ? (
           <>
             <div className="flex items-center gap-2">
-              <h2 className="text-[30px] font-black leading-[1.2] tracking-[-0.01em] text-[var(--admin-brand-hero)]">
+              <h2 className="text-[30px] font-black leading-[1.2] tracking-[-0.01em] text-[var(--ui-text)]">
                 {selectedPage.title}
               </h2>
               <button
                 aria-label="Edit page settings"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] hover:text-[var(--admin-primary)]"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)] hover:text-[var(--ui-action)]"
                 onClick={() => setEditingPageSettings((current) => !current)}
                 type="button"
               >
@@ -1084,11 +1084,11 @@ export function LessonBuilderEditorPanel({
               </button>
             </div>
             {selectedPage.subtitle ? (
-              <p className="-mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+              <p className="-mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 {selectedPage.subtitle}
               </p>
             ) : null}
-            <p className="-mt-2 text-xs font-bold text-[var(--admin-on-surface-variant)]">
+            <p className="-mt-2 text-xs font-bold text-[var(--ui-text-muted)]">
               {autosaveState === "saving" && "Saving changes..."}
               {autosaveState === "dirty" && `Autosaving in ${Math.round(autosaveDelayMs / 1000)}s.`}
               {autosaveState === "saved" &&
@@ -1103,7 +1103,7 @@ export function LessonBuilderEditorPanel({
             </p>
 
             {editingPageSettings ? (
-              <div className="rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-4">
+              <div className="rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-4">
                 <PageSettingsEditor
                   aiGenerationAvailable={aiGenerationAvailable}
                   mediaLibraryAssets={mediaLibraryAssets}
@@ -1114,7 +1114,7 @@ export function LessonBuilderEditorPanel({
             ) : null}
 
             {selectedPageBlocks.length === 0 ? (
-              <p className="rounded-[16px] border border-dashed border-[var(--admin-border-warm)] py-8 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">No blocks on this page yet.</p>
+              <p className="rounded-[16px] border border-dashed border-[var(--ui-border-subtle)] py-8 text-center text-sm font-semibold text-[var(--ui-text-muted)]">No blocks on this page yet.</p>
             ) : (
               <DndContext collisionDetection={closestCenter} id="lesson-blocks-dnd" onDragEnd={handleDragEnd} sensors={sensors}>
                 <SortableContext items={selectedPageBlocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
@@ -1150,7 +1150,7 @@ export function LessonBuilderEditorPanel({
             />
           </>
         ) : (
-          <p className="py-10 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">Create a page before adding content blocks.</p>
+          <p className="py-10 text-center text-sm font-semibold text-[var(--ui-text-muted)]">Create a page before adding content blocks.</p>
         )}
       </div>
     </div>
@@ -1229,7 +1229,7 @@ function AddBlockDisclosure({
   if (!open) {
     return (
       <button
-        className="flex items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-3.5 text-[13px] font-bold text-[var(--admin-outline)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]"
+        className="flex items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] p-3.5 text-[13px] font-bold text-[var(--ui-border)] transition hover:border-[var(--ui-action)] hover:text-[var(--ui-action)]"
         onClick={() => setOpen(true)}
         type="button"
       >
@@ -1245,7 +1245,7 @@ function AddBlockDisclosure({
     <div className="grid grid-cols-3 gap-2">
       {availableItems.map((item) => (
         <button
-          className="flex flex-col items-center gap-1.5 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3.5 text-xs font-extrabold text-[var(--admin-on-surface)] transition hover:border-[var(--admin-primary)] hover:text-[var(--admin-primary)]"
+          className="flex flex-col items-center gap-1.5 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3.5 text-xs font-extrabold text-[var(--ui-text)] transition hover:border-[var(--ui-action)] hover:text-[var(--ui-action)]"
           key={item.type}
           onClick={() => {
             onAddDraftBlock(item.type, insertIndex);

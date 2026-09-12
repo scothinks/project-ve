@@ -25,7 +25,7 @@ export function PaginationControls({
   return (
     <div className={cn("flex flex-wrap items-center justify-center gap-2", className)}>
       <button
-        className="h-10 rounded-[14px] border border-[var(--ve-line)] px-4 text-xs font-black text-[var(--ve-muted-strong)] disabled:opacity-40"
+        className="h-10 rounded-[14px] border border-[var(--ui-border)] px-4 text-xs font-black text-[var(--ui-text-muted)] disabled:opacity-40"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
         type="button"
@@ -35,13 +35,13 @@ export function PaginationControls({
       {pageWindow[0] && pageWindow[0] > 1 ? (
         <>
           <button
-            className="grid size-10 place-items-center rounded-[14px] border border-[var(--ve-line)] text-xs font-black text-[var(--ve-muted-strong)]"
+            className="grid size-10 place-items-center rounded-[14px] border border-[var(--ui-border)] text-xs font-black text-[var(--ui-text-muted)]"
             onClick={() => onPageChange(1)}
             type="button"
           >
             1
           </button>
-          {pageWindow[0] > 2 ? <span className="px-1 text-xs font-black text-[var(--ve-muted)]">…</span> : null}
+          {pageWindow[0] > 2 ? <span className="px-1 text-xs font-black text-[var(--ui-text-muted)]">…</span> : null}
         </>
       ) : null}
       {pageWindow.map((page) => (
@@ -49,8 +49,8 @@ export function PaginationControls({
           className={cn(
             "grid size-10 place-items-center rounded-[14px] border text-xs font-black",
             page === currentPage
-              ? "border-[var(--ve-green)] bg-[var(--ve-green-soft)] text-[var(--ve-green)]"
-              : "border-[var(--ve-line)] text-[var(--ve-muted-strong)]",
+              ? "border-[var(--ui-current-text)] bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]"
+              : "border-[var(--ui-border)] text-[var(--ui-text-muted)]",
           )}
           key={page}
           onClick={() => onPageChange(page)}
@@ -62,10 +62,10 @@ export function PaginationControls({
       {pageWindow[pageWindow.length - 1] && pageWindow[pageWindow.length - 1] < totalPages ? (
         <>
           {pageWindow[pageWindow.length - 1] < totalPages - 1 ? (
-            <span className="px-1 text-xs font-black text-[var(--ve-muted)]">…</span>
+            <span className="px-1 text-xs font-black text-[var(--ui-text-muted)]">…</span>
           ) : null}
           <button
-            className="grid size-10 place-items-center rounded-[14px] border border-[var(--ve-line)] text-xs font-black text-[var(--ve-muted-strong)]"
+            className="grid size-10 place-items-center rounded-[14px] border border-[var(--ui-border)] text-xs font-black text-[var(--ui-text-muted)]"
             onClick={() => onPageChange(totalPages)}
             type="button"
           >
@@ -74,7 +74,7 @@ export function PaginationControls({
         </>
       ) : null}
       <button
-        className="h-10 rounded-[14px] border border-[var(--ve-line)] px-4 text-xs font-black text-[var(--ve-muted-strong)] disabled:opacity-40"
+        className="h-10 rounded-[14px] border border-[var(--ui-border)] px-4 text-xs font-black text-[var(--ui-text-muted)] disabled:opacity-40"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
         type="button"

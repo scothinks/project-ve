@@ -11,8 +11,8 @@ function RewardThumbnail({ reward }: { reward: StoreReward }) {
   return (
     <RewardThumbnailVisual
       defaultColor="#fff8df"
-      iconClassName="h-[42%] w-[42%] text-[#a66d00]"
-      textClassName="text-[1.1rem] font-semibold tracking-[-0.02em] text-[#a66d00]"
+      iconClassName="h-[42%] w-[42%] text-[var(--ui-artwork-ink)]"
+      textClassName="text-[1.1rem] font-semibold tracking-[-0.02em] text-[var(--ui-artwork-ink)]"
       thumbnail={reward.thumbnail}
       title={reward.title}
     />
@@ -29,7 +29,7 @@ export function FeaturedRewardCard({
   return (
     <Link href="/xp-store" className="block h-full">
       <Card
-        className={`dashboard-featured-reward-card flex h-full flex-col overflow-hidden border border-[#fff1bf] ${
+        className={`dashboard-featured-reward-card flex h-full flex-col overflow-hidden border border-[var(--ui-reward-bg)] ${
           compact ? "dashboard-featured-reward-card--compact" : ""
         }`}
         variant="store"
@@ -58,7 +58,7 @@ export function FeaturedRewardCard({
               compact
                 ? "min-h-[2.6rem] text-[0.98rem] leading-[1.32] line-clamp-2"
                 : "min-h-[4.9rem] text-[1.12rem] leading-7 line-clamp-3"
-            } font-semibold tracking-[-0.025em] text-[var(--foreground)]`}
+            } font-semibold tracking-[-0.025em] text-[var(--ui-text)]`}
           >
             {reward.title}
           </h3>
@@ -67,7 +67,7 @@ export function FeaturedRewardCard({
               compact
                 ? "text-[0.82rem] leading-5 line-clamp-2"
                 : "text-[0.95rem] leading-6 line-clamp-3"
-            } ${compact ? "mt-1.5" : "mt-2"} font-medium text-[var(--ve-muted)]`}
+            } ${compact ? "mt-1.5" : "mt-2"} font-medium text-[var(--ui-text-muted)]`}
           >
             {reward.description}
           </p>

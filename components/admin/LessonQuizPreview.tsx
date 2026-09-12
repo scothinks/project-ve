@@ -21,7 +21,7 @@ export function LessonQuizPreview({ questions }: { questions: AdminQuizQuestionR
     return (
       <Card className="space-y-4 p-6">
         <h2 className="text-xl font-black">Quiz preview complete</h2>
-        <p className="text-sm text-[var(--ve-muted-strong)]">You have reached the end of the lesson and quiz. No progress or XP was recorded.</p>
+        <p className="text-sm text-[var(--ui-text-muted)]">You have reached the end of the lesson and quiz. No progress or XP was recorded.</p>
         <Button onClick={() => { setIndex(0); setSelected([]); setChecked(false); setFinished(false); }} type="button">Restart quiz preview</Button>
       </Card>
     );
@@ -54,7 +54,7 @@ export function LessonQuizPreview({ questions }: { questions: AdminQuizQuestionR
         <Card className="space-y-2 p-5" role="status">
           <p className="font-bold">{correct ? "Correct" : "Not quite"}</p>
           <p className="text-sm">Correct answer: {correctOptions.map((option) => option.label).join(", ")}</p>
-          {question.explanation ? <p className="text-sm text-[var(--ve-muted-strong)]">{question.explanation}</p> : null}
+          {question.explanation ? <p className="text-sm text-[var(--ui-text-muted)]">{question.explanation}</p> : null}
         </Card>
       ) : null}
       <div className="flex justify-end">
