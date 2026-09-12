@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { AdminConfirmDialog } from '@/components/admin/AdminDialog';
 import { AdminCard } from '@/components/admin/AdminPrimitives';
 import { AdminSelect } from '@/components/admin/AdminSelect';
 import { creditLabel, type AuthoringResult } from '@/features/ai-generation/authoring/contracts';
 import type { CourseAvailability } from '@/features/ai-generation/authoring/course-availability';
 import { authoringRequest } from './useAuthoringResult';
-import { AiCourseOutlineEditor, courseField } from './AiCourseOutlineEditor';
+import { AiCourseOutlineEditor } from './AiCourseOutlineEditor';
 import { AiCourseDiscovery } from './AiCourseDiscovery';
 import { AiCoursePreview } from './AiCoursePreview';
 import { CourseGenerateAction } from './CourseGenerateAction';
+import { CourseRefineAction } from './CourseRefineAction';
 import { CourseLeaveGuard } from './CourseLeaveGuard';
 import { CourseQuoteReview } from './CourseQuoteReview';
 import { aiButton, aiPrimary } from './AiPageResult';
@@ -20,7 +21,6 @@ import { useCourseJourney } from './useCourseJourney';
 export function AiCourseAuthoring({ availability, initialId }: { availability: CourseAvailability; initialId?: string }) {
   const journey = useCourseJourney(initialId);
   const { result, id, brief, outline, busy, checking, error, run } = journey;
-  const [refinement, setRefinement] = useState('');
   const progressRef = useRef<HTMLDivElement>(null);
   const active = result?.stage === 'starting' || result?.stage === 'writing';
   const terminal = !!result && ['ready', 'failed', 'stopped'].includes(result.stage);
@@ -33,7 +33,7 @@ export function AiCourseAuthoring({ availability, initialId }: { availability: C
     <nav aria-label="Course navigation" className="flex flex-wrap gap-4 text-sm font-bold"><Link href="/admin/courses/choose">← Courses</Link>{result?.parentId && <Link href={`?aiResult=${result.parentId}`}>Earlier version / outline</Link>}</nav>
     <header><p className="text-sm font-bold">Create with AI</p><h1 className="mt-2 text-3xl font-black leading-tight">{result?.receipt ? 'Your course is saved' : result?.kind === 'course_draft' ? 'Your course draft' : result ? 'Shape your course outline' : 'Good courses start with a little help'}</h1><p className="mt-3 max-w-2xl text-sm leading-6">{result ? 'Your outline and generated lessons are kept automatically. Review them, then save an editable course draft when you are ready.' : 'Bring a rough idea, a problem to solve, or let us help you choose. Together, we’ll turn it into something worth learning.'}</p></header>
     <ol aria-label="Course creation progress" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-2">{steps.map((label, index) => <li key={label} aria-current={index === step ? 'step' : undefined} className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-sm ${index === step ? 'font-black' : 'opacity-70'}`}><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs">{index < step ? '✓' : index + 1}</span>{label}{index < step && <span className="sr-only"> completed</span>}</li>)}</ol>
-    {!enabled && <AdminCard><div role="status" className="space-y-3"><h2 className="font-bold">{availability.reason || 'Switch to this result’s workspace to generate more.'}</h2><p className="text-sm">You can still open saved results or create a course yourself.</p><div className="flex flex-wrap gap-3"><Link className={aiPrimary} href="/admin/courses/new">Start from scratch</Link><Link className={aiButton} href="/admin/courses/ai-results">Resume earlier work</Link></div></div></AdminCard>}
+    {!enabled && <AdminCard><div role="status" className="space-y-3"><h2 className="font-bold">{availability.reason || 'Switch to this result’s workspace to generate more.'}</h2><p className="text-sm">You can still open saved results or create a course yourself.</p><Link className={aiPrimary} href="/admin/courses/new">Start from scratch</Link></div></AdminCard>}
     {error && <p role="alert" className="rounded-xl border p-4 text-sm">{error}</p>}
     {journey.reconnecting && <p role="status">Reconnecting to your saved progress…</p>}
     {availability.enabled && <div hidden={!!result || !!id}>
@@ -52,19 +52,25 @@ export function AiCourseAuthoring({ availability, initialId }: { availability: C
         <AiCourseOutlineEditor key={`${result.id}:${journey.editRevision.current}`} value={outline} onChange={journey.setOutline} disabled={busy} />
         <p role="status" className="text-xs">{journey.dirty ? 'Unsaved outline changes' : 'Outline saved'}</p>
         <div className="space-y-2"><label htmlFor="course-quiz-scope" className="text-sm font-bold">Quiz scope</label><AdminSelect id="course-quiz-scope" disabled={busy} value={String(journey.questions)} onValueChange={value => journey.setQuestions(Number(value))} options={[{label:'No quizzes',value:'0'},...[1,2,3].map(n=>({label:`${n} question${n>1?'s':''} per lesson`,value:String(n)}))]} /></div>
-        <button type="button" className={aiButton} disabled={busy} onClick={() => void run(async () => { await journey.saveOutline(); })}>Save outline</button>
-        <CourseGenerateAction kind="course_draft" lessons={outline.lessons.length} questions={journey.questions} enabled={enabled} busy={busy} label="Generate" onGenerate={price => void run(() => journey.generateDraft(price))} />
+        <CourseGenerateAction kind="course_draft" lessons={outline.lessons.length} questions={journey.questions} enabled={enabled} busy={busy} label="Generate course" separator="-"
+          description="Generate course writes the lessons and selected quiz questions from this outline."
+          actionsBefore={price => <>
+            <button type="button" className={aiButton} disabled={busy} onClick={() => void run(async () => { await journey.saveOutline(); })}>Save</button>
+            <CourseRefineAction key={result.id} lessons={result.brief.lessonCount} enabled={enabled} busy={busy} error={error} price={price ? { metered: price.metered, estimatedUnits: price.outlineUnits } : null} onRefine={(direction, price) => void run(() => journey.refine(direction, price))} />
+          </>}
+          onGenerate={price => void run(() => journey.generateDraft(price))} />
       </AdminCard>}
       {result.kind === 'course_draft' && result.stage !== 'quote' && <><p role="status" className="font-bold">{result.completedCount} of {result.totalCount} lessons ready</p><AiCoursePreview result={result} /></>}
       {(checking || result.applicationState === 'checking') && !result.receipt && <AdminCard className="space-y-3"><p role="status">Checking save… Resolve this outcome before trying again.</p><button className={aiButton} disabled={busy} onClick={() => void run(journey.read)}>Check save</button><button className={aiButton} disabled={busy} onClick={() => void run(journey.apply)}>Recover this save</button></AdminCard>}
       {result.receipt ? <AdminCard className="space-y-4"><h2 className="text-xl font-bold">Ready for your editorial review</h2><p className="text-sm leading-6">Check the lesson content and quiz answers, and choose the required cover artwork. You’ll approve and publish separately.</p><div className="flex flex-wrap gap-3"><Link className={aiPrimary} href={`/admin/courses/${result.receipt.courseId}/review`}>Review course</Link><Link className={aiButton} href={`/admin/courses/${result.receipt.courseId}`}>Open saved course</Link></div></AdminCard>
         : terminal && result.kind === 'course_draft' && result.completedCount > 0 && !checking && result.applicationState !== 'checking' && <AdminCard className="space-y-3"><p className="text-sm">This is a generated result, not yet a saved course. Saving creates an editable draft.</p><button className={aiPrimary} disabled={busy} onClick={() => void run(journey.apply)}>{result.completedCount === result.totalCount ? 'Save course draft' : `Save only ${result.completedCount} completed lesson${result.completedCount > 1 ? 's' : ''}`}</button></AdminCard>}
       {terminal && !result.receipt && result.kind === 'course_draft' && result.completedCount < result.totalCount && <AdminCard><CourseGenerateAction kind="course_draft" lessons={result.totalCount} questions={result.questionsPerLesson} retryId={result.id} enabled={enabled && !checking && result.applicationState !== 'checking'} busy={busy} label="Retry" onGenerate={price => void run(() => journey.retry(price))} /></AdminCard>}
-      {terminal && <details className="space-y-3 rounded-xl border p-4"><summary className="cursor-pointer text-sm font-bold">Refine the outline in a new version</summary><textarea aria-label="Refinement direction" className={courseField} maxLength={1000} disabled={busy} value={refinement} onChange={e => setRefinement(e.target.value)} /><p className="text-sm">Your earlier outline and completed drafts stay available. This creates a separately requested outline.</p><CourseGenerateAction kind="course_outline" lessons={result.brief.lessonCount} enabled={enabled} busy={busy} valid={!!refinement.trim()} label="Refine" onGenerate={price => void run(() => journey.refine(refinement, price))} /></details>}
-      <div className="flex flex-wrap gap-3">{active && <button className={aiButton} disabled={busy || result.stopRequested} onClick={() => void run(async () => { await journey.request({ action: 'stop', id: result.id }); progressRef.current?.focus(); })}>Stop remaining work</button>}
-        {!active && <AdminConfirmDialog title="Delete this result?" description="Completed draft content in this result will be deleted. Saved courses stay in place. Generation credits are not refunded." confirmLabel="Delete result" onConfirm={() => run(async () => { await authoringRequest({ action: 'delete', id: result.id }); await journey.read(); })} trigger={<button className={aiButton} disabled={busy || checking || result.applicationState === 'checking'}>Delete result</button>} />}
-      </div>
+      {terminal && !(result.kind === 'course_outline' && result.stage === 'ready' && outline) && <CourseRefineAction key={result.id} lessons={result.brief.lessonCount} enabled={enabled} busy={busy} error={error} onRefine={(direction, price) => void run(() => journey.refine(direction, price))} />}
+      {active && <button className={aiButton} disabled={busy || result.stopRequested} onClick={() => void run(async () => { await journey.request({ action: 'stop', id: result.id }); progressRef.current?.focus(); })}>Stop remaining work</button>}
     </>}
-    {enabled && <p className="text-sm">Already started something? <Link className="font-bold underline underline-offset-4" href="/admin/courses/ai-results">Resume earlier work</Link></p>}
+    <div role="group" aria-label="Saved work actions" className="flex items-center gap-4 border-t border-[var(--admin-border-warm)] pt-4 text-sm">
+      <Link className="font-bold underline underline-offset-4" href="/admin/courses/ai-results">Resume earlier work</Link>
+      {result && !result.deleted && !active && <AdminConfirmDialog title="Delete this result?" description="Completed draft content in this result will be deleted. Saved courses stay in place. Generation credits are not refunded." confirmLabel="Delete result" onConfirm={() => run(async () => { await authoringRequest({ action: 'delete', id: result.id }); await journey.read(); })} trigger={<button type="button" className={aiButton} disabled={busy || checking || result.applicationState === 'checking'}>Delete</button>} />}
+    </div>
   </div>;
 }

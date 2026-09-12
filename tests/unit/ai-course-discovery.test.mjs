@@ -29,6 +29,8 @@ test('a displayed quote must match price, tenant, lesson and quiz scope before s
  for(const change of [{estimatedUnits:183},{totalCount:3},{completedCount:1},{questionsPerLesson:0},{workspaceId:'second'},{metered:false},{stage:'starting'}])assert.equal(quoteMatchesPrice({...quote,...change},price),false);
  assert.equal(pricedAction('Generate',{estimatedUnits:57,metered:true}),'Generate · 57 credits');
  assert.equal(pricedAction('Generate',{estimatedUnits:57,metered:false}),'Generate · 0 credits');
+ assert.equal(pricedAction('Refine',{estimatedUnits:57,metered:true},'-'),'Refine - 57 credits');
+ assert.equal(pricedAction('Generate course',{estimatedUnits:205,metered:true},'-'),'Generate course - 205 credits');
 });
 const hooks=registerHooks({resolve(specifier,context,next){if(specifier==='server-only')return{shortCircuit:true,url:'data:text/javascript,export {}'};return next(specifier,context);}});
 const {generateCourseAdvice}=await import('../../features/ai-generation/authoring/course-discovery-provider.ts');hooks.deregister();

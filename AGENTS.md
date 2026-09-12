@@ -25,6 +25,18 @@ At minimum, every task should respect:
 P0, P1 and P1.5A-P1.5F architecture is closed. Do not begin P2 until hosted
 query evidence has been reviewed and the user explicitly authorises it.
 
+## Trusted local staging workflow
+
+The user chose one shared local staging branch on 12 September 2026.
+Use `codex/staging` in `/Users/scoteritemu/Nu-Project-VE` for subsequent work.
+Do not create a new branch or worktree for a task unless the user explicitly asks.
+Inspect and preserve existing changes, commit coherent completed work, and keep
+unrelated historical worktrees as references rather than alternate working copies.
+Do not switch to or update another branch, push, deploy, or delete old branches as
+an automatic consequence of finishing a task. Local staging and production release
+are separate. The consolidation evidence is in
+`docs/evidence/local-staging/consolidation-2026-09-12.md`.
+
 ## Approval and work tracking
 
 Treat “proceed with the plan” or “proceed with phase X” of a shared plan as

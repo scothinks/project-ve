@@ -1,5 +1,23 @@
 # Project Ve Engineering Remediation Plan
 
+## Outline action hierarchy, 2026-09-08
+
+The guided outline groups Save / Refine - credits / Generate course - credits
+in a desktop row with full-width mobile stacking, and separates recovery/deletion
+into one secondary row. Existing price acceptance, save, recovery and deletion
+boundaries are preserved. Eight affected production browser journeys, typecheck,
+lint and 41 guardrails pass locally; deployment is pending. See the
+[action hierarchy evidence](ai-course-guided-journey.md#outline-action-hierarchy-2026-09-08).
+
+## Course pricing incident, 2026-09-08
+
+The missing pricing RPC was confirmed on linked ProjectVE. With explicit user
+approval, the guidance allowance and price preview migrations were applied.
+The remote database is up to date; hosted tariff and ACL checks pass and REST
+recognizes the pricing function. Signed-in browser confirmation remains pending.
+Safe diagnostic logging is locally validated but not deployed. See the [investigation and validation
+record](ai-course-guided-journey.md#pricing-503-investigation-2026-09-08).
+
 ## Guided AI course creation, 2026-09-07
 
 The approved four-block follow-up implements idea/audience discovery, read-only

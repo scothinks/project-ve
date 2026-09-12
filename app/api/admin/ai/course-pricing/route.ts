@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
+import { DependencyUnavailableError, logAppError } from '@/lib/app-errors';
 import { courseWorkspaceId } from '@/features/ai-generation/authoring/course-availability';
 
 export async function GET(request: Request) {
@@ -15,6 +16,14 @@ export async function GET(request: Request) {
   }
   const { data, error } = await admin.supabase.rpc('admin_preview_ai_course_price', { p_kind: kind, p_lessons: lessons,
     p_questions: questions, p_retry_id: retryId ?? undefined, p_organization_id: courseWorkspaceId(admin) ?? undefined });
-  if (error) return NextResponse.json({ error: 'Pricing is unavailable for this selection. Review the course or try again.' }, { status: error.code === '42501' ? 403 : error.code === 'PT409' ? 409 : 503, headers });
+  if (error) {
+    const status = error.code === '42501' ? 403 : error.code === 'PT409' ? 409 : 503;
+    if (status === 503) logAppError(new DependencyUnavailableError('Course pricing preview failed.'), {
+      operation: 'admin.ai_course_pricing.preview',
+      requestId: request.headers.get('x-vercel-id'),
+      metadata: { rpc: 'admin_preview_ai_course_price', dependencyCode: error.code },
+    });
+    return NextResponse.json({ error: 'Pricing is unavailable for this selection. Review the course or try again.' }, { status, headers });
+  }
   return NextResponse.json(data, { headers });
 }

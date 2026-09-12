@@ -28,3 +28,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local design previews, captures and worktree recovery archives
+/output/
+/scrollcraft/

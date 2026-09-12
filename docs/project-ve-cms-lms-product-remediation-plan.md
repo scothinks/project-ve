@@ -1,5 +1,25 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## Outline action hierarchy, 2026-09-08
+
+The requested Save / Refine - credits / Generate course - credits row and separate
+Resume earlier work / Delete row are implemented locally. The three outline
+actions stack as full-width buttons on mobile. Generate course identifies
+lesson-and-quiz drafting;
+refinement uses an explicit priced drawer flow. Eight affected production browser
+journeys, responsive row checks and local quality gates pass. See the
+[action hierarchy evidence](ai-course-guided-journey.md#outline-action-hierarchy-2026-09-08).
+Hosted deployment remains separate.
+
+## Course pricing incident, 2026-09-08
+
+The missing pricing RPC was confirmed on linked ProjectVE. With explicit user
+approval, both pending guidance allowance and price preview migrations were
+applied. Hosted tariff, ACL and schema-cache checks pass; the database is up to
+date. Signed-in browser confirmation remains pending, and local diagnostic
+logging is not deployed. See the [investigation and
+validation record](ai-course-guided-journey.md#pricing-503-investigation-2026-09-08).
+
 ## Guided AI course creation, 2026-09-07
 
 The approved four-block follow-up implements idea/audience discovery, read-only
