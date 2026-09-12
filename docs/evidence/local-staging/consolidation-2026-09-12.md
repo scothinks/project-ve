@@ -49,3 +49,19 @@ deleted, reset or force-updated as part of this local consolidation.
 All subsequent Project VE work uses this staging branch and directory. New task
 branches or additional worktrees require an explicit user request. Remote release,
 production deployment and branch cleanup remain separate from local integration.
+
+## Consolidation progress
+
+- Recovery archives captured and their saved-file checksums verified: 530 root
+  files, 62 identity files, 101 Reward Economy files, 3 files in each parity
+  worktree and 362 files from `b570`. Stored locally under
+  `output/local-staging-recovery/2026-09-12/`; private environment archives are
+  mode 0600 and excluded from Git. Root and identity `.env.local` files are identical.
+- Root checkpoint `2fa9721` preserves AI edits and the standing workflow.
+- Identity checkpoint `3e1d350` preserves welcome/background-XP work.
+- Existing root branch renamed to `codex/staging`. Merge `a193ee9` integrates
+  fetched main, and `4c76e04` integrates the welcome checkpoint.
+- Conflicts were additive documentation insertions. Both histories were retained.
+  One older AI border token was mapped to `--ui-border-subtle`.
+- The Reward Economy plan and refined reference are now in the canonical folder.
+  No tests have run as part of consolidation; the integrated batch remains due.

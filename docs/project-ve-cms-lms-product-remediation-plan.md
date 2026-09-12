@@ -1,5 +1,17 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## Admin reward economy redesign, 2026-09-10
+
+Implementation approved on 12 September 2026, following the refined interactive design review. A bounded presentation and sequencing change over the working missions,
+proof review, rewards, perks, campaigns, inventory and redemptions surfaces, so a
+non-technical programme officer can run them without knowing the underlying data model.
+No capability is removed, no schema changes, and every existing server action, entitlement
+check and editorial boundary is reused. Eight work packages (A–H) with per-package
+acceptance evidence; see [the plan](admin-reward-economy-redesign-plan.md). The identity
+cutover and current local work are consolidated on `codex/staging`. Testing is batched
+after the full implementation at the user’s request. Tracking is the Reward Economy project;
+this work does not open engineering P2 or authorize deployment.
+
 ## Background sample XP, 2026-09-12
 
 The user authorised the hosted welcome migration and replacing the saving screen
