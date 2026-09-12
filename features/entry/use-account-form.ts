@@ -29,7 +29,6 @@ type LoginFormProps = {
   isDemoMode: boolean;
   nextPath: string;
   initialMode: "login" | "signup";
-  hasWelcomeProgress: boolean;
 };
 
 type PendingAction = "submit" | "google" | "forgot" | "resend" | "redirect";
@@ -39,7 +38,7 @@ type ReferralAcceptResult = {
   destination?: string | null;
 };
 
-export function useAccountForm({ isDemoMode, nextPath, initialMode, hasWelcomeProgress }: LoginFormProps) {
+export function useAccountForm({ isDemoMode, nextPath, initialMode }: LoginFormProps) {
   const browserSupabase = useMemo(() => createSupabaseBrowserClient(), []);
   const supabase = isDemoMode ? null : browserSupabase;
   const safeNextPath = getSafeAuthNextPath(nextPath);
@@ -103,9 +102,9 @@ export function useAccountForm({ isDemoMode, nextPath, initialMode, hasWelcomePr
     const safeDestination = getSafeAuthNextPath(destination, safeNextPath);
     setPendingAction("redirect");
     window.setTimeout(() => {
-      window.location.replace(hasWelcomeProgress && !safeDestination.startsWith("/welcome/save") ? `/welcome/save?next=${encodeURIComponent(safeDestination)}` : safeDestination);
+      window.location.replace(safeDestination);
     }, 0);
-  }, [safeNextPath, hasWelcomeProgress]);
+  }, [safeNextPath]);
 
   const resolveReferralDestination = useCallback((result: ReferralAcceptResult | null) => {
     if (!result?.accessStatus) {

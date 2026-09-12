@@ -1,5 +1,32 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
+## Background sample XP, 2026-09-12
+
+The user authorised the hosted welcome migration and replacing the saving screen
+with background awards. Production now has `20260912150000` and `20260912160000`;
+the claim RPC is exposed and a final linked dry run reports no pending migrations.
+All confirmed accounts remain eligible for 10 XP once per fixed sample topic.
+New awards use the existing ledger and preference-aware notifications.
+
+The application follow-up is locally implemented and qualified, awaiting app
+rollout. Login/signup retain their normal destinations, including assessment and
+organisation context. Pending claims retry through a separate POST without a
+saving screen, assessment refresh or XP-triggered push-permission prompt. Receipt
+acknowledgements preserve newer work and ledger replay remains idempotent.
+Local production browser checks pass all five welcome/auth cases; 50 database
+files pass 1,469 assertions. See [background award evidence](evidence/theme-adoption/entry-integration.md#background-sample-xp-and-hosted-migration-follow-up).
+
+
+## Welcome reward card hierarchy, 2026-09-12
+
+The welcome reward card now leads with the learning accomplishment, followed by
+one earned-XP chip, the revised rewards sentence, save action and existing
+30-day fine print. Duplicate XP totals and account explanation are removed.
+Desktop copy stays on one line at 16px; mobile wraps naturally. Repeat-award behavior remains intact; the background follow-up above supersedes
+the earlier save destinations. Local production
+build, focused browser journey and visual checks pass; this follow-up has not
+been deployed. See [validation evidence](evidence/theme-adoption/entry-integration.md#welcome-reward-card-hierarchy-follow-up).
+
 ## Identity and connected entry, 2026-09-12
 
 The user approved the final identity direction and 251-string welcome/account
@@ -18,9 +45,8 @@ Shared identity B0–B6 and the later visual corrections are included. The stati
 scroll-craft prototype is retained as design evidence, separately from the
 connected React application. [Current implementation and qualification evidence](evidence/theme-adoption/entry-integration.md)
 records the checks and release limits. Earlier B6 evidence remains historical
-and applies only to its recorded source. Hosted migration application, auth
-provider configuration and deployment remain release steps; no hosted rollout is
-claimed. Closed P0/P1/P1.5 architecture and the P2 boundary are unchanged.
+and applies only to its recorded source. The welcome migrations are now applied as recorded above. Auth provider
+configuration and application deployment remain separate release checks. Closed P0/P1/P1.5 architecture and the P2 boundary are unchanged.
 
 ## Outline action hierarchy, 2026-09-08
 

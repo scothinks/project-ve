@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { expect, test } from '@playwright/test';
 
-test('welcome lesson, server-graded quiz, signup and one-time ledger saving reach real rewards', async ({ browser, baseURL }) => {
+test('sample XP retries in the background without interrupting signup, assessment or existing users', async ({ browser, baseURL }) => {
   test.setTimeout(180_000);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL!;
   if(!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw new Error('Welcome fixtures require local Supabase.');
@@ -16,25 +16,70 @@ test('welcome lesson, server-graded quiz, signup and one-time ledger saving reac
     await page.locator('[data-topic=think]').click();await expect(page.locator('#lesson-heading')).toBeFocused();
     await page.locator('#start-quiz').click();await expect(page.locator('#question-heading')).toBeFocused();
     await page.locator('[data-answer="0"]').click();await expect(page.locator('.xp-result')).toHaveCount(0);
-    await page.locator('[data-answer="1"]').click();await expect(page.locator('#xp-heading')).toBeFocused();await expect(page.locator('.xp-balance strong')).toHaveText('10 XP');
+    await page.locator('[data-answer="1"]').click();await expect(page.locator('#xp-heading')).toBeFocused();await expect(page.locator('#xp-award')).toHaveText('+10 XP earned');
     const receipt=(await context.cookies()).find(c=>c.name==='ve-welcome-progress')!;expect(receipt.httpOnly).toBe(true);
     const unauthenticated=await page.request.post('/api/welcome/progress',{headers:{Origin:baseURL!},data:{action:'claim',xp:100000}});expect(unauthenticated.status()).toBe(401);
     await page.locator('#save-xp').click();await expect(page.locator('#auth-title')).toHaveText('Keep what you’ve started');
     await page.getByLabel('Full name',{exact:true}).fill('Welcome learner');await page.getByLabel('Email address',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('checkbox').check();
+    let allowClaim = false;
+    let backgroundAttempts = 0;
+    await page.route('**/api/welcome/progress', async route => {
+      if (route.request().postDataJSON()?.action === 'claim') {
+        backgroundAttempts++;
+        if (!allowClaim) return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Temporarily unavailable'})});
+      }
+      await route.continue();
+    });
     await page.getByRole('button',{name:'Create account & save progress',exact:true}).click();
-    await expect(page).toHaveURL(/\/welcome\/save\?/);await expect(page.locator('.saved-balance strong')).toHaveText('10 XP');
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
+    await expect(page.getByRole('heading').first()).toBeVisible();
+    await expect.poll(() => backgroundAttempts).toBeGreaterThan(0);
+    await expect(page.getByText('Saving your progress…')).toHaveCount(0);
+    await expect(page.getByText('Temporarily unavailable')).toHaveCount(0);
     const users=await service.auth.admin.listUsers({page:1,perPage:1000});userId=users.data.users.find(u=>u.email===email)?.id;expect(userId).toBeTruthy();
-    const profile=await service.from('profiles').select('xp_balance_cached').eq('id',userId!).single();expect(profile.data?.xp_balance_cached).toBe(10);
+    const before=await service.from('profiles').select('xp_balance_cached').eq('id',userId!).single();expect(before.data?.xp_balance_cached).toBe(0);
+    const headingBefore = await page.getByRole('heading').first().textContent();
+    allowClaim = true;
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(async () => (await service.from('profiles').select('xp_balance_cached').eq('id',userId!).single()).data?.xp_balance_cached).toBe(10);
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
+    await expect(page.getByRole('heading').first()).toHaveText(headingBefore!);
+    await expect.poll(async () => (await service.from('user_notifications').select('id').eq('user_id',userId!).eq('event_type','welcome_xp_earned')).data?.length).toBe(1);
     await context.addCookies([receipt]);
     const replay=await page.evaluate(async()=>{const response=await fetch('/api/welcome/progress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'claim'})});return {ok:response.ok,data:await response.json()};});expect(replay.ok).toBe(true);expect(replay.data.savedXp).toBe(10);
     const ledger=await service.from('xp_transactions').select('amount').eq('user_id',userId!).eq('award_scope','welcome:think');expect(ledger.data).toEqual([{amount:10}]);
-    await page.getByRole('link',{name:'Explore rewards',exact:true}).click();await expect(page).toHaveURL(/\/xp-store$/);
+    await page.goto('/xp-store');await expect(page).toHaveURL(/\/xp-store$/);
     await page.goto('/');await expect(page.getByRole('heading',{name:'Live what you learn.'})).toBeVisible();await page.reload();await expect(page.getByRole('heading',{name:'Live what you learn.'})).toBeVisible();
     await page.locator('[data-topic=think]').click();
     await page.locator('#start-quiz').click();
     await page.locator('[data-answer="1"]').click();
-    await expect(page.locator('.xp-balance')).toContainText('Already saved to your account');
+    await expect(page.locator('#xp-award')).toHaveText('XP already earned');
     await expect(page.locator('#save-xp')).toHaveText(/Explore rewards/);
+    // Already signed-in users receive the next sample without a save click.
+    await page.locator('[data-topic=listen]').click();
+    await page.locator('#start-quiz').click();
+    await page.locator('[data-answer="1"]').click();
+    await expect.poll(async () => (await service.from('profiles').select('xp_balance_cached').eq('id',userId!).single()).data?.xp_balance_cached).toBe(20);
+    await expect(page).toHaveURL('/');
+    await expect(page.locator('#xp-heading')).toBeFocused();
+    await expect(page.locator('#save-xp')).toHaveText(/Explore rewards/);
+    // Existing account sign-in also carries guest progress into normal assessment.
+    await context.clearCookies();
+    await page.goto('/');
+    await page.locator('[data-topic=act]').click();
+    await page.locator('#start-quiz').click();
+    await page.locator('[data-answer="1"]').click();
+    await page.locator('#save-xp').click();
+    await page.getByRole('button',{name:'Sign in',exact:true}).click();
+    await expect(page.locator('.auth-form-wrap')).toHaveAttribute('aria-busy','false');
+    await page.getByLabel('Email address',{exact:true}).fill(email);
+    await page.getByLabel('Password',{exact:true}).fill(password);
+    await page.getByRole('button',{name:'Sign in',exact:true}).click();
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
+    await expect.poll(async () => (await service.from('profiles').select('xp_balance_cached').eq('id',userId!).single()).data?.xp_balance_cached).toBe(30);
+    await expect.poll(async () => (await service.from('user_notifications').select('id').eq('user_id',userId!).eq('event_type','welcome_xp_earned')).data?.length).toBe(3);
+    await page.goto('/welcome/save?next=%2Fxp-store');
+    await expect(page).toHaveURL(/\/onboarding\/assessment$/);
     const csrf=await page.request.post('/api/welcome/progress',{headers:{Origin:'https://unrelated.example'},data:{action:'learn',topic:'listen'}});expect(csrf.status()).toBe(403);
   } finally {if(!userId){const users=await service.auth.admin.listUsers({page:1,perPage:1000});userId=users.data.users.find(u=>u.email===email)?.id;}await context.close();if(userId)await service.auth.admin.deleteUser(userId);}
 });

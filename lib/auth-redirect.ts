@@ -15,6 +15,13 @@ export function getSafeAuthNextPath(
     if (decoded.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(decoded)) return fallback;
     if (new URL(next, "https://project-ve.local").origin !== "https://project-ve.local") return fallback;
   } catch { return fallback; }
+  const url = new URL(next, "https://project-ve.local");
+  if (url.pathname === "/welcome/save") {
+    const destination = url.searchParams.get("next");
+    // Historical reward links enter normal onboarding; retain explicit org context.
+    if (!destination || destination.startsWith("/welcome/save") || destination === "/xp-store") return fallback;
+    return getSafeAuthNextPath(destination, fallback);
+  }
   return next;
 }
 
@@ -47,5 +54,5 @@ export function shouldRouteAuthNextToPublicAssessment(nextPath: string) {
   const safeNextPath = getSafeAuthNextPath(nextPath);
   const nextUrl = new URL(safeNextPath, "https://project-ve.local");
 
-  return !["/login", "/welcome/save", "/onboarding/assessment"].includes(nextUrl.pathname) && !isOrganizationAuthNextPath(safeNextPath);
+  return !["/login", "/onboarding/assessment"].includes(nextUrl.pathname) && !isOrganizationAuthNextPath(safeNextPath);
 }
