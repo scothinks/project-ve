@@ -255,6 +255,7 @@ export async function createMission(
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath("/missions");
   revalidatePath("/dashboard");
   redirect(appendAdminNotice(`/admin/missions/${missionId}`, "Mission created."));
@@ -274,6 +275,7 @@ export async function updateMission(
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/missions/${payload.missionId}`);
   revalidatePath("/missions");
   revalidatePath("/dashboard");
@@ -317,6 +319,7 @@ export async function updateOrganizationMission(
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/missions/${payload.missionId}`);
   const organizationSlug = context.workspace.organizationIdentity?.slug;
   if (organizationSlug) {
@@ -367,6 +370,7 @@ export async function createOrganizationMission(
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/missions/${missionId}`);
   const organizationSlug = context.workspace.organizationIdentity?.slug;
   if (organizationSlug) {
@@ -411,6 +415,7 @@ export async function adaptPlatformMission(
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/missions/${missionId}`);
   const organizationSlug = context.workspace.organizationIdentity?.slug;
   if (organizationSlug) {
@@ -436,6 +441,7 @@ export async function setMissionStatus(formData: FormData) {
   }
 
   revalidatePath("/admin/missions");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/missions/${missionId}`);
   revalidatePath("/missions");
   revalidatePath("/dashboard");

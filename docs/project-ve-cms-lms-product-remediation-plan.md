@@ -2,7 +2,7 @@
 
 ## Admin reward economy redesign, 2026-09-10
 
-Implementation approved on 12 September 2026, following the refined interactive design review. A bounded presentation and sequencing change over the working missions,
+Implementation approved on 12 September 2026, following the refined interactive design review. Local A–H implementation is complete and in Review on `codex/staging`; hosted rollout remains separate. A bounded presentation and sequencing change over the working missions,
 proof review, rewards, perks, campaigns, inventory and redemptions surfaces, so a
 non-technical programme officer can run them without knowing the underlying data model.
 No capability is removed, no schema changes, and every existing server action, entitlement

@@ -1,10 +1,10 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import Link from "next/link";
 import { CampaignFilterSelect } from "@/components/admin/CampaignFilterSelect";
 import {
   AdminCard,
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatCard,
   AdminStatusBadge,
   EmptyAdminState,
@@ -80,8 +80,8 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
   return (
     <>
       <AdminPageHeader
-        backHref="/admin"
-        backLabel="Admin overview"
+        backHref="/admin/economy"
+        backLabel="Reward economy"
         eyebrow="XP Store"
         title="Perks"
         subtitle="Run low-XP perks like distribution programs. Track access, prize-pool health, and draw activity without digging through generic reward settings."
@@ -117,7 +117,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
         <EmptyAdminState>No perks found.</EmptyAdminState>
       ) : (
         <>
-        <div className="space-y-4">
+        <div className="grid gap-4 xl:grid-cols-2">
           {paginatedPrograms.items.map((program) => {
             const storefrontState = getStorefrontState(program.reward, {
               hasAvailableOutcomes: program.enabledPrizeCount > 0 || program.fallbackConfigured,
@@ -125,18 +125,18 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
 
             return (
               <AdminCard key={program.reward.id}>
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex h-full flex-col gap-4">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        className="text-2xl font-black hover:text-[var(--ui-info)]"
+                        className="text-xl font-semibold hover:text-[var(--ui-info)]"
                         href={`/admin/rewards/perks/${program.reward.id}`}
                       >
                         {program.reward.title}
                       </Link>
                       <AdminStatusBadge tone={badgeTone(storefrontState)}>{storefrontState}</AdminStatusBadge>
                       <AdminStatusBadge tone={program.fallbackConfigured ? "good" : "warning"}>
-                        {program.fallbackConfigured ? "fallback armed" : "fallback missing"}
+                        {program.fallbackConfigured ? "Fallback configured" : "Fallback missing"}
                       </AdminStatusBadge>
                     </div>
                     <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
@@ -149,7 +149,7 @@ export default async function AdminPerksPage({ searchParams }: AdminPerksPagePro
                       </div>
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallback</p>
-                        <p className="mt-1 font-black">{program.fallbackConfigured ? "Armed" : "Missing"}</p>
+                        <p className="mt-1 font-black">{program.fallbackConfigured ? "Only when no prize can be awarded" : "Not configured"}</p>
                       </div>
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Prize pool</p>

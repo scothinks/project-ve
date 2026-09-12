@@ -1,6 +1,8 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { EconomyDateInput } from "@/components/admin/economy/EconomyDateInput";
+import { EconomyForm } from "@/components/admin/economy/EconomyForm";
 import {
   AdminCard,
-  AdminPageHeader,
   AdminStatusBadge,
 } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
@@ -17,7 +19,7 @@ function labelClasses() {
 }
 
 type ReallocateInventoryPageProps = {
-  searchParams?: Promise<{ saved?: string }>;
+  searchParams?: Promise<{ saved?: string; rewardId?: string; campaignId?: string }>;
 };
 
 export default async function ReallocateInventoryPage({ searchParams }: ReallocateInventoryPageProps) {
@@ -34,7 +36,7 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
         backHref="/admin/rewards"
         backLabel="Rewards"
         eyebrow="Inventory"
-        title="Reallocate inventory"
+        title="Move stock"
         subtitle="Move unused reward stock from one campaign to another while keeping an audit trail."
       />
 
@@ -45,11 +47,10 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
       ) : null}
 
       <AdminCard className="max-w-4xl">
-        <form action={reallocateInventory} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+        <EconomyForm action={reallocateInventory} className="mt-5 space-y-5" steps={[{ id: "step-0", title: "Choose stock to move", description: "", content: <><div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Reward</span>
-              <select className={fieldClasses()} name="rewardId" required>
+              <select className={fieldClasses()} name="rewardId" defaultValue={params.rewardId ?? ""} required>
                 <option value="">Select reward</option>
                 {rewards.map((reward) => (
                   <option key={reward.id} value={reward.id}>
@@ -64,7 +65,7 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
             </label>
             <label>
               <span className={labelClasses()}>From campaign</span>
-              <select className={fieldClasses()} name="fromCampaignId" required>
+              <select className={fieldClasses()} name="fromCampaignId" defaultValue={params.campaignId ?? ""} required>
                 <option value="">Select source</option>
                 {campaigns.map((campaign) => (
                   <option key={campaign.id} value={campaign.id}>{campaign.name}</option>
@@ -80,20 +81,16 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
                 ))}
               </select>
             </label>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
+          </div></> },{ id: "step-1", title: "Availability", description: "Dates control when this stock is available. Moving stock does not extend provider or code validity. Leave optional dates empty to keep the existing timing.", content: <><div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className={labelClasses()}>Available from</span>
-              <input className={fieldClasses()} name="availableFrom" type="datetime-local" />
+              <EconomyDateInput className={fieldClasses()} name="availableFrom" type="datetime-local" />
             </label>
             <label>
               <span className={labelClasses()}>Expires</span>
-              <input className={fieldClasses()} name="expiresAt" type="datetime-local" />
+              <EconomyDateInput className={fieldClasses()} name="expiresAt" type="datetime-local" />
             </label>
-          </div>
-
-          <label className="block">
+          </div></> },{ id: "step-2", title: "Reason for the move", description: "", content: <><label className="block">
             <span className={labelClasses()}>Reason</span>
             <input
               className={fieldClasses()}
@@ -102,12 +99,9 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
               placeholder="Unused stock moved to the next campaign"
               required
             />
-          </label>
-
-          <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
+          </label></> }]} reviewAction={<button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
             Reallocate inventory
-          </button>
-        </form>
+          </button>} />
       </AdminCard>
     </>
   );

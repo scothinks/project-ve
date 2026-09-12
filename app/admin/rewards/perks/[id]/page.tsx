@@ -1,3 +1,6 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { configuredPrizeShares } from "@/features/reward-economy/vocabulary";
+import { EconomyCard } from "@/components/admin/economy/EconomyPrimitives";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { PerkAnalyticsPanel } from "@/components/admin/PerkAnalyticsPanel";
@@ -6,7 +9,6 @@ import { PerkEditorForm } from "@/components/admin/PerkEditorForm";
 import {
   AdminCard,
   AdminPagination,
-  AdminPageHeader,
   AdminStatCard,
   AdminStatusBadge,
   AdminTable,
@@ -327,7 +329,7 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Prize pool</p>
-            <h2 className="mt-2 text-xl font-black">What learners can win right now</h2>
+            <h2 className="mt-2 text-xl font-black">Prize pool & release windows</h2>
             <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               Focus on what is released, how often it is being hit, and whether linked reward stock is under pressure.
             </p>
@@ -337,41 +339,8 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
           <EmptyAdminState>No prize pool configured yet.</EmptyAdminState>
         ) : (
           <div className="mt-5">
-            <AdminTable columns={["Prize", "Type", "Weight", "Draws today", "Draws total", "Remaining today", "Remaining total", "Window", "State", "Action"]}>
-              {paginatedPrizes.items.map((prize) => (
-                <tr key={prize.id}>
-                  <td className="min-w-[220px] px-4 py-3">
-                    <p className="font-black">
-                      {prize.source_reward?.title ?? prize.title ?? "Prize"}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
-                      {prize.source_reward ? `Linked to ${prize.source_reward.fulfillment_type.replaceAll("_", " ")}` : "Native fallback-style prize"}
-                    </p>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 capitalize">{prize.prize_type.replaceAll("_", " ")}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-black">{prize.weight}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-black tabular-nums">{prize.performance?.drawsToday ?? 0}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-black tabular-nums">{prize.performance?.drawsTotal ?? 0}</td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {prize.performance?.remainingToday === null || prize.performance?.remainingToday === undefined
-                      ? "Open"
-                      : prize.performance.remainingToday}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {prize.performance?.remainingTotal === null || prize.performance?.remainingTotal === undefined
-                      ? "Open"
-                      : prize.performance.remainingTotal}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-[var(--ui-text-muted)]">
-                    {formatPrizeWindow(prize.available_from, prize.expires_at)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <AdminStatusBadge tone={prize.is_enabled ? "good" : "neutral"}>
-                      {prize.is_enabled ? "enabled" : "disabled"}
-                    </AdminStatusBadge>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <form action={setPerkPrizeEnabled}>
+            <p className="mb-4 text-sm text-[var(--ui-text-muted)]">Configured shares assume all enabled prizes are eligible and can be fulfilled. Timing, caps and stock change live selection. Enabled weights below one count as one. Fallback applies only when no prize can be awarded.</p>
+            <div className="grid gap-4 xl:grid-cols-2">{paginatedPrizes.items.map(prize => <EconomyCard key={prize.id} title={prize.source_reward?.title ?? prize.title ?? "Prize"} href={`/admin/rewards/perks/${reward.id}?focusPrize=${prize.id}`} eyebrow={<AdminStatusBadge tone={prize.is_enabled ? "good" : "neutral"}>{prize.is_enabled ? "Enabled" : "Disabled"}</AdminStatusBadge>} actions={<><Link className="px-3 py-2 font-semibold" href={`/admin/rewards/perks/${reward.id}?focusPrize=${prize.id}`}>Edit prize & assign stock →</Link><form action={setPerkPrizeEnabled}>
                       <input name="bundleRewardId" type="hidden" value={reward.id} />
                       <input name="prizeId" type="hidden" value={prize.id} />
                       <input
@@ -390,11 +359,12 @@ export default async function AdminPerkDetailPage({ params, searchParams }: Admi
                       >
                         {prize.is_enabled ? "Disable" : "Enable"}
                       </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </AdminTable>
+                    </form></>}>
+              <p className="text-2xl font-semibold text-[var(--ui-text)]">{(configuredPrizeShares(perkPrizes).get(prize.id) ?? 0).toFixed(1)}% <span className="text-sm font-normal">configured share</span></p>
+              <p>{prize.prize_type.replaceAll("_", " ")} · Weight {prize.weight}</p><p>{formatPrizeWindow(prize.available_from, prize.expires_at)}</p>
+              <div className="grid grid-cols-2 gap-3"><p>Daily cap: {prize.daily_win_cap ?? "No cap"}<br />{prize.performance?.remainingToday ?? "Uncapped"} remaining today</p><p>Total cap: {prize.total_win_cap ?? "No cap"}<br />{prize.performance?.remainingTotal ?? "Uncapped"} remaining overall</p><p>{prize.performance?.drawsToday ?? 0} draws today · {prize.performance?.drawsTotal ?? 0} total</p>{prize.source_reward ? <p>{prize.assigned_available ?? 0} stock assigned</p> : null}</div>
+              <details open={(prize.releaseBuckets ?? []).length > 0}><summary className="cursor-pointer font-semibold">Release windows · {(prize.releaseBuckets ?? []).length}</summary><ul className="mt-2 space-y-2">{(prize.releaseBuckets ?? []).map(bucket => <li key={bucket.id}>{bucket.label || "Release window"} · {bucket.is_enabled ? "Enabled" : "Disabled"}<br />{formatPrizeWindow(bucket.starts_at, bucket.ends_at)}<br />{bucket.remainingInBucket ?? bucket.release_cap} of {bucket.release_cap} releases left</li>)}</ul><Link className="mt-2 inline-block underline" href={`/admin/rewards/perks/${reward.id}?focusPrize=${prize.id}`}>Manage release windows</Link></details>
+            </EconomyCard>)}</div>
               <AdminPagination
                 basePath={`/admin/rewards/perks/${reward.id}`}
                 currentPage={paginatedPrizes.currentPage}

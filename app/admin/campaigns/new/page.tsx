@@ -1,4 +1,5 @@
-import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { AdminCard } from "@/components/admin/AdminPrimitives";
 import { CampaignForm } from "@/components/admin/CampaignForm";
 import { requirePlatformRewardCampaignManager } from "@/features/campaigns/admin/access";
 

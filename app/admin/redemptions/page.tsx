@@ -1,9 +1,9 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import Link from "next/link";
 import {
   AdminCard,
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
@@ -51,6 +51,7 @@ function renderClaimData(claimData: Record<string, unknown> | null) {
 
 type AdminRedemptionsPageProps = {
   searchParams?: Promise<{
+    view?: string;
     claimState?: string;
     fulfillmentType?: string;
     campaignId?: string;
@@ -68,15 +69,16 @@ function fieldClasses() {
 
 export default async function AdminRedemptionsPage({ searchParams }: AdminRedemptionsPageProps) {
   const params = (await searchParams) ?? {};
+  const needsAction = params.view !== "all" && !params.claimState && !params.fulfillmentType;
   const { supabase, workspace } = await requireAdminWorkspaceRole(REDEMPTION_ROLES);
   const organizationId = workspace.type === "organization" ? workspace.id : null;
   const [redemptions, campaigns, rewards] = await Promise.all([
-    getAdminRedemptions(supabase, params, 100, organizationId),
+    getAdminRedemptions(supabase, { ...params, needsAction }, 100, organizationId),
     getAdminCampaigns(supabase),
     getAdminRewards(supabase, {}, organizationId ?? undefined),
   ]);
   const exportHref = `/admin/redemptions/export?${new URLSearchParams(
-    Object.entries(params).filter((entry): entry is [string, string] => Boolean(entry[1])),
+    Object.entries({ ...params, needsAction: needsAction ? "true" : "false" }).filter((entry): entry is [string, string] => Boolean(entry[1])),
   ).toString()}`;
   const paginatedRedemptions = paginateItems(redemptions, parsePageParam(params.page), 12);
 
@@ -90,8 +92,11 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
         subtitle="Review reward purchases, submitted fulfillment details, and refund eligible pending rewards."
       />
       {params.notice ? <AdminNoticeBanner>{params.notice}</AdminNoticeBanner> : null}
+      <nav aria-label="Redemption queue" className="mb-5 flex gap-3"><Link className="rounded-full border border-[var(--ui-border-subtle)] px-4 py-2" aria-current={needsAction ? "page" : undefined} href="/admin/redemptions">Needs action</Link><Link className="rounded-full border border-[var(--ui-border-subtle)] px-4 py-2" aria-current={!needsAction ? "page" : undefined} href="/admin/redemptions?view=all">All redemptions</Link></nav>
+      {needsAction ? <p className="mb-4 text-sm text-[var(--ui-text-muted)]">Manual rewards with submitted details, ready for fulfilment. Purchases still awaiting learner details are in All redemptions.</p> : null}
       <form className="mb-4 grid gap-3 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4 md:grid-cols-3 xl:grid-cols-6">
-        <select className={fieldClasses()} name="claimState" defaultValue={params.claimState ?? ""}>
+        <input type="hidden" name="view" value="all" />
+        <select aria-label="Claim state" className={fieldClasses()} name="claimState" defaultValue={params.claimState ?? ""}>
           <option value="">All states</option>
           <option value="purchased">Purchased</option>
           <option value="details_submitted">Details submitted</option>
@@ -100,7 +105,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
           <option value="cancelled">Cancelled</option>
           <option value="expired">Expired</option>
         </select>
-        <select className={fieldClasses()} name="fulfillmentType" defaultValue={params.fulfillmentType ?? ""}>
+        <select className={fieldClasses()} aria-label="Fulfilment type" name="fulfillmentType" defaultValue={params.fulfillmentType ?? ""}>
           <option value="">All fulfillment</option>
           <option value="manual">Manual</option>
           <option value="voucher_code">Voucher</option>
@@ -108,21 +113,21 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
           <option value="external_link">External link</option>
           <option value="native">Native</option>
         </select>
-        <select className={fieldClasses()} name="campaignId" defaultValue={params.campaignId ?? ""}>
+        <select className={fieldClasses()} aria-label="Campaign" name="campaignId" defaultValue={params.campaignId ?? ""}>
           <option value="">All campaigns</option>
           <option value="none">No campaign</option>
           {campaigns.map((campaign) => (
             <option key={campaign.id} value={campaign.id}>{campaign.name}</option>
           ))}
         </select>
-        <select className={fieldClasses()} name="rewardId" defaultValue={params.rewardId ?? ""}>
+        <select className={fieldClasses()} aria-label="Reward" name="rewardId" defaultValue={params.rewardId ?? ""}>
           <option value="">All rewards</option>
           {rewards.map((reward) => (
             <option key={reward.id} value={reward.id}>{reward.title}</option>
           ))}
         </select>
-        <input className={fieldClasses()} name="dateFrom" type="date" defaultValue={params.dateFrom ?? ""} />
-        <input className={fieldClasses()} name="dateTo" type="date" defaultValue={params.dateTo ?? ""} />
+        <input className={fieldClasses()} aria-label="From date" name="dateFrom" type="date" defaultValue={params.dateFrom ?? ""} />
+        <input className={fieldClasses()} aria-label="To date" name="dateTo" type="date" defaultValue={params.dateTo ?? ""} />
         <div className="flex gap-2 md:col-span-3 xl:col-span-6">
           <button className="rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-xs font-black text-[var(--ui-on-action)]" type="submit">
             Apply filters
@@ -145,7 +150,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
 
             return (
               <AdminCard key={redemption.id}>
-                <details className="group">
+                <details className="group" open={needsAction}>
                   <summary className="flex cursor-pointer list-none flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -195,7 +200,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                             <input
                               className="w-full rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
-                              name="note"
+                              aria-label="Fulfilment note" name="note"
                               placeholder="Fulfillment note"
                             />
                             <button
@@ -213,7 +218,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
                             <input
                               className="w-full rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-semibold outline-none"
                               maxLength={500}
-                              name="reason"
+                              aria-label="Refund reason" name="reason"
                               placeholder="Refund reason"
                             />
                             <button
@@ -236,6 +241,7 @@ export default async function AdminRedemptionsPage({ searchParams }: AdminRedemp
           basePath="/admin/redemptions"
           currentPage={paginatedRedemptions.currentPage}
           searchParams={{
+            view: needsAction ? undefined : "all",
             claimState: params.claimState || undefined,
             fulfillmentType: params.fulfillmentType || undefined,
             campaignId: params.campaignId || undefined,

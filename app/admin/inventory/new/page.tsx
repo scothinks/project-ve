@@ -1,6 +1,9 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { EconomyDateInput } from "@/components/admin/economy/EconomyDateInput";
+import { StockMethod } from "@/components/admin/economy/StockMethod";
+import { EconomyForm } from "@/components/admin/economy/EconomyForm";
 import {
   AdminCard,
-  AdminPageHeader,
   AdminStatusBadge,
 } from "@/components/admin/AdminPrimitives";
 import { InventoryBatchUploadForm } from "@/components/admin/InventoryBatchUploadForm";
@@ -22,6 +25,7 @@ type NewInventoryPageProps = {
     count?: string;
     mode?: string;
     rewardId?: string;
+    campaignId?: string;
     saved?: string;
   }>;
 };
@@ -45,7 +49,7 @@ export default async function NewInventoryPage({ searchParams }: NewInventoryPag
     getAdminCampaigns(supabase),
     getAdminRewards(supabase, {}, workspace.type === "organization" ? workspace.id : undefined),
   ]);
-  const activeCampaignId = campaigns.find((campaign) => campaign.status === "active")?.id ?? "";
+  const activeCampaignId = campaigns.find(campaign => campaign.id === params.campaignId)?.id ?? campaigns.find((campaign) => campaign.status === "active")?.id ?? "";
   const quantityRewards = rewards.filter(
     (reward) => reward.fulfillment_type !== "voucher_code" && reward.fulfillment_type !== "qr_code",
   );
@@ -68,14 +72,12 @@ export default async function NewInventoryPage({ searchParams }: NewInventoryPag
         </div>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <AdminCard>
+      <StockMethod defaultMethod={params.mode === "batch" || rewards.some(reward => reward.id === selectedRewardId && ["voucher_code", "qr_code"].includes(reward.fulfillment_type)) ? "batch" : "quantity"} quantity={<AdminCard>
           <h2 className="text-lg font-black">Quantity allocation</h2>
           <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             For manual, native, and external-link rewards. Add scheduled quantity for a campaign or partner period.
           </p>
-          <form action={setInventoryQuantity} className="mt-5 space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+          <EconomyForm action={setInventoryQuantity} className="mt-5 space-y-5" steps={[{ id: "step-0", title: "Destination", description: "", content: <><div className="grid gap-4 md:grid-cols-2">
               <label>
                 <span className={labelClasses()}>Campaign</span>
                 <select className={fieldClasses()} name="campaignId" defaultValue={activeCampaignId}>
@@ -94,19 +96,18 @@ export default async function NewInventoryPage({ searchParams }: NewInventoryPag
                   ))}
                 </select>
               </label>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            </div></> },{ id: "step-1", title: "Quantity & dates", description: "Dates control when this stock is available. Moving stock does not extend provider or code validity. Leave optional dates empty to keep the existing timing.", content: <><div className="grid gap-4 md:grid-cols-3">
               <label>
                 <span className={labelClasses()}>Available quantity</span>
                 <input className={fieldClasses()} min={0} name="totalAvailable" required type="number" />
               </label>
               <label>
                 <span className={labelClasses()}>Available from</span>
-                <input className={fieldClasses()} name="availableFrom" type="datetime-local" />
+                <EconomyDateInput className={fieldClasses()} name="availableFrom" type="datetime-local" />
               </label>
               <label>
                 <span className={labelClasses()}>Expires</span>
-                <input className={fieldClasses()} name="expiresAt" type="datetime-local" />
+                <EconomyDateInput className={fieldClasses()} name="expiresAt" type="datetime-local" />
               </label>
               <label>
                 <span className={labelClasses()}>Batch label</span>
@@ -116,18 +117,13 @@ export default async function NewInventoryPage({ searchParams }: NewInventoryPag
                 <span className={labelClasses()}>Partner ref</span>
                 <input className={fieldClasses()} maxLength={160} name="partnerReference" placeholder="partner-batch-01" />
               </label>
-            </div>
-            <label className="block">
+            </div></> },{ id: "step-2", title: "Reason", description: "", content: <><label className="block">
               <span className={labelClasses()}>Reason</span>
               <input className={fieldClasses()} maxLength={300} name="reason" placeholder="Partner confirmed stock for this campaign" />
-            </label>
-            <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
+            </label></> }]} reviewAction={<button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
               Add quantity
-            </button>
-          </form>
-        </AdminCard>
-
-        <AdminCard>
+            </button>} />
+        </AdminCard>} batch={<AdminCard>
           <h2 className="text-lg font-black">Voucher or QR batch upload</h2>
           <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
             For voucher and QR rewards. Upload a single-reward batch so large partner files stay easy to audit.
@@ -138,8 +134,7 @@ export default async function NewInventoryPage({ searchParams }: NewInventoryPag
             rewards={rewards}
             selectedRewardId={selectedRewardId}
           />
-        </AdminCard>
-      </section>
+        </AdminCard>} />
     </>
   );
 }

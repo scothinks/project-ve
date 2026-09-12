@@ -1,7 +1,9 @@
 # Admin reward economy: plain-language redesign
 
 Date: 2026-09-10. Implementation approved on 2026-09-12 after the refined design review.
-Work continues on the single local `codex/staging` branch; tests are batched after A–H implementation at the user’s request.
+The A–H implementation is complete locally on the single `codex/staging` branch;
+tests were batched after implementation at the user’s request. The work is in
+Review pending local staging review; hosted rollout remains separate.
 Owner: @scothinks. Initiative: [Reward Economy](https://github.com/users/scothinks/projects/4).
 This is a bounded CMS/LMS product extension under the [canonical guardrails](codex/skills/project-ve-guardrails/SKILL.md)
 and the [CMS/LMS product remediation plan](project-ve-cms-lms-product-remediation-plan.md).

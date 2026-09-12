@@ -1,10 +1,12 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { getEconomyStock } from "@/features/reward-economy/stock";
+import { StockContext } from "@/components/admin/economy/StockContext";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { RewardEditorForm } from "@/components/admin/RewardEditorForm";
 import {
   AdminCard,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
   AdminTable,
   EmptyAdminState,
@@ -83,6 +85,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
     redirect(`/admin/rewards/perks/${detail.reward.id}`);
   }
 
+  const stock = await getEconomyStock(supabase, { rewardId: id });
   const { reward, inventoryItems, adjustments } = detail;
   const inventoryMode =
     reward.fulfillment_type === "voucher_code" || reward.fulfillment_type === "qr_code"
@@ -115,8 +118,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
           <RewardEditorForm
             action={updateReward}
             campaigns={campaigns}
-            lockDistributionMode="direct"
-            mode="edit"
+              mode="edit"
             organizations={organizations}
             programmes={programmes}
             reward={{
@@ -301,6 +303,7 @@ export default async function AdminRewardDetailPage({ params, searchParams }: Ad
           Open perks
         </Link>
       </AdminCard>
+      <StockContext stock={stock} rewardId={id} campaignId={reward.campaign_id ?? undefined} />
     </>
   );
 }

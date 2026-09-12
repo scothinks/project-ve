@@ -563,6 +563,12 @@ const orgPrimaryLinks: AdminLink[] = [
     roles: ["organisation_owner", "organisation_admin", "programme_manager", "content_editor"],
   },
   {
+    href: "/admin/economy",
+    label: "Reward economy",
+    icon: AdminRewardsIcon,
+    roles: ["organisation_owner", "organisation_admin", "programme_manager"],
+  },
+  {
     href: "/admin/missions",
     label: "Missions",
     icon: AdminMissionsIcon,
@@ -595,7 +601,7 @@ const orgPrimaryLinks: AdminLink[] = [
   },
   {
     href: "/admin/campaigns",
-    label: "Reward Campaigns",
+    label: "Campaigns",
     icon: AdminFlagIcon,
     roles: ["organisation_owner", "organisation_admin", "programme_manager"],
     catalogOnly: true,
@@ -608,7 +614,7 @@ const orgPrimaryLinks: AdminLink[] = [
   },
   {
     href: "/admin/inventory/new",
-    label: "Inventory",
+    label: "Stock",
     icon: AdminAddBoxIcon,
     roles: ["organisation_owner", "organisation_admin", "programme_manager"],
   },
@@ -662,6 +668,11 @@ function filterLinksForWorkspace(links: AdminLink[], workspace: ResolvedAdminWor
 
     return !link.roles || workspaceHasAnyRole(workspace, link.roles);
   });
+}
+
+function groupEconomyLinks(links: AdminLink[]) {
+  const paths = new Set(["/admin/economy", "/admin/missions", "/admin/proofs", "/admin/xp-ledger", "/admin/rewards", "/admin/rewards/perks", "/admin/campaigns", "/admin/inventory/new", "/admin/redemptions"]);
+  return [{ label: "Workspace", links: links.filter(link => !paths.has(link.href)) }, { label: "Reward economy", links: links.filter(link => paths.has(link.href)) }].filter(group => group.links.length);
 }
 
 function visibleOrgLinks(workspace: ResolvedAdminWorkspace) {
@@ -872,7 +883,7 @@ function OrgWorkspaceIdentity({
 
 function OrgSideNav({ pathname, workspace }: { pathname: string; workspace: ResolvedAdminWorkspace }) {
   return (
-    <nav className="fixed left-0 top-0 hidden h-screen w-20 flex-col items-center border-r border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] py-6 md:flex xl:hidden">
+    <nav className="fixed left-0 top-0 hidden h-screen w-20 flex-col items-center overflow-y-auto border-r border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] py-6 md:flex xl:hidden">
       <Link
         className="mb-8 flex h-11 w-11 items-center justify-center rounded border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-sm font-black text-[var(--ui-text)]"
         href="/admin"
@@ -939,11 +950,7 @@ function OrgSideNavExpanded({ pathname, workspace }: { pathname: string; workspa
       </div>
       <CreateMenu workspace={workspace} />
       <ul className="flex flex-1 flex-col gap-1">
-        {visibleOrgLinks(workspace).map((link) => (
-          <li key={link.href}>
-            <AdminNavLink link={link} pathname={pathname} />
-          </li>
-        ))}
+        {groupEconomyLinks(visibleOrgLinks(workspace)).map(group => <li key={group.label}><p className="mb-2 mt-5 px-3 text-xs font-semibold text-[var(--ui-text-muted)]">{group.label}</p><ul className="space-y-1">{group.links.map(link => <li key={link.href}><AdminNavLink link={link} pathname={pathname} /></li>)}</ul></li>)}
       </ul>
       <div className="mt-auto border-t border-[var(--ui-border-subtle)] pt-3">
         <AdminNavLink link={orgSettingsLink} pathname={pathname} />
@@ -1137,9 +1144,7 @@ export function AdminShell({
               </Collapsible.Trigger>
               <Collapsible.Content className="mt-3 max-h-[68vh] overflow-y-auto rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 shadow-lg">
                 <nav className="grid gap-1">
-                  {visibleOrgLinks(currentWorkspace).map((link) => (
-                    <AdminNavLink key={link.href} link={link} pathname={pathname} />
-                  ))}
+                  {groupEconomyLinks(visibleOrgLinks(currentWorkspace)).map(group => <section key={group.label}><h2 className="my-2 px-3 text-xs font-semibold text-[var(--ui-text-muted)]">{group.label}</h2>{group.links.map(link => <AdminNavLink key={link.href} link={link} pathname={pathname} />)}</section>)}
                   <div className="mt-2 border-t border-[var(--ui-border-subtle)] pt-2">
                     <AdminNavLink link={orgSettingsLink} pathname={pathname} />
                   </div>
@@ -1149,7 +1154,7 @@ export function AdminShell({
           </header>
           <div className="flex-1 px-5 py-6 md:px-8 md:py-8">
             <AdminBreadcrumbs pathname={pathname} />
-            {children}
+            <div className={/^\/admin\/(economy|missions|proofs|rewards|campaigns|inventory|redemptions)(\/|$)/.test(pathname) ? "reward-economy" : undefined}>{children}</div>
           </div>
         </div>
       </main>
@@ -1277,7 +1282,7 @@ export function AdminShell({
           </header>
           <div className="px-5 py-6 md:px-8 md:py-8">
             <AdminBreadcrumbs pathname={pathname} />
-            {children}
+            <div className={/^\/admin\/(economy|missions|proofs|rewards|campaigns|inventory|redemptions)(\/|$)/.test(pathname) ? "reward-economy" : undefined}>{children}</div>
           </div>
         </section>
       </div>

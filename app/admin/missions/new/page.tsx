@@ -1,5 +1,5 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { MissionEditorForm } from "@/components/admin/MissionEditorForm";
-import { AdminPageHeader } from "@/components/admin/AdminPrimitives";
 import { createMission } from "@/app/admin/missions/actions";
 import {
   getAdminCourses,

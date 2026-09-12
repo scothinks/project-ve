@@ -19,6 +19,7 @@ export type AdminRewardRow = {
   sponsored_programme_id: string | null;
   title: string;
   description: string | null;
+  terms: string | null;
   cost_xp: number;
   status: string;
   is_enabled: boolean;
@@ -34,6 +35,7 @@ export type AdminRewardRow = {
   starts_at: string | null;
   ends_at: string | null;
   offer_expires_at: string | null;
+  redemption_window_days: number | null;
   updated_at: string;
   campaign?: AdminCampaignRow | null;
 };
@@ -60,6 +62,7 @@ export type AdminRedemptionRow = {
 };
 
 export type AdminRedemptionFilters = {
+  needsAction?: boolean;
   claimState?: string;
   fulfillmentType?: string;
   rewardId?: string;
@@ -90,7 +93,7 @@ export async function getAdminRewards(
 ) {
   const selectedWorkspaceId = workspaceId ?? await getSelectedAdminWorkspaceId();
   const baseSelect =
-    "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
+    "id, campaign_id, organization_id, sponsored_programme_id, title, description, terms, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, redemption_window_days, updated_at";
   let query = supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)
@@ -161,7 +164,7 @@ export async function getAdminRedemptions(
   let query = supabase
     .from("reward_redemptions")
     .select(
-      "id, user_id, reward_id, awarded_reward_id, status, claim_state, reward_title_snapshot, xp_cost_at_redemption, fulfillment_type, claim_data, user_message, redemption_expires_at, refunded_at, fulfilled_at, admin_note, requested_at",
+      "id, user_id, reward_id, awarded_reward_id, status, claim_state, reward_title_snapshot, xp_cost_at_redemption, fulfillment_type, claim_data, user_message, redemption_expires_at, refunded_at, fulfilled_at, admin_note, requested_at, campaign_reward:rewards!reward_redemptions_reward_id_fkey(campaign_id)",
     )
     .order("requested_at", { ascending: false });
 
@@ -177,6 +180,16 @@ export async function getAdminRedemptions(
     query = query.or(
       [`reward_id.in.(${orgRewardIds.join(",")})`, `awarded_reward_id.in.(${orgRewardIds.join(",")})`].join(","),
     );
+  }
+
+  if (filters.needsAction) {
+    query = query.eq("fulfillment_type", "manual").eq("claim_state", "details_submitted").is("fulfilled_at", null);
+  }
+  if (filters.campaignId) {
+    query = query.not("campaign_reward", "is", null);
+    query = filters.campaignId === "none"
+      ? query.is("campaign_reward.campaign_id", null)
+      : query.eq("campaign_reward.campaign_id", filters.campaignId);
   }
 
   if (filters.claimState) {
@@ -205,7 +218,7 @@ export async function getAdminRedemptions(
     throw error;
   }
 
-  let redemptions = (data ?? []) as AdminRedemptionRow[];
+  const redemptions = (data ?? []) as AdminRedemptionRow[];
 
   const [profiles, rewards] = await Promise.all([
     getAdminProfilesByIds(
@@ -217,15 +230,6 @@ export async function getAdminRedemptions(
       redemptions.map((redemption) => redemption.reward_id),
     ),
   ]);
-
-  if (filters.campaignId) {
-    redemptions = redemptions.filter((redemption) => {
-      const reward = rewards.get(redemption.reward_id);
-      return filters.campaignId === "none"
-        ? !reward?.campaign_id
-        : reward?.campaign_id === filters.campaignId;
-    });
-  }
 
   return redemptions.map((redemption) => ({
     ...redemption,
@@ -242,7 +246,7 @@ export async function getAdminRewardsByIds(supabase: SupabaseClient, rewardIds: 
   }
 
   const baseSelect =
-    "id, campaign_id, organization_id, sponsored_programme_id, title, description, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, updated_at";
+    "id, campaign_id, organization_id, sponsored_programme_id, title, description, terms, cost_xp, status, is_enabled, fulfillment_type, owner_scope, shared_with_programmes, visibility_mode, total_uploaded, total_available, per_user_limit, limit_period, starts_at, ends_at, offer_expires_at, redemption_window_days, updated_at";
   const { data, error } = await supabase
     .from("rewards")
     .select(`${baseSelect}, distribution_mode`)

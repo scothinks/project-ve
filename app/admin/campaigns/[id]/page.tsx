@@ -1,9 +1,11 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { getEconomyStock } from "@/features/reward-economy/stock";
+import { StockContext } from "@/components/admin/economy/StockContext";
 import { notFound } from "next/navigation";
 import {
   AdminCard,
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatCard,
   AdminTable,
 } from "@/components/admin/AdminPrimitives";
@@ -31,6 +33,7 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
     notFound();
   }
 
+  const stock = await getEconomyStock(supabase, { campaignId: id });
   const paginatedRewards = paginateItems(analytics.rewardMetrics, parsePageParam(rewardsPage), 12);
 
   return (
@@ -43,9 +46,8 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
         subtitle="Edit campaign timing and reporting context. Launch controls live on the campaign list."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
-      <AdminCard>
-        <CampaignForm campaign={campaign} />
-      </AdminCard>
+      <AdminCard><p className="text-lg">{campaign.description}</p><p className="mt-2 text-sm font-semibold">{campaign.budget_label}</p><details className="mt-5"><summary className="cursor-pointer font-semibold">Edit campaign settings</summary><div className="mt-5"><CampaignForm campaign={campaign} /></div></details></AdminCard>
+      <StockContext stock={stock} campaignId={id} />
 
       <section className="mt-6 grid gap-4 md:grid-cols-3 xl:grid-cols-4">
         <AdminStatCard label="Rewards" value={`${analytics.enabledRewards}/${analytics.totalRewards}`} />
