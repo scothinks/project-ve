@@ -482,8 +482,10 @@ test.describe.serial("organization mission browser acceptance", () => {
     await clearBrowserState(page);
     await signIn(page, managerEmail, `/admin/missions/${orgWideMissionId}`);
     await expect(page.getByRole("heading", { level: 1, name: `E2E Organisation-wide Mission ${runId}` })).toBeVisible();
+    await page.getByRole("button", { name: "3. Availability", exact: true }).click();
     await expect(page.locator("input[name='deliveryScope'][value='catalog_only']")).toBeChecked();
     await page.locator("input[name='deliveryScope'][value='organization']").check();
+    await page.getByRole("button", { name: /^\d+\. Review$/ }).click();
     await page.getByRole("button", { name: "Save mission" }).click();
     await expect(page.getByText("Organisation mission saved.")).toBeVisible();
 
@@ -528,8 +530,14 @@ test.describe.serial("organization mission browser acceptance", () => {
     await clearBrowserState(page);
     await signIn(page, managerEmail, "/admin/proofs");
     await expect(page.getByRole("heading", { level: 1, name: "Proof review" })).toBeVisible();
-    await expect(page.getByText(`Submit Officer Reflection ${runId}`)).toBeVisible();
+    await page.getByRole("navigation", { name: "Submission queue" }).getByRole("button", { name: new RegExp(`Submit Officer Reflection ${runId}`) }).click();
     await expect(page.getByText(`Officer reflection proof ${runId}`)).toBeVisible();
+    await page.getByRole("button", { name: "Decline with a reason", exact: true }).click();
+    await page.getByLabel("Reason to send to the learner").fill("Please include the missing evidence.");
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await page.getByRole("button", { name: "Decline with a reason", exact: true }).click();
+    await expect(page.getByLabel("Reason to send to the learner")).toHaveValue("Please include the missing evidence.");
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await page.getByRole("button", { name: "Approve" }).click();
     await expect(page.getByText("Proof approved.")).toBeVisible();
 

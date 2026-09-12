@@ -1,8 +1,8 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { notFound, redirect } from "next/navigation";
 import {
   AdminCard,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
   AdminTable,
   EmptyAdminState,

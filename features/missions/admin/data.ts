@@ -98,6 +98,8 @@ export type AdminProofSubmission = {
   organizationId: string | null;
   programmeId: string | null;
   programmeMissionId: string | null;
+  organizationName?: string;
+  programmeName?: string;
   status: "submitted" | "approved" | "rejected";
   createdAt: string;
   reviewedAt: string | null;
@@ -132,7 +134,8 @@ async function getProfilesByIds(
   return new Map(((data ?? []) as AdminProofProfileRow[]).map((profile) => [profile.id, profile]));
 }
 
-export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: string) {
+export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: string, missionIds?: string[]) {
+  if (missionIds && !missionIds.length) return [];
   const selectedWorkspaceId = workspaceId ?? await getSelectedAdminWorkspaceId();
   let query = supabase
     .from("missions")
@@ -141,6 +144,7 @@ export async function getAdminMissions(supabase: SupabaseClient, workspaceId?: s
     )
     .order("sort_order", { ascending: true });
 
+  if (missionIds) query = query.in("id", [...new Set(missionIds)]);
   if (selectedWorkspaceId === PLATFORM_CATALOG_WORKSPACE_ID) {
     query = query.eq("catalog_scope", "platform");
   } else if (selectedWorkspaceId !== "platform") {
@@ -224,13 +228,21 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient, workspa
   }
 
   const proofs = (data ?? []) as AdminProofRow[];
-  const [profiles, missions] = await Promise.all([
+  const organizationIds = [...new Set(proofs.flatMap(proof => proof.organization_id ? [proof.organization_id] : []))];
+  const programmeIds = [...new Set(proofs.flatMap(proof => proof.programme_id ? [proof.programme_id] : []))];
+  const [profiles, missions, organizationsResult, programmesResult] = await Promise.all([
     getProfilesByIds(
       supabase,
       proofs.map((proof) => proof.user_id),
     ),
-    getAdminMissions(supabase, selectedWorkspaceId),
+    getAdminMissions(supabase, selectedWorkspaceId, proofs.map(proof => proof.mission_id)),
+    organizationIds.length ? supabase.from("organizations").select("id, name").in("id", organizationIds) : Promise.resolve({ data: [], error: null }),
+    programmeIds.length ? supabase.from("programmes").select("id, title").in("id", programmeIds) : Promise.resolve({ data: [], error: null }),
   ]);
+  if (organizationsResult.error) throw organizationsResult.error;
+  if (programmesResult.error) throw programmesResult.error;
+  const organizationNames = new Map((organizationsResult.data ?? []).map(row => [row.id, row.name]));
+  const programmeNames = new Map((programmesResult.data ?? []).map(row => [row.id, row.title]));
   const missionMap = new Map(missions.map((mission) => [mission.id, mission]));
   const grouped = new Map<string, AdminProofSubmission>();
 
@@ -252,6 +264,8 @@ export async function getAdminProofSubmissions(supabase: SupabaseClient, workspa
       missionId: proof.mission_id,
       awardScope: proof.award_scope,
       organizationId: proof.organization_id,
+      organizationName: organizationNames.get(proof.organization_id),
+      programmeName: programmeNames.get(proof.programme_id),
       programmeId: proof.programme_id,
       programmeMissionId: proof.programme_mission_id,
       status: nextStatus,

@@ -1,5 +1,6 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { RewardEditorForm } from "@/components/admin/RewardEditorForm";
-import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
+import { AdminCard } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminOrganizations, getAdminProgrammes, requireAdminWorkspaceRole } from "@/lib/admin";
 import { createReward } from "../[id]/actions";
 import { PLATFORM_CATALOG_WORKSPACE_ID } from "@/features/admin/shared/workspace";
@@ -31,7 +32,6 @@ export default async function NewAdminRewardPage() {
         <RewardEditorForm
           action={createReward}
           campaigns={campaigns}
-          lockDistributionMode="direct"
           mode="create"
           organizations={organizations}
           programmes={programmes}

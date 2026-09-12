@@ -38,6 +38,7 @@ export async function saveCampaign(formData: FormData) {
   const nextId = result?.campaignId ?? campaignId;
 
   revalidatePath("/admin/campaigns");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards");
 
   if (nextId) {
@@ -63,6 +64,7 @@ export async function setCampaignEnabled(formData: FormData) {
   }
 
   revalidatePath("/admin/campaigns");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards");
   revalidatePath("/xp-store");
   redirect(

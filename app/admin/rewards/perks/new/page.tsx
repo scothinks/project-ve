@@ -1,5 +1,6 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { PerkEditorForm } from "@/components/admin/PerkEditorForm";
-import { AdminCard, AdminPageHeader } from "@/components/admin/AdminPrimitives";
+import { AdminCard } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, requireAdminWorkspaceRole } from "@/lib/admin";
 import { createReward } from "../../[id]/actions";
 

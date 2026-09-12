@@ -64,6 +64,29 @@ test('price GET validates scope and does one read-only RPC in the selected works
   state.admin.workspace.id = 'platform-catalog'; await get('kind=course_outline'); assert.equal(state.calls.at(-1)[1].p_organization_id, undefined);
   state.rpcError = { code: '42501', message: 'private details' }; const denied = await get('kind=course_outline'); assert.equal(denied.status, 403); assert.doesNotMatch(JSON.stringify(await denied.json()), /private details/);
 });
+test('price dependency failures log a safe code and request correlation while failing closed', async () => {
+  const logs = [], previous = console.error;
+  console.error = value => logs.push(JSON.parse(value));
+  const requestId = crypto.randomUUID();
+  try {
+    for (const [code, status] of [['PGRST202', 503], ['08006', 503], ['42501', 403], ['PT409', 409]]) {
+      setup(); state.rpcError = { code, message: 'private database detail', details: 'private query detail', hint: 'private hint' };
+      const response = await GET(new Request('http://localhost/api/admin/ai/course-pricing?kind=course_outline&lessons=3&questions=0', { headers: { 'x-vercel-id': requestId } }));
+      assert.equal(response.status, status);
+      assert.equal(response.headers.get('cache-control'), 'private, no-store');
+      assert.doesNotMatch(JSON.stringify(await response.json()), /private|PGRST|08006/);
+      assert.equal(state.calls.length, 1); assert.equal(state.provider.length, 0);
+    }
+    assert.equal(logs.length, 2);
+    assert.deepEqual(logs.map(log => log.metadata.dependencyCode), ['PGRST202', '08006']);
+    for (const log of logs) {
+      assert.equal(log.operation, 'admin.ai_course_pricing.preview');
+      assert.equal(log.requestId, requestId);
+      assert.equal(log.metadata.rpc, 'admin_preview_ai_course_price');
+      assert.doesNotMatch(JSON.stringify(log), /private database|private query|private hint/);
+    }
+  } finally { console.error = previous; }
+});
 test('availability is request-scoped, read-only and distinguishes plan, pilot and provider availability', async () => configured(async () => {
   setup(); assert.equal((await getCourseAvailability()).enabled, true);
   state.notice = 'Plan unavailable'; assert.equal((await getCourseAvailability()).reason, 'Plan unavailable'); state.notice = null;

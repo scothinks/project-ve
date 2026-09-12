@@ -32,6 +32,40 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
     await page.getByRole('button',{name:'I have a brief'}).click();await page.getByLabel('Learning goal').fill('Make fair choices in a community.');await page.getByLabel('Who this will help').fill('Young adults');await page.getByText('Course options ·', {exact:false}).click();await page.getByLabel('Number of lessons').fill('2');
     expect(resultIds).toHaveLength(0);await page.getByRole('button',{name:'Generate · 0 credits',exact:true}).click();
     await expect(page.getByLabel('Course title', {exact:true})).toHaveValue('Decide together');
+    const actions=page.getByRole('group',{name:'Outline actions',exact:true});
+    await expect(actions.getByRole('button',{name:'Generate course - 0 credits',exact:true})).toBeEnabled();
+    if(!partial){
+      for(const width of [1280,390,320]){
+        await page.setViewportSize({width,height:900});
+        const boxes=await actions.getByRole('button').evaluateAll(buttons=>buttons.map(button=>{const r=button.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,overflow:button.scrollWidth>button.clientWidth};}));
+        expect(boxes).toHaveLength(3);
+        expect(boxes.some(b=>b.overflow)).toBe(false);
+        if(width>=640){
+          expect(Math.max(...boxes.map(b=>b.top))-Math.min(...boxes.map(b=>b.top))).toBeLessThan(2);
+          expect(boxes[0].right).toBeLessThanOrEqual(boxes[1].left);expect(boxes[1].right).toBeLessThanOrEqual(boxes[2].left);
+        }else{
+          const bounds=await actions.boundingBox();
+          for(const box of boxes){expect(Math.abs(box.left-bounds!.x)).toBeLessThan(2);expect(Math.abs(box.right-bounds!.x-bounds!.width)).toBeLessThan(2);}
+          expect(boxes[0].bottom).toBeLessThan(boxes[1].top);expect(boxes[1].bottom).toBeLessThan(boxes[2].top);
+        }
+        const savedActions=page.getByRole('group',{name:'Saved work actions',exact:true});
+        const recovery=await savedActions.getByRole('link',{name:'Resume earlier work'}).boundingBox();const deletion=await savedActions.getByRole('button',{name:'Delete',exact:true}).boundingBox();
+        expect(Math.abs(recovery!.y+recovery!.height/2-deletion!.y-deletion!.height/2)).toBeLessThan(2);
+        expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+        await actions.scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath(`outline-actions-${width}.png`)});
+      }
+      await page.setViewportSize({width:1280,height:900});
+      await actions.getByRole('button',{name:'Refine - 0 credits',exact:true}).click();
+      const refinement=page.getByRole('dialog',{name:'Refine your outline'});
+      await expect(refinement.getByLabel('Refinement direction')).toBeFocused();
+      await expect(refinement.getByRole('button',{name:'Refine - 0 credits',exact:true})).toBeDisabled();
+      await refinement.getByLabel('Refinement direction').fill('Emphasise listening in team meetings.');
+      await expect(refinement.getByRole('button',{name:'Refine - 0 credits',exact:true})).toBeEnabled();
+      await page.keyboard.press('Escape');await expect(refinement).toHaveCount(0);
+      await expect(actions.getByRole('button',{name:'Refine - 0 credits',exact:true})).toBeFocused();expect(resultIds).toHaveLength(1);
+      await page.getByRole('button',{name:'Delete',exact:true}).click();await expect(page.getByRole('alertdialog')).toBeVisible();
+      await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(actions).toBeVisible();
+    }
     await page.getByLabel('Course title',{exact:true}).fill('Community choices');
     await page.getByRole('button',{name:'Add lesson',exact:true}).click();
     await page.getByLabel('Lesson title',{exact:true}).nth(2).fill('Reflect together');await page.getByLabel('What it teaches').nth(2).fill('Review the decision.');
@@ -40,7 +74,7 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
     if(!partial){
       checked(await f.editor.rpc('admin_save_ai_course_outline',{p_id:resultIds[0],p_revision:1,p_outline:{...outline,title:'Another editor course'}}));
       await expect(page.locator('[data-outline-revision="2"]')).toBeVisible({timeout:30_000});
-      await page.getByRole('button',{name:'Generate · 0 credits',exact:true}).click();
+      await page.getByRole('button',{name:'Generate course - 0 credits',exact:true}).click();
       await expect(page.getByRole('alert').filter({hasText:'The outline changed'})).toBeVisible();
       await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Community choices');
       expect(checked(await f.editor.rpc('admin_read_ai_results',{p_id:resultIds[0]})).outline.title).toBe('Another editor course');
@@ -48,7 +82,9 @@ for(const partial of [false,true])test(partial?'partial course recovery keeps co
       await expect(page.getByLabel('Course title',{exact:true})).toHaveValue('Another editor course');await page.getByLabel('Course title',{exact:true}).fill('Community choices');
     }
     await page.getByRole('combobox',{name:'Quiz scope'}).click();await page.getByRole('option',{name:partial?'No quizzes':'1 question per lesson',exact:true}).click();
-    await page.getByRole('button',{name:'Generate · 0 credits',exact:true}).click();
+    await actions.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Outline saved'})).toBeVisible();
+    expect(resultIds).toHaveLength(1);
+    await page.getByRole('button',{name:'Generate course - 0 credits',exact:true}).click();
     await expect.poll(()=>resultIds.length).toBe(2);
     if(partial){
       await expect(page.getByRole('button',{name:'Retry · 0 credits'})).toBeVisible();

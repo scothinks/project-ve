@@ -1,7 +1,9 @@
 import { spawnSync } from "node:child_process";
 
 const contractTests = [
+  "tests/unit/reward-economy-read-path.test.mjs",
   "tests/unit/welcome-progress.test.mjs",
+  "tests/unit/welcome-progress-route.test.mjs",
   "tests/unit/media-access-boundary.test.mjs",
   "tests/unit/published-lesson-content.test.mjs",
   "tests/unit/route-auth-policy.test.mjs",

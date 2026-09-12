@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   const organizationId = workspace.type === "organization" ? workspace.id : null;
   const params = request.nextUrl.searchParams;
   const filters: AdminRedemptionFilters = {
+    needsAction: params.get("needsAction") === "true",
     claimState: params.get("claimState") || undefined,
     fulfillmentType: params.get("fulfillmentType") || undefined,
     campaignId: params.get("campaignId") || undefined,

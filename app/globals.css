@@ -4688,3 +4688,14 @@
   outline: 2px solid var(--ui-focus);
   outline-offset: 3px;
 }
+
+/* Reward Economy: Source typography and the shared identity roles. */
+.reward-economy { color: var(--ui-text); }
+.reward-economy h1 { font-family: var(--ui-font-display), Georgia, serif; font-weight: 500; font-size: clamp(2rem, 3vw, 2.75rem); line-height: 1.15; }
+.reward-economy h2 { font-weight: 600; }
+.reward-economy form label > span:first-child { text-transform: none; letter-spacing: normal; font-weight: 600; font-size: 0.875rem; }
+.reward-economy [data-economy-step][hidden] { display: none; }
+.reward-economy input, .reward-economy select, .reward-economy textarea { max-width: 100%; }
+.reward-economy form { min-width: 0; }
+.reward-economy a:focus-visible, .reward-economy summary:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .reward-economy * { scroll-behavior: auto; transition-duration: 0s; } }

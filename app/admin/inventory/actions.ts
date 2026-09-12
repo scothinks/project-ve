@@ -1,5 +1,6 @@
 "use server";
 
+import { describeBatchRepair } from "@/features/reward-economy/batch-repair";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -28,6 +29,9 @@ export type InventoryBatchDryRunState = {
   sample: string[];
   errors: string[];
   warnings: string[];
+  entryIssues?: string[];
+  repairText?: string;
+  repairCount?: number;
 };
 
 const initialInventoryBatchDryRunState: InventoryBatchDryRunState = {
@@ -269,8 +273,12 @@ async function validateInventoryBatch(formData: FormData): Promise<InventoryBatc
     warnings.push(`${blankRows} blank row${blankRows === 1 ? "" : "s"} will be ignored.`);
   }
 
+  const repair = describeBatchRepair(parsedValues.map(value => sanitizePlainTextInput(value, 500)), existingValues);
   return {
     ...initialInventoryBatchDryRunState,
+    entryIssues: repair.issues,
+    repairText: repair.issues.length ? repair.retained.join("\n") : undefined,
+    repairCount: repair.retained.length,
     ok: errors.length === 0,
     message: errors.length === 0 ? "Batch is ready to import." : "Fix the batch issues before importing.",
     totalRows: parsedValues.length,
@@ -323,6 +331,7 @@ export async function setInventoryQuantity(formData: FormData) {
 
   revalidatePath("/admin/inventory/new");
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/rewards/${input.rewardId}`);
   revalidatePath("/xp-store");
   redirect(`/admin/inventory/new?rewardId=${encodeURIComponent(input.rewardId)}&mode=quantity&saved=quantity`);
@@ -348,6 +357,7 @@ export async function reallocateInventory(formData: FormData) {
   revalidatePath("/admin/inventory/new");
   revalidatePath("/admin/inventory/reallocate");
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/rewards/${input.rewardId}`);
   revalidatePath("/xp-store");
   redirect("/admin/inventory/reallocate?saved=1");
@@ -428,6 +438,7 @@ export async function uploadInventoryBatch(formData: FormData) {
 
   revalidatePath("/admin/inventory/new");
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath(`/admin/rewards/${validation.rewardId}`);
   revalidatePath("/xp-store");
   redirect(

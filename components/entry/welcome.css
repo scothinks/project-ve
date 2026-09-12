@@ -32,23 +32,19 @@
 .entry-welcome [hidden]{display:none!important}
 .entry-welcome .lesson-sheet{scroll-margin-top:28px}
 .entry-welcome #question-heading:focus,.entry-welcome #xp-heading:focus{outline:none}
-.entry-welcome .xp-result{margin-top:8px;padding:24px;border-radius:11px;background:linear-gradient(135deg,var(--ui-action-soft),var(--ui-action-soft));color:var(--ui-text-muted)}
-.entry-welcome .xp-result-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.entry-welcome #xp-award{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1.1}
-.entry-welcome .xp-preview-label{font-size:11px;color:var(--ui-text-muted)}
-.entry-welcome .xp-result h4{font-size:25px;line-height:1.1;letter-spacing:-.5px;margin:19px 0 12px;font-weight:650}
+.entry-welcome .xp-result{margin-top:8px;padding:24px;border-radius:11px;background:var(--ui-action-soft);color:var(--ui-text-muted);display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.entry-welcome .xp-result h4{font-size:28px;line-height:1.15;letter-spacing:-.5px;margin:0;font-weight:650;color:var(--ui-text)}
+.entry-welcome #xp-award{display:inline-flex;align-items:center;border:1px solid var(--ui-border);border-radius:999px;padding:7px 13px;font-size:16px;font-weight:650;line-height:1.25;color:var(--ui-action);background:var(--ui-surface)}
 .entry-welcome .xp-result>p{font-size:16px;line-height:1.5;margin:0}
-.entry-welcome .xp-balance{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:19px;margin-top:5px;font-size:14px}
-.entry-welcome .xp-balance strong{font-size:22px}
-.entry-welcome .xp-result .xp-next-step{font-size:13px;margin-top:13px;color:var(--ui-text-muted)}
-.entry-welcome .xp-result .xp-disclaimer{font-size:11px;margin-top:12px;color:var(--ui-text-muted)}
+.entry-welcome .xp-result #save-xp{margin-top:8px}
+.entry-welcome .xp-result .xp-disclaimer{font-size:11px;color:var(--ui-text-muted)}
 .entry-welcome .signup-xp{background:var(--ui-action-soft);padding:20px;border-radius:9px;margin-bottom:22px}
 .entry-welcome .signup-xp>span{display:block;font-size:13px;color:var(--ui-text-muted)}
 .entry-welcome .signup-xp>strong{display:block;font-size:42px;line-height:1.2;letter-spacing:-1px;margin-top:4px}
 .entry-welcome .signup-xp>p{font-size:14px;margin-top:13px}
 .entry-welcome .signup-xp>small{display:block;font-size:11px;line-height:1.45;margin-top:14px;color:var(--ui-text-muted)}
 .entry-welcome #entry-dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
-@media(max-width:760px){.entry-welcome .xp-result{padding:20px 17px}.entry-welcome .xp-result h4{font-size:24px}.entry-welcome .xp-result>p{font-size:15px}.entry-welcome #xp-award{font-size:32px}.entry-welcome .lesson-sheet{scroll-margin-top:20px}}
+@media(max-width:760px){.entry-welcome .xp-result{padding:20px 17px}.entry-welcome .xp-result h4{font-size:24px}.entry-welcome .xp-result>p{font-size:15px}.entry-welcome #xp-award{font-size:16px}.entry-welcome .lesson-sheet{scroll-margin-top:20px}}
 /* Teach the idea before asking the visitor to apply it. */
 .entry-welcome .learning-steps{list-style:none;display:flex;align-items:center;gap:17px;padding:0;margin:27px 0 29px;color:var(--ui-text-muted);font-size:12px}
 .entry-welcome .learning-steps li+li::before{content:'→';margin-right:17px;color:var(--ui-text-muted)}

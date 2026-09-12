@@ -127,3 +127,11 @@ test('Tailwind underscore separators cannot hide hexadecimal colours', () => {
   assert.ok(input.entries.some(e => e.value === '#6750a4'));
   assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /new unclassified colour/);
 });
+
+test('font-black is a weight while text-black and CSS black remain audited', () => {
+  const weight = parseSource('components/Weight.tsx', 'const c = "font-black md:font-black";');
+  assert.equal(weight.entries.filter(entry => entry.kind === 'colour').length, 0);
+  const color = parseSource('components/Color.tsx', 'const c = "text-black bg-white";');
+  assert.equal(color.entries.filter(entry => entry.kind === 'colour').length, 2);
+  assert.ok(parseSource('app/color.css', '.x { color: black; }').entries.some(entry => entry.value === 'black'));
+});

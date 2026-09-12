@@ -1,5 +1,97 @@
 # Guided AI course creation — implementation evidence
 
+## Outline action hierarchy, 2026-09-08
+
+The outline now groups **Save**, **Refine - N credits** and **Generate course -
+N credits** on one row on desktop and as full-width stacked buttons below 640px.
+Generate course keeps the existing save/quote/price-check/start sequence and explains
+that it writes lesson content and the selected quiz questions. Save remains an
+outline-only save. The Refine trigger displays the outline tariff from the
+existing preview response without an extra pricing request. Refine opens the
+existing Radix drawer pattern for direction
+and explicit priced submission; opening or closing it does not generate work.
+Earlier versions remain recoverable. Resume earlier work and Delete share a
+separate secondary row, with the existing deletion confirmation and uncertain-save
+protections intact. Disabled generation still leaves recovery and outline saving
+available where previously supported.
+
+Validation: all eight existing course-authoring/discovery production browser
+journeys pass, including new assertions for both rows at 1280/390/320px, saving
+without generation, refinement focus/close behavior, and cancelled deletion.
+Desktop and 320px screenshots were visually inspected. Typecheck, lint (zero
+errors; three existing unrelated scrollcraft warnings), 41 guardrails and diff
+checks pass. Command: `PROJECT_VE_E2E_KEEP_BUILD_CACHE=1 npm run test:e2e --
+tests/e2e/ai-course-authoring.spec.ts tests/e2e/ai-course-discovery.spec.ts`.
+The first sandboxed invocation could not access Docker; the authorized rerun
+passed. The change is local and has not been deployed. No database or pricing
+rules changed in this layout follow-up.
+
+After the user confirmed the final priced labels, both course browser journeys
+passed again. A further Save minimum-width adjustment passed the focused
+editable-outline rerun, including text-overflow and row-alignment checks at
+1280/390/320px. Updated desktop/mobile captures were inspected. Four focused
+pricing/discovery unit checks, typecheck, lint and diff checks also pass. Earlier
+unchanged discovery and guardrail evidence remains applicable. The Refine and
+Generate course buttons use the requested hyphen separator and actual prices;
+the rest of the shared pricing formatter retains its existing default separator.
+
+The user's mobile follow-up replaces the compact three-column arrangement with
+full-width stacked actions below 640px. The focused editable-outline production
+browser journey passes with assertions for the desktop row and mobile stacking;
+390px and 320px captures were visually inspected. Typecheck, lint (the same three
+unrelated warnings) and diff checks pass. Pricing and action behavior are unchanged.
+
+## Pricing 503 investigation, 2026-09-08
+
+The user reported production request `r4gt7-1788894785951-6903c96c2a63`
+on deployment `dpl_CUv1NmhearDjfUKdJK8mjhcJTUz1` returning 503 for
+`course_outline`, three lessons and zero questions. This valid scope reaches
+`admin_preview_ai_course_price`; the route maps unexpected RPC errors to 503.
+Read-only API probes against the locally configured hosted project
+`xmqkrsmuokmuzcyivgbi` returned HTTP 404 / `PGRST202` for both the three-argument
+and full five-argument pricing signatures. The existing `admin_read_ai_results`
+returned the expected HTTP 401 / `42501` anonymous denial. This establishes
+that pricing is absent from that hosted schema cache, consistent with the earlier
+unapplied-migration release note. After the user signed in, CLI verification
+identified the linked project as healthy `ProjectVE` (`xmqkrsmuokmuzcyivgbi`).
+`node scripts/supabase-cli.mjs migration list --linked` confirmed that the guidance
+and pricing migrations are absent remotely. `node scripts/supabase-cli.mjs db push
+--linked --dry-run` succeeded and listed exactly these two pending files:
+
+- `20260907100000_ai_course_guidance_allowance.sql`
+- `20260907110000_ai_course_price_preview.sql`
+
+The dry run listed no seeds or roles. The production deployment's environment
+was not independently inspected; browser control could not start.
+
+The existing `20260907110000_ai_course_price_preview.sql` supplies the function,
+shared calculator, authenticated-only grant and schema reload. Following the
+user's explicit approval, `node scripts/supabase-cli.mjs db push --linked --yes`
+successfully applied both migrations. A subsequent dry run reported
+`upToDate: true` with no pending migrations, seeds or roles. A read-only hosted
+query verified outline units 57 and three-lesson, zero-question draft units 205;
+the pricing RPC grants execute to authenticated only, denying anon and service_role.
+The anonymous REST pricing probe now returns HTTP 401 / `42501` rather than
+404 / `PGRST202`, confirming schema-cache visibility and retained access control.
+
+The database cause is repaired. An authenticated application GET returning 200
+remains the end-to-end check because browser control was unavailable. The local
+diagnostic patch has not been deployed. No runtime flags were changed and no
+provider requests were dispatched; the guidance migration alone does not enable
+the default-off runtime guidance flag.
+
+The local route now logs unexpected failures through `logAppError`, recording
+only the RPC name, dependency code and Vercel request ID. Raw database messages,
+details and hints stay out of logs and responses. Client errors and read-only,
+private/no-store behavior remain unchanged; this diagnostic patch does not
+restore a missing hosted function.
+
+Validation: six focused route tests, 60 guided-journey pgTAP assertions and 41
+guardrails passed. Typecheck and lint passed, with the same three unrelated
+warnings in untracked `scrollcraft/` work. Regression coverage includes missing
+RPC and connection failures, safe diagnostics, authorization/conflict responses
+and one-RPC/no-provider behavior. These tests remain in the existing unit/CI gate.
+
 The user approved implementation of the four tracked blocks in order on
 2026-09-07 and explicitly requested tests at the end of the integrated batch.
 The branch is `codex/ai-course-guided-journey`, based on `origin/main` at
@@ -124,8 +216,10 @@ before discarding edits. Browser-history SPA navigation is not a durable draft
 store. Generated result IDs/checkpoints/receipts provide reload recovery after
 generation is requested. Discovery does not add browser transcript persistence.
 
-An automatic Vercel PR preview was created; both new migrations remain unapplied
-remotely, and this branch has not received hosted qualification. Historical
+At initial implementation, an automatic Vercel PR preview was created and both
+new migrations remained unapplied remotely. They were subsequently applied with
+approval on 2026-09-08 as recorded above; this does not establish full hosted
+qualification for the branch. Historical
 [qualification run 34071919696](https://github.com/scothinks/project-ve/actions/runs/34071919696)
 passes for `292e65a8f7784df31591e94abe65fec47ddd23b6`, Preview deployment
 `6299858025`; it does not qualify this branch. Its artifact verifies 221/221

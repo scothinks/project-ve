@@ -207,6 +207,7 @@ export async function updateReward(
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath(`/admin/rewards/${payload.rewardId}`);
   revalidatePath(`/admin/rewards/perks/${payload.rewardId}`);
@@ -249,6 +250,7 @@ export async function createReward(
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath("/xp-store");
   redirect(
@@ -272,6 +274,7 @@ export async function toggleRewardEnabled(formData: FormData) {
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath(`/admin/rewards/${rewardId}`);
   revalidatePath(`/admin/rewards/perks/${rewardId}`);
@@ -346,6 +349,7 @@ export async function setRewardStatus(formData: FormData) {
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath(`/admin/rewards/${rewardId}`);
   revalidatePath(`/admin/rewards/perks/${rewardId}`);
@@ -645,6 +649,7 @@ export async function assignPerkPrizeInventory(formData: FormData) {
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath(`/admin/rewards/perks/${bundleRewardId}`);
   revalidatePath(`/admin/rewards/perks/${bundleRewardId}/draws`);
@@ -668,6 +673,7 @@ export async function releasePerkPrizeInventory(formData: FormData) {
   }
 
   revalidatePath("/admin/rewards");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/rewards/perks");
   revalidatePath(`/admin/rewards/perks/${bundleRewardId}`);
   revalidatePath(`/admin/rewards/perks/${bundleRewardId}/draws`);

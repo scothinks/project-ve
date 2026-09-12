@@ -473,15 +473,15 @@ export function ReleaseBucketsSection({
 }) {
   return (
     <details className="mt-4 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
-      <summary className={detailSummaryClasses()}>Release buckets</summary>
+      <summary className={detailSummaryClasses()}>Release windows</summary>
       <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
-        Use buckets only when you need staged release windows beyond the basic daily and total caps.
+        Schedule portions of this prize pool for specific dates. Caps and available stock still apply.
       </p>
 
       <div className="mt-4 space-y-3">
         {(prize.releaseBuckets ?? []).length === 0 ? (
           <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
-            No release buckets yet. This prize currently relies on the prize-level caps and schedule above.
+            No release windows yet. This prize currently relies on the prize-level caps and schedule above.
           </p>
         ) : (
           (prize.releaseBuckets ?? []).map((bucket) => (

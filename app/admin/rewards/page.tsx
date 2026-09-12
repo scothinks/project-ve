@@ -1,11 +1,12 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { EconomyCard, StorefrontChecklist } from "@/components/admin/economy/EconomyPrimitives";
+import { storefrontChecklist, rewardLimit } from "@/features/reward-economy/vocabulary";
 import Link from "next/link";
 import { CampaignFilterSelect } from "@/components/admin/CampaignFilterSelect";
 import {
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
-  AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns, getAdminRewards, requireAdminWorkspaceRole } from "@/lib/admin";
@@ -13,92 +14,6 @@ import { paginateItems, parsePageParam } from "@/lib/pagination";
 import { formatRewardDate } from "@/lib/rewards";
 import { formatXpLabel } from "@/lib/xp-format";
 import { toggleRewardEnabled } from "./[id]/actions";
-
-function statusTone(status: string, enabled: boolean) {
-  if (!enabled) return "danger" as const;
-  if (status === "published") return "good" as const;
-  if (status === "draft") return "warning" as const;
-  return "neutral" as const;
-}
-
-function getStorefrontState(reward: {
-  status: string;
-  is_enabled: boolean;
-  visibility_mode: string;
-  starts_at: string | null;
-  ends_at: string | null;
-  offer_expires_at: string | null;
-  total_available: number;
-  campaign?: { status: string; starts_at: string | null; ends_at: string | null } | null;
-}) {
-  const now = Date.now();
-  const rewardStartsAt = reward.starts_at ? new Date(reward.starts_at).getTime() : null;
-  const rewardEndsAt = reward.ends_at ? new Date(reward.ends_at).getTime() : null;
-  const offerEndsAt = reward.offer_expires_at ? new Date(reward.offer_expires_at).getTime() : null;
-  const campaignStartsAt = reward.campaign?.starts_at ? new Date(reward.campaign.starts_at).getTime() : null;
-  const campaignEndsAt = reward.campaign?.ends_at ? new Date(reward.campaign.ends_at).getTime() : null;
-
-  if (reward.status !== "published" || !reward.is_enabled) {
-    return "disabled";
-  }
-
-  if (reward.visibility_mode === "hidden") {
-    return "hidden";
-  }
-
-  if (reward.visibility_mode === "system_only") {
-    return "system only";
-  }
-
-  if (reward.visibility_mode === "campaign_only") {
-    return "campaign only";
-  }
-
-  if (!reward.campaign || reward.campaign.status !== "active") {
-    return "campaign off";
-  }
-
-  if ((campaignStartsAt && campaignStartsAt > now) || (rewardStartsAt && rewardStartsAt > now)) {
-    return "scheduled";
-  }
-
-  if (
-    (campaignEndsAt && campaignEndsAt <= now)
-    || (rewardEndsAt && rewardEndsAt <= now)
-    || (offerEndsAt && offerEndsAt <= now)
-  ) {
-    return "ended";
-  }
-
-  if (reward.total_available <= 0) {
-    return "sold out";
-  }
-
-  return "live";
-}
-
-function storefrontTone(state: string) {
-  if (state === "live") return "good" as const;
-  if (state === "scheduled") return "warning" as const;
-  if (state === "sold out") return "warning" as const;
-  if (
-    state === "campaign off"
-    || state === "disabled"
-    || state === "ended"
-    || state === "hidden"
-    || state === "system only"
-    || state === "campaign only"
-  ) return "neutral" as const;
-  return "neutral" as const;
-}
-
-function formatRewardLimit(limitPeriod: string, perUserLimit: number) {
-  if (limitPeriod === "none") {
-    return "No per-user limit";
-  }
-
-  return `${perUserLimit} per ${limitPeriod}`;
-}
 
 function formatVisibilityMode(mode: string) {
   if (mode === "store") return "Store";
@@ -124,11 +39,11 @@ function formatOwnerScope(reward: { owner_scope: string; shared_with_programmes:
 }
 
 type AdminRewardsPageProps = {
-  searchParams: Promise<{ campaign?: string; page?: string; notice?: string }>;
+  searchParams: Promise<{ campaign?: string; page?: string; notice?: string; q?: string; state?: string }>;
 };
 
 export default async function AdminRewardsPage({ searchParams }: AdminRewardsPageProps) {
-  const { campaign, page, notice } = await searchParams;
+  const { campaign, page, notice, q = "", state = "" } = await searchParams;
   const { supabase } = await requireAdminWorkspaceRole([
     "organisation_owner",
     "organisation_admin",
@@ -138,13 +53,13 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
     getAdminRewards(supabase, { campaignId: campaign, distributionMode: "direct" }),
     getAdminCampaigns(supabase),
   ]);
-  const paginatedRewards = paginateItems(rewards, parsePageParam(page), 20);
+  const paginatedRewards = paginateItems(rewards.filter(reward => (!q || reward.title.toLowerCase().includes(q.toLowerCase())) && (!state || storefrontChecklist(reward).state === state)), parsePageParam(page), 20);
 
   return (
     <>
       <AdminPageHeader
-        backHref="/admin"
-        backLabel="Admin overview"
+        backHref="/admin/economy"
+        backLabel="Reward economy"
         eyebrow="XP Store"
         title="Rewards"
         subtitle="Create rewards, update offers, and quickly enable or disable items in the XP Store."
@@ -179,64 +94,16 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
           </Link>
         </div>
       </div>
-      {rewards.length === 0 ? (
+      <form className="mb-5 flex flex-wrap gap-3"><input type="hidden" name="campaign" value={campaign ?? ""} /><input aria-label="Find a reward" className="min-w-0 rounded-xl border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2" defaultValue={q} name="q" placeholder="Find a reward" type="search" /><select aria-label="Store visibility" className="rounded-xl border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2" defaultValue={state} name="state"><option value="">All visibility states</option>{["live", "disabled", "hidden", "system only", "campaign only", "campaign off", "scheduled", "ended", "sold out"].map(value => <option key={value} value={value}>{value}</option>)}</select><button className="rounded-xl bg-[var(--ui-action)] px-4 py-2 font-semibold text-[var(--ui-on-action)]" type="submit">Apply</button></form>
+      {paginatedRewards.totalItems === 0 ? (
         <EmptyAdminState>No rewards found.</EmptyAdminState>
       ) : (
         <>
-        <AdminTable
-          columns={["Reward", "Campaign", "Cost", "Fulfillment", "Owner", "Visibility", "Inventory", "Limit", "Offer ends", "Storefront", "Status", "Action"]}
-        >
-          {paginatedRewards.items.map((reward) => (
-            <tr key={reward.id}>
-              {(() => {
-                const storefrontState = getStorefrontState(reward);
-
-                return (
-                  <>
-              <td className="min-w-[220px] px-4 py-4">
-                <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/rewards/${reward.id}`}>
-                  {reward.title}
-                </Link>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
-                  {reward.description}
-                </p>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {reward.campaign?.name ?? "No campaign"}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 font-black tabular-nums">
-                {formatXpLabel(reward.cost_xp)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 capitalize">
-                {reward.fulfillment_type.replaceAll("_", " ")}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {formatOwnerScope(reward)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {formatVisibilityMode(reward.visibility_mode)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 font-bold tabular-nums">
-                {reward.total_available}/{reward.total_uploaded}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {formatRewardLimit(reward.limit_period, reward.per_user_limit)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {formatRewardDate(reward.offer_expires_at)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <AdminStatusBadge tone={storefrontTone(storefrontState)}>
-                  {storefrontState}
-                </AdminStatusBadge>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <AdminStatusBadge tone={statusTone(reward.status, reward.is_enabled)}>
-                  {reward.is_enabled ? reward.status : "disabled"}
-                </AdminStatusBadge>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <form action={toggleRewardEnabled}>
+        <div className="grid gap-4 xl:grid-cols-2">
+          {paginatedRewards.items.map((reward) => <EconomyCard key={reward.id} title={reward.title} href={`/admin/rewards/${reward.id}`} eyebrow={<><AdminStatusBadge tone={storefrontChecklist(reward).state === "live" ? "good" : "neutral"}>{storefrontChecklist(reward).state}</AdminStatusBadge><span>{reward.campaign?.name ?? "No campaign"}</span></>} actions={<>
+            <Link className="rounded-xl bg-[var(--ui-surface-inset)] px-3 py-2 font-semibold" href={`/admin/rewards/${reward.id}`}>Manage reward →</Link>
+            <Link className="px-3 py-2 font-semibold" href={`/admin/inventory/new?rewardId=${reward.id}&campaignId=${reward.campaign_id ?? ""}`}>Add stock</Link>
+            <form action={toggleRewardEnabled}>
                   <input name="rewardId" type="hidden" value={reward.id} />
                   <input
                     name="redirectTo"
@@ -259,17 +126,18 @@ export default async function AdminRewardsPage({ searchParams }: AdminRewardsPag
                     {reward.is_enabled ? "Disable" : "Enable"}
                   </button>
                 </form>
-              </td>
-                  </>
-                );
-              })()}
-            </tr>
-          ))}
-        </AdminTable>
+          </>}>
+            <p>{reward.description}</p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-[var(--ui-text)]"><span className="font-semibold">{formatXpLabel(reward.cost_xp)}</span><span>{reward.total_available} available · {reward.total_uploaded} uploaded</span></div>
+            <p>{reward.fulfillment_type.replaceAll("_", " ")} · {rewardLimit(reward.limit_period, reward.per_user_limit)}</p>
+            <StorefrontChecklist reward={reward} />
+            <details><summary className="cursor-pointer font-semibold">Terms & ownership</summary>{reward.terms ? <p className="mt-3 whitespace-pre-wrap">{reward.terms}</p> : null}<dl className="mt-3 grid grid-cols-2 gap-3"><div><dt>Owner</dt><dd>{formatOwnerScope(reward)}</dd></div><div><dt>Distribution</dt><dd>{formatVisibilityMode(reward.visibility_mode)}</dd></div><div><dt>Offer ends</dt><dd>{formatRewardDate(reward.offer_expires_at)}</dd></div><div><dt>Claim window</dt><dd>{reward.redemption_window_days ? `${reward.redemption_window_days} days after purchase` : "No claim deadline"}</dd></div><div><dt>Editorial status</dt><dd>{reward.status} · {reward.is_enabled ? "enabled" : "disabled"}</dd></div></dl></details>
+          </EconomyCard>)}
+        </div>
         <AdminPagination
           basePath="/admin/rewards"
           currentPage={paginatedRewards.currentPage}
-          searchParams={{ campaign: campaign || undefined }}
+          searchParams={{ campaign: campaign || undefined, q: q || undefined, state: state || undefined }}
           summary={`Showing ${paginatedRewards.startItem}-${paginatedRewards.endItem} of ${paginatedRewards.totalItems} rewards`}
           totalPages={paginatedRewards.totalPages}
         />

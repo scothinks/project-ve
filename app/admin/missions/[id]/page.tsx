@@ -1,7 +1,8 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { notFound } from "next/navigation";
 import { ContentValueTagEditor } from "@/components/admin/ContentValueTagEditor";
 import { MissionEditorForm } from "@/components/admin/MissionEditorForm";
-import { AdminCard, AdminNoticeBanner, AdminPageHeader, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
+import { AdminCard, AdminNoticeBanner, AdminStatusBadge } from "@/components/admin/AdminPrimitives";
 import { updateMission, updateOrganizationMission } from "@/app/admin/missions/actions";
 import {
   getAdminContentValueTags,

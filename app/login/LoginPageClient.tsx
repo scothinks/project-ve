@@ -8,7 +8,7 @@ import { useAccountMotion } from "@/features/entry/use-account-motion";
 import { AccountFields } from "@/components/entry/AccountFields";
 import "@/components/entry/auth.css";
 export function LoginPageClient({isDemoMode,nextPath,initialMode='login',xp=0}:{isDemoMode:boolean;nextPath:string;initialMode?:'login'|'signup';xp?:number}) {
-  const f=useAccountForm({isDemoMode,nextPath,initialMode,hasWelcomeProgress:xp>0});
+  const f=useAccountForm({isDemoMode,nextPath,initialMode});
   const [forgot,setForgot]=useState(false);
   const state=Boolean(f.confirmationEmail||f.emailConfirmed||f.isPasswordRecovery||forgot);
   const mode=state?'state':f.authMode; const motion=useAccountMotion(mode);

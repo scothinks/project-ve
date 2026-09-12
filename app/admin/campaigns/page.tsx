@@ -1,10 +1,11 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { EconomyCard } from "@/components/admin/economy/EconomyPrimitives";
+import { availabilityLabel } from "@/features/reward-economy/vocabulary";
 import Link from "next/link";
 import {
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
-  AdminTable,
   EmptyAdminState,
 } from "@/components/admin/AdminPrimitives";
 import { getAdminCampaigns } from "@/lib/admin";
@@ -57,8 +58,8 @@ export default async function AdminCampaignsPage({
   return (
     <>
       <AdminPageHeader
-        backHref="/admin"
-        backLabel="Admin overview"
+        backHref="/admin/economy"
+        backLabel="Reward economy"
         eyebrow="Planning"
         title="Campaigns"
         subtitle="Group rewards and inventory by campaign, quarter, month, partner period, or budget window."
@@ -77,31 +78,9 @@ export default async function AdminCampaignsPage({
         <EmptyAdminState>No campaigns found.</EmptyAdminState>
       ) : (
         <>
-        <AdminTable columns={["Campaign", "Store state", "Period", "Reporting", "Updated", "Action"]}>
-          {paginatedCampaigns.items.map((campaign) => {
-            const state = getCampaignState(campaign);
-            const isEnabled = campaign.status === "active";
-
-            return (
-              <tr key={campaign.id}>
-                <td className="min-w-[260px] px-4 py-4">
-                  <Link className="font-black hover:text-[var(--ui-action)]" href={`/admin/campaigns/${campaign.id}`}>
-                    {campaign.name}
-                  </Link>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{campaign.slug}</p>
-                </td>
-                <td className="whitespace-nowrap px-4 py-4">
-                  <AdminStatusBadge tone={campaignTone(state)}>{state}</AdminStatusBadge>
-                </td>
-                <td className="whitespace-nowrap px-4 py-4">
-                  {formatRewardDate(campaign.starts_at)} - {campaign.ends_at ? formatRewardDate(campaign.ends_at) : "Open"}
-                </td>
-                <td className="whitespace-nowrap px-4 py-4">
-                  {campaign.budget_label ?? "No reporting label"}
-                </td>
-                <td className="whitespace-nowrap px-4 py-4">{formatRewardDate(campaign.updated_at)}</td>
-                <td className="whitespace-nowrap px-4 py-4">
-                  <form action={setCampaignEnabled}>
+        <div className="grid gap-4 xl:grid-cols-2">{paginatedCampaigns.items.map(campaign => {
+          const state = getCampaignState(campaign); const isEnabled = campaign.status === "active";
+          return <EconomyCard key={campaign.id} title={campaign.name} href={`/admin/campaigns/${campaign.id}`} eyebrow={<AdminStatusBadge tone={campaignTone(state)}>{state}</AdminStatusBadge>} actions={<><Link className="px-3 py-2 font-semibold" href={`/admin/campaigns/${campaign.id}`}>View campaign →</Link><Link className="px-3 py-2 font-semibold" href={`/admin/inventory/new?campaignId=${campaign.id}`}>Add stock</Link><form action={setCampaignEnabled}>
                     <input name="campaignId" type="hidden" value={campaign.id} />
                     <input name="isEnabled" type="hidden" value={isEnabled ? "false" : "true"} />
                     <input name="redirectTo" type="hidden" value="/admin/campaigns" />
@@ -115,12 +94,10 @@ export default async function AdminCampaignsPage({
                     >
                       {isEnabled ? "Disable" : "Enable"}
                     </button>
-                  </form>
-                </td>
-              </tr>
-            );
-          })}
-        </AdminTable>
+                  </form></>}>
+            <p>{campaign.description || "No campaign description yet."}</p><p>{availabilityLabel(campaign.starts_at, campaign.ends_at)}</p><p className="font-semibold text-[var(--ui-text)]">{campaign.budget_label ?? "No reporting label"}</p><details><summary className="cursor-pointer">Campaign details</summary><p>{campaign.slug} · Updated {formatRewardDate(campaign.updated_at)}</p></details>
+          </EconomyCard>;
+        })}</div>
         <AdminPagination
           basePath="/admin/campaigns"
           currentPage={paginatedCampaigns.currentPage}

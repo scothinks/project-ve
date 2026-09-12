@@ -27,6 +27,7 @@ export async function refundRedemption(formData: FormData) {
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/redemptions");
   revalidatePath("/admin/xp-ledger");
   redirect(appendAdminNotice("/admin/redemptions", "XP refunded."));
@@ -51,6 +52,7 @@ export async function fulfillRedemption(formData: FormData) {
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/redemptions");
   revalidatePath("/admin/xp-ledger");
   redirect(appendAdminNotice("/admin/redemptions", "Redemption marked fulfilled."));

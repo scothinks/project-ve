@@ -26,5 +26,14 @@ select throws_ok($$select public.service_claim_welcome_progress('91910000-0000-4
 reset role;
 select is((select xp_balance_cached from profiles where id='91910000-0000-4000-8000-000000000001'),30,'ledger trigger updates the real profile balance');
 select is((select count(*)::integer from xp_transactions where user_id='91910000-0000-4000-8000-000000000001' and award_scope like 'welcome:%'),3,'exactly one transaction per sample');
+select is((select count(*)::integer from user_notifications where user_id='91910000-0000-4000-8000-000000000001' and event_type='welcome_xp_earned'),3,'one notification per new topic, none for retries or another receipt');
+select is((select count(*)::integer from user_notifications where user_id='91910000-0000-4000-8000-000000000001' and event_type='welcome_xp_earned' and category='rewards' and data->>'xp'='10' and cta_href='/xp-store'),3,'notifications record each real award and link to rewards');
+insert into notification_preferences(user_id,rewards_enabled) values ('91920000-0000-4000-8000-000000000002',false) on conflict(user_id) do update set rewards_enabled=false;
+set local role service_role;
+select is(public.service_claim_welcome_progress('91910000-0000-4000-8000-000000000001','91910000-0000-4000-8000-000000000015',array['listen'])->>'awardedXp','0','already earned sample reports no new award');
+select is(public.service_claim_welcome_progress('91920000-0000-4000-8000-000000000002','91920000-0000-4000-8000-000000000015',array['listen','listen'])->>'awardedXp','10','an existing confirmed account earns a sample once even with duplicate input');
+reset role;
+select is((select count(*)::integer from user_notifications where user_id='91920000-0000-4000-8000-000000000002' and event_type='welcome_xp_earned'),0,'rewards notification opt-out is respected without withholding XP');
+select is((select xp_balance_cached from profiles where id='91920000-0000-4000-8000-000000000002'),10,'existing account receives XP with notifications disabled');
 select * from finish();
 rollback;

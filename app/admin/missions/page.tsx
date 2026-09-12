@@ -1,10 +1,11 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
+import { EconomyCard } from "@/components/admin/economy/EconomyPrimitives";
+import { availabilityLabel, missionRule, repeatabilityLabel } from "@/features/reward-economy/vocabulary";
 import Link from "next/link";
 import {
   AdminNoticeBanner,
   AdminPagination,
-  AdminPageHeader,
   AdminStatusBadge,
-  AdminTable,
   EmptyAdminState,
   adminButtonClasses,
 } from "@/components/admin/AdminPrimitives";
@@ -28,25 +29,6 @@ function statusTone(status: string) {
   return "neutral" as const;
 }
 
-function validationLabel(validationType: string) {
-  switch (validationType) {
-    case "lesson_completed":
-      return "Lesson completed";
-    case "course_completed":
-      return "Course completed";
-    case "lesson_count_completed":
-      return "Lesson count";
-    case "referral_friend_completed_lessons":
-      return "Referral lessons";
-    case "proof_upload":
-      return "Proof upload";
-    case "manual_review":
-      return "Manual review";
-    default:
-      return validationType.replaceAll("_", " ");
-  }
-}
-
 export default async function AdminMissionsPage({
   searchParams,
 }: {
@@ -66,11 +48,11 @@ export default async function AdminMissionsPage({
   return (
     <>
       <AdminPageHeader
-        backHref="/admin"
-        backLabel="Admin overview"
+        backHref="/admin/economy"
+        backLabel="Reward economy"
         eyebrow="Missions"
         title="Missions"
-        subtitle="Configure mission rules, reward payouts, and publishing using the current mission validation model."
+        subtitle="Turn learning into action. Set a task, choose what learners earn, and publish when ready."
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
       <div className="mb-4 flex flex-wrap justify-end gap-3">
@@ -88,56 +70,8 @@ export default async function AdminMissionsPage({
         <EmptyAdminState>No missions found.</EmptyAdminState>
       ) : (
         <>
-        <AdminTable columns={["Mission", "Scope", "Reward", "Category", "Repeatability", "Validation", "Status", "Action"]}>
-          {paginatedMissions.items.map((mission) => (
-            <tr key={mission.id}>
-              <td className="min-w-[240px] px-4 py-4">
-                <Link className="font-black hover:text-[var(--ui-mission)]" href={`/admin/missions/${mission.id}`}>
-                  {mission.title}
-                </Link>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
-                  {mission.description}
-                </p>
-                {mission.source_mission_id ? (
-                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
-                    Adapted from {mission.source_mission_id}
-                  </p>
-                ) : null}
-                {mission.upstream_update_available ? (
-                  <p className="mt-1 text-xs font-black text-[var(--ui-reward)]">
-                    Source update available
-                  </p>
-                ) : null}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <div className="flex flex-col gap-2">
-                  <AdminStatusBadge tone={mission.catalog_scope === "platform" ? "neutral" : "store"}>
-                    {mission.catalog_scope.replaceAll("_", " ")}
-                  </AdminStatusBadge>
-                  <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
-                    {mission.mission_type_key}
-                  </span>
-                </div>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 font-black tabular-nums">
-                {getMissionRewardLabel({
-                  rewardType: mission.reward_type,
-                  rewardXp: mission.reward_xp,
-                  rewardTitle: mission.reward?.title ?? null,
-                })}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 capitalize">{mission.category}</td>
-              <td className="whitespace-nowrap px-4 py-4 capitalize">{mission.repeatability}</td>
-              <td className="whitespace-nowrap px-4 py-4">
-                {validationLabel(mission.validation_type)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <AdminStatusBadge tone={statusTone(mission.status)}>
-                  {mission.status}
-                </AdminStatusBadge>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4">
-                <div className="flex flex-wrap gap-2">
+        <div className="grid gap-4 xl:grid-cols-2">
+          {paginatedMissions.items.map((mission) => <EconomyCard key={mission.id} title={mission.title} href={`/admin/missions/${mission.id}`} eyebrow={<><AdminStatusBadge tone={statusTone(mission.status)}>{mission.status}</AdminStatusBadge><span>{mission.catalog_scope === "platform" ? "Platform catalogue" : "Organisation"} · {mission.category}</span></>} actions={<div className="flex flex-wrap gap-2">
                   <Link
                     className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black text-[var(--ui-text-muted)]"
                     href={`/admin/missions/${mission.id}`}
@@ -173,11 +107,15 @@ export default async function AdminMissionsPage({
                       </button>
                     </form>
                   ) : null}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </AdminTable>
+                </div>}>
+            <p className="font-semibold text-[var(--ui-text)]">{missionRule(mission.validation_type, mission.validation_config)}</p>
+            <p>{mission.description}</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1"><span>{getMissionRewardLabel({ rewardType: mission.reward_type, rewardXp: mission.reward_xp, rewardTitle: mission.reward?.title ?? null })}</span><span>{repeatabilityLabel(mission.repeatability)}</span></div>
+            <p>{availabilityLabel(mission.starts_at, mission.ends_at)}</p>
+            {mission.source_mission_id ? <p><Link className="underline" href={`/admin/missions/${mission.source_mission_id}`}>Adapted from a platform mission</Link>{Object.keys(mission.local_changes ?? {}).length > 0 ? " · Local changes" : ""}</p> : null}
+            {mission.upstream_update_available ? <p className="font-semibold text-[var(--ui-reward)]">Source update available</p> : null}
+          </EconomyCard>)}
+        </div>
         <AdminPagination
           basePath="/admin/missions"
           currentPage={paginatedMissions.currentPage}

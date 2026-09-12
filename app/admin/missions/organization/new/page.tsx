@@ -1,6 +1,7 @@
+import { EconomyPageHeader as AdminPageHeader } from "@/components/admin/economy/EconomyPrimitives";
 import { redirect } from "next/navigation";
 import { OrganizationMissionWorkflowForm } from "@/components/admin/OrganizationMissionWorkflowForm";
-import { AdminNoticeBanner, AdminPageHeader } from "@/components/admin/AdminPrimitives";
+import { AdminNoticeBanner } from "@/components/admin/AdminPrimitives";
 import {
   getAdminCourses,
   getAdminLessons,

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminWorkspaceRole } from "@/lib/admin";
 import { appendAdminNotice } from "@/lib/admin-feedback";
 import { sanitizePlainTextInput } from "@/lib/input-safety";
+import { parsePageParam } from "@/lib/pagination";
 
 const PROOF_REVIEW_ROLES = [
   "organisation_owner",
@@ -19,6 +20,9 @@ export async function reviewProofSubmission(formData: FormData) {
   const missionId = String(formData.get("missionId") ?? "");
   const awardScope = String(formData.get("awardScope") ?? "");
   const status = String(formData.get("status") ?? "");
+  const returnPage = parsePageParam(String(formData.get("returnPage") ?? "1"));
+  const returnStatus = formData.get("returnStatus") === "all" ? "all" : "submitted";
+  const returnPath = `/admin/proofs?status=${returnStatus}&page=${returnPage}`;
   const rejectionReason = sanitizePlainTextInput(
     String(formData.get("rejectionReason") ?? ""),
     500,
@@ -46,10 +50,11 @@ export async function reviewProofSubmission(formData: FormData) {
       message?: string;
     };
     const notice = maybePostgresError.message ?? "Proof review failed.";
-    redirect(appendAdminNotice("/admin/proofs", notice));
+    redirect(appendAdminNotice(returnPath, notice));
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/economy");
   revalidatePath("/admin/proofs");
   revalidatePath("/admin/redemptions");
   revalidatePath("/admin/xp-ledger");
@@ -58,7 +63,7 @@ export async function reviewProofSubmission(formData: FormData) {
   revalidatePath("/rewards");
   redirect(
     appendAdminNotice(
-      "/admin/proofs",
+      returnPath,
       status === "approved" ? "Proof approved." : "Proof rejected.",
     ),
   );

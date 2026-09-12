@@ -25,7 +25,7 @@ test('auth handoffs reject scheme-relative, encoded and backslash redirects and 
  for(const next of ['//evil.example','/\\evil.example','/%5Cevil.example','/%2fexample.test','/\n/example.test']) assert.equal(getSafeAuthNextPath(next),'/dashboard');
  assert.equal(getSafeAuthNextPath('/o/team/learn?course=abc'),'/o/team/learn?course=abc');
  assert.equal(shouldRouteAuthNextToPublicAssessment('/login?reset=1&next=%2Forg%2Fcreate'),false);
- assert.equal(shouldRouteAuthNextToPublicAssessment('/welcome/save?next=%2Fxp-store'),false);
+ assert.equal(shouldRouteAuthNextToPublicAssessment('/welcome/save?next=%2Fxp-store'),true);
 });
 
 import { isSameOrigin } from '../../features/entry/request-origin.ts';
@@ -43,4 +43,30 @@ test('session-only auth cookies remain nonpersistent on browser/server refresh w
  assert.equal(authCookieOptions(options, 'value', 'session').expires, undefined);
  assert.equal(authCookieOptions(options, '', 'session'), options);
  assert.equal(authCookieOptions(options, 'value', 'persistent'), options);
+});
+
+import { progressRevision } from '../../features/entry/progress-sync.ts';
+test('background acknowledgements identify a snapshot and do not swallow newer topics', () => {
+ const receipt = newReceipt();
+ assert.equal(progressRevision(receipt), '');
+ assert.equal(progressRevision({...receipt, completed:['think','listen']}), progressRevision({...receipt, completed:['listen','think']}));
+ assert.notEqual(progressRevision({...receipt, completed:['think']}), progressRevision({...receipt, completed:['think','act']}));
+});
+test('auth and legacy links keep normal destinations without a blocking XP handoff', () => {
+ assert.equal(getSafeAuthNextPath('/welcome/save?next=%2Fxp-store'), '/dashboard');
+ assert.equal(getSafeAuthNextPath('/welcome/save?next=%2Forg%2Fcreate'), '/org/create');
+ assert.equal(getSafeAuthNextPath('/welcome/save?next=%2F%2Fevil.example'), '/dashboard');
+ for (const file of ['features/entry/use-account-form.ts','app/auth/callback/route.ts']) {
+  const source = readFileSync(file, 'utf8');
+  assert.doesNotMatch(source, /welcomeSaveHref|`\/welcome\/save|service_claim_welcome_progress|action:.*claim/);
+ }
+ const worker = readFileSync('components/entry/WelcomeProgressSync.tsx','utf8');
+ assert.match(worker, /return null/);
+ assert.doesNotMatch(worker, /location\.|router\.(push|replace)|alert\(/);
+ assert.match(worker, /attempts < 3/);
+ const route = readFileSync('app/api/welcome/progress/route.ts','utf8');
+ assert.doesNotMatch(route, /cookies.set\(receiptCookie, ""/);
+ assert.match(route, /progressAckCookie, progressRevision\(existing\)/);
+ const prompt = readFileSync('components/pwa/PushEnablePrompt.tsx','utf8');
+ assert.match(prompt, /pathname.startsWith\("\/onboarding"\)/);
 });
