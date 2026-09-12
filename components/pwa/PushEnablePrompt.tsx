@@ -59,6 +59,9 @@ export function PushEnablePrompt() {
         || pathname.startsWith("/admin")
         || pathname.startsWith("/invite")
         || pathname.startsWith("/login")
+        || pathname === "/"
+        || pathname.startsWith("/onboarding")
+        || pathname.startsWith("/welcome")
       ) {
         if (!cancelled) {
           setHidden(true);
@@ -158,7 +161,7 @@ export function PushEnablePrompt() {
     }
   }
 
-  if (hidden || !signal) {
+  if (hidden || !signal || pathname === "/" || pathname.startsWith("/onboarding") || pathname.startsWith("/login")) {
     return null;
   }
 

@@ -1,3 +1,4 @@
+import { WelcomeProgressSync } from "@/components/entry/WelcomeProgressSync";
 import { bodyFont } from "./fonts/body";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html className={bodyFont.variable} lang="en">
       <body>
         <PwaBootstrap />
+        <WelcomeProgressSync />
         {children}
         <PushEnablePrompt />
         <AppInstallPrompt />

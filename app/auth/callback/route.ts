@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readWelcomeReceipt, welcomeSaveHref } from "@/features/entry/progress-server";
+import { progressPendingCookie, progressRevision } from "@/features/entry/progress-sync";
+import { readWelcomeReceipt } from "@/features/entry/progress-server";
 import type { User } from "@supabase/supabase-js";
 import { getSafeAuthNextPath, shouldRouteAuthNextToPublicAssessment } from "@/lib/auth-redirect";
 import { getRiskContext } from "@/lib/auth-risk";
@@ -223,8 +224,11 @@ export async function GET(request: NextRequest) {
       ? getReferralRedirectPath((data ?? {}) as ReferralAcceptResult, next)
       : next;
     const receipt = await readWelcomeReceipt();
-    const target = receipt?.completed.length && !destination.startsWith("/login") ? welcomeSaveHref(destination) : destination;
-    const response = NextResponse.redirect(new URL(target, request.url));
+    const response = NextResponse.redirect(new URL(destination, request.url));
+    if (receipt?.completed.length) response.cookies.set(progressPendingCookie, progressRevision(receipt), {
+      httpOnly: false, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/",
+      maxAge: Math.max(0, receipt.exp - Math.floor(Date.now() / 1000)),
+    });
     clearOAuthSignupProofCookie(response);
     return response;
   }
@@ -253,8 +257,11 @@ export async function GET(request: NextRequest) {
 
   const destination = shouldRouteToAssessment ? "/onboarding/assessment" : next;
   const receipt = await readWelcomeReceipt();
-    const target = receipt?.completed.length && !destination.startsWith("/login") ? welcomeSaveHref(destination) : destination;
-    const response = NextResponse.redirect(new URL(target, request.url));
+  const response = NextResponse.redirect(new URL(destination, request.url));
+  if (receipt?.completed.length) response.cookies.set(progressPendingCookie, progressRevision(receipt), {
+    httpOnly: false, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/",
+    maxAge: Math.max(0, receipt.exp - Math.floor(Date.now() / 1000)),
+  });
   clearOAuthSignupProofCookie(response);
   return response;
 }
