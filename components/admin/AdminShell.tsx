@@ -601,7 +601,7 @@ const orgPrimaryLinks: AdminLink[] = [
   },
   {
     href: "/admin/campaigns",
-    label: "Campaigns",
+    label: "Reward Campaigns",
     icon: AdminFlagIcon,
     roles: ["organisation_owner", "organisation_admin", "programme_manager"],
     catalogOnly: true,
