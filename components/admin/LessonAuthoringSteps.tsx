@@ -21,7 +21,7 @@ export function LessonAuthoringSteps({
   ];
 
   return (
-    <nav aria-label="Lesson authoring steps" className="border-b border-[var(--admin-border-warm)] py-4">
+    <nav aria-label="Lesson authoring steps" className="border-b border-[var(--ui-border-subtle)] py-4">
       <ol className="mx-auto grid max-w-4xl grid-cols-2 sm:grid-cols-4 gap-2 px-3">
         {steps.map((step, index) => (
           <li key={step.id}>
@@ -30,8 +30,8 @@ export function LessonAuthoringSteps({
               className={cn(
                 "block rounded-[14px] border px-3 py-3 text-sm font-extrabold",
                 current === step.id
-                  ? "border-[var(--admin-primary)] bg-[var(--admin-surface-container-low)] text-[var(--admin-primary)]"
-                  : "border-transparent text-[var(--admin-on-surface-variant)] hover:bg-[var(--admin-surface-container-low)]",
+                  ? "border-[var(--ui-action)] bg-[var(--ui-surface-soft)] text-[var(--ui-action)]"
+                  : "border-transparent text-[var(--ui-text-muted)] hover:bg-[var(--ui-surface-soft)]",
               )}
               href={step.href}
             >

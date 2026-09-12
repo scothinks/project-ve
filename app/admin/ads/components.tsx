@@ -8,13 +8,13 @@ import { setAdEntityStatus } from "./actions";
 import type { PlacementRow } from "./types";
 
 export const inputClasses =
-  "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3.5 py-3 text-sm font-semibold outline-none transition placeholder:text-[var(--ve-muted)] focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green-soft)_72%,transparent)]";
+  "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3.5 py-3 text-sm font-semibold outline-none transition placeholder:text-[var(--ui-text-muted)] focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 export const compactInputClasses =
-  "rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-xs font-bold outline-none focus:border-[var(--ve-green)]";
+  "rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-xs font-bold outline-none focus:border-[var(--ui-focus)]";
 export const secondaryButtonClasses =
-  "inline-flex min-h-10 items-center justify-center rounded-[13px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 text-xs font-black text-[var(--ve-muted-strong)] transition hover:border-[color:color-mix(in_srgb,var(--ve-green)_26%,var(--ve-line))] hover:text-[var(--ve-green)]";
+  "inline-flex min-h-10 items-center justify-center rounded-[13px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-4 text-xs font-black text-[var(--ui-text-muted)] transition hover:border-[color:color-mix(in_srgb,var(--ui-action)_26%,var(--ui-border))] hover:text-[var(--ui-action)]";
 export const primaryButtonClasses =
-  "inline-flex min-h-11 items-center justify-center rounded-[14px] bg-[var(--ve-green)] px-5 text-sm font-black text-white shadow-sm transition hover:translate-y-[-1px]";
+  "inline-flex min-h-11 items-center justify-center rounded-[14px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)] shadow-sm transition hover:translate-y-[-1px]";
 
 export function statusTone(status: string) {
   if (["active", "approved", "published"].includes(status)) return "good" as const;
@@ -70,12 +70,12 @@ export function Field({
 }) {
   return (
     <label className={span ? "md:col-span-2" : undefined}>
-      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
         {label}
       </span>
       {children}
       {help ? (
-        <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           {help}
         </span>
       ) : null}
@@ -95,13 +95,13 @@ export function SectionTitle({
   return (
     <div>
       {eyebrow ? (
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
           {eyebrow}
         </p>
       ) : null}
       <h2 className="mt-1 text-xl font-black tracking-[-0.02em]">{children}</h2>
       {subtitle ? (
-        <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+        <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           {subtitle}
         </p>
       ) : null}
@@ -119,15 +119,15 @@ export function MetricCard({
   value: ReactNode;
 }) {
   const toneClasses = {
-    default: "text-[var(--foreground)]",
-    good: "text-[var(--ve-green)]",
-    warning: "text-[color:color-mix(in_srgb,var(--ve-store)_66%,var(--foreground))]",
-    danger: "text-[var(--ve-danger)]",
+    default: "text-[var(--ui-text)]",
+    good: "text-[var(--ui-action)]",
+    warning: "text-[var(--ui-warning)]",
+    danger: "text-[var(--ui-danger)]",
   };
 
   return (
-    <div className="rounded-[20px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm">
-      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+    <div className="rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         {label}
       </p>
       <p className={cn("mt-3 text-3xl font-black tracking-[-0.04em]", toneClasses[tone])}>
@@ -148,8 +148,8 @@ export function WorkflowCard({
 }) {
   return (
     <AdminCard className="overflow-hidden p-0">
-      <div className="border-b border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_48%,var(--ve-card))] px-5 py-4">
-        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+      <div className="border-b border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_48%,var(--ui-surface))] px-5 py-4">
+        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
           {step}
         </p>
         <h3 className="mt-1 text-lg font-black">{title}</h3>
@@ -167,8 +167,8 @@ export function AdvancedPanel({
   summary: string;
 }) {
   return (
-    <details className="md:col-span-2 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-4">
-      <summary className="cursor-pointer text-sm font-black text-[var(--foreground)]">
+    <details className="md:col-span-2 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] p-4">
+      <summary className="cursor-pointer text-sm font-black text-[var(--ui-text)]">
         {summary}
       </summary>
       <div className="mt-4 grid gap-4 md:grid-cols-2">{children}</div>
@@ -199,7 +199,7 @@ export function StatusForm({
           <option value="archived">Archive</option>
           <option value="rejected">Reject</option>
         </select>
-        <button className="rounded-[12px] bg-[var(--ve-green)] px-3 text-xs font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ui-action)] px-3 text-xs font-black text-[var(--ui-on-action)]" type="submit">
           Apply
         </button>
       </div>
@@ -214,7 +214,7 @@ export function StatusForm({
 
 export function EmptyList({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[16px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-panel)] p-5 text-sm font-semibold text-[var(--ve-muted)]">
+    <div className="rounded-[16px] border border-dashed border-[var(--ui-border)] bg-[var(--ui-surface-inset)] p-5 text-sm font-semibold text-[var(--ui-text-muted)]">
       {children}
     </div>
   );
@@ -222,23 +222,23 @@ export function EmptyList({ children }: { children: ReactNode }) {
 
 export function PlacementFallbackPreview({ placement }: { placement: PlacementRow }) {
   return (
-    <div className="rounded-[18px] border border-[color:color-mix(in_srgb,var(--ve-green)_16%,var(--ve-line-soft))] bg-[var(--ve-card)] p-4 shadow-sm">
-      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+    <div className="rounded-[18px] border border-[color:color-mix(in_srgb,var(--ui-action)_16%,var(--ui-border-subtle))] bg-[var(--ui-surface)] p-4 shadow-sm">
+      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
         Advertise here
       </p>
-      <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+      <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
         Project VE Partnerships
       </p>
-      <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+      <p className="mt-4 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         {placement.house_fallback_eyebrow}
       </p>
       <h4 className="mt-2 text-base font-black leading-6 tracking-[-0.02em]">
         {placement.house_fallback_headline}
       </h4>
-      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
         {placement.house_fallback_body}
       </p>
-      <div className="mt-4 inline-flex min-h-9 items-center rounded-full bg-[var(--ve-green)] px-4 text-xs font-black text-white">
+      <div className="mt-4 inline-flex min-h-9 items-center rounded-full bg-[var(--ui-action)] px-4 text-xs font-black text-[var(--ui-on-action)]">
         {placement.house_fallback_cta_label}
       </div>
     </div>

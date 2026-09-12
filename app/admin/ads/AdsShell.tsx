@@ -26,7 +26,7 @@ export function AdsShell({
       />
       {notice ? <AdminNoticeBanner>{notice}</AdminNoticeBanner> : null}
 
-      <section className="mt-6 rounded-[22px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3 shadow-sm">
+      <section className="mt-6 rounded-[22px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 shadow-sm">
         <div className="grid gap-2 md:grid-cols-5">
           {[
             ["Overview", "/admin/ads", "overview"],
@@ -37,10 +37,10 @@ export function AdsShell({
           ].map(([label, href, view]) => (
             <a
               className={cn(
-                "rounded-[16px] px-4 py-3 text-center text-sm font-black transition hover:bg-[var(--ve-panel)] hover:text-[var(--ve-green)]",
+                "rounded-[16px] px-4 py-3 text-center text-sm font-black transition hover:bg-[var(--ui-surface-inset)] hover:text-[var(--ui-action)]",
                 activeView === view
-                  ? "bg-[var(--ve-panel)] text-[var(--ve-green)]"
-                  : "text-[var(--ve-muted-strong)]",
+                  ? "bg-[var(--ui-surface-inset)] text-[var(--ui-action)]"
+                  : "text-[var(--ui-text-muted)]",
               )}
               href={href}
               key={href}

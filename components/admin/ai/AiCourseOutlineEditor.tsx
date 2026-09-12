@@ -5,10 +5,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 import type { CourseOutline } from '@/features/ai-generation/authoring/course-contracts';
 import { aiButton } from './AiPageResult';
-export const courseField = 'mt-2 w-full rounded-xl border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3 text-sm font-normal focus-visible:outline-2 focus-visible:outline-offset-2';
+export const courseField = 'mt-2 w-full rounded-xl border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3 text-sm font-normal focus-visible:outline-2 focus-visible:outline-offset-2';
 function LessonRow({ id, lesson, index, count, disabled, change, move, remove }: { id: string; lesson: CourseOutline['lessons'][number]; index: number; count: number; disabled: boolean; change: (lesson: CourseOutline['lessons'][number]) => void; move: (to: number) => void; remove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled });
-  return <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="space-y-3 rounded-2xl border border-[var(--admin-border-warm)] p-4">
+  return <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="space-y-3 rounded-2xl border border-[var(--ui-border-subtle)] p-4">
     <div className="flex flex-wrap items-center gap-2"><button type="button" {...attributes} {...listeners} className={aiButton} disabled={disabled} aria-label={`Drag lesson ${index+1}`}>↕</button><strong>Lesson {index+1}</strong>
       <button type="button" className={aiButton} disabled={disabled || index===0} onClick={()=>move(index-1)}>Move up</button><button type="button" className={aiButton} disabled={disabled || index===count-1} onClick={()=>move(index+1)}>Move down</button><button type="button" className={aiButton} disabled={disabled || count===1} onClick={remove}>Remove</button></div>
     <label className="block text-sm">Lesson title<input className={courseField} value={lesson.title} maxLength={180} disabled={disabled} onChange={e=>change({...lesson,title:e.target.value})}/></label>

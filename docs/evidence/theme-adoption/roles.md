@@ -1,6 +1,8 @@
 # Terminal role dictionary
 
-These roles implement the frozen direction. The nine core role values come from the approved plan; additional operational pairs are proposed derivatives with distinct uses. None is active in G0. G2 must validate rendered foreground/background and focus contrast and remove any role without a distinct use.
+B2 activates these literal light/dark roles in `app/styles/theme.css`. The nine frozen core roles are preserved. Functional pairs separate actions, current selection, success, warning, danger, information and learning/mission/reward categories.
+
+All 126 source contrast pairs pass; [measured values](b2-source-contrast.json) are source checks only. Rendered foreground/background, focus and disabled-state qualification remains deferred until #102 implementation is complete. The darker subtle-text derivative and distinct opaque control-border role satisfy the thresholds on inset/muted surfaces. Fixed artwork ink applies only to existing pale reward-thumbnail fallbacks; on-media stays fixed over protected imagery.
 
 | Role | Light | Dark | Use |
 |---|---|---|---|
@@ -18,7 +20,7 @@ These roles implement the frozen direction. The nine core role values come from 
 | `--ui-surface-soft` | `#f5f0f6` | `#302836` | Quiet sections |
 | `--ui-surface-muted` | `#e9e3eb` | `#382f3e` | Subdued regions |
 | `--ui-surface-raised` | `#ffffff` | `#342c3b` | Elevated cards and overlays |
-| `--ui-text-subtle` | `#716778` | `#b8adbf` | Tertiary text; rendered contrast required |
+| `--ui-text-subtle` | `#6a6071` | `#b8adbf` | Tertiary text; rendered contrast required |
 | `--ui-border-subtle` | `#ded5e2` | `#514658` | Decorative separators only |
 | `--ui-action-hover` | `#493052` | `#e2cdef` | Action hover |
 | `--ui-action-pressed` | `#3b2444` | `#c7a8d6` | Action pressed |
@@ -46,5 +48,32 @@ These roles implement the frozen direction. The nine core role values come from 
 | `--ui-reward` | `#77550e` | `#e6c779` | Reward category |
 | `--ui-reward-bg` | `#f8efcf` | `#43391f` | Reward category field |
 | `--ui-shadow-rgb` | `37, 35, 39` | `0, 0, 0` | Terminal shadow channels for existing alpha recipes |
+| `--ui-shadow-opacity` | `0.14` | `0.34` | Intro artwork shadow opacity |
+| `--ui-on-learning` | `#ffffff` | `#173145` | Foreground on solid learning category |
+| `--ui-on-mission` | `#ffffff` | `#362013` | Foreground on solid mission category |
+| `--ui-on-reward` | `#ffffff` | `#302309` | Foreground on solid reward category |
+| `--ui-on-media` | `#fffdf8` | `#fffdf8` | Fixed readable foreground on protected image scrim |
+| `--ui-control-border` | `#7b6f80` | `#95889f` | Opaque form-control boundary against inset and raised fields |
+| `--ui-artwork-ink` | `#252327` | `#252327` | Fixed ink on existing pale persisted reward-thumbnail artwork; never ordinary UI text |
 
-Font outputs are reserved as `--ui-font-body` and `--ui-font-display` for B3; they are terminal next/font/local outputs, with fallbacks at the point of consumption. No semantic-to-semantic or semantic-to-legacy aliases are permitted.
+Font outputs remain reserved for B3. No font or signature change is included in B2.
+
+## B3 typography terminals
+
+`--ui-font-body` and `--ui-font-display` are terminal `next/font/local` outputs.
+Body and signature use Source Sans 3; the existing expressive Orgs heading uses
+Source Serif 4. Both supply real normal/italic faces without preloading; the Serif
+loader is imported only by that route. The prior `--font-geist` and
+`--learner-body-font` names are retired directly at G3. There is no font alias
+layer. See [font payload and coverage](b3-font-payload.json) and
+[the B3 record](b3-typography.md).
+
+## B5 compatibility closure
+
+All production consumers now use the terminal roles directly. The active registry
+has no legacy tokens, adapters, undefined-defect or dynamic-use allowances; all
+108 historical names are retired. Neither compatibility stylesheet survives.
+The frozen literal browser canvas/action colours are explicit asset exceptions,
+with real export dimensions checked by the browser-assets unit contract.
+[B5 evidence](b5-operational-and-browser.md) distinguishes source enforcement from
+pending integrated rendered/generated-CSS qualification.

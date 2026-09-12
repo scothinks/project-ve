@@ -92,19 +92,19 @@ export default async function AdminMissionsPage({
           {paginatedMissions.items.map((mission) => (
             <tr key={mission.id}>
               <td className="min-w-[240px] px-4 py-4">
-                <Link className="font-black hover:text-[var(--ve-mission)]" href={`/admin/missions/${mission.id}`}>
+                <Link className="font-black hover:text-[var(--ui-mission)]" href={`/admin/missions/${mission.id}`}>
                   {mission.title}
                 </Link>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   {mission.description}
                 </p>
                 {mission.source_mission_id ? (
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                     Adapted from {mission.source_mission_id}
                   </p>
                 ) : null}
                 {mission.upstream_update_available ? (
-                  <p className="mt-1 text-xs font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]">
+                  <p className="mt-1 text-xs font-black text-[var(--ui-reward)]">
                     Source update available
                   </p>
                 ) : null}
@@ -114,7 +114,7 @@ export default async function AdminMissionsPage({
                   <AdminStatusBadge tone={mission.catalog_scope === "platform" ? "neutral" : "store"}>
                     {mission.catalog_scope.replaceAll("_", " ")}
                   </AdminStatusBadge>
-                  <span className="text-xs font-semibold text-[var(--ve-muted)]">
+                  <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
                     {mission.mission_type_key}
                   </span>
                 </div>
@@ -139,14 +139,14 @@ export default async function AdminMissionsPage({
               <td className="whitespace-nowrap px-4 py-4">
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)]"
+                    className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black text-[var(--ui-text-muted)]"
                     href={`/admin/missions/${mission.id}`}
                   >
                     {mission.catalog_scope === "platform" && canManagePlatformMissions ? "Edit" : "View"}
                   </Link>
                   {isOrganizationWorkspace && mission.catalog_scope === "platform" ? (
                     <Link
-                      className="rounded-[12px] bg-[var(--ve-panel)] px-3 py-2 text-xs font-black text-[var(--ve-muted-strong)]"
+                      className="rounded-[12px] bg-[var(--ui-surface-inset)] px-3 py-2 text-xs font-black text-[var(--ui-text-muted)]"
                       href={`/admin/missions/organization/new?sourceMissionId=${encodeURIComponent(mission.id)}`}
                     >
                       Adapt
@@ -164,8 +164,8 @@ export default async function AdminMissionsPage({
                       <button
                         className={
                           mission.status === "published"
-                            ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
-                            : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
+                            ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-danger)]"
+                            : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-action)]"
                         }
                         type="submit"
                       >

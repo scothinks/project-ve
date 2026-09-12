@@ -35,8 +35,8 @@ function InviteMethodTab({
     <button
       className={`flex-1 rounded-[12px] px-3 py-2 text-sm font-bold transition ${
         active
-          ? "bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface)] shadow-sm"
-          : "text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-on-surface)]"
+          ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-sm"
+          : "text-[var(--ui-text-muted)] hover:text-[var(--ui-text)]"
       }`}
       onClick={onClick}
       type="button"
@@ -96,7 +96,7 @@ export function PeopleInviteDrawer({
       title="Invite People"
       trigger={
         <button
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--admin-primary-container)] px-4 py-2 text-sm font-bold text-[var(--admin-on-primary)] shadow-sm transition hover:brightness-95"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--ui-action)] px-4 py-2 text-sm font-bold text-[var(--ui-on-action)] shadow-sm transition hover:brightness-95"
           type="button"
         >
           Invite People
@@ -111,10 +111,10 @@ export function PeopleInviteDrawer({
         ) : null}
 
         <div>
-          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Invitation Method
           </span>
-          <div className="mt-2 flex gap-1 rounded-[14px] bg-[var(--admin-surface-container-low)] p-1">
+          <div className="mt-2 flex gap-1 rounded-[14px] bg-[var(--ui-surface-soft)] p-1">
             <InviteMethodTab
               active={method === "email"}
               label="Invite by Email"
@@ -133,30 +133,30 @@ export function PeopleInviteDrawer({
 
         {method === "email" ? (
           <label className="flex flex-col gap-2">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+            <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
               Recipient
             </span>
             <input
-              className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
+              className="rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)]"
               name="email"
               placeholder="name@organisation.edu"
               required
               type="email"
             />
-            <span className="text-xs text-[var(--admin-on-surface-variant)]">
+            <span className="text-xs text-[var(--ui-text-muted)]">
               To invite several people, send one invitation at a time.
             </span>
           </label>
         ) : (
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+            <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
               Find a user
             </span>
             {selectedUser ? (
-              <div className="flex items-center justify-between rounded-[14px] border border-[var(--admin-primary-container)] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_10%,transparent)] px-4 py-3">
-                <span className="text-sm font-bold text-[var(--admin-on-surface)]">{selectedUser.displayName}</span>
+              <div className="flex items-center justify-between rounded-[14px] border border-[var(--ui-action)] bg-[color:color-mix(in_srgb,var(--ui-action)_10%,transparent)] px-4 py-3">
+                <span className="text-sm font-bold text-[var(--ui-text)]">{selectedUser.displayName}</span>
                 <button
-                  className="text-xs font-bold text-[var(--admin-on-surface-variant)] hover:underline"
+                  className="text-xs font-bold text-[var(--ui-text-muted)] hover:underline"
                   onClick={() => {
                     setSelectedUser(null);
                     setQuery("");
@@ -169,20 +169,20 @@ export function PeopleInviteDrawer({
             ) : (
               <>
                 <input
-                  className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
+                  className="rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)]"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by name or referral code…"
                   type="search"
                   value={query}
                 />
                 {isSearching ? (
-                  <p className="text-xs text-[var(--admin-on-surface-variant)]">Searching…</p>
+                  <p className="text-xs text-[var(--ui-text-muted)]">Searching…</p>
                 ) : null}
                 {results.length > 0 ? (
-                  <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)]">
+                  <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)]">
                     {results.map((candidate) => (
                       <button
-                        className="border-b border-[var(--admin-border-warm)] px-4 py-2.5 text-left text-sm font-semibold text-[var(--admin-on-surface)] transition last:border-b-0 hover:bg-[var(--admin-surface-container-low)]"
+                        className="border-b border-[var(--ui-border-subtle)] px-4 py-2.5 text-left text-sm font-semibold text-[var(--ui-text)] transition last:border-b-0 hover:bg-[var(--ui-surface-soft)]"
                         key={candidate.id}
                         onClick={() => setSelectedUser(candidate)}
                         type="button"
@@ -193,7 +193,7 @@ export function PeopleInviteDrawer({
                   </div>
                 ) : null}
                 {!isSearching && query.trim().length >= 2 && results.length === 0 ? (
-                  <p className="text-xs text-[var(--admin-on-surface-variant)]">
+                  <p className="text-xs text-[var(--ui-text-muted)]">
                     No matching users who aren&rsquo;t already members.
                   </p>
                 ) : null}
@@ -203,7 +203,7 @@ export function PeopleInviteDrawer({
         )}
 
         <section>
-          <h3 className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          <h3 className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Role Assignment
           </h3>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -211,8 +211,8 @@ export function PeopleInviteDrawer({
               <button
                 className={`rounded-[14px] border p-3 text-left text-xs font-bold transition ${
                   role === option
-                    ? "border-[var(--admin-primary-container)] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_12%,transparent)] text-[var(--admin-primary)]"
-                    : "border-[var(--admin-border-warm)] text-[var(--admin-on-surface)] hover:bg-[var(--admin-surface-container-low)]"
+                    ? "border-[var(--ui-action)] bg-[color:color-mix(in_srgb,var(--ui-action)_12%,transparent)] text-[var(--ui-action)]"
+                    : "border-[var(--ui-border-subtle)] text-[var(--ui-text)] hover:bg-[var(--ui-surface-soft)]"
                 }`}
                 key={option}
                 onClick={() => setRole(option)}
@@ -225,11 +225,11 @@ export function PeopleInviteDrawer({
         </section>
 
         <label className="flex flex-col gap-2">
-          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Target Context
           </span>
           <select
-            className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
+            className="rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)]"
             name="target"
             onChange={(event) => setTarget(event.target.value)}
             value={target}
@@ -242,13 +242,13 @@ export function PeopleInviteDrawer({
           </select>
         </label>
 
-        <div className="flex items-start gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-3 text-xs text-[var(--admin-on-surface-variant)]">
-          <span className="mt-0.5 shrink-0 text-[var(--admin-primary)]">ⓘ</span>
+        <div className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-3 text-xs text-[var(--ui-text-muted)]">
+          <span className="mt-0.5 shrink-0 text-[var(--ui-action)]">ⓘ</span>
           <p>
             As a{role === "organisation_owner" || role === "organisation_admin" || role === "instructor" ? "n" : ""}{" "}
-            <span className="font-bold text-[var(--admin-on-surface)]">{ORGANIZATION_ROLE_LABELS[role]}</span>{" "}
+            <span className="font-bold text-[var(--ui-text)]">{ORGANIZATION_ROLE_LABELS[role]}</span>{" "}
             assigned to{" "}
-            <span className="font-bold text-[var(--admin-on-surface)]">
+            <span className="font-bold text-[var(--ui-text)]">
               {targetOptions.find((option) => option.value === target)?.label ?? "Whole organisation"}
             </span>
             , this person will: {ORGANIZATION_ROLE_DESCRIPTIONS[role].toLowerCase()}
@@ -256,11 +256,11 @@ export function PeopleInviteDrawer({
         </div>
 
         <label className="flex flex-col gap-2">
-          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Invitation expires in (days)
           </span>
           <input
-            className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--admin-primary-container)]"
+            className="rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-semibold outline-none transition focus:border-[var(--ui-focus)]"
             defaultValue={14}
             max={90}
             min={1}
@@ -269,16 +269,16 @@ export function PeopleInviteDrawer({
           />
         </label>
 
-        <div className="flex justify-end gap-3 border-t border-[var(--admin-border-warm)] pt-4">
+        <div className="flex justify-end gap-3 border-t border-[var(--ui-border-subtle)] pt-4">
           <button
-            className="rounded-[12px] border border-[var(--admin-border-warm)] px-4 py-2 text-sm font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)]"
+            className="rounded-[12px] border border-[var(--ui-border-subtle)] px-4 py-2 text-sm font-bold text-[var(--ui-text)] transition hover:bg-[var(--ui-surface-soft)]"
             onClick={() => setOpen(false)}
             type="button"
           >
             Cancel
           </button>
           <PendingSubmitButton
-            className="rounded-full bg-[var(--admin-primary-container)] px-5 py-2 text-sm font-bold text-[var(--admin-on-primary)] transition hover:brightness-95 disabled:opacity-50"
+            className="rounded-full bg-[var(--ui-action)] px-5 py-2 text-sm font-bold text-[var(--ui-on-action)] transition hover:brightness-95 disabled:opacity-50"
             disabled={method === "existing" && !selectedUser}
             label="Send Invitation"
             pendingLabel="Sending…"

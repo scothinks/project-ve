@@ -9,11 +9,11 @@ import { reallocateInventory } from "../actions";
 const INVENTORY_ROLES = ["organisation_owner", "organisation_admin", "programme_manager"];
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 type ReallocateInventoryPageProps = {
@@ -104,7 +104,7 @@ export default async function ReallocateInventoryPage({ searchParams }: Realloca
             />
           </label>
 
-          <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+          <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
             Reallocate inventory
           </button>
         </form>

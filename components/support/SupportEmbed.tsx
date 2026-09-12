@@ -102,21 +102,21 @@ export function SupportEmbed({ faqHref = "/faq" }: SupportEmbedProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-[20px] border border-black/5 bg-[var(--ve-panel)] p-5 lg:rounded-[24px] lg:bg-[var(--ve-card)] lg:p-10 lg:text-center lg:shadow-sm">
+      <div className="rounded-[20px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] p-5 lg:rounded-[24px] lg:bg-[var(--ui-surface)] lg:p-10 lg:text-center lg:shadow-sm">
         <div className="flex items-center gap-3 lg:hidden">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--ui-action-soft)] text-[var(--ui-action)]">
             <ChatIcon className="size-5" />
           </span>
           <h2 className="text-lg font-black">Submit a Request</h2>
         </div>
-        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)] lg:mt-0 lg:text-base lg:leading-7">
+        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)] lg:mt-0 lg:text-base lg:leading-7">
           This will open the Project VE support request experience in a secure dialog where you
           can detail your issue.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row lg:justify-center">
           <div className="relative flex-1 sm:flex-none">
             <button
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--ve-green)] px-8 text-sm font-black text-white shadow-sm transition hover:opacity-90 active:scale-[0.98]"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--ui-action)] px-8 text-sm font-black text-[var(--ui-on-action)] shadow-sm transition hover:opacity-90 active:scale-[0.98]"
               onClick={openSupportForm}
               type="button"
             >
@@ -129,7 +129,7 @@ export function SupportEmbed({ faqHref = "/faq" }: SupportEmbedProps) {
             />
           </div>
           <Link
-            className="hidden min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[var(--ve-green)] px-8 text-sm font-black text-[var(--ve-green)] transition hover:bg-[var(--ve-green-soft)] lg:inline-flex"
+            className="hidden min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[var(--ui-action)] px-8 text-sm font-black text-[var(--ui-action)] transition hover:bg-[var(--ui-action-soft)] lg:inline-flex"
             href={faqHref}
           >
             Browse FAQs
@@ -138,8 +138,8 @@ export function SupportEmbed({ faqHref = "/faq" }: SupportEmbedProps) {
       </div>
 
       {loadError ? (
-        <div className="flex items-start gap-2 rounded-[14px] border border-[#f1ddd7] bg-[#fff7f4] p-3">
-          <p className="text-sm font-semibold leading-6 text-[#c94f2e]">
+        <div className="flex items-start gap-2 rounded-[14px] border border-[var(--ui-danger-bg)] bg-[var(--ui-danger-bg)] p-3">
+          <p className="text-sm font-semibold leading-6 text-[var(--ui-danger)]">
             The support form could not load. Refresh the page and try again.
           </p>
         </div>
@@ -147,7 +147,7 @@ export function SupportEmbed({ faqHref = "/faq" }: SupportEmbedProps) {
 
       <div className="flex justify-center lg:hidden">
         <Link
-          className="inline-flex items-center gap-1.5 text-sm font-black text-[var(--ve-green)]"
+          className="inline-flex items-center gap-1.5 text-sm font-black text-[var(--ui-action)]"
           href={faqHref}
         >
           <SearchIcon className="size-4" />

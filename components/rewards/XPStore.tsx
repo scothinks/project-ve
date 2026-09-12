@@ -208,22 +208,22 @@ export function XPStore({
   return (
     <section className="store-panel learner-page learner-page--standard">
       <div className="store-panel__header flex items-center justify-between gap-3">
-        <h1 className="truncate text-[1.4rem] font-black tracking-[-0.02em] text-[var(--ve-green)]">
+        <h1 className="truncate text-[1.4rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
           {storeName}
         </h1>
-        <span className="store-panel__balance flex shrink-0 items-center gap-1.5 rounded-full border border-black/5 bg-[var(--ve-card-muted)] px-3 py-1.5 text-[0.78rem] font-black tabular-nums text-[var(--ve-muted-strong)]">
-          <StarBadgeIcon className="size-3.5 text-[#a66d00]" />
+        <span className="store-panel__balance flex shrink-0 items-center gap-1.5 rounded-full border border-black/5 bg-[var(--ui-surface-muted)] px-3 py-1.5 text-[0.78rem] font-black tabular-nums text-[var(--ui-text-muted)]">
+          <StarBadgeIcon className="size-3.5 text-[var(--ui-reward)]" />
           {formatXpLabel(snapshot.xpBalance, workspaceLabel)}
         </span>
       </div>
 
-      <div className="store-panel__tabs mt-5 flex gap-6 border-b border-[var(--ve-line-soft)]">
+      <div className="store-panel__tabs mt-5 flex gap-6 border-b border-[var(--ui-border-subtle)]">
         <button
           className={cn(
             "min-h-10 border-b-2 px-0.5 text-[0.85rem] font-semibold tracking-[-0.01em]",
             tab === "store"
-              ? "border-[var(--ve-green)] text-[var(--ve-green)]"
-              : "border-transparent text-[var(--ve-muted)]",
+              ? "border-[var(--ui-current-text)] text-[var(--ui-current-text)]"
+              : "border-transparent text-[var(--ui-text-muted)]",
           )}
           onClick={() => setTab("store")}
           type="button"
@@ -234,8 +234,8 @@ export function XPStore({
           className={cn(
             "min-h-10 border-b-2 px-0.5 text-[0.85rem] font-semibold tracking-[-0.01em]",
             tab === "history"
-              ? "border-[var(--ve-green)] text-[var(--ve-green)]"
-              : "border-transparent text-[var(--ve-muted)]",
+              ? "border-[var(--ui-current-text)] text-[var(--ui-current-text)]"
+              : "border-transparent text-[var(--ui-text-muted)]",
           )}
           onClick={() => setTab("history")}
           type="button"
@@ -245,7 +245,7 @@ export function XPStore({
       </div>
 
       {message ? (
-        <div className="mt-4 rounded-[18px] border border-[#ffe7a6] bg-[#fff8df] px-4 py-3 text-xs font-bold text-[#a66d00]">
+        <div className="mt-4 rounded-[18px] border border-[var(--ui-reward-bg)] bg-[var(--ui-reward-bg)] px-4 py-3 text-xs font-bold text-[var(--ui-reward)]">
           {message}
         </div>
       ) : null}
@@ -254,22 +254,22 @@ export function XPStore({
         <>
           {featuredReward ? (
             <div className="store-feature mt-5">
-              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-muted)]">
+              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">
                 Featured Reward
               </p>
               <Card className="store-feature__card !rounded-[8px] overflow-hidden p-0" variant="store">
-                <div className="store-feature__media h-48 w-full overflow-hidden bg-[#fff8df]">
+                <div className="store-feature__media h-48 w-full overflow-hidden bg-[var(--ui-reward-bg)]">
                   <RewardThumb thumbnail={featuredReward.thumbnail} title={featuredReward.title} />
                 </div>
                 <div className="store-feature__body p-4">
-                  <h2 className="text-[1.06rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--foreground)]">
+                  <h2 className="text-[1.06rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--ui-text)]">
                     {featuredReward.title}
                   </h2>
-                  <p className="mt-1 text-[0.8rem] font-medium leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-1 text-[0.8rem] font-medium leading-5 text-[var(--ui-text-muted)]">
                     {featuredReward.description}
                   </p>
                   <div className="mt-3 flex items-center justify-between gap-3">
-                    <span className="flex items-center gap-1.5 text-[0.85rem] font-black text-[#a66d00]">
+                    <span className="flex items-center gap-1.5 text-[0.85rem] font-black text-[var(--ui-reward)]">
                       <CoinIcon className="size-4" />
                       {formatXpLabel(featuredReward.costXp, workspaceLabel)}
                     </span>
@@ -305,7 +305,7 @@ export function XPStore({
           ) : null}
 
           <div className="store-catalogue-heading mt-5">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ve-muted)]">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">
               Reward Catalogue
             </p>
           </div>
@@ -313,14 +313,14 @@ export function XPStore({
             {snapshot.rewards.length === 0 ? (
               <Card className="!rounded-[8px] col-span-2 p-6 text-center lg:col-span-3" variant="store">
                 <p className="text-sm font-black">No rewards available</p>
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   New rewards will appear here when they are available.
                 </p>
               </Card>
             ) : paginatedRewards.items.length === 0 ? (
               <Card className="!rounded-[8px] col-span-2 p-5 text-center lg:col-span-3" variant="store">
                 <p className="text-sm font-black">More rewards soon</p>
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   Check history for redeemed rewards, or return when the catalogue refreshes.
                 </p>
               </Card>
@@ -335,7 +335,7 @@ export function XPStore({
                 key={reward.id}
                 variant="store"
               >
-                <div className="relative h-32 w-full overflow-hidden bg-[var(--ve-card-muted)]">
+                <div className="relative h-32 w-full overflow-hidden bg-[var(--ui-surface-muted)]">
                   <RewardThumb thumbnail={reward.thumbnail} title={reward.title} />
                   {reward.isSoldOut || isLocked ? (
                     <div className="absolute inset-0 grid place-items-center bg-black/20">
@@ -345,20 +345,20 @@ export function XPStore({
                 </div>
                 <div className="p-3">
                   <div className="min-w-0">
-                      <h2 className="line-clamp-2 text-[0.82rem] font-semibold leading-5 tracking-[-0.01em] text-[var(--foreground)]">
+                      <h2 className="line-clamp-2 text-[0.82rem] font-semibold leading-5 tracking-[-0.01em] text-[var(--ui-text)]">
                         {reward.title}
                       </h2>
-                      <p className="mt-1 line-clamp-2 text-[0.7rem] font-medium leading-4 text-[var(--ve-muted)]">
+                      <p className="mt-1 line-clamp-2 text-[0.7rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                         {reward.description}
                       </p>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1 text-[0.72rem] font-black text-[#a66d00]">
+                    <span className="flex items-center gap-1 text-[0.72rem] font-black text-[var(--ui-reward)]">
                       <CoinIcon className="size-3.5" />
                       {formatXpLabel(reward.costXp, workspaceLabel)}
                     </span>
                     <button
-                      className="text-left text-[0.72rem] font-medium tracking-[-0.01em] text-[#087f5b]"
+                      className="text-left text-[0.72rem] font-medium tracking-[-0.01em] text-[var(--ui-action)]"
                       onClick={() => setExpandedRewardId(expanded ? null : reward.id)}
                       type="button"
                     >
@@ -385,17 +385,17 @@ export function XPStore({
                 </div>
 
                 {expanded ? (
-                    <div className="mt-5 border-t border-[var(--ve-line-soft)] pt-5">
-                    <div className="grid grid-cols-1 gap-4 text-xs font-bold text-[var(--ve-muted)] min-[390px]:grid-cols-2">
+                    <div className="mt-5 border-t border-[var(--ui-border-subtle)] pt-5">
+                    <div className="grid grid-cols-1 gap-4 text-xs font-bold text-[var(--ui-text-muted)] min-[390px]:grid-cols-2">
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.12em]">Offer Ends</p>
-                        <p className="mt-1 text-[var(--foreground)]">
+                        <p className="mt-1 text-[var(--ui-text)]">
                           {formatRewardDate(reward.offerExpiresAt)}
                         </p>
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.12em]">Type</p>
-                        <p className="mt-1 text-[var(--foreground)]">
+                        <p className="mt-1 text-[var(--ui-text)]">
                           {reward.distributionMode === "perk_bundle"
                             ? distributionLabels[reward.distributionMode]
                             : fulfillmentLabels[reward.fulfillmentType]}
@@ -403,13 +403,13 @@ export function XPStore({
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.12em]">Limit</p>
-                        <p className="mt-1 text-[var(--foreground)]">
+                        <p className="mt-1 text-[var(--ui-text)]">
                           {getRewardLimitLabel(reward.perUserLimit, reward.limitPeriod)}
                         </p>
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.12em]">Redeem By</p>
-                        <p className="mt-1 text-[var(--foreground)]">
+                        <p className="mt-1 text-[var(--ui-text)]">
                           {reward.redemptionWindowDays
                             ? `${reward.redemptionWindowDays} days after purchase`
                             : "No redemption window"}
@@ -417,7 +417,7 @@ export function XPStore({
                       </div>
                     </div>
                     {reward.terms ? (
-                      <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                      <p className="mt-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                         {reward.terms}
                       </p>
                     ) : null}
@@ -443,7 +443,7 @@ export function XPStore({
             {snapshot.redemptions.length === 0 ? (
               <Card className="p-6 text-center" variant="store">
                 <p className="text-sm font-black">No purchases yet</p>
-                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                   Redeem {workspaceLabel} for a reward, then return here to manage it.
                 </p>
               </Card>
@@ -465,18 +465,18 @@ export function XPStore({
                       <RewardThumb thumbnail={redemption.rewardThumbnail} title={redemption.rewardTitle} />
                     </div>
                     <div className="store-history-card__copy min-w-0 flex-1">
-                      <span className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--ve-card-muted)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ve-muted-strong)]">
+                      <span className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--ui-surface-muted)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                         <CheckCircleIcon className="size-3" />
                         {claimStateLabels[redemption.claimState]}
                       </span>
-                      <h2 className="mt-1.5 line-clamp-2 text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--foreground)]">
+                      <h2 className="mt-1.5 line-clamp-2 text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-[var(--ui-text)]">
                         {redemption.rewardTitle}
                       </h2>
-                      <p className="mt-1 text-[0.78rem] font-medium leading-5 text-[var(--ve-muted)]">
+                      <p className="mt-1 text-[0.78rem] font-medium leading-5 text-[var(--ui-text-muted)]">
                         Redeemed {formatRewardDate(redemption.requestedAt)}
                       </p>
                       <button
-                        className="mt-4 text-left text-[0.85rem] font-medium tracking-[-0.01em] text-[#a66d00]"
+                        className="mt-4 text-left text-[0.85rem] font-medium tracking-[-0.01em] text-[var(--ui-reward)]"
                         onClick={() => setExpandedRedemptionId(expanded ? null : redemption.id)}
                         type="button"
                       >
@@ -486,19 +486,19 @@ export function XPStore({
                   </div>
 
                   {expanded ? (
-                    <div className="store-history-card__fulfillment mt-5 space-y-5 border-t border-[var(--ve-line-soft)] pt-5">
+                    <div className="store-history-card__fulfillment mt-5 space-y-5 border-t border-[var(--ui-border-subtle)] pt-5">
                       {redemption.claimSteps.length > 0 ? (
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#a66d00]">
+                          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-reward)]">
                             Claim Steps
                           </p>
                           <ol className="mt-2 space-y-2">
                             {redemption.claimSteps.map((step, index) => (
                               <li
-                                className="flex gap-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]"
+                                className="flex gap-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]"
                                 key={`${redemption.id}-${step}`}
                               >
-                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#dff2e9] text-[10px] font-black text-[#008751]">
+                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[var(--ui-action-soft)] text-[10px] font-black text-[var(--ui-action)]">
                                   {index + 1}
                                 </span>
                                 <span>{step}</span>
@@ -509,7 +509,7 @@ export function XPStore({
                       ) : null}
 
                       {shouldShowRedemptionMessage(redemption) ? (
-                        <p className="rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                        <p className="rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                           {redemption.userMessage}
                         </p>
                       ) : null}
@@ -520,21 +520,21 @@ export function XPStore({
                       />
 
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="rounded-lg border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ve-muted)]">
+                        <div className="rounded-lg border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                             <CoinIcon className="size-3.5" />
                             Cost
                           </span>
-                          <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">
+                          <p className="mt-1 text-sm font-semibold text-[var(--ui-text)]">
                             {formatXpLabel(redemption.xpCost, workspaceLabel)}
                           </p>
                         </div>
-                        <div className="rounded-lg border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ve-muted)]">
+                        <div className="rounded-lg border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
                             <CalendarXIcon className="size-3.5" />
                             Expires
                           </span>
-                          <p className={cn("mt-1 text-sm font-semibold", redemption.redemptionExpiresAt ? "text-[#c94f2e]" : "text-[var(--foreground)]")}>
+                          <p className={cn("mt-1 text-sm font-semibold", redemption.redemptionExpiresAt ? "text-[var(--ui-danger)]" : "text-[var(--ui-text)]")}>
                             {redemption.redemptionExpiresAt
                               ? formatRewardDate(redemption.redemptionExpiresAt)
                               : "No expiry"}
@@ -563,20 +563,20 @@ export function XPStore({
       {confirmReward ? (
         <div className="store-redemption-overlay fixed inset-0 z-40 grid place-items-end bg-black/30 px-0 sm:px-4 sm:py-6">
           <Card className="store-redemption-dialog w-full max-w-[430px] !rounded-[8px] rounded-b-none overflow-hidden p-0 sm:mx-auto sm:rounded-b-[8px]">
-            <div className="store-redemption-dialog__media relative h-32 w-full bg-[#fff8df]">
+            <div className="store-redemption-dialog__media relative h-32 w-full bg-[var(--ui-reward-bg)]">
               <RewardThumb thumbnail={confirmReward.thumbnail} title={confirmReward.title} />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--ve-card)]/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--ui-surface)]/70 to-transparent" />
             </div>
             <div className="px-5 pb-5 pt-0 text-center">
-              <div className="relative -mt-8 inline-grid size-14 place-items-center rounded-full border-4 border-[var(--ve-card)] bg-[#dff2e9] text-[#087f5b] shadow-sm">
+              <div className="relative -mt-8 inline-grid size-14 place-items-center rounded-full border-4 border-[var(--ui-surface)] bg-[var(--ui-action-soft)] text-[var(--ui-action)] shadow-sm">
                 <ShoppingBagIcon className="size-6" />
               </div>
               <h2 className="mt-3 text-[1.15rem] font-black tracking-[-0.02em]">Redeem Reward</h2>
-              <p className="mx-auto mt-2 max-w-[280px] text-sm font-medium leading-6 text-[var(--ve-muted)]">
+              <p className="mx-auto mt-2 max-w-[280px] text-sm font-medium leading-6 text-[var(--ui-text-muted)]">
                 {confirmReward.distributionMode === "perk_bundle" ? (
                   <>
                     This will spend{" "}
-                    <strong className="font-semibold text-[var(--ve-green)]">
+                    <strong className="font-semibold text-[var(--ui-reward)]">
                       {formatXpLabel(confirmReward.costXp, workspaceLabel)}
                     </strong>{" "}
                     to reveal a surprise reward.
@@ -584,26 +584,26 @@ export function XPStore({
                 ) : (
                   <>
                     This will redeem{" "}
-                    <strong className="font-semibold text-[var(--ve-green)]">
+                    <strong className="font-semibold text-[var(--ui-reward)]">
                       {formatXpLabel(confirmReward.costXp, workspaceLabel)}
                     </strong>{" "}
-                    for <strong className="font-semibold text-[var(--foreground)]">{confirmReward.title}</strong> and
+                    for <strong className="font-semibold text-[var(--ui-text)]">{confirmReward.title}</strong> and
                     add it to your History.
                   </>
                 )}
               </p>
 
-              <div className="mt-4 space-y-2 rounded-lg border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3">
-                <div className="flex items-center justify-between text-sm font-semibold text-[var(--ve-muted-strong)]">
+              <div className="mt-4 space-y-2 rounded-lg border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3">
+                <div className="flex items-center justify-between text-sm font-semibold text-[var(--ui-text-muted)]">
                   <span>Current Balance</span>
                   <span>{formatXpLabel(snapshot.xpBalance, workspaceLabel)}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm font-semibold text-[#c94f2e]">
+                <div className="flex items-center justify-between text-sm font-semibold text-[var(--ui-danger)]">
                   <span>Cost</span>
                   <span>-{formatXpLabel(confirmReward.costXp, workspaceLabel)}</span>
                 </div>
-                <div className="h-px bg-[var(--ve-line-soft)]" />
-                <div className="flex items-center justify-between text-[0.98rem] font-black text-[var(--ve-green)]">
+                <div className="h-px bg-[var(--ui-border-subtle)]" />
+                <div className="flex items-center justify-between text-[0.98rem] font-black text-[var(--ui-reward)]">
                   <span>After Redemption</span>
                   <span>
                     {formatXpLabel(Math.max(0, snapshot.xpBalance - confirmReward.costXp), workspaceLabel)}
@@ -611,7 +611,7 @@ export function XPStore({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-2 bg-[var(--ve-card-muted)] p-4 md:flex-row-reverse">
+            <div className="flex flex-col gap-2 bg-[var(--ui-surface-muted)] p-4 md:flex-row-reverse">
               <Button className="gap-2" disabled={redeeming} onClick={() => void redeemReward()} type="button">
                 {redeeming ? "Redeeming..." : "Confirm"}
                 {!redeeming ? <CheckCircleIcon className="size-4" /> : null}
@@ -632,7 +632,7 @@ export function XPStore({
       {activeRedemption ? (
         <div className="store-claim-overlay fixed inset-0 z-50 grid place-items-end bg-black/30 px-4 py-6">
           <Card className="store-claim-dialog w-full max-w-[430px] !rounded-[8px] p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#a66d00]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ui-reward)]">
               {activeRedemption.fulfillmentType === "voucher_code"
                 ? "Code Ready"
                 : activeRedemption.fulfillmentType === "qr_code"
@@ -655,7 +655,7 @@ export function XPStore({
                     : activeRedemption.rewardTitle}
                 </h2>
                 {activeRedemption.fulfillmentType === "native" ? (
-                  <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
                     {activeRedemption.rewardTitle}
                   </p>
                 ) : null}
@@ -664,16 +664,16 @@ export function XPStore({
 
             {activeRedemption.fulfillmentType !== "native" && activeRedemption.claimSteps.length > 0 ? (
               <div className="mt-5">
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#a66d00]">
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-reward)]">
                   Claim Steps
                 </p>
                 <ol className="mt-2 space-y-2">
                   {activeRedemption.claimSteps.map((step, index) => (
                     <li
-                      className="flex gap-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]"
+                      className="flex gap-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]"
                       key={`${activeRedemption.id}-${step}`}
                     >
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#dff2e9] text-[10px] font-black text-[#008751]">
+                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[var(--ui-action-soft)] text-[10px] font-black text-[var(--ui-action)]">
                         {index + 1}
                       </span>
                       <span>{step}</span>
@@ -684,7 +684,7 @@ export function XPStore({
             ) : null}
 
             {activeRedemption.fulfillmentType !== "native" && shouldShowRedemptionMessage(activeRedemption) ? (
-              <p className="mt-4 rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-4 rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 {activeRedemption.userMessage}
               </p>
             ) : null}

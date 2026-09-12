@@ -48,10 +48,10 @@ export default async function MissionsPage() {
       />
       <section className="learner-page learner-page--standard">
         <div className="mb-5">
-          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
             Missions
           </h1>
-          <p className="mt-1 max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ve-muted)]">
+          <p className="mt-1 max-w-[30rem] text-[0.82rem] font-medium leading-5 text-[var(--ui-text-muted)]">
             Complete tasks to earn XP and rewards.
           </p>
         </div>

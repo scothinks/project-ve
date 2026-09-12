@@ -26,11 +26,11 @@ type AdminXpSettingsPageProps = {
 };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 export default async function AdminXpSettingsPage({
@@ -107,7 +107,7 @@ export default async function AdminXpSettingsPage({
               required
               type="number"
             />
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               {settings.dailyQuizSource === "workspace_override"
                 ? "Custom for this workspace. Quiz issuance uses this cap for the organisation's XP accounts."
                 : isPlatformDefault
@@ -126,7 +126,7 @@ export default async function AdminXpSettingsPage({
               required
               type="number"
             />
-            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               {settings.manualGrantSource === "workspace_override"
                 ? "Custom for this workspace. This caps one administrator's grants across its learners in one Lagos day."
                 : isPlatformDefault
@@ -134,7 +134,7 @@ export default async function AdminXpSettingsPage({
                   : "Platform default. Save to create a custom value for this workspace."}
             </p>
           </div>
-          <div className="rounded-[16px] bg-[var(--ve-panel)] px-4 py-3 text-xs font-semibold text-[var(--ve-muted-strong)]">
+          <div className="rounded-[16px] bg-[var(--ui-surface-inset)] px-4 py-3 text-xs font-semibold text-[var(--ui-text-muted)]">
             <p>Current effective default: {currentLimit} XP</p>
             <p className="mt-1">Current admin manual grant cap: {currentManualGrantLimit} XP</p>
             <p className="mt-1">
@@ -144,7 +144,7 @@ export default async function AdminXpSettingsPage({
             </p>
           </div>
           {settings.canManage ? (
-            <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+            <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
               Save settings
             </button>
           ) : null}
@@ -154,7 +154,7 @@ export default async function AdminXpSettingsPage({
         <div className="mt-6 grid max-w-5xl gap-6 xl:grid-cols-2">
           <AdminCard>
             <h2 className="text-lg font-black">Platform Points presentation</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+            <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
               Labels and formatting used for the public Platform Catalog economy.
             </p>
             <form action={savePlatformXpPresentation} className="mt-5 space-y-4">
@@ -167,13 +167,13 @@ export default async function AdminXpSettingsPage({
                 <label><span className={labelClasses()}>Display format</span><select className={fieldClasses()} name="displayFormat" defaultValue={platformAccount.display_format}><option value="amount_short_label">Amount + short label</option><option value="amount_name">Amount + name</option></select></label>
                 <label><span className={labelClasses()}>Status</span><select className={fieldClasses()} name="status" defaultValue={platformAccount.status}><option value="active">Active</option><option value="paused">Paused</option></select></label>
               </div>
-              <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">Save presentation</button>
+              <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">Save presentation</button>
             </form>
           </AdminCard>
 
           <AdminCard>
             <h2 className="text-lg font-black">Issuance and exposure controls</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+            <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
               Economic guardrails for the platform-owned Points account.
             </p>
             <form action={savePlatformXpControls} className="mt-5 space-y-4">
@@ -188,13 +188,13 @@ export default async function AdminXpSettingsPage({
                 <label><span className={labelClasses()}>Exposure warning</span><input className={fieldClasses()} min={0} name="exposureWarningThreshold" step="0.01" type="number" defaultValue={platformAccount.exposure_warning_threshold ?? ""} /></label>
                 <label><span className={labelClasses()}>Exposure hard stop</span><input className={fieldClasses()} min={0} name="exposureHardThreshold" step="0.01" type="number" defaultValue={platformAccount.exposure_hard_threshold ?? ""} /></label>
               </div>
-              <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">Save controls</button>
+              <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">Save controls</button>
             </form>
           </AdminCard>
 
           <AdminCard className="xl:col-span-2">
             <h2 className="text-lg font-black">Manual Platform Points adjustment</h2>
-            <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">
+            <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">
               Enter the learner profile UUID. Every adjustment is audited and earn adjustments use the configured Lagos-day cap.
             </p>
             <form action={adjustPlatformXpAccount} className="mt-5 grid gap-4 lg:grid-cols-[1.5fr_8rem_9rem_1fr_auto] lg:items-end">
@@ -203,7 +203,7 @@ export default async function AdminXpSettingsPage({
               <label><span className={labelClasses()}>Amount</span><input className={fieldClasses()} min={1} name="amount" required type="number" /></label>
               <label><span className={labelClasses()}>Direction</span><select className={fieldClasses()} name="direction"><option value="earn">Grant</option><option value="spend">Deduct</option></select></label>
               <label><span className={labelClasses()}>Reason</span><input className={fieldClasses()} name="reason" /></label>
-              <button className="h-[46px] rounded-[14px] bg-[var(--ve-green)] px-5 text-sm font-black text-white" type="submit">Apply</button>
+              <button className="h-[46px] rounded-[14px] bg-[var(--ui-action)] px-5 text-sm font-black text-[var(--ui-on-action)]" type="submit">Apply</button>
             </form>
           </AdminCard>
         </div>

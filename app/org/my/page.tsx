@@ -1,3 +1,4 @@
+import { TenantLogo } from "@/components/organizations/TenantIdentity";
 import { redirect } from "next/navigation";
 import { acceptOrganizationInvitation, declineOrganizationInvitation } from "@/app/org/my/actions";
 import { BottomNav } from "@/components/navigation/BottomNav";
@@ -38,15 +39,6 @@ function organizationName(organization: { name: string; short_name: string | nul
   return organization.short_name || organization.name;
 }
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "PV";
-}
-
 function displayName(profileName: string | null | undefined) {
   return profileName && !profileName.includes("@") ? profileName : "Learner";
 }
@@ -58,15 +50,7 @@ function targetLabel(targetType: string) {
 }
 
 function OrganizationLogo({ organization }: { organization: MyOrganizationSummary["organization"] }) {
-  const name = organizationName(organization);
-  if (organization.logo_url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img alt="" className="org-card__logo object-cover" src={organization.logo_url} />
-    );
-  }
-
-  return <div className="org-card__logo">{initials(name)}</div>;
+  return <TenantLogo logoUrl={organization.logo_url} name={organizationName(organization)} />;
 }
 
 function ActiveOrganizationCard({ item, justJoined = false }: { item: MyOrganizationSummary; justJoined?: boolean }) {
@@ -83,7 +67,7 @@ function ActiveOrganizationCard({ item, justJoined = false }: { item: MyOrganiza
         <div className="min-w-0 flex-1">
           <h3 className="org-card__title">{name}</h3>
           {justJoined ? (
-            <span className="mt-1 inline-flex rounded-full bg-[#eef8f1] px-2.5 py-1 text-[11px] font-black text-[var(--learner-green)]">
+            <span className="mt-1 inline-flex rounded-full bg-[var(--ui-surface-soft)] px-2.5 py-1 text-[11px] font-black text-[var(--ui-action)]">
               Just joined
             </span>
           ) : (
@@ -100,7 +84,7 @@ function ActiveOrganizationCard({ item, justJoined = false }: { item: MyOrganiza
       </div>
 
       {item.pointsLabel !== "Not available yet" ? (
-        <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-[rgba(210,185,150,0.42)] bg-[#f8f3ea] px-3 py-2 text-sm font-black text-[#765a05]">
+        <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] px-3 py-2 text-sm font-black text-[var(--ui-reward)]">
           <StarIcon className="size-4 shrink-0" />
           {item.pointsLabel}
         </div>
@@ -174,7 +158,7 @@ function InvitationCard({ invitation }: { invitation: MyOrganizationInvitation }
       <details className="org-invitation-detail">
         <summary>View Invitation</summary>
         <div className="org-invitation-detail__panel">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[14px] border border-[var(--learner-border)] bg-[#f8f3ea] text-[var(--learner-green)]">
+          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[14px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] text-[var(--ui-action)]">
             <span className="text-xl font-black">+</span>
           </div>
           <div className="text-center">
@@ -225,7 +209,7 @@ function InvitationFocusPanel({ invitation }: { invitation: MyOrganizationInvita
   return (
     <section className="org-invitation-focus">
       <div className="org-invitation-focus__card">
-        <div className="mx-auto mb-5 grid size-16 place-items-center rounded-[16px] border border-[var(--learner-border)] bg-[#fffdfa] text-[var(--learner-green)]">
+        <div className="mx-auto mb-5 grid size-16 place-items-center rounded-[16px] border border-[var(--ui-border)] bg-[var(--ui-surface)] text-[var(--ui-action)]">
           <span className="text-2xl font-black">+</span>
         </div>
         <div className="text-center">
@@ -272,7 +256,7 @@ function InvitationFocusPanel({ invitation }: { invitation: MyOrganizationInvita
 function MobileInvitationCard({ invitation }: { invitation: MyOrganizationInvitation }) {
   return (
     <article className="org-card org-card--mobile-invitation">
-      <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[14px] border border-[var(--learner-border)] bg-[#f8f3ea] text-[var(--learner-green)]">
+      <div className="mx-auto mb-4 grid size-14 place-items-center rounded-[14px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] text-[var(--ui-action)]">
         <MailIcon className="size-6" />
       </div>
       <div className="text-center">
@@ -280,20 +264,20 @@ function MobileInvitationCard({ invitation }: { invitation: MyOrganizationInvita
         <h3 className="mt-2 org-card__title">{organizationName(invitation.organization)}</h3>
         <p className="org-card__meta mt-2">{invitation.targetLabel}</p>
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-[rgba(110,122,115,0.14)] py-4">
+      <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-[var(--ui-border-subtle)] py-4">
         <div>
           <dt className="org-card__meta flex items-center gap-1 uppercase tracking-[0.1em]">
             <SchoolIcon className="size-3.5 shrink-0" />
             Assigned Role
           </dt>
-          <dd className="mt-1 text-sm font-black text-[var(--learner-text)]">{roleLabel(invitation.role)}</dd>
+          <dd className="mt-1 text-sm font-black text-[var(--ui-text)]">{roleLabel(invitation.role)}</dd>
         </div>
         <div>
           <dt className="org-card__meta flex items-center gap-1 uppercase tracking-[0.1em]">
             <ClockIcon className="size-3.5 shrink-0" />
             Expires
           </dt>
-          <dd className="mt-1 text-sm font-black text-[var(--learner-text)]">{formatDate(invitation.expiresAt)}</dd>
+          <dd className="mt-1 text-sm font-black text-[var(--ui-text)]">{formatDate(invitation.expiresAt)}</dd>
         </div>
       </dl>
       <div className="org-invitation-actions org-invitation-actions--legacy">
@@ -323,10 +307,10 @@ function EmptyOrgsState() {
           <SeedlingIcon className="size-8" />
         </div>
       </div>
-      <h2 className="mt-8 text-xl font-black tracking-[-0.03em] text-[var(--learner-text)]">
+      <h2 className="mt-8 text-xl font-black tracking-[-0.03em] text-[var(--ui-text)]">
         No organisations yet.
       </h2>
-      <p className="mx-auto mt-4 max-w-[17rem] text-sm font-semibold leading-6 text-[var(--learner-text-muted)]">
+      <p className="mx-auto mt-4 max-w-[17rem] text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
         Ask your organisation administrator to send you an invitation, or create your own organisation.
       </p>
       <div className="mt-6">
@@ -380,12 +364,12 @@ export default async function MyOrganizationsPage({
 
       <section className="learner-page learner-page--standard">
         {notice ? (
-          <div className="mb-4 rounded-[8px] border border-[rgba(8,127,91,0.2)] bg-[#eef8f1] px-4 py-3 text-sm font-black text-[var(--learner-green)]">
+          <div className="mb-4 rounded-[8px] border border-[rgba(var(--ui-shadow-rgb),0.2)] bg-[var(--ui-surface-soft)] px-4 py-3 text-sm font-black text-[var(--ui-success)]">
             {notice}
           </div>
         ) : null}
         {errorNotice ? (
-          <div className="mb-4 rounded-[8px] border border-[var(--learner-attention-soft)] bg-[color:color-mix(in_srgb,var(--learner-attention-soft)_55%,white)] px-4 py-3 text-sm font-black text-[var(--learner-attention)]">
+          <div className="mb-4 rounded-[8px] border border-[var(--ui-danger-bg)] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_55%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-danger)]">
             {errorNotice}
           </div>
         ) : null}

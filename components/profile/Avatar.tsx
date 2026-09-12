@@ -27,7 +27,7 @@ export function Avatar({ name, email, avatarUrl, className }: AvatarProps) {
   return (
     <div
       className={cn(
-        "relative grid place-items-center overflow-hidden rounded-full bg-[var(--ve-green-soft)] text-sm font-black text-[var(--ve-green)] shadow-inner",
+        "relative grid place-items-center overflow-hidden rounded-full bg-[var(--ui-action-soft)] text-sm font-black text-[var(--ui-action)] shadow-inner",
         className,
       )}
     >

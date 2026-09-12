@@ -7,15 +7,15 @@ import type { AdminOrganizationUnitRow, AdminPeopleMember } from "@/lib/admin";
 
 function statusToneClasses(status: string) {
   if (status === "active") {
-    return "bg-[color:color-mix(in_srgb,var(--admin-primary-container)_16%,transparent)] text-[var(--admin-primary)]";
+    return "bg-[color:color-mix(in_srgb,var(--ui-success)_16%,transparent)] text-[var(--ui-success)]";
   }
   if (status === "invited") {
-    return "bg-[color:color-mix(in_srgb,var(--admin-tertiary-fixed)_60%,transparent)] text-[var(--admin-on-tertiary-fixed-variant)]";
+    return "bg-[color:color-mix(in_srgb,var(--ui-warning-bg)_60%,transparent)] text-[var(--ui-warning)]";
   }
   if (status === "suspended" || status === "removed") {
-    return "bg-[var(--admin-error-container)] text-[var(--admin-on-error-container)]";
+    return "bg-[var(--ui-danger-bg)] text-[var(--ui-danger)]";
   }
-  return "bg-[var(--admin-surface-container-high)] text-[var(--admin-on-surface-variant)]";
+  return "bg-[var(--ui-surface-raised)] text-[var(--ui-text-muted)]";
 }
 
 function initialsFor(name: string | null | undefined) {
@@ -41,7 +41,7 @@ export function PeopleMembersTable({
 
   if (members.length === 0) {
     return (
-      <p className="py-10 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+      <p className="py-10 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
         No members match these filters.
       </p>
     );
@@ -49,10 +49,10 @@ export function PeopleMembersTable({
 
   return (
     <>
-      <div className="overflow-hidden rounded-[18px] border border-[var(--admin-border-warm)]">
+      <div className="overflow-hidden rounded-[18px] border border-[var(--ui-border-subtle)]">
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left text-sm">
-            <thead className="bg-[var(--admin-surface-container-low)] text-xs font-black uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]">
+            <thead className="bg-[var(--ui-surface-soft)] text-xs font-black uppercase tracking-[0.1em] text-[var(--ui-text-muted)]">
               <tr>
                 <th className="whitespace-nowrap px-4 py-3">Identity</th>
                 <th className="whitespace-nowrap px-4 py-3">Role</th>
@@ -61,18 +61,18 @@ export function PeopleMembersTable({
                 <th className="whitespace-nowrap px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)]">
+            <tbody className="divide-y divide-[var(--ui-border-subtle)] bg-[var(--ui-surface)]">
               {members.map((member) => {
                 const displayName = member.profile?.display_name ?? "Unnamed member";
                 return (
                   <tr
-                    className="cursor-pointer transition hover:bg-[var(--admin-surface-container-low)]"
+                    className="cursor-pointer transition hover:bg-[var(--ui-surface-soft)]"
                     key={member.id}
                     onClick={() => setActiveMember(member)}
                   >
                     <td className="whitespace-nowrap px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--admin-surface-container-low)] text-xs font-black text-[var(--admin-on-surface-variant)]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--ui-surface-soft)] text-xs font-black text-[var(--ui-text-muted)]">
                           {member.profile?.avatar_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img alt={displayName} className="h-full w-full object-cover" src={member.profile.avatar_url} />
@@ -80,10 +80,10 @@ export function PeopleMembersTable({
                             initialsFor(displayName)
                           )}
                         </div>
-                        <span className="font-bold text-[var(--admin-on-surface)]">{displayName}</span>
+                        <span className="font-bold text-[var(--ui-text)]">{displayName}</span>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[var(--admin-on-surface-variant)]">
+                    <td className="whitespace-nowrap px-4 py-3 text-[var(--ui-text-muted)]">
                       {ORGANIZATION_ROLE_LABELS[member.role]}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
@@ -91,11 +91,11 @@ export function PeopleMembersTable({
                         {member.status}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[var(--admin-on-surface-variant)]">
+                    <td className="whitespace-nowrap px-4 py-3 text-[var(--ui-text-muted)]">
                       {member.unitNames.length > 0 ? member.unitNames.join(", ") : "—"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <span className="text-sm font-bold text-[var(--admin-primary)]">View details</span>
+                      <span className="text-sm font-bold text-[var(--ui-action)]">View details</span>
                     </td>
                   </tr>
                 );

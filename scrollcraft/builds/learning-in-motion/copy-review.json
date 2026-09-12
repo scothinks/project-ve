@@ -1,0 +1,1273 @@
+{
+  "title": "Project VE welcome and account copy review",
+  "status": "Revised draft for approval · 12 September 2026",
+  "variables": {
+    "xp": "Total sample XP; illustrative 10 per topic.",
+    "awardXp": "Illustrative 10 XP for a first correct answer.",
+    "email": "Email entered by the visitor.",
+    "feedbackHeading": "The corresponding sample feedback heading."
+  },
+  "entries": [
+    {
+      "id": "WELCOME.001",
+      "group": "Welcome · navigation",
+      "copy": "project v/e"
+    },
+    {
+      "id": "WELCOME.002",
+      "group": "Welcome · navigation",
+      "copy": "Try a lesson"
+    },
+    {
+      "id": "WELCOME.003",
+      "group": "Welcome · navigation",
+      "copy": "For organisations"
+    },
+    {
+      "id": "WELCOME.004",
+      "group": "Welcome · navigation",
+      "copy": "Sign in"
+    },
+    {
+      "id": "WELCOME.005",
+      "group": "Welcome · invitation",
+      "copy": "Learning for everyday life"
+    },
+    {
+      "id": "WELCOME.006",
+      "group": "Welcome · invitation",
+      "copy": "Live what you learn."
+    },
+    {
+      "id": "WELCOME.007",
+      "group": "Welcome · invitation",
+      "copy": "Short lessons for clearer thinking and everyday choices. Put ideas into practice through missions and earn XP towards available rewards."
+    },
+    {
+      "id": "WELCOME.008",
+      "group": "Welcome · invitation",
+      "copy": "Try a lesson"
+    },
+    {
+      "id": "WELCOME.009",
+      "group": "Welcome · invitation",
+      "copy": "Create an organisation"
+    },
+    {
+      "id": "WELCOME.010",
+      "group": "Welcome · invitation",
+      "copy": "Start with something you recognise."
+    },
+    {
+      "id": "WELCOME.011",
+      "group": "Welcome · invitation",
+      "copy": "Who hasn’t had a say?"
+    },
+    {
+      "id": "WELCOME.012",
+      "group": "Welcome · invitation",
+      "copy": "Would you pass this on?"
+    },
+    {
+      "id": "WELCOME.013",
+      "group": "Welcome · invitation",
+      "copy": "Same invitation. Same chance?"
+    },
+    {
+      "id": "WELCOME.014",
+      "group": "Welcome · invitation",
+      "copy": "Try this lesson"
+    },
+    {
+      "id": "WELCOME.015",
+      "group": "Welcome · invitation",
+      "copy": "Choose a question. See where it takes you."
+    },
+    {
+      "id": "WELCOME.016",
+      "group": "Welcome · invitation",
+      "copy": "LEARN"
+    },
+    {
+      "id": "WELCOME.017",
+      "group": "Welcome · invitation",
+      "copy": "PUT IT INTO PRACTICE"
+    },
+    {
+      "id": "WELCOME.018",
+      "group": "Welcome · invitation",
+      "copy": "EARN REWARDS"
+    },
+    {
+      "id": "WELCOME.019",
+      "group": "Welcome · learning canvas",
+      "copy": "One useful idea can change your next move."
+    },
+    {
+      "id": "WELCOME.020",
+      "group": "Welcome · learning canvas",
+      "copy": "Read a short lesson, explore a real-life scenario and see how XP works. No account needed until you’re ready to keep learning."
+    },
+    {
+      "id": "WELCOME.021",
+      "group": "Welcome · learning canvas",
+      "copy": "Try a sample. No account needed."
+    },
+    {
+      "id": "WELCOME.022",
+      "group": "Welcome · learning canvas",
+      "copy": "Learn"
+    },
+    {
+      "id": "WELCOME.023",
+      "group": "Welcome · learning canvas",
+      "copy": "Try a question"
+    },
+    {
+      "id": "WELCOME.024",
+      "group": "Welcome · learning canvas",
+      "copy": "Earn XP"
+    },
+    {
+      "id": "WELCOME.025",
+      "group": "Welcome · learning canvas",
+      "copy": "Try the question"
+    },
+    {
+      "id": "WELCOME.026",
+      "group": "Welcome · learning canvas",
+      "copy": "Read the lesson again"
+    },
+    {
+      "id": "WELCOME.027",
+      "group": "Welcome · learning canvas",
+      "copy": "Save my progress"
+    },
+    {
+      "id": "WELCOME.028",
+      "group": "Welcome · learning canvas",
+      "copy": "Create an account to keep your progress, continue learning and explore rewards."
+    },
+    {
+      "id": "WELCOME.029",
+      "group": "Welcome · learning canvas",
+      "copy": "Design preview: sample XP cannot be redeemed."
+    },
+    {
+      "id": "WELCOME.030",
+      "group": "Welcome · learning canvas",
+      "copy": "Sample lesson"
+    },
+    {
+      "id": "WELCOME.031",
+      "group": "Welcome · learning canvas",
+      "copy": "Listening"
+    },
+    {
+      "id": "WELCOME.032",
+      "group": "Welcome · organisations",
+      "copy": "Learning, together"
+    },
+    {
+      "id": "WELCOME.033",
+      "group": "Welcome · organisations",
+      "copy": "Your people. Your purpose."
+    },
+    {
+      "id": "WELCOME.034",
+      "group": "Welcome · organisations",
+      "copy": "Give your organisation a space to learn, put ideas into practice and recognise progress, shaped around your people and your goals."
+    },
+    {
+      "id": "WELCOME.035",
+      "group": "Welcome · organisations",
+      "copy": "A team, a school, a community. Make it yours."
+    },
+    {
+      "id": "WELCOME.036",
+      "group": "Welcome · organisations",
+      "copy": "Make space without putting someone on the spot."
+    },
+    {
+      "id": "WELCOME.037",
+      "group": "Welcome · organisations",
+      "copy": "Start a conversation."
+    },
+    {
+      "id": "WELCOME.038",
+      "group": "Welcome · organisations",
+      "copy": "What makes it easier to speak up in your group? What makes it harder?"
+    },
+    {
+      "id": "WELCOME.039",
+      "group": "Welcome · organisations",
+      "copy": "Put the idea into practice."
+    },
+    {
+      "id": "WELCOME.040",
+      "group": "Welcome · organisations",
+      "copy": "In your next group discussion, invite another perspective. Give people time to respond and room to pass."
+    },
+    {
+      "id": "WELCOME.041",
+      "group": "Welcome · organisations",
+      "copy": "An example of one lesson carried into conversation and everyday practice."
+    },
+    {
+      "id": "WELCOME.042",
+      "group": "Welcome · organisations",
+      "copy": "THE LESSON"
+    },
+    {
+      "id": "WELCOME.043",
+      "group": "Welcome · organisations",
+      "copy": "THE CONVERSATION"
+    },
+    {
+      "id": "WELCOME.044",
+      "group": "Welcome · organisations",
+      "copy": "THE MISSION"
+    },
+    {
+      "id": "WELCOME.045",
+      "group": "Welcome · closing",
+      "copy": "Choose your next step."
+    },
+    {
+      "id": "WELCOME.046",
+      "group": "Welcome · closing",
+      "copy": "FOR YOU Keep learning Learn for your own reasons. Explore lessons, try missions and earn XP towards available rewards."
+    },
+    {
+      "id": "WELCOME.047",
+      "group": "Welcome · closing",
+      "copy": "FOR YOUR PEOPLE Create an organisation Support learning around your own goals, in a shared space for your team, school or community."
+    },
+    {
+      "id": "WELCOME.048",
+      "group": "Welcome · closing",
+      "copy": "Already have an account? Sign in"
+    },
+    {
+      "id": "WELCOME.049",
+      "group": "Welcome · closing",
+      "copy": "Design preview · Sample content"
+    },
+    {
+      "id": "WELCOME.050",
+      "group": "Welcome · closing",
+      "copy": "Live what you learn."
+    },
+    {
+      "id": "WELCOME.extra.title",
+      "group": "Welcome · metadata and additional text",
+      "copy": "Project VE · Live what you learn"
+    },
+    {
+      "id": "WELCOME.extra.description",
+      "group": "Welcome · metadata and additional text",
+      "copy": "Explore short lessons, think for yourself and put ideas into practice. Learn on your own or with your organisation, and earn XP towards available rewards."
+    },
+    {
+      "id": "WELCOME.extra.skip",
+      "group": "Welcome · metadata and additional text",
+      "copy": "Skip to sample lesson"
+    },
+    {
+      "id": "WELCOME.extra.photoNote",
+      "group": "Welcome · metadata and additional text",
+      "copy": "New perspectives.\nEveryday possibilities."
+    },
+    {
+      "id": "SAMPLE.listen.title",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Who hasn’t had a say?"
+    },
+    {
+      "id": "SAMPLE.listen.category",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Listening"
+    },
+    {
+      "id": "SAMPLE.listen.lessonTitle",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Silence is not the same as agreement."
+    },
+    {
+      "id": "SAMPLE.listen.lessonBody",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Someone who is quiet might agree, need more time or struggle to find a gap. Silence alone does not tell you which. Listening means creating room for another perspective, without making anyone feel they have to speak."
+    },
+    {
+      "id": "SAMPLE.listen.lessonExample",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Your group is ready to choose a plan. Two people have done most of the talking. Try: “Before we decide, is there anything we have missed?” Pause, give others time, and leave room to pass."
+    },
+    {
+      "id": "SAMPLE.listen.takeaway",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Create an opening. Leave a choice. Give the next voice your attention."
+    },
+    {
+      "id": "SAMPLE.listen.question",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "How would you open up the conversation?"
+    },
+    {
+      "id": "SAMPLE.listen.context",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Your group is about to make a decision. One person has not spoken, and you want to hear any views the group may be missing."
+    },
+    {
+      "id": "SAMPLE.listen.idea",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Make space without putting someone on the spot."
+    },
+    {
+      "id": "SAMPLE.listen.discussion",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "What makes it easier to speak up in your group? What makes it harder?"
+    },
+    {
+      "id": "SAMPLE.listen.mission",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "In your next group discussion, invite another perspective. Give people time to respond and room to pass."
+    },
+    {
+      "id": "SAMPLE.listen.answer.A",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Ask everyone to give an opinion before you move on.",
+      "note": "Incorrect answer; visitor can retry."
+    },
+    {
+      "id": "SAMPLE.listen.answer.B",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Invite other views, with time to respond and room to pass.",
+      "note": "Correct answer for this question."
+    },
+    {
+      "id": "SAMPLE.listen.feedback.incorrect.heading",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Equal turns can still create pressure."
+    },
+    {
+      "id": "SAMPLE.listen.feedback.incorrect.body",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "Asking everyone to speak sounds inclusive, but it can put someone on the spot. Offer an invitation they can accept or pass on, then give them time."
+    },
+    {
+      "id": "SAMPLE.listen.feedback.correct.heading",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "An invitation, not an obligation."
+    },
+    {
+      "id": "SAMPLE.listen.feedback.correct.body",
+      "group": "Sample · Who hasn’t had a say?",
+      "copy": "You have created a way into the conversation without demanding an answer. Now pause and give anyone who responds your attention."
+    },
+    {
+      "id": "SAMPLE.think.title",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Would you pass this on?"
+    },
+    {
+      "id": "SAMPLE.think.category",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Clear thinking"
+    },
+    {
+      "id": "SAMPLE.think.lessonTitle",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Being believable is not the same as being true."
+    },
+    {
+      "id": "SAMPLE.think.lessonBody",
+      "group": "Sample · Would you pass this on?",
+      "copy": "A message can come from someone you trust and still contain a claim they have not checked. Knowing who passed it on is not the same as knowing where it began or what evidence supports it."
+    },
+    {
+      "id": "SAMPLE.think.lessonExample",
+      "group": "Sample · Would you pass this on?",
+      "copy": "A friend sends a screenshot saying a local event has been cancelled, but the date and source are missing. Before forwarding it, check the organiser’s original announcement and whether it refers to the right event and date."
+    },
+    {
+      "id": "SAMPLE.think.takeaway",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Trace the source. Check the date and evidence. Then decide whether to share."
+    },
+    {
+      "id": "SAMPLE.think.question",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Your group plans to attend. What next?"
+    },
+    {
+      "id": "SAMPLE.think.context",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Someone you trust sends a screenshot saying an event has been cancelled. It has no date or source, and nobody has checked with the organiser."
+    },
+    {
+      "id": "SAMPLE.think.idea",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Give a convincing claim a closer look."
+    },
+    {
+      "id": "SAMPLE.think.discussion",
+      "group": "Sample · Would you pass this on?",
+      "copy": "What makes a claim feel trustworthy? What would actually help you check it?"
+    },
+    {
+      "id": "SAMPLE.think.mission",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Before sharing your next news story, find the original source and check whether it supports the claim."
+    },
+    {
+      "id": "SAMPLE.think.answer.A",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Share it with a warning that it might be wrong.",
+      "note": "Incorrect answer; visitor can retry."
+    },
+    {
+      "id": "SAMPLE.think.answer.B",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Check the source and evidence before sharing.",
+      "note": "Correct answer for this question."
+    },
+    {
+      "id": "SAMPLE.think.feedback.incorrect.heading",
+      "group": "Sample · Would you pass this on?",
+      "copy": "A warning is not a fact-check."
+    },
+    {
+      "id": "SAMPLE.think.feedback.incorrect.body",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Saying you are unsure is honest, but the claim still reaches more people. Check the source and evidence before passing it on as news."
+    },
+    {
+      "id": "SAMPLE.think.feedback.correct.heading",
+      "group": "Sample · Would you pass this on?",
+      "copy": "Check first. Then decide."
+    },
+    {
+      "id": "SAMPLE.think.feedback.correct.body",
+      "group": "Sample · Would you pass this on?",
+      "copy": "An original source gives you something to assess, not automatic proof. Check its date and whether the evidence supports the claim before deciding to share."
+    },
+    {
+      "id": "SAMPLE.act.title",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Same invitation. Same chance?"
+    },
+    {
+      "id": "SAMPLE.act.category",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Everyday fairness"
+    },
+    {
+      "id": "SAMPLE.act.lessonTitle",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Being invited is not always enough."
+    },
+    {
+      "id": "SAMPLE.act.lessonBody",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Everyone can receive the same invitation without having the same chance to join. If the same person keeps missing out, look at the arrangement as well as the individual. What might be making participation difficult?"
+    },
+    {
+      "id": "SAMPLE.act.lessonExample",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Your group always meets in the afternoon. Someone with a regular commitment has missed two meetings. Instead of assuming they are not interested, ask what might help: another time, rotating meetings or a different way to contribute."
+    },
+    {
+      "id": "SAMPLE.act.takeaway",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Notice who keeps missing out. Ask about the barrier. Explore what could change."
+    },
+    {
+      "id": "SAMPLE.act.question",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "How should the group choose its meeting time?"
+    },
+    {
+      "id": "SAMPLE.act.context",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Most people prefer afternoons. One member has a regular commitment then and has missed the last two meetings."
+    },
+    {
+      "id": "SAMPLE.act.idea",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Look beyond the invitation to the chance to take part."
+    },
+    {
+      "id": "SAMPLE.act.discussion",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Who keeps missing out on your group’s activities? What could you change to make joining easier?"
+    },
+    {
+      "id": "SAMPLE.act.mission",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Ask someone who rarely joins a group activity what would make it easier to take part. Explore one change together."
+    },
+    {
+      "id": "SAMPLE.act.answer.A",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Hold a vote and use the most popular time.",
+      "note": "Incorrect answer; visitor can retry."
+    },
+    {
+      "id": "SAMPLE.act.answer.B",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Explore alternatives before choosing a time.",
+      "note": "Correct answer for this question."
+    },
+    {
+      "id": "SAMPLE.act.feedback.incorrect.heading",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "A vote can miss a recurring barrier."
+    },
+    {
+      "id": "SAMPLE.act.feedback.incorrect.body",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "A majority vote tells you what most people prefer, but not what keeps someone from joining. Ask about the barrier and explore options before settling on a time."
+    },
+    {
+      "id": "SAMPLE.act.feedback.correct.heading",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "Understand the barrier before deciding."
+    },
+    {
+      "id": "SAMPLE.act.feedback.correct.body",
+      "group": "Sample · Same invitation. Same chance?",
+      "copy": "You have not promised a perfect time for everyone. You have made room to consider another time, rotating meetings or a different way to contribute."
+    },
+    {
+      "id": "LESSON.next",
+      "group": "Lesson and quiz · shared",
+      "copy": "Now try the idea in a real-life scenario."
+    },
+    {
+      "id": "LESSON.takeawayLabel",
+      "group": "Lesson and quiz · shared",
+      "copy": "Take this with you"
+    },
+    {
+      "id": "QUIZ.correctPrefix",
+      "group": "Lesson and quiz · shared",
+      "copy": "That's right. {feedbackHeading}"
+    },
+    {
+      "id": "QUIZ.incorrectPrefix",
+      "group": "Lesson and quiz · shared",
+      "copy": "Not quite. Try again. {feedbackHeading}"
+    },
+    {
+      "id": "QUIZ.pause",
+      "group": "Lesson and quiz · shared",
+      "copy": "Take a moment. You can try again."
+    },
+    {
+      "id": "XP.award",
+      "group": "Reward moment",
+      "copy": "+{awardXp} XP"
+    },
+    {
+      "id": "XP.alreadyEarned",
+      "group": "Reward moment",
+      "copy": "Lesson XP already earned"
+    },
+    {
+      "id": "XP.firstHeading",
+      "group": "Reward moment",
+      "copy": "You’ve put a new idea to the test."
+    },
+    {
+      "id": "XP.repeatHeading",
+      "group": "Reward moment",
+      "copy": "Keep building on this idea."
+    },
+    {
+      "id": "XP.explanation",
+      "group": "Reward moment",
+      "copy": "Learning and missions can earn you XP to exchange for available rewards."
+    },
+    {
+      "id": "XP.balanceLabel",
+      "group": "Reward moment",
+      "copy": "Your sample balance"
+    },
+    {
+      "id": "XP.balance",
+      "group": "Reward moment",
+      "copy": "{xp} XP"
+    },
+    {
+      "id": "XP.sampleLabel",
+      "group": "Reward moment",
+      "copy": "Sample XP"
+    },
+    {
+      "id": "XP.saveAction",
+      "group": "Reward moment",
+      "copy": "Save my progress"
+    },
+    {
+      "id": "XP.signupPrompt",
+      "group": "Reward moment",
+      "copy": "Create an account to keep your progress, continue learning and explore rewards."
+    },
+    {
+      "id": "XP.previewOnly",
+      "group": "Reward moment",
+      "copy": "Design preview: sample XP cannot be redeemed."
+    },
+    {
+      "id": "NOJS.answerSummary",
+      "group": "Fallback",
+      "copy": "See the idea in practice"
+    },
+    {
+      "id": "NOJS.answer",
+      "group": "Fallback",
+      "copy": "Invite other perspectives, give people time to respond and leave room to pass. Listening creates an opening; it does not demand an answer."
+    },
+    {
+      "id": "ACCESS.welcome.1",
+      "group": "Accessibility · welcome",
+      "copy": "Project VE home"
+    },
+    {
+      "id": "ACCESS.welcome.2",
+      "group": "Accessibility · welcome",
+      "copy": "Main navigation"
+    },
+    {
+      "id": "ACCESS.welcome.3",
+      "group": "Accessibility · welcome",
+      "copy": "Explore a sample learning topic"
+    },
+    {
+      "id": "ACCESS.welcome.4",
+      "group": "Accessibility · welcome",
+      "copy": "People listening and sharing ideas around a table"
+    },
+    {
+      "id": "ACCESS.welcome.5",
+      "group": "Accessibility · welcome",
+      "copy": "Choose a sample topic"
+    },
+    {
+      "id": "ACCESS.welcome.6",
+      "group": "Accessibility · welcome",
+      "copy": "Your learning journey"
+    },
+    {
+      "id": "ACCESS.welcome.7",
+      "group": "Accessibility · welcome",
+      "copy": "Choose your answer"
+    },
+    {
+      "id": "AUTH.brand",
+      "group": "Login and signup",
+      "copy": "project v/e"
+    },
+    {
+      "id": "AUTH.switchLoginTitle",
+      "group": "Login and signup",
+      "copy": "Already have an account?"
+    },
+    {
+      "id": "AUTH.switchLoginBody",
+      "group": "Login and signup",
+      "copy": "Sign in to continue your learning."
+    },
+    {
+      "id": "AUTH.switchSignupTitle",
+      "group": "Login and signup",
+      "copy": "Let curiosity lead."
+    },
+    {
+      "id": "AUTH.switchSignupBody",
+      "group": "Login and signup",
+      "copy": "Explore ideas, think for yourself and put what you learn into practice."
+    },
+    {
+      "id": "AUTH.returnWelcome",
+      "group": "Login and signup",
+      "copy": "Back to welcome"
+    },
+    {
+      "id": "AUTH.xpLabel",
+      "group": "Login and signup",
+      "copy": "Your progress so far"
+    },
+    {
+      "id": "AUTH.signupTitle",
+      "group": "Login and signup",
+      "copy": "Create your account"
+    },
+    {
+      "id": "AUTH.signupXpTitle",
+      "group": "Login and signup",
+      "copy": "Keep what you’ve started"
+    },
+    {
+      "id": "AUTH.signupOrgTitle",
+      "group": "Login and signup",
+      "copy": "First, create your account"
+    },
+    {
+      "id": "AUTH.signupBody",
+      "group": "Login and signup",
+      "copy": "Learn for your own reasons. Earn XP along the way."
+    },
+    {
+      "id": "AUTH.signupXpBody",
+      "group": "Login and signup",
+      "copy": "Save your progress and XP, then keep learning with your own account."
+    },
+    {
+      "id": "AUTH.signupOrgBody",
+      "group": "Login and signup",
+      "copy": "Your account comes first. Then create a learning space shaped around your organisation’s goals."
+    },
+    {
+      "id": "AUTH.nameLabel",
+      "group": "Login and signup",
+      "copy": "Full name"
+    },
+    {
+      "id": "AUTH.namePlaceholder",
+      "group": "Login and signup",
+      "copy": "Your full name"
+    },
+    {
+      "id": "AUTH.emailLabel",
+      "group": "Login and signup",
+      "copy": "Email address"
+    },
+    {
+      "id": "AUTH.emailPlaceholder",
+      "group": "Login and signup",
+      "copy": "you@example.com"
+    },
+    {
+      "id": "AUTH.passwordLabel",
+      "group": "Login and signup",
+      "copy": "Password"
+    },
+    {
+      "id": "AUTH.passwordPlaceholder",
+      "group": "Login and signup",
+      "copy": "Enter your password"
+    },
+    {
+      "id": "AUTH.newPasswordLabel",
+      "group": "Login and signup",
+      "copy": "New password"
+    },
+    {
+      "id": "AUTH.newPasswordPlaceholder",
+      "group": "Login and signup",
+      "copy": "Choose a new password"
+    },
+    {
+      "id": "AUTH.passwordHelp",
+      "group": "Login and signup",
+      "copy": "Use at least 8 characters."
+    },
+    {
+      "id": "AUTH.show",
+      "group": "Login and signup",
+      "copy": "Show"
+    },
+    {
+      "id": "AUTH.hide",
+      "group": "Login and signup",
+      "copy": "Hide"
+    },
+    {
+      "id": "AUTH.showPassword",
+      "group": "Login and signup",
+      "copy": "Show password"
+    },
+    {
+      "id": "AUTH.hidePassword",
+      "group": "Login and signup",
+      "copy": "Hide password"
+    },
+    {
+      "id": "AUTH.termsLead",
+      "group": "Login and signup",
+      "copy": "I agree to the"
+    },
+    {
+      "id": "AUTH.terms",
+      "group": "Login and signup",
+      "copy": "Terms"
+    },
+    {
+      "id": "AUTH.termsJoin",
+      "group": "Login and signup",
+      "copy": "and"
+    },
+    {
+      "id": "AUTH.privacyPolicy",
+      "group": "Login and signup",
+      "copy": "Privacy Policy"
+    },
+    {
+      "id": "AUTH.signupAction",
+      "group": "Login and signup",
+      "copy": "Create account"
+    },
+    {
+      "id": "AUTH.signupXpAction",
+      "group": "Login and signup",
+      "copy": "Create account & save progress"
+    },
+    {
+      "id": "AUTH.signupOrgAction",
+      "group": "Login and signup",
+      "copy": "Create account & continue"
+    },
+    {
+      "id": "AUTH.loginLink",
+      "group": "Login and signup",
+      "copy": "Sign in"
+    },
+    {
+      "id": "AUTH.signupLink",
+      "group": "Login and signup",
+      "copy": "Create an account"
+    },
+    {
+      "id": "AUTH.or",
+      "group": "Login and signup",
+      "copy": "or"
+    },
+    {
+      "id": "AUTH.googleSignup",
+      "group": "Login and signup",
+      "copy": "Sign up with Google"
+    },
+    {
+      "id": "AUTH.googleLogin",
+      "group": "Login and signup",
+      "copy": "Sign in with Google"
+    },
+    {
+      "id": "AUTH.loginTitle",
+      "group": "Login and signup",
+      "copy": "Welcome back"
+    },
+    {
+      "id": "AUTH.loginBody",
+      "group": "Login and signup",
+      "copy": "Pick up where you left off. There’s more to discover."
+    },
+    {
+      "id": "AUTH.loginXpBody",
+      "group": "Login and signup",
+      "copy": "Sign in to save this progress and XP to your account."
+    },
+    {
+      "id": "AUTH.loginOrgBody",
+      "group": "Login and signup",
+      "copy": "Sign in to continue setting up your organisation."
+    },
+    {
+      "id": "AUTH.loginAction",
+      "group": "Login and signup",
+      "copy": "Sign in"
+    },
+    {
+      "id": "AUTH.remember",
+      "group": "Login and signup",
+      "copy": "Keep me signed in"
+    },
+    {
+      "id": "AUTH.forgotLink",
+      "group": "Login and signup",
+      "copy": "Forgot password?"
+    },
+    {
+      "id": "AUTH.forgotTitle",
+      "group": "Login and signup",
+      "copy": "Reset your password"
+    },
+    {
+      "id": "AUTH.forgotBody",
+      "group": "Login and signup",
+      "copy": "Enter your account’s email address. We’ll send you a password reset link."
+    },
+    {
+      "id": "AUTH.forgotAction",
+      "group": "Login and signup",
+      "copy": "Send reset link"
+    },
+    {
+      "id": "AUTH.backLogin",
+      "group": "Login and signup",
+      "copy": "Back to sign in"
+    },
+    {
+      "id": "AUTH.resetSentTitle",
+      "group": "Login and signup",
+      "copy": "Check your inbox"
+    },
+    {
+      "id": "AUTH.resetSentBody",
+      "group": "Login and signup",
+      "copy": "If an account exists for {email}, you’ll receive a password reset link."
+    },
+    {
+      "id": "AUTH.resetSentHelp",
+      "group": "Login and signup",
+      "copy": "Check your spam folder. If the email has not arrived, you can request another link."
+    },
+    {
+      "id": "AUTH.resendReset",
+      "group": "Login and signup",
+      "copy": "Send another reset link"
+    },
+    {
+      "id": "AUTH.resetTitle",
+      "group": "Login and signup",
+      "copy": "Choose a new password"
+    },
+    {
+      "id": "AUTH.resetBody",
+      "group": "Login and signup",
+      "copy": "Set a new password for your account."
+    },
+    {
+      "id": "AUTH.resetAction",
+      "group": "Login and signup",
+      "copy": "Save new password"
+    },
+    {
+      "id": "AUTH.resetDoneTitle",
+      "group": "Login and signup",
+      "copy": "Password updated"
+    },
+    {
+      "id": "AUTH.resetDoneBody",
+      "group": "Login and signup",
+      "copy": "Sign in with your new password to continue."
+    },
+    {
+      "id": "AUTH.confirmTitle",
+      "group": "Login and signup",
+      "copy": "Confirm your email"
+    },
+    {
+      "id": "AUTH.confirmBody",
+      "group": "Login and signup",
+      "copy": "We’ve sent a confirmation link to {email}. Open it to verify your account."
+    },
+    {
+      "id": "AUTH.confirmHelp",
+      "group": "Login and signup",
+      "copy": "Check your spam folder, or request a new confirmation email."
+    },
+    {
+      "id": "AUTH.confirmResend",
+      "group": "Login and signup",
+      "copy": "Resend confirmation email"
+    },
+    {
+      "id": "AUTH.changeEmail",
+      "group": "Login and signup",
+      "copy": "Use a different email"
+    },
+    {
+      "id": "AUTH.confirmResent",
+      "group": "Login and signup",
+      "copy": "Another confirmation email is on its way."
+    },
+    {
+      "id": "AUTH.resetResent",
+      "group": "Login and signup",
+      "copy": "If an account exists for that email, another reset link is on its way."
+    },
+    {
+      "id": "AUTH.verifiedTitle",
+      "group": "Login and signup",
+      "copy": "Your email is confirmed"
+    },
+    {
+      "id": "AUTH.verifiedBody",
+      "group": "Login and signup",
+      "copy": "Sign in to continue with your account."
+    },
+    {
+      "id": "AUTH.verifiedAction",
+      "group": "Login and signup",
+      "copy": "Continue to sign in"
+    },
+    {
+      "id": "AUTH.expiredTitle",
+      "group": "Login and signup",
+      "copy": "This link has expired"
+    },
+    {
+      "id": "AUTH.expiredBody",
+      "group": "Login and signup",
+      "copy": "Request a new link, then use the link in the most recent email."
+    },
+    {
+      "id": "AUTH.expiredAction",
+      "group": "Login and signup",
+      "copy": "Send a new link"
+    },
+    {
+      "id": "AUTH.googleTitle",
+      "group": "Login and signup",
+      "copy": "Continue with Google"
+    },
+    {
+      "id": "AUTH.googleBody",
+      "group": "Login and signup",
+      "copy": "Choose your Google account, then return here to continue."
+    },
+    {
+      "id": "AUTH.googleReturn",
+      "group": "Login and signup",
+      "copy": "Back to the form"
+    },
+    {
+      "id": "AUTH.successTitle",
+      "group": "Login and signup",
+      "copy": "Your next step starts here"
+    },
+    {
+      "id": "AUTH.successXpTitle",
+      "group": "Login and signup",
+      "copy": "A start worth building on"
+    },
+    {
+      "id": "AUTH.successBody",
+      "group": "Login and signup",
+      "copy": "Explore a lesson, try a mission and find an idea to take into everyday life. Earn XP as you go."
+    },
+    {
+      "id": "AUTH.successXpBody",
+      "group": "Login and signup",
+      "copy": "Your progress and XP are saved. Keep learning and completing missions to work towards available rewards."
+    },
+    {
+      "id": "AUTH.savedXpLabel",
+      "group": "Login and signup",
+      "copy": "XP saved"
+    },
+    {
+      "id": "AUTH.successRewards",
+      "group": "Login and signup",
+      "copy": "Explore rewards"
+    },
+    {
+      "id": "AUTH.successLearn",
+      "group": "Login and signup",
+      "copy": "Continue learning"
+    },
+    {
+      "id": "AUTH.orgSuccessTitle",
+      "group": "Login and signup",
+      "copy": "Now make space for your people"
+    },
+    {
+      "id": "AUTH.orgSuccessBody",
+      "group": "Login and signup",
+      "copy": "Your account is ready. Give your organisation a name and start a learning space around your people and your goals."
+    },
+    {
+      "id": "AUTH.orgSuccessAction",
+      "group": "Login and signup",
+      "copy": "Set up your organisation"
+    },
+    {
+      "id": "AUTH.rewardsTitle",
+      "group": "Login and signup",
+      "copy": "Put your XP to use"
+    },
+    {
+      "id": "AUTH.rewardsBody",
+      "group": "Login and signup",
+      "copy": "Exchange your XP for available rewards when you have enough points. Each reward has its own point requirement and availability."
+    },
+    {
+      "id": "AUTH.rewardsBalance",
+      "group": "Login and signup",
+      "copy": "Your XP balance"
+    },
+    {
+      "id": "AUTH.rewardsEmptyTitle",
+      "group": "Login and signup",
+      "copy": "No rewards to show yet"
+    },
+    {
+      "id": "AUTH.rewardsEmptyBody",
+      "group": "Login and signup",
+      "copy": "Keep learning and check back to see what becomes available."
+    },
+    {
+      "id": "AUTH.learnTitle",
+      "group": "Login and signup",
+      "copy": "Find your next useful idea"
+    },
+    {
+      "id": "AUTH.learnBody",
+      "group": "Login and signup",
+      "copy": "Build on what you know. Explore another lesson and find an idea to put into practice."
+    },
+    {
+      "id": "AUTH.learnAction",
+      "group": "Login and signup",
+      "copy": "Try another sample lesson"
+    },
+    {
+      "id": "AUTH.nameError",
+      "group": "Login and signup",
+      "copy": "Enter your full name."
+    },
+    {
+      "id": "AUTH.emailError",
+      "group": "Login and signup",
+      "copy": "Enter a valid email address."
+    },
+    {
+      "id": "AUTH.passwordError",
+      "group": "Login and signup",
+      "copy": "Enter your password."
+    },
+    {
+      "id": "AUTH.passwordLengthError",
+      "group": "Login and signup",
+      "copy": "Use at least 8 characters for your password."
+    },
+    {
+      "id": "AUTH.termsError",
+      "group": "Login and signup",
+      "copy": "Agree to the Terms and Privacy Policy to continue."
+    },
+    {
+      "id": "AUTH.invalidLogin",
+      "group": "Login and signup",
+      "copy": "That email and password don’t match. Try again or reset your password."
+    },
+    {
+      "id": "AUTH.existingAccount",
+      "group": "Login and signup",
+      "copy": "There’s already an account with this email. Sign in or reset your password."
+    },
+    {
+      "id": "AUTH.connectionError",
+      "group": "Login and signup",
+      "copy": "We couldn’t connect. Check your connection and try again."
+    },
+    {
+      "id": "AUTH.securityError",
+      "group": "Login and signup",
+      "copy": "Complete the security check to continue."
+    },
+    {
+      "id": "AUTH.privacy",
+      "group": "Login and signup",
+      "copy": "Privacy"
+    },
+    {
+      "id": "AUTH.support",
+      "group": "Login and signup",
+      "copy": "Support"
+    },
+    {
+      "id": "AUTH.previewNotice",
+      "group": "Preview controls · not product copy",
+      "copy": "Design preview only. Use made-up details. No real account is created, and sample XP cannot be redeemed."
+    },
+    {
+      "id": "AUTH.previewLabel",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview controls"
+    },
+    {
+      "id": "AUTH.previewVerify",
+      "group": "Preview controls · not product copy",
+      "copy": "Open sample confirmation link"
+    },
+    {
+      "id": "AUTH.previewReset",
+      "group": "Preview controls · not product copy",
+      "copy": "Open sample reset link"
+    },
+    {
+      "id": "AUTH.previewGoogle",
+      "group": "Preview controls · not product copy",
+      "copy": "Complete Google preview"
+    },
+    {
+      "id": "AUTH.previewExpired",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview expired link"
+    },
+    {
+      "id": "AUTH.previewError",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview connection error"
+    },
+    {
+      "id": "AUTH.previewLoginError",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview incorrect password"
+    },
+    {
+      "id": "AUTH.previewExisting",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview existing account"
+    },
+    {
+      "id": "AUTH.previewSecurity",
+      "group": "Preview controls · not product copy",
+      "copy": "Preview security check"
+    },
+    {
+      "id": "AUTH.rewardsPreview",
+      "group": "Preview controls · not product copy",
+      "copy": "Reward catalogue preview. The connected app will show its own available rewards."
+    },
+    {
+      "id": "AUTH.orgPreview",
+      "group": "Preview controls · not product copy",
+      "copy": "Organisation setup continues in the connected app."
+    },
+    {
+      "id": "AUTH.pageTitle",
+      "group": "Authentication · metadata",
+      "copy": "Project VE · Your account"
+    },
+    {
+      "id": "ACCESS.auth.2",
+      "group": "Accessibility and fallback · authentication",
+      "copy": "Account preview"
+    },
+    {
+      "id": "ACCESS.auth.3",
+      "group": "Accessibility and fallback · authentication",
+      "copy": "Show password"
+    },
+    {
+      "id": "ACCESS.auth.6",
+      "group": "Accessibility and fallback · authentication",
+      "copy": "Switch between sign in and create account"
+    },
+    {
+      "id": "ACCESS.auth.4",
+      "group": "Accessibility and fallback · authentication",
+      "copy": "Help and policies"
+    },
+    {
+      "id": "ACCESS.auth.5",
+      "group": "Accessibility and fallback · authentication",
+      "copy": "This form preview needs JavaScript. Return to the welcome page or read all screen text in the copy review. Open copy review"
+    }
+  ]
+}

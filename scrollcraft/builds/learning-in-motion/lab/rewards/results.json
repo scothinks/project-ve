@@ -1,0 +1,38 @@
+[
+  {
+    "profile": "desktop",
+    "questionRevealed": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "mobile",
+    "questionRevealed": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "compact",
+    "questionRevealed": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  },
+  {
+    "profile": "reduced",
+    "questionRevealed": true,
+    "correctAnswerAwardsOnce": true,
+    "wrongAnswerAwardsNothing": true,
+    "signupRetainsBalance": true,
+    "noOverflow": true,
+    "errors": []
+  }
+]

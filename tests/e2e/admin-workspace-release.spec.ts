@@ -1,3 +1,4 @@
+import { captureIdentityStates } from '../support/theme-adoption/states';
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
@@ -55,12 +56,13 @@ async function createTestUser(email: string, displayName: string) {
 
 async function signIn(page: Page, email: string, nextPath = "/admin") {
   await page.goto(`/login?next=${encodeURIComponent(nextPath)}`);
-  if (await page.getByPlaceholder("Enter Full Name").isVisible().catch(() => false)) {
-    await page.getByRole("button", { name: "Login" }).last().click();
+  if (await page.getByLabel("Full name", { exact: true }).isVisible().catch(() => false)) {
+    await page.getByRole("button", { name: "Sign in", exact: true }).last().click();
+    await expect(page.locator(".auth-form-wrap")).toHaveAttribute("aria-busy", "false");
   }
-  await page.getByPlaceholder("Enter Email Address").fill(email);
-  await page.getByPlaceholder("Enter Password").fill(authCredential);
-  await page.getByRole("button", { name: "Login" }).click();
+  await page.getByLabel("Email address", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(authCredential);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${nextPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), {
     timeout: 30_000,
   });
@@ -160,6 +162,7 @@ async function seedFixture() {
 }
 
 test.describe.serial("Phase 1 admin workspace release coverage", () => {
+  test.beforeEach(() => { if (process.env.THEME_EVIDENCE_DIR) test.setTimeout(180_000); });
   test.beforeAll(async () => {
     supabase = createClient(
       requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -184,6 +187,11 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
     await expect(page.getByText("Here’s what needs your attention across the platform ecosystem today.")).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByText("Operational Queues")).toBeVisible();
+    await captureIdentityStates(page, "platform-attention-dashboard");
+    if (process.env.THEME_EVIDENCE_DIR) {
+      await page.getByRole("button", { name: "Collapse admin sidebar" }).click();
+      await captureIdentityStates(page, "platform-collapsed-sidebar");
+    }
   });
 
   test("keeps organization administration scoped to its People workspace", async ({ page }) => {
@@ -201,6 +209,7 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
     await expect(page.getByRole("tab", { name: "Invitations" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Units" })).toBeVisible();
     await expect(page.getByText(`Organization Owner ${runId}`)).toBeVisible();
+    await captureIdentityStates(page, "organization-people-table");
   });
 
   test("gives catalog managers the dedicated Catalog Staff workflow", async ({ page }) => {
@@ -218,6 +227,7 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
     await expect(page.getByRole("heading", { level: 1, name: "XP settings" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Platform Points presentation" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Issuance and exposure controls" })).toBeVisible();
+    await captureIdentityStates(page, "catalog-points-settings");
 
     await page.getByRole("link", { name: "Catalog Staff" }).click();
     await expect(page).toHaveURL(/\/admin\/catalog-people$/);
@@ -228,5 +238,6 @@ test.describe.serial("Phase 1 admin workspace release coverage", () => {
 
     await page.getByRole("tab", { name: "Invitations" }).click();
     await expect(page.getByText(organizationOwnerEmail)).toBeVisible();
+    await captureIdentityStates(page, "catalog-staff-invitations");
   });
 });

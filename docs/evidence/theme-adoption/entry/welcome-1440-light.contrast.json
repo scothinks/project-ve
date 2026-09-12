@@ -1,0 +1,1784 @@
+[
+  {
+    "tag": "A",
+    "text": "Skip to sample lesson",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "project",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "v/e",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "/",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Try a lesson",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "For organisations",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Sign in ↗",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Learning for everyday life",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H1",
+    "text": "Live whatyou learn.",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 16.095442501484687,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "you learn.",
+    "foreground": [
+      214,
+      188,
+      226,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 9.461581947307721,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Short lessons for clearer thinking and everyday choices. Put ideas into practice through missions an",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Try a lesson ↗",
+    "foreground": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 7.570278196578039,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 7.570278196578039,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Create an organisation ↗",
+    "foreground": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 7.570278196578039,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 7.570278196578039,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Choose a question. See where it takes you.",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": true,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "Start with something you recognise.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": true,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "✳",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": true,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "Who hasn’t had a say?",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": true,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": true,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "Would you pass this on?",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "Same invitation. Same chance?",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "A",
+    "text": "Try this lesson ↗",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "LEARN",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "PUT IT INTO PRACTICE",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "EARN REWARDS",
+    "foreground": [
+      222,
+      212,
+      228,
+      1
+    ],
+    "background": [
+      37,
+      28,
+      46,
+      1
+    ],
+    "ratio": 11.402755727418729,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H2",
+    "text": "One useful ideacan change your next move.",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 14.384914066142741,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "can change your next move.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "P",
+    "text": "Read a short lesson, explore a real-life scenario and see how XP works. No account needed until you’",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "P",
+    "text": "Try a sample. No account needed.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": true,
+    "passes": null
+  },
+  {
+    "tag": "SPAN",
+    "text": "Sample lesson",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "Listening",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Silence is not the same as agreement.",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 15.574333312239538,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Someone who is quiet might agree, need more time or struggle to find a gap. Silence alone does not t",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Your group is ready to choose a plan. Two people have done most of the talking. Try: “Before we deci",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "Take this with you",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Create an opening. Leave a choice. Give the next voice your attention.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Try the question →",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "→",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Now try the idea in a real-life scenario.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Learning, together",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H2",
+    "text": "Your people.Your purpose.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "Your purpose.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Give your organisation a space to learn, put ideas into practice and recognise progress, shaped arou",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Create an organisation ↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "A team, a school, a community. Make it yours.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "THE LESSON",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Who hasn’t had a say?",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Make space without putting someone on the spot.",
+    "foreground": [
+      255,
+      253,
+      249,
+      1
+    ],
+    "background": [
+      88,
+      60,
+      99,
+      1
+    ],
+    "ratio": 9.221697102669703,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "THE CONVERSATION",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "“",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Start a conversation.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "What makes it easier to speak up in your group? What makes it harder?",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      255,
+      255,
+      255,
+      1
+    ],
+    "ratio": 6.670519218743965,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "THE MISSION",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Put the idea into practice.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "In your next group discussion, invite another perspective. Give people time to respond and room to p",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      237,
+      228,
+      241,
+      1
+    ],
+    "ratio": 5.389919524614962,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "An example of one lesson carried into conversation and everyday practice.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      232,
+      222,
+      238,
+      1
+    ],
+    "ratio": 5.118600926305161,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H2",
+    "text": "Choose yournext step.",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 14.384914066142741,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "next step.",
+    "foreground": [
+      37,
+      35,
+      39,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 14.384914066142741,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "FOR YOU",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Keep learning ↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Learn for your own reasons. Explore lessons, try missions and earn XP towards available rewards.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "FOR YOUR PEOPLE",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "H3",
+    "text": "Create an organisation ↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 3,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "P",
+    "text": "Support learning around your own goals, in a shared space for your team, school or community.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "project",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "v/e",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "/",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "Live what you learn.",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "A",
+    "text": "Already have an account? Sign in ↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  },
+  {
+    "tag": "SPAN",
+    "text": "↗",
+    "foreground": [
+      98,
+      89,
+      104,
+      1
+    ],
+    "background": [
+      247,
+      245,
+      250,
+      1
+    ],
+    "ratio": 6.161088491844249,
+    "minimum": 4.5,
+    "disabled": false,
+    "imageOverlap": false,
+    "complex": false,
+    "passes": true
+  }
+]

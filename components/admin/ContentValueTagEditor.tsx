@@ -7,10 +7,10 @@ import {
   updateContentValueTag,
 } from "@/app/admin/content-value-tags/actions";
 
-const fieldLabelClasses = "text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--admin-on-surface-variant)]";
+const fieldLabelClasses = "text-[10px] font-extrabold uppercase tracking-[0.1em] text-[var(--ui-text-muted)]";
 
 const fieldClasses =
-  "mt-1.5 w-full rounded-[10px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] px-2.5 py-2 text-sm font-bold text-[var(--admin-on-surface)] outline-none focus:border-[var(--admin-primary)]";
+  "mt-1.5 w-full rounded-[10px] border border-[var(--ui-control-border)] bg-[var(--ui-surface-inset)] px-2.5 py-2 text-sm font-bold text-[var(--ui-text)] outline-none focus:border-[var(--ui-focus)]";
 
 const levelOptions = [
   { label: "Any level", value: "" },
@@ -52,10 +52,10 @@ export function ContentValueTagEditor({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--admin-primary)]">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--ui-text)]">
           Value tags
         </p>
-        <p className="mt-1.5 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+        <p className="mt-1.5 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Connect this {contentType} to the value dimensions it supports so learner dashboards can
           suggest it more intelligently.
         </p>
@@ -67,7 +67,7 @@ export function ContentValueTagEditor({
             const dimension = dimensionsById.get(tag.dimensionId);
             return (
               <div
-                className="rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-3.5"
+                className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3.5"
                 key={tag.id}
               >
                 <form action={updateContentValueTag} className="grid gap-3 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))_auto] lg:items-end">
@@ -78,7 +78,7 @@ export function ContentValueTagEditor({
 
                   <div>
                     <p className={fieldLabelClasses}>Dimension</p>
-                    <p className="mt-1.5 text-sm font-extrabold text-[var(--admin-on-surface)]">
+                    <p className="mt-1.5 text-sm font-extrabold text-[var(--ui-text)]">
                       {dimension?.label ?? tag.dimensionId}
                     </p>
                   </div>
@@ -119,7 +119,7 @@ export function ContentValueTagEditor({
                   </label>
 
                   <PendingSubmitButton
-                    className="rounded-full bg-[var(--admin-primary)] px-4 py-2 text-xs font-extrabold text-[var(--admin-on-primary)]"
+                    className="rounded-full bg-[var(--ui-action)] px-4 py-2 text-xs font-extrabold text-[var(--ui-on-action)]"
                     label="Update"
                     pendingLabel="Updating…"
                     type="submit"
@@ -132,7 +132,7 @@ export function ContentValueTagEditor({
                   <input name="contentId" type="hidden" value={contentId} />
                   <input name="redirectTo" type="hidden" value={redirectTo} />
                   <PendingSubmitButton
-                    className="rounded-full px-3 py-1.5 text-[11px] font-extrabold text-[var(--admin-error)]"
+                    className="rounded-full px-3 py-1.5 text-[11px] font-extrabold text-[var(--ui-danger)]"
                     label="Remove tag"
                     pendingLabel="Removing…"
                     type="submit"
@@ -142,14 +142,14 @@ export function ContentValueTagEditor({
             );
           })
         ) : (
-          <p className="rounded-[14px] border border-dashed border-[var(--admin-border-warm)] p-4 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+          <p className="rounded-[14px] border border-dashed border-[var(--ui-border-subtle)] p-4 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
             No value tags yet. Add a few to power personalized learner recommendations.
           </p>
         )}
       </div>
 
-      <div className="rounded-[14px] border border-dashed border-[var(--admin-border-warm)] p-3.5">
-        <p className="text-xs font-extrabold text-[var(--admin-on-surface)]">Add value tag</p>
+      <div className="rounded-[14px] border border-dashed border-[var(--ui-border-subtle)] p-3.5">
+        <p className="text-xs font-extrabold text-[var(--ui-text)]">Add value tag</p>
         {unusedDimensions.length > 0 ? (
           <form action={saveContentValueTag} className="mt-3 grid gap-3 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))_auto] lg:items-end">
             <input name="contentType" type="hidden" value={contentType} />
@@ -191,14 +191,14 @@ export function ContentValueTagEditor({
             </label>
 
             <PendingSubmitButton
-              className="rounded-full bg-[var(--admin-primary)] px-4 py-2 text-xs font-extrabold text-[var(--admin-on-primary)]"
+              className="rounded-full bg-[var(--ui-action)] px-4 py-2 text-xs font-extrabold text-[var(--ui-on-action)]"
               label="Add tag"
               pendingLabel="Adding…"
               type="submit"
             />
           </form>
         ) : (
-          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--admin-on-surface-variant)]">
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             All active value dimensions are already tagged on this {contentType}. Remove one before adding another.
           </p>
         )}

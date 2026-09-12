@@ -174,7 +174,7 @@ export function PushEnablePrompt() {
         <>
           <p>{copy.message}</p>
           {message ? (
-            <p className="mt-2 text-xs font-bold text-[#b42318]">{message}</p>
+            <p className="mt-2 text-xs font-bold text-[var(--ui-danger)]">{message}</p>
           ) : null}
         </>
       )}

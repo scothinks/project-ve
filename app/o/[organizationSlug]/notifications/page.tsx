@@ -38,10 +38,10 @@ export default async function OrganizationNotificationsPage({
       />
       <section className="learner-page learner-page--standard pb-28">
         <div>
-          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
             Notifications
           </h1>
-          <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">{organizationName}</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">{organizationName}</p>
         </div>
         <OrgNotificationsList notifications={notifications} />
       </section>

@@ -84,7 +84,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   });
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       <div className="hidden lg:block">
         <LearnerTopChrome
           active="Lessons"
@@ -111,33 +111,33 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-text)]">
                       {course.category}
                     </p>
                     <h1 className="mt-2 text-2xl font-black leading-8">{course.title}</h1>
                   </div>
                   <XPBadge className="shrink-0" xp={getCourseXP(course)} />
                 </div>
-                <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   {course.description}
                 </p>
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                    <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Level</p>
-                    <p className="mt-1 text-xs font-black capitalize text-[var(--foreground)]">{course.level}</p>
+                  <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                    <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Level</p>
+                    <p className="mt-1 text-xs font-black capitalize text-[var(--ui-text)]">{course.level}</p>
                   </div>
-                  <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                    <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Time</p>
-                    <p className="mt-1 text-xs font-black text-[var(--foreground)]">{course.estimatedMinutes}m</p>
+                  <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                    <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Time</p>
+                    <p className="mt-1 text-xs font-black text-[var(--ui-text)]">{course.estimatedMinutes}m</p>
                   </div>
-                  <div className="rounded-[18px] bg-[var(--ve-card-muted)] p-3">
-                    <p className="text-[10px] font-bold uppercase text-[var(--ve-muted)]">Lessons</p>
-                    <p className="mt-1 text-xs font-black text-[var(--foreground)]">{course.lessons.length}</p>
+                  <div className="rounded-[18px] bg-[var(--ui-surface-muted)] p-3">
+                    <p className="text-[10px] font-bold uppercase text-[var(--ui-text-muted)]">Lessons</p>
+                    <p className="mt-1 text-xs font-black text-[var(--ui-text)]">{course.lessons.length}</p>
                   </div>
                 </div>
-                <div className="mt-5 h-2 rounded-full bg-[var(--ve-line-soft)]">
+                <div className="mt-5 h-2 rounded-full bg-[var(--ui-border-subtle)]">
                   <div
-                    className="h-full rounded-full bg-[#008751]"
+                    className="h-full rounded-full bg-[var(--ui-action)]"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -156,9 +156,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             <section>
               <h2 className="text-[17px] font-bold">Lessons</h2>
               {course.lessons.length === 0 ? (
-                <Card className="mt-3 rounded-[18px] border border-dashed border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] p-5">
+                <Card className="mt-3 rounded-[18px] border border-dashed border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] p-5">
                   <p className="text-sm font-black">No lessons currently.</p>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     This course is live, but the lessons are still being reviewed. Check back soon.
                   </p>
                 </Card>
@@ -175,13 +175,13 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           <aside className="hidden space-y-4 lg:block">
             <DirectAdCard ad={courseDetailAd} />
             <Card className="p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                 Course progress
               </p>
               <p className="mt-2 text-2xl font-black tracking-[-0.03em]">
                 {Math.round(progressPercent)}%
               </p>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Continue from the next available lesson when you are ready.
               </p>
             </Card>

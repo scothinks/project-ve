@@ -18,15 +18,15 @@ type CourseDetailCompletionSectionProps = {
 };
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function helperTextClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]";
 }
 
 function asStringArray(value: unknown, fallback: string[]) {
@@ -73,11 +73,11 @@ export function CourseDetailCompletionSection({
         <summary className="cursor-pointer list-none px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                 Completion
               </p>
               <h2 className="mt-2 text-lg font-black">Course transcript rules</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                 Selected lessons, quizzes and missions contribute to completion progress. A selected final assessment remains mandatory.
               </p>
             </div>
@@ -92,7 +92,7 @@ export function CourseDetailCompletionSection({
           </div>
         </summary>
 
-        <form action={action} className="border-t border-[var(--ve-line-soft)] px-5 pb-5">
+        <form action={action} className="border-t border-[var(--ui-border-subtle)] px-5 pb-5">
           <input name="courseId" type="hidden" value={course.id} />
           <input name="redirectTo" type="hidden" value={`/admin/courses/${course.id}/settings`} />
 
@@ -146,7 +146,7 @@ export function CourseDetailCompletionSection({
               <div className="mt-3 space-y-2">
                 {lessons.map((lesson) => (
                   <label
-                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm font-bold"
+                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm font-bold"
                     key={lesson.id}
                   >
                     <input
@@ -173,7 +173,7 @@ export function CourseDetailCompletionSection({
 
                   return (
                     <label
-                      className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm font-bold"
+                      className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm font-bold"
                       key={quiz.id}
                     >
                       <input
@@ -192,7 +192,7 @@ export function CourseDetailCompletionSection({
                     </label>
                   );
                 }) : (
-                  <p className="rounded-[14px] bg-[var(--ve-panel)] p-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                  <p className="rounded-[14px] bg-[var(--ui-surface-inset)] p-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                     No quizzes are attached to this course yet.
                   </p>
                 )}
@@ -204,7 +204,7 @@ export function CourseDetailCompletionSection({
               <div className="mt-3 space-y-2">
                 {missions.map((mission) => (
                   <label
-                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm font-bold"
+                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm font-bold"
                     key={mission.id}
                   >
                     <input
@@ -227,7 +227,7 @@ export function CourseDetailCompletionSection({
           </div>
 
           <PendingSubmitButton
-            className="mt-5 rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-sm font-black text-white"
+            className="mt-5 rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-sm font-black text-[var(--ui-on-action)]"
             label="Save Completion Rules"
             name="actionIntent"
             pendingLabel="Saving..."

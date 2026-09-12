@@ -24,14 +24,14 @@ export function BudgetRadioGroup({ name, options, defaultValue = "" }: BudgetRad
           className={cn(
             "flex cursor-pointer items-center gap-3 rounded-[14px] border p-3.5 transition",
             selected === option.value
-              ? "!border-[var(--ve-green)] !bg-[var(--ve-green-soft)]"
-              : "!border-[var(--ve-line)] !bg-[var(--ve-card)]",
+              ? "!border-[var(--ui-action)] !bg-[var(--ui-action-soft)]"
+              : "!border-[var(--ui-border)] !bg-[var(--ui-surface)]",
           )}
           key={option.label}
         >
           <input
             checked={selected === option.value}
-            className="size-4 accent-[var(--ve-green)]"
+            className="size-4 accent-[var(--ui-action)]"
             name={name}
             onChange={() => setSelected(option.value)}
             type="radio"

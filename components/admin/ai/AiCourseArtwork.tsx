@@ -17,7 +17,7 @@ export function AiCourseArtwork({courseId,thumbnail,cover}:{courseId:string;thum
       if(picked&&!picked.alreadyApplied){const form=new FormData();form.set('courseId',courseId);form.set('target',target);form.set('url',picked.url);await setCourseArtwork(form);router.refresh();}
     } catch(e){setError(e instanceof Error?e.message:'Artwork could not be saved.');}finally{setBusy(false);}
   }
-  return <section className="space-y-4 rounded-2xl border border-[var(--admin-border-warm)] p-5" id="course-artwork"><h2 className="font-bold">Course thumbnail and cover</h2>
+  return <section className="space-y-4 rounded-2xl border border-[var(--ui-border-subtle)] p-5" id="course-artwork"><h2 className="font-bold">Course thumbnail and cover</h2>
     <p className="text-sm">Choose images here, then review them with the course.</p>
     {error&&<p role="alert">{error}</p>}
     {(['course_thumbnail','course_cover'] as const).map(target=><div key={target} className="flex flex-wrap items-center gap-3"><span className="text-sm">{target==='course_cover'?(cover?.url?'Cover selected':'Cover needed'):(thumbnail?.src?'Thumbnail selected':'Thumbnail needed')}</span><button type="button" className={aiButton} disabled={busy} onClick={()=>void choose(target)}>Choose {target==='course_cover'?'course cover':'course thumbnail'}</button></div>)}

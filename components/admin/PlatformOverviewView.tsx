@@ -32,10 +32,10 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-ink-charcoal)]">
+        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">
           Platform Attention Dashboard
         </h1>
-        <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+        <p className="text-sm font-medium text-[var(--ui-text-muted)]">
           Here&rsquo;s what needs your attention across the platform ecosystem today.
         </p>
       </div>
@@ -71,13 +71,13 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
-            <AdminOverviewIcon className="text-[var(--admin-secondary)]" />
+        <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <h2 className="flex items-center gap-2 border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
+            <AdminOverviewIcon className="text-[var(--ui-warning)]" />
             Organisations Pending Verification
           </h2>
           {overview.organizationsPendingVerification.length === 0 ? (
-            <p className="py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+            <p className="py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
               No organisations awaiting verification.
             </p>
           ) : (
@@ -94,7 +94,7 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
                 />
               ))}
               {overview.organizationsPendingVerification.length > 4 ? (
-                <Link className="text-sm font-bold text-[var(--admin-primary)] hover:underline" href="/admin/organizations">
+                <Link className="text-sm font-bold text-[var(--ui-action)] hover:underline" href="/admin/organizations">
                   View all {overview.organizationsPendingVerification.length}
                 </Link>
               ) : null}
@@ -102,13 +102,13 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
           )}
         </div>
 
-        <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
-            <AdminRewardsIcon className="text-[var(--admin-secondary)]" />
+        <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <h2 className="flex items-center gap-2 border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
+            <AdminRewardsIcon className="text-[var(--ui-warning)]" />
             Expiring Temporary Grants
           </h2>
           {overview.expiringTemporaryGrants.length === 0 ? (
-            <p className="py-6 text-center text-sm font-semibold text-[var(--admin-on-surface-variant)]">
+            <p className="py-6 text-center text-sm font-semibold text-[var(--ui-text-muted)]">
               No grants expiring in the next 7 days.
             </p>
           ) : (
@@ -130,13 +130,13 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm lg:col-span-2">
-          <div className="mb-3 flex items-center justify-between border-b border-[var(--admin-border-warm)] pb-2">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--admin-on-surface)]">
+        <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between border-b border-[var(--ui-border-subtle)] pb-2">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--ui-text)]">
               <AdminActivityIcon />
               Cross-Org Activity Feed
             </h2>
-            <Link className="text-sm font-bold text-[var(--admin-primary)] hover:underline" href="/admin/activity">
+            <Link className="text-sm font-bold text-[var(--ui-action)] hover:underline" href="/admin/activity">
               View full log
             </Link>
           </div>
@@ -151,8 +151,8 @@ export function PlatformOverviewView({ overview }: { overview: AdminPlatformOver
           />
         </div>
 
-        <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <h2 className="border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
+        <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <h2 className="border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
             Operational Queues
           </h2>
           <div className="mt-3 flex flex-col gap-3">

@@ -1,0 +1,56 @@
+.identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--ui-text);
+}
+
+.logo {
+  display: block;
+  width: 3.5rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.small {
+  width: 2rem;
+  height: 2rem;
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ui-border-subtle);
+  border-radius: 4px;
+  background: var(--ui-surface-soft);
+  color: var(--ui-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.copy {
+  display: block;
+  min-width: 0;
+}
+
+.name {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.detail {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--ui-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}

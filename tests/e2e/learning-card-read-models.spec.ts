@@ -17,9 +17,9 @@ function requiredEnv(name: string) {
 
 async function signIn(page: Page, nextPath: string) {
   await page.goto(`/login?next=${encodeURIComponent(nextPath)}`);
-  await page.getByPlaceholder("Enter Email Address").fill(learnerEmail);
-  await page.getByPlaceholder("Enter Password").fill(credential);
-  await page.getByRole("button", { name: "Login" }).click();
+  await page.getByLabel("Email address", { exact: true }).fill(learnerEmail);
+  await page.getByLabel("Password", { exact: true }).fill(credential);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${nextPath}$`), { timeout: 30_000 });
 }
 

@@ -1,0 +1,31 @@
+/* Current learning only. The released corner clips a background, never content. */
+.learning-current {
+  position: relative;
+  isolation: isolate;
+}
+
+.learning-current::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ui-current-bg);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.learning-current::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ui-current-rail);
+}
+
+.learning-current:dir(rtl)::before {
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%, 0 16px);
+}

@@ -16,11 +16,11 @@ import { getPaginationWindow } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
 const adminPrimaryButtonClasses =
-  "inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--admin-primary-container)] px-3 text-xs font-bold text-[var(--admin-on-primary)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex min-h-9 items-center justify-center rounded-full bg-[var(--ui-action)] px-3 text-xs font-bold text-[var(--ui-on-action)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60";
 const adminSecondaryButtonClasses =
-  "inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 text-xs font-bold text-[var(--admin-on-surface)] transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 text-xs font-bold text-[var(--ui-text)] transition hover:bg-[var(--ui-surface-soft)] disabled:cursor-not-allowed disabled:opacity-60";
 const adminDangerButtonClasses =
-  "inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--admin-error)] bg-[var(--admin-surface-milk)] px-4 text-sm font-bold text-[var(--admin-error)] transition hover:bg-[var(--admin-error)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--ui-danger)] bg-[var(--ui-surface)] px-4 text-sm font-bold text-[var(--ui-danger)] transition hover:bg-[var(--ui-danger)] hover:text-[var(--ui-on-danger)] disabled:cursor-not-allowed disabled:opacity-60";
 
 export type CourseIndexCourse = {
   id: string;
@@ -91,7 +91,7 @@ function FilterSelect({
 }) {
   return (
     <label className="min-w-[160px] flex-1">
-      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         {label}
       </span>
       <AdminSelect className="mt-2" onValueChange={onChange} options={options} value={value} />
@@ -103,8 +103,8 @@ function statusPillClasses(active: boolean) {
   return cn(
     "inline-flex items-center justify-center rounded-full border px-[18px] py-[10px] text-[13px]",
     active
-      ? "border-[var(--admin-primary)] bg-[color:color-mix(in_srgb,var(--admin-primary)_8%,transparent)] font-extrabold text-[var(--admin-primary)]"
-      : "border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] font-bold text-[var(--admin-on-surface-variant)]",
+      ? "border-[var(--ui-success)] bg-[color:color-mix(in_srgb,var(--ui-success)_8%,transparent)] font-extrabold text-[var(--ui-success)]"
+      : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] font-bold text-[var(--ui-text-muted)]",
   );
 }
 
@@ -125,7 +125,7 @@ function CourseActions({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger
             aria-label={`More actions for ${course.title}`}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)]"
             type="button"
           >
             ⋯
@@ -133,25 +133,25 @@ function CourseActions({
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
-              className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+              className="z-50 min-w-56 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-2 shadow-xl"
               sideOffset={6}
             >
               <DropdownMenu.Item asChild>
                 <form action={duplicateCourseShell}>
                   <input name="courseId" type="hidden" value={course.id} />
                   <PendingSubmitButton
-                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-on-surface)] outline-none transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--ui-text)] outline-none transition hover:bg-[var(--ui-surface-soft)] disabled:cursor-not-allowed disabled:opacity-60"
                     label="Duplicate course"
                     pendingLabel="Duplicating..."
                     type="submit"
                   />
                 </form>
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
+              <DropdownMenu.Separator className="my-1 h-px bg-[var(--ui-border-subtle)]" />
               <DropdownMenu.Item
                 className={cn(
-                  "cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none transition hover:bg-[var(--admin-surface-container-low)]",
-                  isDisabling ? "text-[var(--admin-error)]" : "text-[var(--admin-primary)]",
+                  "cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none transition hover:bg-[var(--ui-surface-soft)]",
+                  isDisabling ? "text-[var(--ui-danger)]" : "text-[var(--ui-action)]",
                 )}
                 onSelect={(event) => {
                   event.preventDefault();
@@ -165,11 +165,11 @@ function CourseActions({
         </DropdownMenu.Root>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
-            <AlertDialog.Title className="text-lg font-black text-[var(--admin-ink-charcoal)]">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
+            <AlertDialog.Title className="text-lg font-black text-[var(--ui-text)]">
               {isDisabling ? "Disable published course?" : "Enable course?"}
             </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {isDisabling
                 ? `"${course.title}" will move back to draft and no longer appear as a published course.`
                 : `"${course.title}" will be moved to published status. Review readiness before enabling learner access.`}
@@ -257,12 +257,12 @@ export function CourseSearchAndFilters({
   return (
     <div className="flex flex-wrap items-center gap-3.5">
       <form className="relative max-w-[400px] flex-1 basis-[260px]" onSubmit={handleSearchSubmit}>
-        <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--admin-outline)]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--ui-text-muted)]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
         <input
-          className="min-h-11 w-full rounded-full border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-[13px] pl-11 pr-4 text-sm font-semibold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)]"
+          className="min-h-11 w-full rounded-full border border-[var(--ui-control-border)] bg-[var(--ui-surface)] py-[13px] pl-11 pr-4 text-sm font-semibold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)]"
           defaultValue={query}
           name="query"
           onChange={(event) => setQuery(event.target.value)}
@@ -311,7 +311,7 @@ export function CourseSearchAndFilters({
             ]}
             value={sort}
           />
-          <div className="flex justify-end gap-3 border-t border-[var(--admin-border-warm)] pt-4">
+          <div className="flex justify-end gap-3 border-t border-[var(--ui-border-subtle)] pt-4">
             <Link className={adminSecondaryButtonClasses} href="/admin/courses" onClick={() => setMoreOpen(false)}>
               Reset
             </Link>
@@ -328,7 +328,7 @@ export function CourseSearchAndFilters({
 export function CourseCreateButton() {
   return (
     <Link
-      className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-[var(--admin-primary)] px-[26px] py-0 text-[15px] font-extrabold text-[var(--admin-on-primary)] shadow-[0_8px_24px_rgba(18,60,53,0.16)]"
+      className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-[var(--ui-action)] px-[26px] py-0 text-[15px] font-extrabold text-[var(--ui-on-action)] shadow-[0_8px_24px_rgba(var(--ui-shadow-rgb),0.16)]"
       href="/admin/courses/choose"
     >
       <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
@@ -353,7 +353,7 @@ export function CourseIndexWorkspace({
   return (
     <section className="space-y-5">
       {courses.length === 0 ? (
-        <p className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-10 text-center text-sm font-bold text-[var(--admin-on-surface-variant)]">
+        <p className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] py-10 text-center text-sm font-bold text-[var(--ui-text-muted)]">
           No courses match the current filters.
         </p>
       ) : (
@@ -368,14 +368,14 @@ export function CourseIndexWorkspace({
             ))}
           </AdminCourseCardGrid>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+            <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
               Showing {pagination.startItem}-{pagination.endItem} of {pagination.totalItems} courses
             </p>
             {pagination.totalPages > 1 ? (
               <div className="flex flex-wrap items-center gap-2 md:justify-end">
                 <Link
                   className={cn(
-                    "rounded-[12px] border border-[var(--admin-border-warm)] px-3 py-2 text-xs font-black text-[var(--admin-on-surface)]",
+                    "rounded-[12px] border border-[var(--ui-border-subtle)] px-3 py-2 text-xs font-black text-[var(--ui-text)]",
                     pagination.currentPage === 1 && "pointer-events-none opacity-40",
                   )}
                   href={buildCoursesHref(filters, Math.max(1, pagination.currentPage - 1))}
@@ -387,8 +387,8 @@ export function CourseIndexWorkspace({
                     className={cn(
                       "rounded-[12px] border px-3 py-2 text-xs font-black",
                       page === pagination.currentPage
-                        ? "border-[color:color-mix(in_srgb,var(--admin-primary-container)_30%,var(--admin-border-warm))] bg-[color:color-mix(in_srgb,var(--admin-primary-container)_12%,transparent)] text-[var(--admin-primary)]"
-                        : "border-[var(--admin-border-warm)] text-[var(--admin-on-surface-variant)]",
+                        ? "border-[color:color-mix(in_srgb,var(--ui-action)_30%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-action)_12%,transparent)] text-[var(--ui-action)]"
+                        : "border-[var(--ui-border-subtle)] text-[var(--ui-text-muted)]",
                     )}
                     href={buildCoursesHref(filters, page)}
                     key={page}
@@ -398,7 +398,7 @@ export function CourseIndexWorkspace({
                 ))}
                 <Link
                   className={cn(
-                    "rounded-[12px] border border-[var(--admin-border-warm)] px-3 py-2 text-xs font-black text-[var(--admin-on-surface)]",
+                    "rounded-[12px] border border-[var(--ui-border-subtle)] px-3 py-2 text-xs font-black text-[var(--ui-text)]",
                     pagination.currentPage === pagination.totalPages && "pointer-events-none opacity-40",
                   )}
                   href={buildCoursesHref(filters, Math.min(pagination.totalPages, pagination.currentPage + 1))}

@@ -86,22 +86,22 @@ export function AiAssistanceAuthoring({ courseId, lessonId, kind, enabled, unava
       ? result.kind === 'quiz' ? 'Writing and checking questions' : result.kind === 'lesson_plan' ? 'Planning lessons' : 'Writing your lesson'
       : result?.stage === 'ready' ? 'Not added yet' : result?.stage === 'failed' ? 'Needs attention' : result?.stage === 'stopped' ? 'Stopped' : 'Ready to start';
   return <>
-    {!enabled && <p role="status" className="rounded-2xl border border-[var(--admin-border-warm)] p-5 text-sm leading-6">{unavailableReason ?? 'AI suggestions are not enabled yet.'} You can still edit manually or resume saved work.</p>}
+    {!enabled && <p role="status" className="rounded-2xl border border-[var(--ui-border-subtle)] p-5 text-sm leading-6">{unavailableReason ?? 'AI suggestions are not enabled yet.'} You can still edit manually or resume saved work.</p>}
     <div className="flex flex-wrap items-center gap-2">
       {enabled && <button type="button" className={aiButton} disabled={busy} onClick={() => begin({ kind })}>{titles[kind]}</button>}
       <AiPageAuthoring lessonId={lessonId} courseId={courseId} resultsLabel={kind === 'lesson_plan' ? 'Resume earlier work' : undefined} />
     </div>
     <AdminDrawer open={open} onOpenChange={setOpen} title={setup ? titles[setup.kind] : 'Your AI result'} description="Saved in AI results." widthClassName="w-full max-w-[720px]">
       <div className="space-y-5">
-        {error && <p role="alert" className="text-sm leading-6 text-[var(--admin-error)]">{error}</p>}
+        {error && <p role="alert" className="text-sm leading-6 text-[var(--ui-danger)]">{error}</p>}
         {setup ? <form className="space-y-5" onSubmit={e => { e.preventDefault(); void run(() => quote()); }}>
           <p className="text-sm">{setup.kind === 'quiz' ? 'I’ll check understanding of your saved lesson.' : setup.kind === 'lesson_plan' ? 'I’ll suggest what this course needs next.' : 'Review the draft before adding it.'}</p>
-          <details className="rounded-xl border border-[var(--admin-border-warm)] p-4"><summary className="cursor-pointer text-sm font-bold">Add direction (optional)</summary>
+          <details className="rounded-xl border border-[var(--ui-border-subtle)] p-4"><summary className="cursor-pointer text-sm font-bold">Add direction (optional)</summary>
             <label className="mt-3 block text-sm font-bold">Focus or audience<textarea className={aiField} maxLength={1000} rows={3} value={focus} disabled={busy} onChange={e => { setFocus(e.target.value); setResult(null); }} /></label>
             {setup.kind !== 'lesson_draft' && <label className="mt-3 block text-sm font-bold">{setup.kind === 'quiz' ? 'Questions' : 'Suggestions'}<select className={aiField} value={count} disabled={busy} onChange={e => { setCount(Number(e.target.value)); setResult(null); }}>{[1, 2, 3].map(n => <option key={n}>{n}</option>)}</select></label>}
           </details>
           {setup.parent?.kind === setup.kind && <label className="block text-sm font-bold">What would you like to change?<textarea className={aiField} maxLength={1000} rows={3} value={refinement} disabled={busy} onChange={e => { setRefinement(e.target.value); setResult(null); }} /></label>}
-          {result ? <div className="space-y-4 rounded-2xl bg-[var(--admin-surface-container-low)] p-5">
+          {result ? <div className="space-y-4 rounded-2xl bg-[var(--ui-surface-soft)] p-5">
             <p className="text-sm">{result.kind === 'lesson_plan' ? 'Drafting is charged separately.' : result.kind === 'lesson_draft' ? 'One lesson draft. Media is added separately.' : `${result.count} single-choice question${result.count === 1 ? '' : 's'}.`}</p>
             <p className="text-xs">Price valid for 10 minutes.</p>
             <button className={aiPrimary} type="button" disabled={busy} onClick={() => void run(async () => {
@@ -110,7 +110,7 @@ export function AiAssistanceAuthoring({ courseId, lessonId, kind, enabled, unava
             })}>{busy ? 'Starting…' : pricedAction(setup.kind === 'lesson_plan' ? 'Recommend' : 'Generate', result)}</button>
           </div> : <button className={aiPrimary} disabled={busy} type="submit">{busy ? 'Preparing…' : 'Update price'}</button>}
         </form> : result ? <>
-          <div role="status" aria-live="polite" className="space-y-2 rounded-2xl bg-[var(--admin-surface-container-low)] p-5">
+          <div role="status" aria-live="polite" className="space-y-2 rounded-2xl bg-[var(--ui-surface-soft)] p-5">
             <p className="font-extrabold">{stateLabel}</p><p className="text-sm leading-6">{reconnecting ? 'Reconnecting to your saved result.' : saving ? 'You can close this panel and return to check the save.' : result.applicationError ?? result.failure ?? (active ? delayed ? 'This is taking longer than usual. Your request is saved.' : 'You can watch here or return through AI results.' : 'Adding a result uses no more credits.')}</p>
             <p className="text-xs">{creditLabel(result as unknown as AuthoringResult)}</p>
           </div>

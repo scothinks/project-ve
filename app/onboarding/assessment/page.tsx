@@ -49,13 +49,13 @@ export default async function ValuesAssessmentPage({ searchParams }: ValuesAsses
     return (
       <main className="mobile-shell learner-compact-shell min-h-screen px-6 py-10">
         <Card className="mx-auto max-w-2xl p-6">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
             Values Starter Check
           </p>
           <h1 className="mt-3 text-3xl font-black tracking-[-0.03em]">
             This check is not available yet
           </h1>
-          <p className="mt-3 text-sm font-medium leading-6 text-[var(--ve-muted)]">
+          <p className="mt-3 text-sm font-medium leading-6 text-[var(--ui-text-muted)]">
             We could not load the starter questions right now. Please try again shortly.
           </p>
           <div className="mt-5">

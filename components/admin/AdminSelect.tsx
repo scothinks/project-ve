@@ -63,26 +63,26 @@ export function AdminSelect({
       <Select.Trigger
         id={id}
         className={cn(
-          "flex w-full items-center justify-between border border-[var(--admin-border-warm)] bg-[var(--admin-surface)] text-left text-sm font-bold outline-none transition focus:border-[var(--admin-primary-container)] disabled:cursor-not-allowed disabled:opacity-60",
+          "flex w-full items-center justify-between border border-[var(--ui-control-border)] bg-[var(--ui-surface)] text-left text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] disabled:cursor-not-allowed disabled:opacity-60",
           sizeClasses[size],
           className,
         )}
       >
         <Select.Value placeholder={placeholder}>{selectedLabel ?? placeholder}</Select.Value>
-        <Select.Icon className="shrink-0 text-[var(--admin-on-surface-variant)]">
+        <Select.Icon className="shrink-0 text-[var(--ui-text-muted)]">
           <ChevronRightIcon className="h-4 w-4 rotate-90" />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
         <Select.Content
-          className="z-50 overflow-hidden rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-1 shadow-xl"
+          className="z-50 overflow-hidden rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-1 shadow-xl"
           position="popper"
           sideOffset={6}
         >
           <Select.Viewport>
             {options.map((option) => (
               <Select.Item
-                className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--admin-surface-container-low)] data-[state=checked]:text-[var(--admin-primary)]"
+                className="cursor-pointer rounded-[10px] px-3 py-2 text-sm font-bold outline-none data-[highlighted]:bg-[var(--ui-current-bg)] data-[highlighted]:text-[var(--ui-current-text)] data-[state=checked]:text-[var(--ui-current-text)]"
                 key={option.value}
                 value={option.value}
               >

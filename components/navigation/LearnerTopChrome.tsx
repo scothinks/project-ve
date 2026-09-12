@@ -1,3 +1,4 @@
+import { BrandSignature } from "@/components/brand/BrandSignature";
 import Link from "next/link";
 import { Avatar } from "@/components/profile/Avatar";
 import { BellIcon } from "@/components/ui/Icons";
@@ -45,7 +46,7 @@ export function LearnerTopChrome({
         </Link>
       )}
       <Link className="learner-topbar__brand" href="/dashboard">
-        Project Ve
+        <BrandSignature />
       </Link>
       <div aria-label="Learner sections" className="learner-topbar__nav">
         {navItems.map(([label, href]) => (

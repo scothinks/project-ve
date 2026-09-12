@@ -21,7 +21,7 @@ export function CourseLeaveGuard({ dirty }: { dirty: boolean }) {
   }, [dirty]);
   return <AlertDialog.Root open={!!destination} onOpenChange={open => { if (!open) setDestination(null); }}><AlertDialog.Portal>
     <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-    <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-[var(--admin-surface-milk)] p-6 shadow-xl">
+    <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-[var(--ui-surface)] p-6 shadow-xl">
       <AlertDialog.Title className="text-lg font-bold">Leave unsaved changes?</AlertDialog.Title>
       <AlertDialog.Description className="mt-3 text-sm leading-6">Your latest brief or outline edits have not been saved. Generated results remain in AI results.</AlertDialog.Description>
       <div className="mt-5 flex flex-wrap gap-3"><AlertDialog.Cancel className={aiButton}>Keep editing</AlertDialog.Cancel><AlertDialog.Action className={aiPrimary} onClick={() => { const url = destination; setDestination(null); if (url) router.push(url); }}>Leave without saving</AlertDialog.Action></div>

@@ -1,5 +1,8 @@
 # B1 stylesheet extraction — 2026-09-08
 
+Subsequent integrated qualification: [B6 exact-source results](b6-qualification.md).
+The dated implementation record below preserves what was known at that checkpoint.
+
 Tracking: [#97](https://github.com/scothinks/project-ve/issues/97). Implementer:
 Codex, working with scothinks. Parent revision:
 `27f1d9a12366b467500c8a275320290e1c9a9864` (the preserved G0 implementation).

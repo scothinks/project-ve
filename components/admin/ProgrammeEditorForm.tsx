@@ -14,15 +14,15 @@ import { AdminCard, AdminStatusBadge, adminButtonClasses } from "@/components/ad
 import { reviewContextualProgrammeAccess, saveProgramme } from "@/app/admin/programmes/actions";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function helperTextClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]";
 }
 
 function rewardOwnerLabel(reward: AdminRewardRow) {
@@ -102,7 +102,7 @@ function FormSection({
       <div className="mb-4">
         <h2 className="text-base font-black">{title}</h2>
         {subtitle ? (
-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">{subtitle}</p>
         ) : null}
       </div>
       {children}
@@ -122,7 +122,7 @@ export function ProgrammePendingAccessRequestsCard({
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-black">Pending access requests</h2>
-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Review contextual referral requests for this programme.
           </p>
         </div>
@@ -131,7 +131,7 @@ export function ProgrammePendingAccessRequestsCard({
         </AdminStatusBadge>
       </div>
       {requests.length === 0 ? (
-        <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+        <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3 text-sm font-bold text-[var(--ui-text-muted)]">
           No contextual referral access requests are waiting for review.
         </div>
       ) : (
@@ -144,7 +144,7 @@ export function ProgrammePendingAccessRequestsCard({
 
             return (
               <div
-                className="grid gap-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4 text-sm lg:grid-cols-[1fr_18rem]"
+                className="grid gap-4 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4 text-sm lg:grid-cols-[1fr_18rem]"
                 key={request.id}
               >
                 <div>
@@ -221,7 +221,7 @@ function SelectionRow({
   const inputId = `${fieldName}-${id}`;
 
   return (
-    <div className="grid gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm md:grid-cols-[1.5rem_5rem_1fr] md:items-start">
+    <div className="grid gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm md:grid-cols-[1.5rem_5rem_1fr] md:items-start">
       <input
         aria-label={`Select ${label}`}
         className="mt-1 size-4"
@@ -233,7 +233,7 @@ function SelectionRow({
       />
       <input
         aria-label="Sequence"
-        className="w-full rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-2 py-1 text-xs font-black tabular-nums"
+        className="w-full rounded-[10px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-2 py-1 text-xs font-black tabular-nums"
         defaultValue={order}
         min={1}
         name={`${fieldName}Order:${id}`}
@@ -290,7 +290,7 @@ export function ProgrammeEditorForm({
                 {programme ? (
                   <>
                     <input name="organizationId" type="hidden" value={selectedOrganizationId} />
-                    <div className="mt-2 rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black">
+                    <div className="mt-2 rounded-[14px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-black">
                       {programme.organization?.name ?? selectedOrganizationId}
                     </div>
                   </>
@@ -395,7 +395,7 @@ export function ProgrammeEditorForm({
                     <p className={helperTextClasses()}>
                       {mission.category} · {mission.validation_type.replaceAll("_", " ")} · {mission.mission_type_key}
                     </p>
-                    <div className="mt-4 grid gap-3 border-t border-[var(--ve-line-soft)] pt-4 lg:grid-cols-3">
+                    <div className="mt-4 grid gap-3 border-t border-[var(--ui-border-subtle)] pt-4 lg:grid-cols-3">
                       <label>
                         <span className={labelClasses()}>Starts</span>
                         <input
@@ -425,7 +425,7 @@ export function ProgrammeEditorForm({
                           type="number"
                         />
                       </label>
-                      <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-black">
+                      <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-black">
                         <input
                           defaultChecked={selectedMission?.is_required ?? false}
                           name={`missionRequired:${mission.id}`}
@@ -473,20 +473,20 @@ export function ProgrammeEditorForm({
                         />
                       </label>
                     </div>
-                    <div className="mt-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
-                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">Learner preview</p>
+                    <div className="mt-4 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Learner preview</p>
                       <h3 className="mt-2 text-base font-black">{displayTitle || mission.title}</h3>
-                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+                      <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                         {shortDescription || mission.description}
                       </p>
-                      <div className="mt-3 inline-flex rounded-[12px] bg-[var(--ve-mission)] px-3 py-2 text-xs font-black text-white">
+                      <div className="mt-3 inline-flex rounded-[12px] bg-[var(--ui-mission)] px-3 py-2 text-xs font-black text-[var(--ui-on-mission)]">
                         {ctaLabel || "Start mission"}
                       </div>
                     </div>
                     {mission.catalog_scope === "platform" ? (
                       <div className="mt-3">
                         <Link
-                          className="text-xs font-black text-[var(--ve-mission)] hover:underline"
+                          className="text-xs font-black text-[var(--ui-mission)] hover:underline"
                           href={`/admin/missions/organization/new?sourceMissionId=${encodeURIComponent(mission.id)}`}
                         >
                           Adapt Project Ve mission for this organisation
@@ -532,7 +532,7 @@ export function ProgrammeEditorForm({
             }
           >
             {assessmentCapability === "assigned_only" ? (
-              <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+              <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3 text-sm font-bold text-[var(--ui-text-muted)]">
                 Starter organisations use direct assignment, course quizzes and programme completion rules.
               </div>
             ) : (
@@ -557,8 +557,8 @@ export function ProgrammeEditorForm({
                         </AdminStatusBadge>
                       </div>
                       <p className={helperTextClasses()}>{assessment.slug}</p>
-                      <div className="mt-4 grid gap-3 border-t border-[var(--ve-line-soft)] pt-4 lg:grid-cols-2">
-                        <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 py-3 text-sm font-black lg:col-span-2">
+                      <div className="mt-4 grid gap-3 border-t border-[var(--ui-border-subtle)] pt-4 lg:grid-cols-2">
+                        <label className="flex items-center gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-3 text-sm font-black lg:col-span-2">
                           <input
                             defaultChecked={selectedAssessment?.is_required ?? true}
                             name={`assessmentRequired:${assessment.id}`}
@@ -589,7 +589,7 @@ export function ProgrammeEditorForm({
                   );
                 })}
                 {assessmentVersions.length === 0 ? (
-                  <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3 text-sm font-bold text-[var(--ve-muted-strong)]">
+                  <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3 text-sm font-bold text-[var(--ui-text-muted)]">
                     No published assessment templates are available for this workspace.
                   </div>
                 ) : null}
@@ -644,9 +644,9 @@ export function ProgrammeEditorForm({
               </select>
               <span className={helperTextClasses()}>If selected, keep the same assessment checked in the assessment list.</span>
             </label>
-            <div className="mt-4 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
+            <div className="mt-4 rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-sm font-black">
               {selectedCourseIds.size} selected courses and {selectedMissionIds.size} selected missions contribute to completion progress.
-              <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+              <span className="block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                 Final assessments remain mandatory when selected. Certificates are deferred to P2.
               </span>
             </div>

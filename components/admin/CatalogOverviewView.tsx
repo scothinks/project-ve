@@ -39,17 +39,17 @@ export function CatalogOverviewView({ overview }: { overview: AdminCatalogOvervi
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--admin-ink-charcoal)]">Overview</h1>
-        <p className="text-sm font-medium text-[var(--admin-on-surface-variant)]">
+        <h1 className="text-[32px] font-black tracking-[-0.02em] text-[var(--ui-text)]">Overview</h1>
+        <p className="text-sm font-medium text-[var(--ui-text-muted)]">
           Project VE&rsquo;s own platform catalogue — content owned by no organisation, available across the
           platform.
         </p>
       </div>
 
       {attentionItems.length > 0 ? (
-        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
-            <AdminErrorIcon className="text-[var(--admin-secondary)]" />
+        <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+          <h2 className="flex items-center gap-2 border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
+            <AdminErrorIcon className="text-[var(--ui-warning)]" />
             Attention Required
           </h2>
           <div className="flex flex-col gap-3">
@@ -68,7 +68,7 @@ export function CatalogOverviewView({ overview }: { overview: AdminCatalogOvervi
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-lg font-bold text-[var(--admin-on-surface)]">Catalogue Health</h2>
+        <h2 className="mb-3 text-lg font-bold text-[var(--ui-text)]">Catalogue Health</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <AdminMetricCard
             helpText={`Published (${overview.coursesPublishedLastSevenDays} this week)`}
@@ -84,9 +84,9 @@ export function CatalogOverviewView({ overview }: { overview: AdminCatalogOvervi
                 <span className="flex flex-col leading-tight">
                   <span>
                     {formatCompactNumber(overview.points.awarded)}{" "}
-                    <span className="text-sm font-medium text-[var(--admin-on-surface-variant)]">awarded</span>
+                    <span className="text-sm font-medium text-[var(--ui-text-muted)]">awarded</span>
                   </span>
-                  <span className="text-lg text-[var(--admin-on-surface-variant)]">
+                  <span className="text-lg text-[var(--ui-text-muted)]">
                     {formatCompactNumber(overview.points.spent)} spent
                   </span>
                 </span>
@@ -97,7 +97,7 @@ export function CatalogOverviewView({ overview }: { overview: AdminCatalogOvervi
           />
           <AdminMetricCard
             helpText="Pending fulfillment"
-            icon={<AdminRewardsIcon className="text-[18px] text-[var(--admin-secondary)]" />}
+            icon={<AdminRewardsIcon className="text-[18px] text-[var(--ui-warning)]" />}
             label="Reward Claims"
             tone={overview.pendingRewardClaims > 0 ? "attention" : "default"}
             value={overview.pendingRewardClaims}
@@ -105,8 +105,8 @@ export function CatalogOverviewView({ overview }: { overview: AdminCatalogOvervi
         </div>
       </section>
 
-      <div className="rounded-[24px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-sm">
-        <h2 className="mb-3 border-b border-[var(--admin-border-warm)] pb-2 text-lg font-bold text-[var(--admin-on-surface)]">
+      <div className="rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm">
+        <h2 className="mb-3 border-b border-[var(--ui-border-subtle)] pb-2 text-lg font-bold text-[var(--ui-text)]">
           Workspace Actions
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

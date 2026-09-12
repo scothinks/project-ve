@@ -1,5 +1,13 @@
+import { ownsLearningPresentation } from './learning-scope.mjs';
 export const isLegacy = name => /^(?:--(?:ve|learner|admin)-|--(?:background|foreground|font-geist)$)/.test(name);
 const gateNumber = gate => Number(String(gate).match(/\d+/)?.[0]);
+function compiledTerminal(value) {
+  if (/^#[\da-f]{3}$/i.test(value)) return '#' + [...value.slice(1)].map(c => c + c).join('').toLowerCase();
+  if (/^#[\da-f]{6}$/i.test(value)) return value.toLowerCase();
+  if (/^(?:\d*\.)?\d+$/.test(value)) return String(Number(value));
+  if (/^\d+\s*,\s*\d+\s*,\s*\d+$/.test(value)) return value.replace(/\s/g, '');
+  return value;
+}
 
 export function checkContract(scan, registry, { generated = false } = {}) {
   const errors = scan.hazards.filter(h => !registry.dynamicUses?.some(d => d.file === h.file && d.source === h.source && d.sourceSha256 === scan.files?.[h.file] && d.owner && d.values?.length)).map(h => `${h.file}: ${h.reason}: ${h.source}`);
@@ -11,7 +19,12 @@ export function checkContract(scan, registry, { generated = false } = {}) {
   const gate = gateNumber(registry.gate);
   const external = new Set(registry.externalDefinitions ?? []);
   const retired = new Set(registry.retired ?? []);
+  if (gate >= 5) {
+    if (registry.tokens.length || registry.adapters.length || registry.undefinedDefects?.length || registry.dynamicUses?.length) errors.push('G5 requires empty legacy and temporary exception allowances');
+    if (Object.keys(scan.files ?? {}).some(file => /(?:^|\/)theme-(?:compat|legacy)\.css$/.test(file)) || scan.imports?.some(edge => /theme-(?:compat|legacy)\.css$/.test(edge.specifier))) errors.push('G5 forbids compatibility stylesheets and imports');
+  }
   for (const e of scan.entries) {
+    if (gate >= 4 && isLegacy(e.value) && ownsLearningPresentation(e)) errors.push(`${e.id}: legacy token in completed G4 scope`);
     if (retired.has(e.value)) errors.push(`${e.id}: retired token ${e.value}`);
     if (isLegacy(e.value) && !dispositions.has(e.value)) errors.push(`${e.id}: no token disposition`);
     if (!generated && (isLegacy(e.value) || e.kind === 'colour' || (['reference', 'definition'].includes(e.kind) && !e.value.startsWith('--ui-')))) {
@@ -67,7 +80,7 @@ export function checkContract(scan, registry, { generated = false } = {}) {
     for (const role of registry.roles) {
       for (const mode of ['light', 'dark']) {
         if (!role[mode] || !role.meaning) errors.push(`${role.token}: missing documented mode value`);
-        if (!definitions.some(d => d.value === role.token && d.expression === role[mode] && (mode === 'dark' ? /prefers-color-scheme:\s*dark/.test(d.scope) : d.scope === ':root'))) errors.push(`${role.token}: missing ${mode} definition`);
+        if (!definitions.some(d => d.value === role.token && (generated ? compiledTerminal(d.expression) === compiledTerminal(role[mode]) : d.expression === role[mode]) && (mode === 'dark' ? /prefers-color-scheme:\s*dark/.test(d.scope) : d.scope === ':root'))) errors.push(`${role.token}: missing ${mode} definition`);
       }
     }
     for (const name of names) if (name.startsWith('--ui-') && !registry.roles.some(r => r.token === name) && !['--ui-font-body', '--ui-font-display'].includes(name)) errors.push(`${name}: missing role dictionary entry`);

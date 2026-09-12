@@ -50,19 +50,19 @@ export default async function AdminPerkDrawsPage({ params, searchParams }: Admin
       <AdminCard className="mb-6">
         <div className="grid gap-4 md:grid-cols-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Total shown</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Total shown</p>
             <p className="mt-2 text-2xl font-black">{draws.length}</p>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Fallbacks</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Fallbacks</p>
             <p className="mt-2 text-2xl font-black">{draws.filter((draw) => !draw.prize_id).length}</p>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Refunded</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Refunded</p>
             <p className="mt-2 text-2xl font-black">{draws.filter((draw) => draw.award_status === "refunded").length}</p>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Latest draw</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Latest draw</p>
             <p className="mt-2 text-sm font-black">{draws[0] ? formatRewardDate(draws[0].created_at) : "No draws yet"}</p>
           </div>
         </div>
@@ -78,11 +78,11 @@ export default async function AdminPerkDrawsPage({ params, searchParams }: Admin
                 <td className="whitespace-nowrap px-4 py-3">{formatRewardDate(draw.created_at)}</td>
                 <td className="px-4 py-3">
                   <p className="font-black">{draw.profile?.display_name ?? draw.profile?.referral_code ?? "Learner"}</p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{draw.profile?.id ?? draw.user_id}</p>
+                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{draw.profile?.id ?? draw.user_id}</p>
                 </td>
                 <td className="px-4 py-3">
                   <p className="font-black">{draw.awarded_title}</p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                     {draw.prize_id ? "Prize pool" : "Fallback"}
                   </p>
                 </td>

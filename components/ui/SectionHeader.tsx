@@ -16,10 +16,10 @@ type SectionHeaderProps = {
 };
 
 const eyebrowTones: Record<Tone, string> = {
-  trust: "text-[var(--ve-green)]",
-  mission: "text-[#c94f2e]",
-  store: "text-[#a66d00]",
-  neutral: "text-[var(--ve-muted)]",
+  trust: "text-[var(--ui-text)]",
+  mission: "text-[var(--ui-danger)]",
+  store: "text-[var(--ui-reward)]",
+  neutral: "text-[var(--ui-text-muted)]",
 };
 
 export function SectionHeader({
@@ -51,7 +51,7 @@ export function SectionHeader({
           </h2>
         ) : null}
         {subtitle ? (
-          <p className="mt-2 text-[0.92rem] font-medium leading-6 text-[var(--ve-muted)]">
+          <p className="mt-2 text-[0.92rem] font-medium leading-6 text-[var(--ui-text-muted)]">
             {subtitle}
           </p>
         ) : null}

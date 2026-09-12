@@ -21,34 +21,34 @@ type ExperienceHeaderProps = {
 
 const toneStyles: Record<Tone, { outer: string; eyebrow: string; title: string; subtitle: string }> = {
   home: {
-    outer: "border-[#d6ece2] bg-[#123c35]",
-    eyebrow: "text-[#9ce0bd]",
-    title: "text-[#fff8df]",
-    subtitle: "text-[#d9efe5]",
+    outer: "border-[var(--ui-action)] bg-[var(--ui-action)]",
+    eyebrow: "text-[var(--ui-on-action)]",
+    title: "text-[var(--ui-on-action)]",
+    subtitle: "text-[var(--ui-on-action)]",
   },
   lesson: {
-    outer: "border-[color:color-mix(in_srgb,var(--ve-green)_18%,var(--ve-line-soft))] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))]",
-    eyebrow: "text-[var(--ve-green)]",
-    title: "text-[var(--foreground)]",
-    subtitle: "text-[var(--ve-muted-strong)]",
+    outer: "border-[color:color-mix(in_srgb,var(--ui-learning)_18%,var(--ui-border-subtle))] bg-[color:color-mix(in_srgb,var(--ui-learning-bg)_78%,var(--ui-surface))]",
+    eyebrow: "text-[var(--ui-learning)]",
+    title: "text-[var(--ui-text)]",
+    subtitle: "text-[var(--ui-text-muted)]",
   },
   mission: {
-    outer: "border-[color:color-mix(in_srgb,var(--ve-mission)_20%,var(--ve-line-soft))] bg-[var(--ve-mission-soft)]",
-    eyebrow: "text-[#c94f2e]",
-    title: "text-[var(--foreground)]",
-    subtitle: "text-[var(--ve-muted-strong)]",
+    outer: "border-[color:color-mix(in_srgb,var(--ui-mission)_20%,var(--ui-border-subtle))] bg-[var(--ui-mission-bg)]",
+    eyebrow: "text-[var(--ui-mission)]",
+    title: "text-[var(--ui-text)]",
+    subtitle: "text-[var(--ui-text-muted)]",
   },
   store: {
-    outer: "border-[color:color-mix(in_srgb,var(--ve-store)_24%,var(--ve-line-soft))] bg-[var(--ve-store-soft)]",
-    eyebrow: "text-[#a66d00]",
-    title: "text-[var(--foreground)]",
-    subtitle: "text-[var(--ve-muted-strong)]",
+    outer: "border-[color:color-mix(in_srgb,var(--ui-reward)_24%,var(--ui-border-subtle))] bg-[var(--ui-reward-bg)]",
+    eyebrow: "text-[var(--ui-reward)]",
+    title: "text-[var(--ui-text)]",
+    subtitle: "text-[var(--ui-text-muted)]",
   },
   profile: {
-    outer: "border-[var(--ve-line-soft)] bg-[var(--ve-panel)]",
-    eyebrow: "text-[var(--ve-muted-strong)]",
-    title: "text-[var(--foreground)]",
-    subtitle: "text-[var(--ve-muted-strong)]",
+    outer: "border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)]",
+    eyebrow: "text-[var(--ui-text-muted)]",
+    title: "text-[var(--ui-text)]",
+    subtitle: "text-[var(--ui-text-muted)]",
   },
 };
 
@@ -83,8 +83,8 @@ export function ExperienceHeader({
       {metrics?.length ? (
         <div className="mt-5 grid grid-cols-3 gap-2 text-center">
           {metrics.map((metric) => (
-            <div className="rounded-[16px] bg-[var(--ve-card)] px-2 py-3" key={metric.label}>
-              <p className={cn("text-lg font-black text-[var(--foreground)]", metric.valueClassName)}>
+            <div className="rounded-[16px] bg-[var(--ui-surface)] px-2 py-3" key={metric.label}>
+              <p className={cn("text-lg font-black text-[var(--ui-text)]", metric.valueClassName)}>
                 {metric.value}
               </p>
               <p className={cn("mt-1 text-[10px] font-bold", styles.subtitle)}>

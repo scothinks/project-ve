@@ -96,3 +96,26 @@ test("G0 screenshots, computed styles and build CSS match their exact-source evi
   }
   for (const build of manifest.builds) build.css.forEach(verify);
 });
+
+test("G6 qualification artifacts retain their recorded bytes and complete G1 comparisons", () => {
+  const root = path.join(evidenceRoot, "theme-adoption");
+  const manifest = JSON.parse(readFileSync(path.join(root, "g6-artifacts.json"), "utf8"));
+  assert.equal(manifest.summary.g1Comparisons, 33);
+  assert.equal(manifest.summary.g1Passed, manifest.summary.g1Comparisons);
+  assert.equal(manifest.summary.flatPairsFailed, 0);
+  assert.ok(manifest.summary.flatPairsPassed > 0, "Flat-background evidence must not be empty");
+  assert.equal(new Set(manifest.artifacts.map(entry => entry.path)).size, manifest.artifacts.length);
+  for (const entry of manifest.artifacts) {
+    assert.ok(entry.path.startsWith("g6/") && !entry.path.includes(".."));
+    const bytes = readFileSync(path.join(root, entry.path));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256, entry.path);
+    if (entry.contentSha256) assert.equal(createHash("sha256").update(gunzipSync(bytes)).digest("hex"), entry.contentSha256, entry.path);
+  }
+  const captures = manifest.artifacts.filter(entry => /^g6\/candidate\/.*\.evidence\.json\.gz$/.test(entry.path));
+  assert.equal(captures.length, manifest.summary.candidateCaptures);
+  for (const capture of captures) {
+    const record = JSON.parse(gunzipSync(readFileSync(path.join(root, capture.path))).toString());
+    assert.equal(record.sourceSha256, manifest.candidateSourceSha256);
+    assert.equal(record.buildId, manifest.buildId);
+  }
+});

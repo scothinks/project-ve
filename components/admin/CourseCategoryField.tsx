@@ -42,7 +42,7 @@ export function CourseCategoryField({
 
   return (
     <div className="mt-4">
-      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         Category
       </span>
       <input
@@ -52,24 +52,24 @@ export function CourseCategoryField({
       />
       <div className="relative mt-2">
         <button
-          className="flex min-h-[52px] w-full items-center justify-between rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-left text-sm font-bold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]"
+          className="flex min-h-[52px] w-full items-center justify-between rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-left text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]"
           onClick={() => setIsOpen((current) => !current)}
           type="button"
         >
           <span className="truncate">{selectedLabel}</span>
           <ChevronRightIcon
-            className={`h-4 w-4 shrink-0 text-[var(--admin-on-surface-variant)] transition ${isOpen ? "-rotate-90" : "rotate-90"}`}
+            className={`h-4 w-4 shrink-0 text-[var(--ui-text-muted)] transition ${isOpen ? "-rotate-90" : "rotate-90"}`}
           />
         </button>
         {isOpen ? (
-          <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-[16px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl">
+          <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-2 shadow-xl">
             <div className="space-y-1">
               {categoryOptions.map((category) => (
                 <button
                   className={`flex w-full items-center justify-between rounded-[12px] px-3 py-3 text-left text-sm font-bold transition ${
                     selectedValue === category
-                      ? "bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_78%,var(--admin-surface-milk))] text-[var(--admin-primary)]"
-                      : "text-[var(--admin-on-surface)] hover:bg-[var(--admin-surface-container-low)]"
+                      ? "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
+                      : "text-[var(--ui-text)] hover:bg-[var(--ui-surface-soft)]"
                   }`}
                   key={category}
                   onClick={() => {
@@ -85,8 +85,8 @@ export function CourseCategoryField({
               <button
                 className={`flex w-full items-center justify-between rounded-[12px] px-3 py-3 text-left text-sm font-bold transition ${
                   selectedValue === CREATE_CATEGORY_VALUE
-                    ? "bg-[color:color-mix(in_srgb,var(--admin-primary-fixed)_78%,var(--admin-surface-milk))] text-[var(--admin-primary)]"
-                    : "text-[var(--admin-on-surface)] hover:bg-[var(--admin-surface-container-low)]"
+                    ? "bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] text-[var(--ui-action)]"
+                    : "text-[var(--ui-text)] hover:bg-[var(--ui-surface-soft)]"
                 }`}
                 onClick={() => {
                   setSelectedValue(CREATE_CATEGORY_VALUE);
@@ -103,11 +103,11 @@ export function CourseCategoryField({
       </div>
       {selectedValue === CREATE_CATEGORY_VALUE ? (
         <label className="mt-4 block">
-          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             New category name
           </span>
           <input
-            className="mt-2 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-bold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]"
+            className="mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]"
             name="categoryCustom"
             onChange={(event) => setCustomValue(event.target.value)}
             placeholder="Type the new category name"

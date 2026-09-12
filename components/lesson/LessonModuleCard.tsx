@@ -36,7 +36,7 @@ export function LessonModuleCard({
       >
         <div
           className={cn(
-            "relative h-32 bg-[#dff2e9]",
+            "relative h-32 bg-[var(--ui-action-soft)]",
             desktopLayout === "horizontal" ? "lg:h-full lg:min-h-[12rem]" : "lg:h-28",
           )}
         >
@@ -58,7 +58,7 @@ export function LessonModuleCard({
             <div className="min-w-0">
               <p
                 className={cn(
-                  "text-[1.12rem] font-semibold tracking-[-0.02em] text-[var(--foreground)] lg:text-[1rem]",
+                  "text-[1.12rem] font-semibold tracking-[-0.02em] text-[var(--ui-text)] lg:text-[1rem]",
                   desktopLayout === "horizontal" && "lg:text-[1.12rem]",
                 )}
               >
@@ -66,7 +66,7 @@ export function LessonModuleCard({
               </p>
               <p
                 className={cn(
-                  "mt-2 text-[0.98rem] leading-7 text-[var(--ve-muted)] lg:text-[0.92rem] lg:leading-6",
+                  "mt-2 text-[0.98rem] leading-7 text-[var(--ui-text-muted)] lg:text-[0.92rem] lg:leading-6",
                   desktopLayout === "horizontal" && "lg:line-clamp-3",
                 )}
               >
@@ -76,15 +76,15 @@ export function LessonModuleCard({
             <span
               className={`grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold ${
                 completed
-                  ? "bg-[#dff2e9] text-[#087f5b]"
-                  : "bg-[#f3f3f3] text-[#008751]"
+                  ? "bg-[var(--ui-success-bg)] text-[var(--ui-success)]"
+                  : "bg-[var(--ui-surface-soft)] text-[var(--ui-action)]"
               }`}
             >
               {completed ? "OK" : <ChevronRightIcon className="h-4 w-4" />}
             </span>
           </div>
           <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-            <span className="text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ve-muted)]">
+            <span className="text-[0.92rem] font-medium tracking-[-0.01em] text-[var(--ui-text-muted)]">
               {completed ? "Completed" : `${lesson.estimatedMinutes} min`}
             </span>
             <XPBadge className="shrink-0" unitLabel={unitLabel} xp={getLessonXP(lesson)} />

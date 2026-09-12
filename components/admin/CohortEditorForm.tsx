@@ -17,15 +17,15 @@ import { AdminCard, AdminStatusBadge, adminButtonClasses } from "@/components/ad
 import { formatRewardDate } from "@/lib/rewards";
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold text-[var(--foreground)] outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function helperTextClasses() {
-  return "mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]";
+  return "mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]";
 }
 
 function toDateTimeLocal(value: string | null | undefined) {
@@ -61,7 +61,7 @@ function FormSection({
       <div className="mb-4">
         <h2 className="text-base font-black">{title}</h2>
         {subtitle ? (
-          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{subtitle}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">{subtitle}</p>
         ) : null}
       </div>
       {children}
@@ -79,7 +79,7 @@ function UserCheckbox({
   user: AdminProfileRow;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm">
+    <label className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm">
       <input
         className="mt-1 size-4"
         defaultChecked={checked}
@@ -89,7 +89,7 @@ function UserCheckbox({
       />
       <span>
         <span className="block font-black">{displayUser(user)}</span>
-        <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+        <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
           {user.role} · {user.id}
         </span>
       </span>
@@ -99,7 +99,7 @@ function UserCheckbox({
 
 function EmptyPanel({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-shell)] p-4 text-sm font-bold text-[var(--ve-muted)]">
+    <div className="rounded-[14px] border border-dashed border-[var(--ui-border)] bg-[var(--ui-chrome)] p-4 text-sm font-bold text-[var(--ui-text-muted)]">
       {children}
     </div>
   );
@@ -154,7 +154,7 @@ export function CohortEditorForm({
                 {cohort ? (
                   <>
                     <input name="organizationId" type="hidden" value={selectedOrganizationId} />
-                    <div className="mt-2 rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-panel)] px-4 py-3 text-sm font-black">
+                    <div className="mt-2 rounded-[14px] border border-[var(--ui-border)] bg-[var(--ui-surface-inset)] px-4 py-3 text-sm font-black">
                       {cohort.organization?.name ?? selectedOrganizationId}
                     </div>
                   </>
@@ -237,7 +237,7 @@ export function CohortEditorForm({
               <div className="grid max-h-72 gap-3 overflow-auto pr-1">
                 {availableUnits.map((unit) => (
                   <label
-                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-sm"
+                    className="flex items-start gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-sm"
                     key={unit.id}
                   >
                     <input
@@ -249,7 +249,7 @@ export function CohortEditorForm({
                     />
                     <span>
                       <span className="block font-black">{unit.name}</span>
-                      <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                      <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
                         {unit.unit_type}
                       </span>
                     </span>
@@ -263,11 +263,11 @@ export function CohortEditorForm({
             <FormSection title="Roster state">
               <div className="grid grid-cols-3 gap-3 text-center">
                 {(["active", "completed", "withdrawn"] as const).map((status) => (
-                  <div className="rounded-[14px] bg-[var(--ve-panel)] p-3" key={status}>
+                  <div className="rounded-[14px] bg-[var(--ui-surface-inset)] p-3" key={status}>
                     <p className="text-2xl font-black tabular-nums">
                       {cohort.members.filter((member) => member.status === status).length}
                     </p>
-                    <p className="mt-1 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                    <p className="mt-1 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                       {status}
                     </p>
                   </div>
@@ -305,11 +305,11 @@ export function CohortEditorForm({
                 <span className={labelClasses()}>Due date</span>
                 <input className={fieldClasses()} name="courseDueAt" type="datetime-local" />
               </label>
-              <label className="flex items-start gap-3 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
+              <label className="flex items-start gap-3 rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-sm font-black">
                 <input className="mt-1" defaultChecked name="assignCourseToCohort" type="checkbox" />
                 <span>
                   Assign to this cohort
-                  <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <span className="block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Active cohort members receive enrolments immediately.
                   </span>
                 </span>
@@ -355,11 +355,11 @@ export function CohortEditorForm({
                   <input className={fieldClasses()} name="programmeDueAt" type="datetime-local" />
                 </label>
               </div>
-              <label className="flex items-start gap-3 rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-black">
+              <label className="flex items-start gap-3 rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-sm font-black">
                 <input className="mt-1" defaultChecked name="assignProgrammeToCohort" type="checkbox" />
                 <span>
                   Assign to this cohort
-                  <span className="block text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                  <span className="block text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                     Active cohort members receive programme and course enrolments.
                   </span>
                 </span>
@@ -389,7 +389,7 @@ export function CohortEditorForm({
             ) : (
               <div className="space-y-3">
                 {cohort.members.map((member) => (
-                  <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3" key={member.user_id}>
+                  <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3" key={member.user_id}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <p className="font-black">{displayUser(member.profile)}</p>
@@ -409,7 +409,7 @@ export function CohortEditorForm({
                 <EmptyPanel>No cohort assignments have been created.</EmptyPanel>
               ) : null}
               {cohort.units.length > 0 ? (
-                <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
+                <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
                   <p className="font-black">Units</p>
                   <p className={helperTextClasses()}>
                     {cohort.units.map((unit) => `${unit.unit_type}: ${unit.name}`).join(", ")}
@@ -417,7 +417,7 @@ export function CohortEditorForm({
                 </div>
               ) : null}
               {cohort.courseAssignments.map((assignment) => (
-                <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3" key={assignment.id}>
+                <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3" key={assignment.id}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="font-black">{assignment.course?.title ?? assignment.course_id}</p>
@@ -430,7 +430,7 @@ export function CohortEditorForm({
                 </div>
               ))}
               {cohort.programmeAssignments.map((assignment) => (
-                <div className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3" key={assignment.id}>
+                <div className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3" key={assignment.id}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="font-black">{assignment.programme?.title ?? assignment.programme_id}</p>
@@ -454,7 +454,7 @@ export function CohortEditorForm({
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-left text-sm">
-                <thead className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                <thead className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                   <tr>
                     <th className="px-3 py-2">Learner</th>
                     <th className="px-3 py-2">Content</th>
@@ -463,12 +463,12 @@ export function CohortEditorForm({
                     <th className="px-3 py-2">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--ve-line-soft)]">
+                <tbody className="divide-y divide-[var(--ui-border-subtle)]">
                   {cohort.enrolments.map((enrolment) => (
                     <tr key={enrolment.id}>
                       <td className="min-w-56 px-3 py-3">
                         <p className="font-black">{displayUser(enrolment.profile)}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{enrolment.user_id}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{enrolment.user_id}</p>
                       </td>
                       <td className="min-w-56 px-3 py-3 font-bold">
                         {enrolment.course?.title ?? enrolment.programme?.title ?? enrolment.course_id ?? enrolment.programme_id}
@@ -483,7 +483,7 @@ export function CohortEditorForm({
                         <form action={updateEnrolmentStatus} className="flex gap-2">
                           <input name="cohortId" type="hidden" value={cohort.id} />
                           <input name="enrolmentId" type="hidden" value={enrolment.id} />
-                          <select className="rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-2 py-2 text-xs font-black" name="status" defaultValue={enrolment.status}>
+                          <select className="rounded-[10px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-2 py-2 text-xs font-black" name="status" defaultValue={enrolment.status}>
                             <option value="active">Active</option>
                             <option value="completed">Completed</option>
                             <option value="withdrawn">Withdrawn</option>

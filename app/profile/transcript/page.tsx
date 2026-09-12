@@ -52,47 +52,47 @@ function TranscriptCard({ item }: { item: LearnerTranscriptItem }) {
   const kindLabel = item.kind === "programme" ? "Programme" : "Course";
 
   return (
-    <Card className="overflow-hidden rounded-[8px] border-[var(--ve-line-soft)] bg-[var(--ve-card-muted)] shadow-[0_8px_20px_rgba(var(--ve-shadow-rgb),0.04)] lg:bg-[var(--ve-card-subtle)] lg:shadow-[0_18px_44px_rgba(var(--ve-shadow-rgb),0.06)]">
+    <Card className="overflow-hidden rounded-[8px] border-[var(--ui-border-subtle)] bg-[var(--ui-surface-muted)] shadow-[0_8px_20px_rgba(var(--ui-shadow-rgb),0.04)] lg:bg-[var(--ui-surface-raised)] lg:shadow-[0_18px_44px_rgba(var(--ui-shadow-rgb),0.06)]">
       <div className="relative p-4 pb-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-semibold leading-6 tracking-[-0.02em] text-[var(--foreground)] lg:text-[1.35rem] lg:leading-7">
+              <h3 className="text-xl font-semibold leading-6 tracking-[-0.02em] text-[var(--ui-text)] lg:text-[1.35rem] lg:leading-7">
                 {item.title}
               </h3>
-              <span className="shrink-0 rounded-full bg-[var(--ve-green-soft)] px-2 py-1 text-[10px] font-black text-[#8a6a16]">
+              <span className="shrink-0 rounded-full bg-[var(--ui-action-soft)] px-2 py-1 text-[10px] font-black text-[var(--ui-reward)]">
                 {kindLabel}
               </span>
             </div>
             {item.category ? (
-              <p className="mt-2 text-sm font-semibold leading-5 text-[var(--ve-muted-strong)]">
+              <p className="mt-2 text-sm font-semibold leading-5 text-[var(--ui-text-muted)]">
                 {item.category}
               </p>
             ) : null}
           </div>
-          {isComplete ? <ChevronRightIcon className="mt-1 h-5 w-5 shrink-0 text-[var(--ve-muted-soft)]" /> : null}
+          {isComplete ? <ChevronRightIcon className="mt-1 h-5 w-5 shrink-0 text-[var(--ui-text-subtle)]" /> : null}
         </div>
 
         {isComplete ? (
-          <p className="mt-4 text-sm font-semibold text-[var(--ve-muted-strong)]">
+          <p className="mt-4 text-sm font-semibold text-[var(--ui-text-muted)]">
             Completed - {formatDate(item.completedAt)}
           </p>
         ) : (
           <div className="mt-5">
             <div className="flex items-center justify-between text-sm font-black">
-              <span className="text-[var(--ve-green)]">In progress</span>
-              <span className="text-[color:color-mix(in_srgb,var(--ve-green)_76%,var(--foreground))]">
+              <span className="text-[var(--ui-action)]">In progress</span>
+              <span className="text-[var(--ui-action)]">
                 {item.progressPercent}%
               </span>
             </div>
             {missingCount > 0 ? (
-              <p className="mt-1 text-xs font-black text-[var(--ve-muted-strong)]">
+              <p className="mt-1 text-xs font-black text-[var(--ui-text-muted)]">
                 {missingCount} requirement{missingCount === 1 ? "" : "s"} remaining
               </p>
             ) : null}
-            <div className="absolute inset-x-0 bottom-0 h-2 overflow-hidden bg-[var(--ve-line-soft)]">
+            <div className="absolute inset-x-0 bottom-0 h-2 overflow-hidden bg-[var(--ui-border-subtle)]">
               <div
-                className="h-full bg-[var(--ve-green)]"
+                className="h-full bg-[var(--ui-action)]"
                 style={{ width: `${item.progressPercent}%` }}
               />
             </div>
@@ -117,14 +117,14 @@ function TranscriptSection({
   return (
     <section className="mt-6 lg:mt-0">
       <div className="flex items-center gap-2">
-        <span className="grid size-5 place-items-center text-[var(--ve-green)]">{icon}</span>
-        <h2 className="text-xl font-semibold text-[var(--foreground)]">{title}</h2>
+        <span className="grid size-5 place-items-center text-[var(--ui-action)]">{icon}</span>
+        <h2 className="text-xl font-semibold text-[var(--ui-text)]">{title}</h2>
       </div>
       <div className="mt-3 space-y-3 lg:space-y-4">
         {items.length > 0 ? (
           items.map((item) => <TranscriptCard item={item} key={`${item.kind}-${item.id}`} />)
         ) : (
-          <Card className="rounded-[8px] p-4 text-sm font-semibold leading-6 text-[var(--ve-muted)] lg:bg-[var(--ve-card-subtle)]" variant="quiet">
+          <Card className="rounded-[8px] p-4 text-sm font-semibold leading-6 text-[var(--ui-text-muted)] lg:bg-[var(--ui-surface-raised)]" variant="quiet">
             {emptyText}
           </Card>
         )}
@@ -177,7 +177,7 @@ export default async function LearnerTranscriptPage() {
       : "Learner";
 
   return (
-    <main className="learner-system transcript-learner min-h-screen bg-[var(--ve-shell)]">
+    <main className="learner-system transcript-learner min-h-screen bg-[var(--ui-chrome)]">
       <div className="hidden lg:block">
         <LearnerTopChrome
           active="Home"
@@ -187,25 +187,25 @@ export default async function LearnerTranscriptPage() {
           unreadNotificationCount={unreadNotificationCount}
         />
       </div>
-      <header className="border-b border-[var(--ve-line-soft)] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_42%,var(--ve-card))] px-5 pb-6 pt-8 lg:mx-auto lg:w-full lg:max-w-[1116px] lg:border-b-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-12">
+      <header className="border-b border-[var(--ui-border-subtle)] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_42%,var(--ui-surface))] px-5 pb-6 pt-8 lg:mx-auto lg:w-full lg:max-w-[1116px] lg:border-b-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-12">
         <Link
-          className="mb-4 inline-flex items-center gap-2 rounded-full text-sm font-black text-[var(--ve-muted-strong)] lg:hidden"
+          className="mb-4 inline-flex items-center gap-2 rounded-full text-sm font-black text-[var(--ui-text-muted)] lg:hidden"
           href="/profile"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Profile
         </Link>
         <Link
-          className="mb-4 hidden w-fit items-center gap-2 text-sm font-black text-[var(--ve-muted-strong)] lg:flex"
+          className="mb-4 hidden w-fit items-center gap-2 text-sm font-black text-[var(--ui-text-muted)] lg:flex"
           href="/profile"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Profile
         </Link>
-        <h1 className="text-2xl font-black leading-8 text-[var(--foreground)] lg:text-[2rem] lg:leading-10">
+        <h1 className="text-2xl font-black leading-8 text-[var(--ui-text)] lg:text-[2rem] lg:leading-10">
           Learning Transcript
         </h1>
-        <p className="mt-2 max-w-[18rem] text-sm font-semibold leading-6 text-[var(--ve-muted-strong)] lg:max-w-[30rem]">
+        <p className="mt-2 max-w-[18rem] text-sm font-semibold leading-6 text-[var(--ui-text-muted)] lg:max-w-[30rem]">
           Your personal record of learning and progression.
         </p>
       </header>
@@ -213,13 +213,13 @@ export default async function LearnerTranscriptPage() {
         <div className="grid gap-7 lg:grid-cols-2 lg:items-start">
           <TranscriptSection
             emptyText="Assigned programme records will appear here."
-            icon={<BuildingIcon className="h-5 w-5 text-[#a66d00]" />}
+            icon={<BuildingIcon className="h-5 w-5 text-[var(--ui-reward)]" />}
             items={transcript.programmes}
             title="Programmes"
           />
           <TranscriptSection
             emptyText="Assigned course records will appear here."
-            icon={<BookOpenIcon className="h-5 w-5 text-[var(--ve-green)]" />}
+            icon={<BookOpenIcon className="h-5 w-5 text-[var(--ui-action)]" />}
             items={transcript.courses}
             title="Courses"
           />

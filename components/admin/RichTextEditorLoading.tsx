@@ -1,6 +1,6 @@
 // Keep the deferred editor's toolbar and content footprint before its bundle
 // loads. A short placeholder otherwise moves the following media controls.
-export const richTextFrameClass = 'mt-2 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-container-low)] p-2';
+export const richTextFrameClass = 'mt-2 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-soft)] p-2';
 export const richTextButtonBase = 'inline-flex min-h-9 items-center justify-center rounded-[10px] border px-3 text-xs font-black';
 
 export function RichTextEditorLoading() {

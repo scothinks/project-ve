@@ -1,0 +1,31 @@
+{
+  "sourceSha": "59ea597af00e0f6a53f3018f18292d410f1be59e",
+  "sourceSha256": "28bb191674462569c21e93347414f5567bef4fbcce5bf379cca346f39b79482d",
+  "buildId": "oxcJLvjD9hgnuqzwBtOlQ",
+  "captureHelperSha256": "99ec165da32833bef763af2b8440e17036c46a91e5249d2e3f589064e4b91215",
+  "fonts": {
+    "requested": [
+      {
+        "path": "/_next/static/media/e2f11327907cb2b5.woff2",
+        "transferBytes": 0,
+        "encodedBytes": 169624
+      }
+    ],
+    "loaded": [
+      {
+        "family": "bodyFont",
+        "style": "normal",
+        "weight": "200 900"
+      }
+    ],
+    "preloads": []
+  },
+  "name": "welcome-1440-dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "151.0.7922.34",
+  "imageSha256": "4e35b9ea98671c7b4a3aae08bbf15e355680ba4d86b4d7f9e3b83896fafe6c92",
+  "stylesSha256": "4467013acdb329ccedcb0e91731c0d576d0467e746a0af18588404a7c7b9a073"
+}

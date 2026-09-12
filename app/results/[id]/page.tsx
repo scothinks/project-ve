@@ -36,7 +36,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const displayName = rawDisplayName && !rawDisplayName.includes("@") ? rawDisplayName : "Learner";
 
   return (
-    <main className="mobile-shell min-h-screen bg-[var(--ve-card)]">
+    <main className="mobile-shell min-h-screen bg-[var(--ui-surface)]">
       <div className="hidden lg:block">
         <LearnerTopChrome
           active="Lessons"

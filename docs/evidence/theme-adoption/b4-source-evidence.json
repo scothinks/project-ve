@@ -1,0 +1,1201 @@
+{
+  "qualification": "Source only; exact build, rendered state and route request qualification remain deferred until #102.",
+  "productionFiles": 572,
+  "occurrences": 6868,
+  "legacyReferencesBefore": 2687,
+  "legacyReferencesAfter": 2125,
+  "remainingAdapters": 22,
+  "remainingOwner": "B5",
+  "protectedModules": [
+    {
+      "path": "app/o/[organizationSlug]/workspace.ts",
+      "sha256": "97caa8d4133deac7b51334056e262d22e26e7b08565f9a08e8acd4ff758fc8a3"
+    },
+    {
+      "path": "features/app/repositories/contracts.ts",
+      "sha256": "f0f4f690f8bb1895332455b35ea1fbdbecbc4f9316d9db40a64c1ae4c19bf4d8"
+    },
+    {
+      "path": "features/app/repositories/learning-adapters.ts",
+      "sha256": "8674e25f59c353311de3789354a459f2f1b4b75178511d8e47b0c8720c6d5081"
+    },
+    {
+      "path": "features/app/repositories/learning.ts",
+      "sha256": "2faf90b87883d61e0742b3cd667cea7c5cda1101712cd771def18eb603d18c90"
+    },
+    {
+      "path": "features/app/repositories/mission-adapters.ts",
+      "sha256": "86b316b9150ab5c99b177a19dcdd28d9c029012a0e319e412a704070f216c86b"
+    },
+    {
+      "path": "features/app/repositories/missions.ts",
+      "sha256": "338987bc1ad75a849cc203bc389c804b310e33c70b14bb901ccf17d5638d472c"
+    },
+    {
+      "path": "features/app/repositories/progress-adapters.ts",
+      "sha256": "02b1ae5945b13b0de0a49bad77d2d3c402b223546227ff8978426266ddce9617"
+    },
+    {
+      "path": "features/app/repositories/progress.ts",
+      "sha256": "bdcaa12ec09253f1495166dfb6fc00933f01ca1e3dc155656d2bd446e6505189"
+    },
+    {
+      "path": "features/app/repositories/reward-adapters.ts",
+      "sha256": "614f11598ad6ea0d82bc99d6618872966b96992beeb98d7de972df7a980052e7"
+    },
+    {
+      "path": "features/app/repositories/rewards.ts",
+      "sha256": "c431155ccc77e46df034b5f730852a89b438e188185916e49be0bcbbeb50c2d3"
+    },
+    {
+      "path": "features/organizations/admin/activity.ts",
+      "sha256": "83f7f77e8685fb152c1d299aa3eebdf9010ca9f2f7cedcdbc7cf3fff1631a91e"
+    },
+    {
+      "path": "features/organizations/admin/data.ts",
+      "sha256": "0f85f41b01962b569dbe1005680d116ea53edf8be0a7c911cbaf8e56cf603219"
+    },
+    {
+      "path": "features/organizations/admin/entitlement-guards.ts",
+      "sha256": "0a36bdf7432eec63257488ffd777f139395b1e8766520d4fec8a3e345868f230"
+    },
+    {
+      "path": "features/organizations/admin/membership-commands.ts",
+      "sha256": "cb31f123ca45a62f857345722c7f00fc4b2104f2a293e95cbe5c680f6344c5d5"
+    },
+    {
+      "path": "features/organizations/application/entitlements.ts",
+      "sha256": "a6e280ed2a143d9581ee9418bebd28ee1e34eda854994274aaa39eb14fd2bf52"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-context.ts",
+      "sha256": "344eff3c81414c18613dfb7daf352ebfa4000a5cc0259aa3b4fb6d1ea609d873"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace-domain.ts",
+      "sha256": "fd6c55485389d2adb5e36a747144c89ed16f94c622f6a60e641a3904599dfd94"
+    },
+    {
+      "path": "features/organizations/application/learner-workspace.ts",
+      "sha256": "087e76d8ffb96c1a4074fd716987e481eb186be324752c7853f475ae40118ed5"
+    },
+    {
+      "path": "features/organizations/application/my-orgs.ts",
+      "sha256": "7b26eeb8132e3b8ec336ad2293ca6b85611e46016c52a0a416e67eb639426cd6"
+    },
+    {
+      "path": "features/organizations/application/self-service.ts",
+      "sha256": "c0285854896a3df03f952164befa1742e7ce87004c214cfe17a3e5f0ce34b802"
+    },
+    {
+      "path": "features/organizations/entitlements.ts",
+      "sha256": "d4ff76f2267071f16643be38c3eb0b88db24fd17b2a13775eb696cd2e1a1b528"
+    },
+    {
+      "path": "features/organizations/identity.ts",
+      "sha256": "f6eb855e891748f6b6eeabecf783cb05fb9699b899bb29fee78a428e41b8a1ca"
+    },
+    {
+      "path": "features/organizations/shared/roles.ts",
+      "sha256": "6a507ff0419cddc526d6424a953ee0072722f1378db6322c46c79ef6930d5e26"
+    },
+    {
+      "path": "lib/progress.ts",
+      "sha256": "5ff5e49c9beab00366994176dc4c6fccd7e7281c603795591e0a9e4bceebf381"
+    },
+    {
+      "path": "lib/supabase-server.ts",
+      "sha256": "3d022606e4f9e72de380d3e61c800da1865d7cf280731e470465b0f515701430"
+    }
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 14.062649829753608,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 6.0230620518515865,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 5.3800667276494805,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 8.459542878059187,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 4.2825440268505535,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 6.236450593140524,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 15.329610483710834,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 6.565703924359376,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 5.864778566607055,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 9.221697102669703,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 4.668375633734436,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 6.798317497138921,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 13.006343014672835,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 5.570643654888865,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 4.97594650715011,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 7.824109805150302,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 3.96086351171218,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 5.768003654391407,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 13.8517341324158,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 5.9327264217851,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 5.2993749277878885,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 8.33266420249764,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 4.218313190504763,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 6.142914499894286,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 12.349699740435247,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 5.289401980343572,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 4.72472894328915,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 7.429098765179083,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 3.760893821369187,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 5.476797986421469,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 15.574333312239538,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 6.670519218743965,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 5.958404246205352,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 9.36891283272353,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 4.742901864582632,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 6.906846248662246,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 13.226898839086747,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 5.6651081713508775,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 5.060326411853986,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 7.956787606007403,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-control-border",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 4.028030086992499,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 5.8658149146189436,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 12.09209674355408,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 5.17907008317328,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 4.626175588889978,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-action",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 7.274134827086702,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-focus",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 5.362557186704246,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action",
+      "minimum": 4.5,
+      "ratio": 9.221697102669703,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-hover",
+      "minimum": 4.5,
+      "ratio": 11.307985987901812,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-pressed",
+      "minimum": 4.5,
+      "ratio": 13.582766947712589,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-action-soft",
+      "background": "--ui-action-soft",
+      "minimum": 4.5,
+      "ratio": 7.570278196578039,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-current-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 8.919813108477804,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-current-rail",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 7.274134827086702,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-text",
+      "background": "--ui-support-bg",
+      "minimum": 4.5,
+      "ratio": 10.839608947809207,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-success",
+      "background": "--ui-success-bg",
+      "minimum": 4.5,
+      "ratio": 6.304407456446964,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-success",
+      "background": "--ui-success",
+      "minimum": 4.5,
+      "ratio": 7.288377494073514,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-warning",
+      "background": "--ui-warning-bg",
+      "minimum": 4.5,
+      "ratio": 6.106301169157172,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-warning",
+      "background": "--ui-warning",
+      "minimum": 4.5,
+      "ratio": 6.848054725237174,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-danger",
+      "background": "--ui-danger-bg",
+      "minimum": 4.5,
+      "ratio": 6.048717447077599,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-danger",
+      "background": "--ui-danger",
+      "minimum": 4.5,
+      "ratio": 7.0737184518197855,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-info",
+      "background": "--ui-info-bg",
+      "minimum": 4.5,
+      "ratio": 6.015215889460074,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-info",
+      "background": "--ui-info",
+      "minimum": 4.5,
+      "ratio": 7.004650970094487,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-learning",
+      "background": "--ui-learning-bg",
+      "minimum": 4.5,
+      "ratio": 5.828984010830415,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-learning",
+      "background": "--ui-learning",
+      "minimum": 4.5,
+      "ratio": 6.784664098736551,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-mission",
+      "background": "--ui-mission-bg",
+      "minimum": 4.5,
+      "ratio": 5.995598322790765,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-mission",
+      "background": "--ui-mission",
+      "minimum": 4.5,
+      "ratio": 7.305476262589596,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-reward",
+      "background": "--ui-reward-bg",
+      "minimum": 4.5,
+      "ratio": 5.902307879784133,
+      "passes": true
+    },
+    {
+      "mode": "light",
+      "foreground": "--ui-on-reward",
+      "background": "--ui-reward",
+      "minimum": 4.5,
+      "ratio": 6.795833332628374,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 15.147699613096288,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 8.898953362729797,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 7.803099071699738,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-canvas",
+      "minimum": 4.5,
+      "ratio": 9.706697056939264,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 5.032979666401491,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-canvas",
+      "minimum": 3,
+      "ratio": 10.643941299082751,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 13.44776262721627,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 7.900276313189762,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 6.927403285852489,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface",
+      "minimum": 4.5,
+      "ratio": 8.61737169670056,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 4.468158043143204,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface",
+      "minimum": 3,
+      "ratio": 9.449434545449813,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 14.667805486506905,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 8.617025706343302,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 7.555889164628024,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-inset",
+      "minimum": 4.5,
+      "ratio": 9.39917928030074,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 4.873529885719171,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-inset",
+      "minimum": 3,
+      "ratio": 10.30673069657148,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 12.790684555579324,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 7.514256834026457,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 6.588919857887517,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-soft",
+      "minimum": 4.5,
+      "ratio": 8.196313849829648,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 4.249837066476367,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-soft",
+      "minimum": 3,
+      "ratio": 8.987720846204589,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 11.531651388974954,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 6.774601459420563,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 5.940348735901717,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-muted",
+      "minimum": 4.5,
+      "ratio": 7.3895211456555066,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 3.8315102915404324,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-muted",
+      "minimum": 3,
+      "ratio": 8.103027099878314,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 12.081824685348186,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 7.097816642642957,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 6.2237618512827675,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-surface-raised",
+      "minimum": 4.5,
+      "ratio": 7.742074051582919,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 4.014311052340412,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-surface-raised",
+      "minimum": 3,
+      "ratio": 8.489621264041473,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 14.511385232842068,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 8.525132113394951,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 7.475311732586009,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-chrome",
+      "minimum": 4.5,
+      "ratio": 9.29894465361317,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-control-border",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 4.821557640677565,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-chrome",
+      "minimum": 3,
+      "ratio": 10.19681776982208,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 10.353346773684015,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-muted",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 6.082372402442319,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text-subtle",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 5.3333636566750995,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-action",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 6.63445956973582,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-focus",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 7.275059456081646,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action",
+      "minimum": 4.5,
+      "ratio": 9.445166552413696,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-hover",
+      "minimum": 4.5,
+      "ratio": 11.048002125105514,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action",
+      "background": "--ui-action-pressed",
+      "minimum": 4.5,
+      "ratio": 7.773718869276339,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-action-soft",
+      "background": "--ui-action-soft",
+      "minimum": 4.5,
+      "ratio": 7.956958510850849,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-current-text",
+      "background": "--ui-current-bg",
+      "minimum": 4.5,
+      "ratio": 7.768142667498037,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-current-rail",
+      "background": "--ui-current-bg",
+      "minimum": 3,
+      "ratio": 6.63445956973582,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-text",
+      "background": "--ui-support-bg",
+      "minimum": 4.5,
+      "ratio": 7.65882337294901,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-success",
+      "background": "--ui-success-bg",
+      "minimum": 4.5,
+      "ratio": 7.305599980060723,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-success",
+      "background": "--ui-success",
+      "minimum": 4.5,
+      "ratio": 8.641177342852458,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-warning",
+      "background": "--ui-warning-bg",
+      "minimum": 4.5,
+      "ratio": 7.07298442668877,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-warning",
+      "background": "--ui-warning",
+      "minimum": 4.5,
+      "ratio": 8.983852459842394,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-danger",
+      "background": "--ui-danger-bg",
+      "minimum": 4.5,
+      "ratio": 7.570632225196835,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-danger",
+      "background": "--ui-danger",
+      "minimum": 4.5,
+      "ratio": 9.099435204394052,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-info",
+      "background": "--ui-info-bg",
+      "minimum": 4.5,
+      "ratio": 7.470160641481468,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-info",
+      "background": "--ui-info",
+      "minimum": 4.5,
+      "ratio": 8.6236606632012,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-learning",
+      "background": "--ui-learning-bg",
+      "minimum": 4.5,
+      "ratio": 7.675275552809438,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-learning",
+      "background": "--ui-learning",
+      "minimum": 4.5,
+      "ratio": 8.902590446440838,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-mission",
+      "background": "--ui-mission-bg",
+      "minimum": 4.5,
+      "ratio": 7.096131698948111,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-mission",
+      "background": "--ui-mission",
+      "minimum": 4.5,
+      "ratio": 9.239152180827952,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-reward",
+      "background": "--ui-reward-bg",
+      "minimum": 4.5,
+      "ratio": 6.948037918485356,
+      "passes": true
+    },
+    {
+      "mode": "dark",
+      "foreground": "--ui-on-reward",
+      "background": "--ui-reward",
+      "minimum": 4.5,
+      "ratio": 9.350186190936371,
+      "passes": true
+    }
+  ]
+}

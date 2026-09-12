@@ -1,0 +1,37 @@
+/* Only characters absent from Source Sans; never a whole-text fallback. */
+
+@font-face {
+  font-family: "Project VE Coverage";
+  src: url("/fonts/coverage/coverage-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+01E8, U+01E9, U+0335, U+0336, U+046A, U+046B, U+0E3F, U+2028, U+2029, U+20AA, U+219D, U+21A9, U+21AA, U+21B0, U+21B1, U+21B3, U+21B4, U+21B5, U+21E4, U+21E5, U+2460, U+2461, U+2462, U+2463, U+2464, U+2465, U+2466, U+2467, U+2468, U+24EA, U+24FF, U+2639, U+2776, U+2777, U+2778, U+2779, U+277A, U+277B, U+277C, U+277D, U+277E, U+3003, U+301C, U+A78B, U+A78C, U+F8FF;
+}
+
+@font-face {
+  font-family: "Project VE Coverage";
+  src: url("/fonts/coverage/coverage-500.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  unicode-range: U+01E8, U+01E9, U+0335, U+0336, U+046A, U+046B, U+0E3F, U+2028, U+2029, U+20AA, U+219D, U+21A9, U+21AA, U+21B0, U+21B1, U+21B3, U+21B4, U+21B5, U+21E4, U+21E5, U+2460, U+2461, U+2462, U+2463, U+2464, U+2465, U+2466, U+2467, U+2468, U+24EA, U+24FF, U+2639, U+2776, U+2777, U+2778, U+2779, U+277A, U+277B, U+277C, U+277D, U+277E, U+3003, U+301C, U+A78B, U+A78C, U+F8FF;
+}
+
+@font-face {
+  font-family: "Project VE Coverage";
+  src: url("/fonts/coverage/coverage-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  unicode-range: U+01E8, U+01E9, U+0335, U+0336, U+046A, U+046B, U+0E3F, U+2028, U+2029, U+20AA, U+219D, U+21A9, U+21AA, U+21B0, U+21B1, U+21B3, U+21B4, U+21B5, U+21E4, U+21E5, U+2460, U+2461, U+2462, U+2463, U+2464, U+2465, U+2466, U+2467, U+2468, U+24EA, U+24FF, U+2639, U+2776, U+2777, U+2778, U+2779, U+277A, U+277B, U+277C, U+277D, U+277E, U+3003, U+301C, U+A78B, U+A78C, U+F8FF;
+}
+
+@font-face {
+  font-family: "Project VE Coverage";
+  src: url("/fonts/coverage/coverage-900.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  unicode-range: U+01E8, U+01E9, U+0335, U+0336, U+046A, U+046B, U+0E3F, U+2028, U+2029, U+20AA, U+219D, U+21A9, U+21AA, U+21B0, U+21B1, U+21B3, U+21B4, U+21B5, U+21E4, U+21E5, U+2460, U+2461, U+2462, U+2463, U+2464, U+2465, U+2466, U+2467, U+2468, U+24EA, U+24FF, U+2639, U+2776, U+2777, U+2778, U+2779, U+277A, U+277B, U+277C, U+277D, U+277E, U+3003, U+301C, U+A78B, U+A78C, U+F8FF;
+}

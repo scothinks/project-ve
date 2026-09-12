@@ -28,7 +28,9 @@ export function parseSource(file, text) {
     }
     // Input is a parsed declaration/AST literal, never comments or arbitrary source text.
     for (const m of value.matchAll(/(?<![\w-])--[a-zA-Z][\w-]*/g)) add('reference', m[0], context, offset, extra);
-    for (const m of value.matchAll(/#[\da-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^)]*\)|\b(?:white|black|transparent|currentColor)\b|(?:bg|text|border|ring|fill|stroke|outline|from|via|to|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}(?:\/\d+)?/g)) {
+    // Tailwind arbitrary values separate CSS terms with underscores (a word
+    // character), so a word boundary would miss shadow/gradient colour calls.
+    for (const m of value.matchAll(/#[\da-fA-F]{3,8}(?![\da-fA-F])|(?<![a-zA-Z])(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^)]*\)|\b(?:white|black|transparent|currentColor)\b|(?:bg|text|border|ring|fill|stroke|outline|from|via|to|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}(?:\/\d+)?/g)) {
       add('colour', m[0], context, offset, extra);
     }
   }

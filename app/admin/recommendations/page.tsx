@@ -30,11 +30,11 @@ const RECOMMENDATION_ROLES = [
 ];
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function toDateTimeInputValue(value: string | null) {
@@ -117,7 +117,7 @@ function SectionForm({
       </label>
       <div className="md:col-span-2">
         <button
-          className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white"
+          className="rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-xs font-black text-[var(--ui-on-action)]"
           type="submit"
         >
           {section ? "Save section" : "Create section"}
@@ -173,7 +173,7 @@ export default async function AdminRecommendationsPage({
       <section className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
         <AdminCard>
           <h2 className="mb-1 text-lg font-black">Add section</h2>
-          <p className="mb-4 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+          <p className="mb-4 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             Start with simple dashboard groups like Starter Pack or Focus of the Week.
           </p>
           <SectionForm nextSortOrder={nextSortOrder} />
@@ -184,13 +184,13 @@ export default async function AdminRecommendationsPage({
             <>
               <AdminCard>
                 <h2 className="text-lg font-black">Default section preview</h2>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                <p className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   No recommendation rows exist yet, so these sections are not saved yet. This is
                   the current default setup the tutor can create and then edit.
                 </p>
                 <form action={createDefaultRecommendationSections} className="mt-4">
                   <button
-                    className="rounded-[12px] bg-[var(--ve-green)] px-4 py-2 text-xs font-black text-white"
+                    className="rounded-[12px] bg-[var(--ui-action)] px-4 py-2 text-xs font-black text-[var(--ui-on-action)]"
                     type="submit"
                   >
                     Create default sections
@@ -201,39 +201,39 @@ export default async function AdminRecommendationsPage({
               <AdminCard>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                       Starter Pack
                     </p>
                     <h2 className="mt-1 text-xl font-black">Start Learning</h2>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                       Begin with practical values lessons learners can use right away.
                     </p>
                   </div>
                   <AdminStatusBadge tone="good">Default</AdminStatusBadge>
                 </div>
-                <div className="mt-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3">
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <div className="mt-4 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                     Assigned lessons
                   </p>
-                  <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                     {previewCountLabel(starterLessons.length)}
                   </p>
                   {starterLessons.length > 0 ? (
                     <div className="mt-3 space-y-2">
                       {starterLessons.map((lesson) => (
                         <div
-                          className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-4 py-3"
+                          className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3"
                           key={lesson.id}
                         >
                           <p className="text-sm font-black">{lesson.title}</p>
-                          <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                          <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                             Lesson - {lesson.status}
                           </p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-3 text-xs font-bold text-[var(--ve-muted)]">
+                    <p className="mt-3 text-xs font-bold text-[var(--ui-text-muted)]">
                       No lessons available in the first course yet.
                     </p>
                   )}
@@ -243,25 +243,25 @@ export default async function AdminRecommendationsPage({
               <AdminCard>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                       Focus Area
                     </p>
                     <h2 className="mt-1 text-xl font-black">Browse Courses</h2>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                    <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                       Keep this empty until a tutor deliberately curates the courses that belong
                       in focus.
                     </p>
                   </div>
                   <AdminStatusBadge tone="good">Default</AdminStatusBadge>
                 </div>
-                <div className="mt-4 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-3">
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <div className="mt-4 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-3">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                     Assigned courses
                   </p>
-                  <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                  <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                     0 items
                   </p>
-                  <p className="mt-3 text-xs font-bold text-[var(--ve-muted)]">
+                  <p className="mt-3 text-xs font-bold text-[var(--ui-text-muted)]">
                     No courses are assigned by default. Add them manually after review.
                   </p>
                 </div>
@@ -273,14 +273,14 @@ export default async function AdminRecommendationsPage({
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-black">Existing sections</h2>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
                       Each section below accepts courses or lessons. Assignment happens inside the
                       section card.
                     </p>
                   </div>
                   <form action={createDefaultRecommendationSections}>
                     <button
-                      className="rounded-[12px] bg-[var(--ve-panel)] px-4 py-2 text-xs font-black text-[var(--ve-muted-strong)]"
+                      className="rounded-[12px] bg-[var(--ui-surface-inset)] px-4 py-2 text-xs font-black text-[var(--ui-text-muted)]"
                       type="submit"
                     >
                       Reset defaults
@@ -290,13 +290,13 @@ export default async function AdminRecommendationsPage({
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   {paginatedSections.items.map((section) => (
                     <a
-                      className="rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-4 py-4"
+                      className="rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-4 py-4"
                       href={`#${section.id}`}
                       key={`${section.id}-summary`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-action)]">
                             {section.eyebrow ?? "Recommendation"}
                           </p>
                           <h3 className="mt-1 text-base font-black">{section.title}</h3>
@@ -305,7 +305,7 @@ export default async function AdminRecommendationsPage({
                           {section.status === "published" ? "Enabled" : "Disabled"}
                         </AdminStatusBadge>
                       </div>
-                      <p className="mt-2 text-xs font-bold text-[var(--ve-muted)]">
+                      <p className="mt-2 text-xs font-bold text-[var(--ui-text-muted)]">
                         {itemCountLabel(section)}
                       </p>
                     </a>
@@ -323,12 +323,12 @@ export default async function AdminRecommendationsPage({
                 <AdminCard key={section.id}>
                   <div id={section.id} className="flex flex-wrap items-start justify-between gap-3 scroll-mt-24">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-green)]">
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                         {section.eyebrow ?? "Recommendation"}
                       </p>
                       <h2 className="mt-1 text-xl font-black">{section.title}</h2>
                       {section.subtitle ? (
-                        <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+                        <p className="mt-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                           {section.subtitle}
                         </p>
                       ) : null}
@@ -347,8 +347,8 @@ export default async function AdminRecommendationsPage({
                         <button
                           className={
                             section.status === "published"
-                              ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
-                              : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-green-soft)_78%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-green)]"
+                              ? "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-danger)]"
+                              : "rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_78%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-action)]"
                           }
                           type="submit"
                         >
@@ -358,7 +358,7 @@ export default async function AdminRecommendationsPage({
                     </div>
                   </div>
 
-                  <details className="mt-5 rounded-[16px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-4">
+                  <details className="mt-5 rounded-[16px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-4">
                     <summary className="cursor-pointer text-sm font-black">Edit section</summary>
                     <div className="mt-4">
                       <SectionForm nextSortOrder={nextSortOrder} section={section} />
@@ -368,26 +368,26 @@ export default async function AdminRecommendationsPage({
                   <div className="mt-5">
                     <h3 className="text-sm font-black">Assigned items</h3>
                     {section.items.length === 0 ? (
-                      <p className="mt-2 rounded-[14px] bg-[var(--ve-panel)] px-4 py-3 text-xs font-bold text-[var(--ve-muted)]">
+                      <p className="mt-2 rounded-[14px] bg-[var(--ui-surface-inset)] px-4 py-3 text-xs font-bold text-[var(--ui-text-muted)]">
                         No items yet. Add courses or lessons below.
                       </p>
                     ) : (
                       <div className="mt-3 space-y-2">
                         {section.items.map((item) => (
                           <div
-                            className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-4 py-3"
+                            className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3"
                             key={item.id}
                           >
                             <div>
                               <p className="text-sm font-black">{item.label}</p>
-                              <p className="mt-1 text-xs font-bold capitalize text-[var(--ve-muted)]">
+                              <p className="mt-1 text-xs font-bold capitalize text-[var(--ui-text-muted)]">
                                 {item.item_type} - {item.status}
                               </p>
                             </div>
                             <form action={deleteRecommendationItem}>
                               <input name="itemId" type="hidden" value={item.id} />
                               <button
-                                className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
+                                className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-danger)]"
                                 type="submit"
                               >
                                 Remove
@@ -428,7 +428,7 @@ export default async function AdminRecommendationsPage({
                         </label>
                         <div className="flex items-end">
                           <button
-                            className="h-10 rounded-[12px] bg-[var(--ve-green)] px-4 text-xs font-black text-white"
+                            className="h-10 rounded-[12px] bg-[var(--ui-action)] px-4 text-xs font-black text-[var(--ui-on-action)]"
                             type="submit"
                           >
                             Add item

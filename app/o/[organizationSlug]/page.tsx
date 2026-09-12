@@ -187,26 +187,26 @@ export default async function OrganizationLearnerHomePage({
       <section className="learner-page learner-page--standard">
         {isCaughtUp ? (
           <div className="org-home-caught-up grid gap-5 pt-4">
-            <div className="mx-auto grid size-16 place-items-center rounded-full border border-[var(--learner-border-soft)] bg-[var(--learner-surface)]">
-              <span className="grid size-8 place-items-center rounded-full bg-[var(--learner-green-deep)] text-white">
+            <div className="mx-auto grid size-16 place-items-center rounded-full border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]">
+              <span className="grid size-8 place-items-center rounded-full bg-[var(--ui-action)] text-[var(--ui-on-action)]">
                 <CheckIcon className="size-4" />
               </span>
             </div>
             <div className="text-center">
-              <h1 className="text-[1.38rem] font-[650] leading-tight text-[var(--learner-text)]">
+              <h1 className="text-[1.38rem] font-[650] leading-tight text-[var(--ui-text)]">
                 You&apos;re up to date
               </h1>
-              <p className="mx-auto mt-2 max-w-[17rem] text-[0.76rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+              <p className="mx-auto mt-2 max-w-[17rem] text-[0.76rem] font-medium leading-5 text-[var(--ui-text-muted)]">
                 All required lessons are complete. Enjoy the downtime or explore further.
               </p>
             </div>
             {programmeProgress !== null ? (
               <section className="org-mobile-card p-3">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                  <h2 className="text-[1rem] font-[650] leading-5 text-[var(--ui-text)]">
                     Programme Progress
                   </h2>
-                  <span className="rounded bg-[color:color-mix(in_srgb,var(--learner-green-soft)_75%,white)] px-2 py-1 text-[0.56rem] font-bold leading-3 text-[var(--learner-green-deep)]">
+                  <span className="rounded bg-[color:color-mix(in_srgb,var(--ui-success-bg)_75%,var(--ui-surface))] px-2 py-1 text-[0.56rem] font-bold leading-3 text-[var(--ui-success)]">
                     {programmeProgress}% complete
                   </span>
                 </div>
@@ -223,31 +223,31 @@ export default async function OrganizationLearnerHomePage({
                   className="org-mobile-card flex items-center gap-3 p-3"
                   href={orgHref(workspace, "/learn")}
                 >
-                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[color:color-mix(in_srgb,var(--learner-reward-soft)_80%,white)] text-[var(--learner-reward)]">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[color:color-mix(in_srgb,var(--ui-reward-bg)_80%,var(--ui-surface))] text-[var(--ui-reward)]">
                     <BookIcon className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[0.78rem] font-[650] text-[var(--learner-text)]">Explore Library</span>
-                    <p className="mt-0.5 text-[0.62rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                    <span className="block text-[0.78rem] font-[650] text-[var(--ui-text)]">Explore Library</span>
+                    <p className="mt-0.5 text-[0.62rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                       Deepen your knowledge with available courses.
                     </p>
                   </span>
-                  <ArrowRightIcon className="size-4 shrink-0 text-[var(--learner-text-muted)]" />
+                  <ArrowRightIcon className="size-4 shrink-0 text-[var(--ui-text-muted)]" />
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/missions")}>
-                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_14%,transparent)] text-[var(--learner-green-deep)]">
+                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-action)_14%,transparent)] text-[var(--ui-action)]">
                       <CompassIcon className="size-4" />
                     </span>
-                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Browse Missions</span>
-                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Complete tasks and earn rewards</p>
+                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--ui-text)]">Browse Missions</span>
+                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--ui-text-muted)]">Complete tasks and earn rewards</p>
                   </Link>
                   <Link className="org-mobile-card block p-3" href={orgHref(workspace, "/rewards")}>
-                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--learner-green)_14%,transparent)] text-[var(--learner-green-deep)]">
+                    <span className="grid size-9 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ui-action)_14%,transparent)] text-[var(--ui-action)]">
                       <ShopIcon className="size-4" />
                     </span>
-                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--learner-text)]">Store</span>
-                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--learner-text-muted)]">Spend {workspace.xpAccount.label}</p>
+                    <span className="mt-2 block text-[0.72rem] font-[650] text-[var(--ui-text)]">Store</span>
+                    <p className="mt-0.5 text-[0.58rem] font-medium leading-4 text-[var(--ui-text-muted)]">Spend {workspace.xpAccount.label}</p>
                   </Link>
                 </div>
               </div>
@@ -273,24 +273,24 @@ export default async function OrganizationLearnerHomePage({
         ) : (
           <div className="org-home-active grid gap-4">
             <div className="org-home-intro">
-              <h1 className="text-[1.35rem] font-[650] leading-tight text-[var(--learner-text)]">
+              <h1 className="text-[1.35rem] font-[650] leading-tight text-[var(--ui-text)]">
                 Welcome back, {name}.
               </h1>
-              <p className="mt-1 text-[0.76rem] font-medium leading-5 text-[var(--learner-text-muted)]">
+              <p className="mt-1 text-[0.76rem] font-medium leading-5 text-[var(--ui-text-muted)]">
                 Continue your required lessons and prepare for upcoming assessments.
               </p>
             </div>
             {activeLearningItem ? (
-              <section className="org-mobile-card org-home-continue relative overflow-hidden p-3">
+              <section className={`org-mobile-card org-home-continue relative overflow-hidden p-3${activeLearningItem.progressPercent > 0 && activeLearningItem.progressPercent < 100 ? " learning-current" : ""}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="org-mobile-kicker">In progress</span>
-                  <KebabIcon className="size-4 text-[var(--learner-text-muted)]" />
+                  <KebabIcon className="size-4 text-[var(--ui-text-muted)]" />
                 </div>
                 <Link className="mt-2 block" href={activeLearningItem.href}>
-                  <h2 className="text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                  <h2 className="text-[1rem] font-[650] leading-5 text-[var(--ui-text)]">
                     {activeLearningItem.course.title}
                   </h2>
-                  <p className="mt-1 text-[0.68rem] font-medium leading-4 text-[var(--learner-text-muted)]">
+                  <p className="mt-1 text-[0.68rem] font-medium leading-4 text-[var(--ui-text-muted)]">
                     {activeLearningItem.deliveryContext?.label ?? activeLearningItem.course.category}
                     {activeLearningItem.totalLessons > 0 ? ` - Module ${Math.min(activeLearningItem.completedLessons + 1, activeLearningItem.totalLessons)}` : ""}
                   </p>
@@ -306,17 +306,17 @@ export default async function OrganizationLearnerHomePage({
 
             {requiredAssessment ? (
               <Link
-                className="org-mobile-card org-home-required block border-[color:color-mix(in_srgb,var(--learner-reward)_58%,var(--learner-border))] bg-[var(--learner-background-cream)] p-3"
+                className="org-mobile-card org-home-required block border-[color:color-mix(in_srgb,var(--ui-reward)_58%,var(--ui-border))] bg-[var(--ui-surface-soft)] p-3"
                 href={requiredAssessment.href}
               >
                 <p className="org-mobile-gold-kicker">Required Assessment</p>
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <h2 className="text-[1rem] font-[650] leading-5 text-[var(--learner-text)]">
+                    <h2 className="text-[1rem] font-[650] leading-5 text-[var(--ui-text)]">
                       {requiredAssessment.title}
                     </h2>
                   </div>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[var(--learner-reward)] text-[var(--learner-reward)]">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[var(--ui-reward)] text-[var(--ui-reward)]">
                     <ArrowRightIcon className="size-4" />
                   </span>
                 </div>

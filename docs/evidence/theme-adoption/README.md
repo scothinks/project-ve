@@ -1,33 +1,36 @@
 # Identity adoption: contract and evidence
 
-Tracking: [B0 / #96](https://github.com/scothinks/project-ve/issues/96), in the existing [Identity and Entry Experience initiative](https://github.com/users/scothinks/projects/3). Implementer: Codex, working with scothinks. The [approved migration plan](../identity-adoption/2026-09-07/theme-adoption-migration-2026-09-07.md) controls B0–B6. This record does not approve an intermediate hosted release or the separate #91 entry-flow changes.
+Tracking: [B0 / #96](https://github.com/scothinks/project-ve/issues/96), in the existing [Identity and Entry Experience initiative](https://github.com/users/scothinks/projects/3). Implementer: Codex, working with scothinks. The [approved migration plan](../identity-adoption/2026-09-07/theme-adoption-migration-2026-09-07.md) controls B0–B6. Hosted rollout remains a separate release step. #91 connected entry was subsequently authorised; see current qualification below.
 
-## Current execution and validation cadence
+## Current qualification
 
-On 2026-09-08 the user authorised starting B1 / #97 and explicitly deferred any
-further CI or E2E runs until #102's implementation is complete. This supersedes
-the per-issue execution cadence in the immutable plan; it does not turn planned
-checks into passed evidence. Preserve each batch's source revision for later
-qualification. Use focused source checks during implementation and batch the
-build, generated-CSS and browser checks at the integration point. Avoid branch
-pushes before then because they automatically trigger CI.
+The user approved B0–B6 and the final welcome/account direction and copy, and
+explicitly authorised real auth/XP integration, final CI, commit and push on
+2026-09-12. This supersedes the temporary deferred-check/no-commit instructions.
+See [connected entry qualification](entry-integration.md) for the current source,
+checks and release boundary. Prior G0/B1/B6 captures remain historical evidence.
 
-[B1 extraction evidence](b1-extraction.md) records the verbatim move and pending
-qualification. The registry's `G1` value selects source-contract enforcement;
-it does not assert that the G1 visual acceptance gate has passed.
+[B1 extraction evidence](b1-extraction.md) records the verbatim move.
+[B2 cutover evidence](b2-cutover.md) records the uncommitted semantic-colour
+implementation. [B3 typography evidence](b3-typography.md) records shared signatures,
+font coverage and the fixed payload budget. [B4 learning/tenant evidence](b4-learning-and-tenants.md) records scoped neutral retirement
+and tenant identity. [B5 operational/browser evidence](b5-operational-and-browser.md) records
+zero legacy use, compatibility deletion and dimension-checked A.2 assets.
+The registry’s `G5` value selects source-contract enforcement;
+it does not assert that rendered qualification has passed.
 
 ## Source contract
 
 `g0-source-inventory.json` records the pre-cleanup source SHA, hashes and local/package import edges. The scanner walks production directories from the filesystem (including untracked files), follows local imports beyond those roots and rejects unresolved imports, production symlinks and imports into test/tool/documentation directories. Binary assets are hashed; TS/JS literals are decoded through TypeScript's AST, CSS declarations through PostCSS. Dependencies are not rescanned as first-party code; the installed lockfile and generated CSS accompany build evidence.
 
-`registry.json` owns each occurrence by file, source context and ordinal, with line numbers for navigation. Its identity excludes line numbers so deleting earlier dead declarations does not create false moves. Moving a token to another component, selector or expression changes its identity even if the total count stays constant. Existing colours and mixed uses remain explicitly `classify-before-G2`; these rows block G2 until an implementer records the semantic decision. The [role dictionary](roles.md) is a proposed implementation contract for the frozen direction, not a runtime palette or a claim of rendered contrast acceptance. B2 must test actual foreground/background and focus pairs.
+`registry.json` owns each occurrence by file, source context and ordinal, with line numbers for navigation. Its identity excludes line numbers so deleting earlier dead declarations does not create false moves. Moving a token to another component, selector or expression changes its identity even if the total count stays constant. B2 replaces the unresolved G0 occurrence rows with current exact source records: terminal role and mode-pair references, neutral adapter ownership, and explicit artwork/data/browser-asset exceptions. The historical G0 source and registry remain in the preserved G0 revision. No current occurrence retains `classify-before-G2`. The [role dictionary](roles.md) documents the active B2 literals. Source pair checks supplement the deferred rendered foreground/background and focus checks.
 
-The 22 neutral adapter mappings are a maximum. They are not active in G0. Direct colour retirement is due at G2, fonts at G3, learner/organisation adapter consumers at G4 and all remaining legacy use at G5. The checker rejects cycles at every gate, nonterminal semantic aliases, unregistered literals/legacy consumers, missing definitions and expired uses. G2 adds exact one-hop root compatibility declarations, mode-value and role-dictionary checks. Generated CSS is checked separately with `--generated` after a production build.
+The 22 neutral adapter mappings are a maximum. They are not active in G0. Direct colour retirement is due at G2, fonts at G3, learner/organisation adapter consumers at G4 and all remaining legacy use at G5. The checker rejects cycles at every gate, nonterminal semantic aliases, unregistered literals/legacy consumers, missing definitions and expired uses. G2 adds exact one-hop root compatibility declarations, mode-value and role-dictionary checks. G5 now enforces empty legacy/temporary allowances and absent compatibility files/imports; all 108 legacy names are retired. Generated CSS is checked with `--generated` after production build and is now wired into CI; integrated results are recorded in [B6](b6-qualification.md).
 
-Two baseline defects/exceptions are exact, not wildcard allowances:
+Two G0 defects/exceptions were exact, not wildcard allowances; both are resolved in B2:
 
-- `--ve-soft`: two undefined organisation-admin backgrounds, recorded with source occurrence IDs and a G2 deadline. G0 does not define it.
-- Welcome carousel shadow interpolation: two expressions draw from a private, static three-item slide array. The registry lists all three RGB token inputs and pins the whole source-file hash. Any edit invalidates that review. No CSSOM writes were found. New CSSOM construction or partial/interpolated token names fail until explicitly resolved.
+- `--ve-soft`: two undefined organisation-admin backgrounds, recorded with source occurrence IDs and a G2 deadline. B2 rewrites both backgrounds directly to `--ui-surface-soft`; no compatibility definition is introduced.
+- Welcome carousel shadow interpolation: two expressions draw from a private, static three-item slide array. The registry lists all three RGB token inputs and pins the whole source-file hash. B2 replaces both constructed shadows with a complete static semantic-shadow expression and removes the obsolete private RGB field and allowance. No CSSOM writes were found. New CSSOM construction or partial/interpolated token names fail until explicitly resolved.
 
 The source parser is deliberately conservative. It proves source coverage and dependency constraints, not CSS cascade, token contrast or arbitrary runtime JavaScript evaluation. The browser checks supply the independent cascade and presentation evidence. No source scan alone closes a visual gate.
 
@@ -56,6 +59,6 @@ Before deleting definitions, use `THEME_EVIDENCE_DIR=/absolute/before npm run te
 
 Run `npm run test:theme-contract -- --generated .next-e2e/static/css` after the production build. Capture SHA/build IDs and validation results in this directory before moving #96 to Review. Gate acceptance and later batch activation stay explicit. Roll back B0 as one change set; it has no schema/data changes.
 
-Status: B0 locally verified; [G0 results and review evidence](g0-results.md) are retained. B1 implementation is ready for review with integrated qualification deferred under the cadence above. Hosted release remains separate.
+Status: B0 evidence remains immutable. B1 parity and integrated B2–B6 local qualification are recorded in [B6](b6-qualification.md), with 140 final-build captures and whole-build rollback. Current B2–B6 and #91 qualification is recorded in the linked entry integration evidence; no hosted release is claimed.
 
-The Tailwind build can discover class samples in documentation and tests. G0 keeps its source configuration unchanged. The later colour cutover must exclude archived samples from utility generation; generated-CSS expiry checks remain mandatory so historical evidence cannot preserve retired runtime classes.
+B2 explicitly scopes Tailwind sources to app, components, features and lib. Archived documentation and test samples cannot preserve retired utility classes. Generated-CSS expiry checks remain mandatory at integrated qualification.

@@ -82,7 +82,7 @@ export default async function OrganizationAssessmentPage({
       />
       <section className="learner-page learner-page--standard org-assessment-page">
         <Link
-          className="mb-4 inline-flex text-[0.72rem] font-semibold text-[var(--learner-green-deep)]"
+          className="mb-4 inline-flex text-[0.72rem] font-semibold text-[var(--ui-action)]"
           href={orgHref(workspace, "/learn")}
         >
           Return to Learning

@@ -11,21 +11,21 @@ export function CourseTitleField({ defaultValue }: { defaultValue: string }) {
   return (
     <label className="block">
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--admin-on-surface-variant)]">
+        <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
           Title
         </span>
         <span
           className={
             remaining < 0
-              ? "text-[11px] font-bold text-[var(--admin-error)]"
-              : "text-[11px] font-bold text-[var(--admin-on-surface-variant)]"
+              ? "text-[11px] font-bold text-[var(--ui-danger)]"
+              : "text-[11px] font-bold text-[var(--ui-text-muted)]"
           }
         >
           {title.length}/{MAX_TITLE_LENGTH}
         </span>
       </div>
       <input
-        className="mt-2 w-full rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-4 py-3 text-sm font-bold text-[var(--admin-on-surface)] outline-none transition focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--admin-primary)_10%,transparent)]"
+        className="mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold text-[var(--ui-text)] outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]"
         maxLength={MAX_TITLE_LENGTH}
         name="title"
         onChange={(event) => setTitle(event.target.value)}

@@ -1,3 +1,4 @@
+import { BrandSignature } from "@/components/brand/BrandSignature";
 import { ReferralCodeCapture } from "@/components/referrals/ReferralCodeCapture";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -126,26 +127,26 @@ export default async function InvitePage({ params }: InvitePageProps) {
   const primaryHref = invite.status === "available" ? loginHref : "/login";
 
   return (
-    <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ve-card)] px-8 py-12">
+    <main className="mobile-shell learner-compact-shell min-h-screen bg-[var(--ui-surface)] px-8 py-12">
       {invite.status === "available" && invite.token ? (
         <ReferralCodeCapture code={invite.token} kind={invite.kind === "contextual" ? "contextual" : "public"} />
       ) : null}
 
       <div className="flex items-center justify-between">
-        <p className="text-lg font-black">Project VE</p>
+        <BrandSignature />
         <Button className="h-9 px-4 text-xs" href={loginHref} variant="soft">
           Sign up
         </Button>
       </div>
 
       <section className="pt-14">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ve-green)]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-text)]">
           {isContextual ? "Organisation invite" : "You are invited"}
         </p>
         <h1 className="mt-3 text-[30px] font-black leading-9">
           {invite.status === "available" ? title : "This invite link is not available."}
         </h1>
-        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+        <p className="mt-4 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           {invite.status === "available"
             ? subtitle
             : "Ask your inviter for a fresh link, or create an account to continue with Project VE."}
@@ -153,14 +154,14 @@ export default async function InvitePage({ params }: InvitePageProps) {
       </section>
 
       <Card className="mt-8 p-5">
-        <div className="rounded-[20px] bg-[var(--ve-green-soft)] px-4 py-5 text-center">
-          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">
+        <div className="rounded-[20px] bg-[var(--ui-action-soft)] px-4 py-5 text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">
             {isContextual ? "Programme destination" : "First lesson"}
           </p>
-          <h2 className="mt-2 text-xl font-black text-[var(--foreground)]">
+          <h2 className="mt-2 text-xl font-black text-[var(--ui-text)]">
             {cardTitle}
           </h2>
-          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+          <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             {cardBody}
           </p>
         </div>
@@ -173,7 +174,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
         </div>
       </Card>
 
-      <p className="mt-6 text-center text-[11px] font-semibold leading-5 text-[var(--ve-muted)]">
+      <p className="mt-6 text-center text-[11px] font-semibold leading-5 text-[var(--ui-text-muted)]">
         {isContextual
           ? "Invite token saved for this browser. Programme attribution is applied only after you create an account."
           : "Referral code saved for this browser. Your inviter earns XP only after you create an account and complete the required lessons."}

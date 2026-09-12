@@ -119,11 +119,11 @@ export default async function AdminInstructorWorkspacePage({
           <AdminCard className="mb-5">
             <form className="grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
               <label>
-                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                   Organisation
                 </span>
                 <select
-                  className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+                  className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
                   defaultValue={selectedOrganizationId}
                   disabled={workspace.type === "organization"}
                   name="organizationId"
@@ -139,11 +139,11 @@ export default async function AdminInstructorWorkspacePage({
                 ) : null}
               </label>
               <label>
-                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                   Unit
                 </span>
                 <select
-                  className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+                  className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
                   defaultValue={selectedUnitId || "all"}
                   name="unitId"
                 >
@@ -181,9 +181,9 @@ export default async function AdminInstructorWorkspacePage({
                     <tr key={cohort.id}>
                       <td className="min-w-[240px] px-4 py-4">
                         <p className="font-black">{cohort.title}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{cohort.id}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{cohort.id}</p>
                       </td>
-                      <td className="min-w-[200px] px-4 py-4 text-xs font-bold text-[var(--ve-muted-strong)]">
+                      <td className="min-w-[200px] px-4 py-4 text-xs font-bold text-[var(--ui-text-muted)]">
                         {cohort.units.length > 0 ? cohort.units.map((unit) => unit.name).join(", ") : "No unit"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 font-black tabular-nums">{cohort.activeMembers}</td>
@@ -210,22 +210,22 @@ export default async function AdminInstructorWorkspacePage({
                     <input name="unitId" type="hidden" value={selectedUnitId || ""} />
                     <input name="redirectTo" type="hidden" value={currentHref} />
                     <label className="block">
-                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                         Title
                       </span>
                       <input
-                        className="mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+                        className="mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
                         defaultValue="Reminder from your instructor"
                         name="title"
                         required
                       />
                     </label>
                     <label className="block">
-                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                      <span className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                         Message
                       </span>
                       <textarea
-                        className="mt-1 min-h-24 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]"
+                        className="mt-1 min-h-24 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]"
                         defaultValue="Please check your assigned learning."
                         name="body"
                         required
@@ -233,11 +233,11 @@ export default async function AdminInstructorWorkspacePage({
                     </label>
                     <div className="grid max-h-64 gap-2 overflow-auto pr-1">
                       {instructorWorkspace.reminderTargets.map((target) => (
-                        <label className="flex items-start gap-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3 text-xs" key={`${target.userId}:${target.reason}`}>
+                        <label className="flex items-start gap-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3 text-xs" key={`${target.userId}:${target.reason}`}>
                           <input className="mt-1 size-4" defaultChecked name="userIds" type="checkbox" value={target.userId} />
                           <span>
                             <span className="block font-black">{target.displayName ?? target.userId}</span>
-                            <span className="mt-1 block font-semibold text-[var(--ve-muted)]">{target.reason}</span>
+                            <span className="mt-1 block font-semibold text-[var(--ui-text-muted)]">{target.reason}</span>
                           </span>
                         </label>
                       ))}
@@ -261,9 +261,9 @@ export default async function AdminInstructorWorkspacePage({
                   <tr key={learner.userId}>
                     <td className="min-w-[220px] px-4 py-4">
                       <p className="font-black">{learner.displayName ?? "Unnamed learner"}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{learner.userId}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{learner.userId}</p>
                     </td>
-                    <td className="min-w-[200px] px-4 py-4 text-xs font-bold text-[var(--ve-muted-strong)]">
+                    <td className="min-w-[200px] px-4 py-4 text-xs font-bold text-[var(--ui-text-muted)]">
                       {learner.cohorts.length > 0 ? learner.cohorts.map((cohort) => cohort.title).join(", ") : "No cohort"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 font-black tabular-nums">{learner.assignedCount}</td>
@@ -290,7 +290,7 @@ export default async function AdminInstructorWorkspacePage({
                     <tr key={`inactive:${learner.userId}`}>
                       <td className="min-w-[220px] px-4 py-4">
                         <p className="font-black">{learner.displayName ?? "Unnamed learner"}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{learner.userId}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{learner.userId}</p>
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 text-sm font-bold">{percent(learner.averageProgress)}</td>
                       <td className="whitespace-nowrap px-4 py-4 text-sm font-bold">
@@ -312,9 +312,9 @@ export default async function AdminInstructorWorkspacePage({
                     <tr key={`overdue:${learner.userId}:${learner.programmeId ?? learner.courseId}`}>
                       <td className="min-w-[220px] px-4 py-4">
                         <p className="font-black">{learner.displayName ?? "Unnamed learner"}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">{learner.userId}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">{learner.userId}</p>
                       </td>
-                      <td className="min-w-[180px] px-4 py-4 text-xs font-bold text-[var(--ve-muted-strong)]">
+                      <td className="min-w-[180px] px-4 py-4 text-xs font-bold text-[var(--ui-text-muted)]">
                         {learner.programmeId ?? learner.courseId ?? "Assignment"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 text-sm font-bold">
@@ -336,7 +336,7 @@ export default async function AdminInstructorWorkspacePage({
                             </button>
                           </form>
                         ) : (
-                          <span className="text-xs font-bold text-[var(--ve-muted)]">Read only</span>
+                          <span className="text-xs font-bold text-[var(--ui-text-muted)]">Read only</span>
                         )}
                       </td>
                     </tr>
@@ -361,14 +361,14 @@ export default async function AdminInstructorWorkspacePage({
                             <h3 className="font-black">{proof.missionTitle ?? proof.missionId}</h3>
                             <AdminStatusBadge tone="warning">{proof.status}</AdminStatusBadge>
                           </div>
-                          <p className="mt-2 text-sm font-semibold text-[var(--ve-muted-strong)]">
+                          <p className="mt-2 text-sm font-semibold text-[var(--ui-text-muted)]">
                             {proof.displayName ?? proof.userId}
                           </p>
-                          <p className="mt-1 text-xs font-bold text-[var(--ve-muted)]">
+                          <p className="mt-1 text-xs font-bold text-[var(--ui-text-muted)]">
                             Submitted {formatRewardDate(proof.createdAt)}
                           </p>
-                          <div className="mt-3 rounded-[12px] bg-[var(--ve-panel)] p-3">
-                            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">
+                          <div className="mt-3 rounded-[12px] bg-[var(--ui-surface-inset)] p-3">
+                            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">
                               {proof.proofType}
                             </p>
                             <p className="mt-1 break-words text-sm font-bold leading-6">{proof.value}</p>
@@ -393,7 +393,7 @@ export default async function AdminInstructorWorkspacePage({
                               <input name="status" type="hidden" value="rejected" />
                               <input name="redirectTo" type="hidden" value={currentHref} />
                               <input
-                                className="min-w-0 flex-1 rounded-[12px] border border-[var(--ve-line-soft)] px-3 text-xs font-semibold outline-none"
+                                className="min-w-0 flex-1 rounded-[12px] border border-[var(--ui-border-subtle)] px-3 text-xs font-semibold outline-none"
                                 maxLength={500}
                                 name="rejectionReason"
                                 placeholder="Reason"
@@ -427,7 +427,7 @@ export default async function AdminInstructorWorkspacePage({
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="font-black">{intervention.displayName ?? intervention.userId}</p>
-                          <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                          <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                             {intervention.programmeTitle ?? intervention.programmeId}
                           </p>
                         </div>
@@ -436,8 +436,8 @@ export default async function AdminInstructorWorkspacePage({
                           <AdminStatusBadge tone={statusTone(intervention.status)}>{intervention.status}</AdminStatusBadge>
                         </div>
                       </div>
-                      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">{intervention.reason}</p>
-                      <p className="mt-2 text-xs font-bold text-[var(--ve-muted)]">
+                      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">{intervention.reason}</p>
+                      <p className="mt-2 text-xs font-bold text-[var(--ui-text-muted)]">
                         Triggered {formatRewardDate(intervention.triggeredAt)}
                       </p>
                       {instructorWorkspace.canAct ? (
@@ -445,7 +445,7 @@ export default async function AdminInstructorWorkspacePage({
                           <input name="interventionId" type="hidden" value={intervention.id} />
                           <input name="redirectTo" type="hidden" value={currentHref} />
                           <input
-                            className="h-10 min-w-[160px] rounded-[10px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 text-xs font-semibold outline-none focus:border-[var(--ve-green)]"
+                            className="h-10 min-w-[160px] rounded-[10px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 text-xs font-semibold outline-none focus:border-[var(--ui-focus)]"
                             name="note"
                             placeholder="Internal note"
                           />

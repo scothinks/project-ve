@@ -2,11 +2,11 @@ import type { AdminCampaignRow } from "@/lib/admin";
 import { saveCampaign } from "@/app/admin/campaigns/actions";
 
 function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-green)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 function toDateInputValue(iso: string | null) {
@@ -27,12 +27,12 @@ export function CampaignForm({ campaign }: { campaign?: AdminCampaignRow | null 
         {campaign ? (
           <label>
             <span className={labelClasses()}>Slug</span>
-            <input className={`${fieldClasses()} text-[var(--ve-muted-strong)]`} disabled readOnly value={campaign.slug} />
+            <input className={`${fieldClasses()} text-[var(--ui-text-muted)]`} disabled readOnly value={campaign.slug} />
           </label>
         ) : (
-          <div className="rounded-[14px] bg-[var(--ve-panel)] p-4">
+          <div className="rounded-[14px] bg-[var(--ui-surface-inset)] p-4">
             <p className={labelClasses()}>Slug</p>
-            <p className="mt-2 text-sm font-bold text-[var(--ve-muted-strong)]">
+            <p className="mt-2 text-sm font-bold text-[var(--ui-text-muted)]">
               Generated automatically from the campaign name.
             </p>
           </div>
@@ -65,11 +65,11 @@ export function CampaignForm({ campaign }: { campaign?: AdminCampaignRow | null 
         <input className={fieldClasses()} maxLength={140} name="budgetLabel" defaultValue={campaign?.budget_label ?? ""} placeholder="Q3 partner budget" />
       </label>
 
-      <p className="rounded-[14px] bg-[var(--ve-panel)] p-4 text-sm font-bold leading-6 text-[var(--ve-muted-strong)]">
+      <p className="rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-sm font-bold leading-6 text-[var(--ui-text-muted)]">
         Saving keeps the campaign configured. Use Enable from the campaign list when it should become eligible for the XP Store.
       </p>
 
-      <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+      <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
         Save campaign
       </button>
     </form>

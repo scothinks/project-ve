@@ -1,0 +1,12 @@
+{
+  "source": "../aperture-convergence",
+  "templatesCopiedWithoutEdits": true,
+  "sha256": {
+    "geometry.js": "a3b9d11825ee12a745a815d712392c7aa9f77f4caad63dd80069bff75e6c19c3",
+    "convergence.css": "dcd87afab3eeafd4f490b2183d279f0670ba772d4d93a23221db26dba5b0ce06",
+    "convergence.js": "915ed498e5d090975fa9692d014e653d86b5f5c037d64c0fcc2d2eb8bf15da34",
+    "identity-tokens.json": "9214359e7914233f16bc115b7057491417edac84d02ad172ed30b7d9191d8087",
+    "fonts/SourceSans3.ttf": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+    "fonts/SourceSerif4.ttf": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+  }
+}

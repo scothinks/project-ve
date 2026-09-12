@@ -17,7 +17,7 @@ export function AiImageResult({ result, busy, reconnecting, onUse, onRefine, onS
     {result.applicationError && <p role="alert">Not saved. {result.applicationError}</p>}
     <p className="text-sm">{creditLabel(result as unknown as AuthoringResult)}</p>
     {result.candidate && <>
-      <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-neutral-100"><Image fill className="object-contain" src={result.candidate.url} alt={result.candidate.altText}/></div>
+      <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-[var(--ui-surface-muted)]"><Image fill className="object-contain" src={result.candidate.url} alt={result.candidate.altText}/></div>
       <p className="text-sm"><strong>Alt text:</strong> {result.candidate.altText}</p>
       {result.candidate.caption && <p className="text-sm">{result.candidate.caption}</p>}
       <p className="text-sm">This image stays in Generated media until explicitly deleted. Closing or creating another version keeps it.</p>

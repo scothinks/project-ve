@@ -19,26 +19,26 @@ export function QuizQuestionCard({
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008751]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ui-current-text)]">
           Question {questionNumber} of {totalQuestions}
         </p>
-        <span className="max-w-[8rem] whitespace-nowrap rounded-[18px] bg-[#dff2e9] px-3 py-1 text-center text-xs font-bold leading-none text-[#008751] tabular-nums">
+        <span className="max-w-[8rem] whitespace-nowrap rounded-[18px] bg-[var(--ui-current-bg)] px-3 py-1 text-center text-xs font-bold leading-none text-[var(--ui-current-text)] tabular-nums">
           {badge}
         </span>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color:color-mix(in_srgb,#008751_10%,transparent)]">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--ui-border-subtle)]">
         <div
-          className="h-full rounded-full bg-[#008751] transition-all duration-500"
+          className="h-full rounded-full bg-[var(--ui-current-text)] transition-all duration-500"
           style={{ width: `${quizProgressPercent}%` }}
         />
       </div>
       <h2 className="mt-4 text-xl font-bold leading-7">{current.prompt}</h2>
       {current.type === "multiple_choice" ? (
-        <div className="mt-3 rounded-[16px] border border-[#dff2e9] bg-[#f4fbf7] px-4 py-3">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#008751]">
+        <div className="mt-3 rounded-[16px] border border-[var(--ui-current-bg)] bg-[var(--ui-surface)] px-4 py-3">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-current-text)]">
             Multiple choice
           </p>
-          <p className="mt-1 text-xs font-semibold leading-5 text-[#5f786d]">
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
             More than one answer can be correct. Select every option that applies before you continue.
           </p>
         </div>
@@ -50,8 +50,8 @@ export function QuizQuestionCard({
           return (
             <button
               className={cn(
-                "flex min-h-[58px] w-full items-center rounded-[18px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-5 text-left text-sm font-semibold text-[var(--ve-muted-strong)]",
-                isSelected && "border-[#008751] bg-[#dff2e9] text-[#008751]",
+                "flex min-h-[58px] w-full items-center rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface)] px-5 text-left text-sm font-semibold text-[var(--ui-text-muted)]",
+                isSelected && "border-[var(--ui-current-text)] bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]",
               )}
               aria-pressed={isSelected}
               key={option.id}

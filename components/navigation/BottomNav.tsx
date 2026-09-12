@@ -65,31 +65,31 @@ const items = [
     href: "/dashboard",
     label: "Home",
     icon: <HomeIcon />,
-    activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+    activeClassName: "bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]",
   },
   {
     href: "/courses",
     label: "Lessons",
     icon: <LessonIcon />,
-    activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+    activeClassName: "bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]",
   },
   {
     href: "/missions",
     label: "Missions",
     icon: <MissionIcon />,
-    activeClassName: "bg-[var(--ve-mission-soft)] text-[#c94f2e]",
+    activeClassName: "bg-[var(--ui-current-bg)] text-[var(--ui-danger)]",
   },
   {
     href: "/xp-store",
     label: "Store",
     icon: "XP",
-    activeClassName: "bg-[var(--ve-store-soft)] text-[#a66d00]",
+    activeClassName: "bg-[var(--ui-current-bg)] text-[var(--ui-reward)]",
   },
   {
     href: "/org",
     label: "Orgs",
     icon: <OrgModeIcon />,
-    activeClassName: "bg-[var(--ve-green-soft)] text-[var(--ve-green)]",
+    activeClassName: "bg-[var(--ui-current-bg)] text-[var(--ui-current-text)]",
   },
 ] satisfies Array<{ href: string; label: string; icon: ReactNode; activeClassName: string }>;
 
@@ -105,7 +105,7 @@ export function BottomNav({
   hrefs?: Partial<Record<BottomNavLabel, string>>;
 }) {
   return (
-    <nav className="learner-bottom-nav fixed inset-x-0 bottom-0 z-20 border-t border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:right-auto lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ve-line-soft)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ve-shadow-rgb),0.12)]">
+    <nav className="learner-bottom-nav fixed inset-x-0 bottom-0 z-20 border-t border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-6 lg:fixed lg:bottom-auto lg:left-[max(1.25rem,calc((100vw-1180px)/2+1.25rem))] lg:right-auto lg:top-1/2 lg:mt-0 lg:w-20 lg:-translate-y-1/2 lg:rounded-[28px] lg:border lg:border-[var(--ui-border-subtle)] lg:p-2 lg:shadow-[0_18px_50px_rgba(var(--ui-shadow-rgb),0.12)]">
       <div className="mx-auto grid max-w-[25rem] grid-cols-5 gap-1.5 sm:gap-2 md:max-w-[30rem] lg:mx-0 lg:max-w-none lg:grid-cols-1">
         {items.map((item) => {
           const isActive = item.label === active || (item.label === "Lessons" && active === "Lesson");
@@ -113,7 +113,7 @@ export function BottomNav({
             <Link
               aria-label={ariaLabels?.[item.label]}
               className={cn(
-                "flex h-12 flex-col items-center justify-center rounded-[16px] text-center text-[9px] font-semibold leading-3 text-[var(--ve-muted)] sm:text-[10px] lg:h-[4.25rem] lg:rounded-[22px]",
+                "flex h-12 flex-col items-center justify-center rounded-[16px] text-center text-[9px] font-semibold leading-3 text-[var(--ui-text-muted)] sm:text-[10px] lg:h-[4.25rem] lg:rounded-[22px]",
                 isActive && item.activeClassName,
               )}
               href={hrefs?.[item.label] ?? item.href}

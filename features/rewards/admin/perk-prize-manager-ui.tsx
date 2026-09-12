@@ -19,21 +19,21 @@ export type PerkPrizeManagerActions = {
 };
 
 export function fieldClasses() {
-  return "mt-1 w-full rounded-[12px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ve-violet)]";
+  return "mt-1 w-full rounded-[12px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-semibold outline-none focus:border-[var(--ui-focus)]";
 }
 
 export function labelClasses() {
-  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]";
+  return "text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]";
 }
 
 export function detailSummaryClasses() {
-  return "cursor-pointer text-sm font-black text-[var(--ve-violet)]";
+  return "cursor-pointer text-sm font-black text-[var(--ui-info)]";
 }
 
 function typeButtonClasses(active: boolean) {
   return active
-    ? "rounded-full bg-[var(--ve-violet)] px-3 py-2 text-xs font-black text-white"
-    : "rounded-full bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_82%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-violet)]";
+    ? "rounded-full bg-[var(--ui-current-text)] px-3 py-2 text-xs font-black text-[var(--ui-on-action)]"
+    : "rounded-full bg-[color:color-mix(in_srgb,var(--ui-current-bg)_82%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-current-text)]";
 }
 
 export function PrizeTypeSelector({
@@ -72,11 +72,11 @@ export function ReadonlyPrizeIdentity({
   helper?: string;
 }) {
   return (
-    <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] px-4 py-3">
+    <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-4 py-3">
       <p className={labelClasses()}>{label}</p>
-      <p className="mt-2 text-sm font-black text-[var(--foreground)]">{value}</p>
+      <p className="mt-2 text-sm font-black text-[var(--ui-text)]">{value}</p>
       {helper ? (
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">{helper}</p>
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">{helper}</p>
       ) : null}
     </div>
   );
@@ -127,8 +127,8 @@ export function RewardCandidateChecklist({
             <label
               className={`flex cursor-pointer items-start gap-3 rounded-[12px] border px-3 py-3 ${
                 checked
-                  ? "border-[var(--ve-violet)] bg-[color:color-mix(in_srgb,var(--ve-violet-soft)_62%,var(--ve-card))]"
-                  : "border-[var(--ve-line-soft)] bg-[var(--ve-card)]"
+                  ? "border-[var(--ui-info)] bg-[color:color-mix(in_srgb,var(--ui-info-bg)_62%,var(--ui-surface))]"
+                  : "border-[var(--ui-border-subtle)] bg-[var(--ui-surface)]"
               }`}
               key={candidate.id}
             >
@@ -142,7 +142,7 @@ export function RewardCandidateChecklist({
               />
               <div className="min-w-0">
                 <p className="text-sm font-black">{candidate.title}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--ve-muted-strong)]">
+                <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                   {candidate.direct_available ?? 0} free for direct store · {candidate.assigned_available ?? 0} already assigned · {candidate.total_available ?? 0} total live
                 </p>
               </div>
@@ -168,32 +168,32 @@ export function PrizeAllocationPanel({
   }
 
   return (
-    <details className="mt-4 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
+    <details className="mt-4 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
       <summary className={detailSummaryClasses()}>Assigned stock</summary>
-      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
         This prize only draws from the stock assigned here. Direct store redemptions use the remaining unassigned stock.
       </p>
       <div className="mt-3 grid gap-3 md:grid-cols-4">
-        <div className="rounded-[12px] bg-[var(--ve-shell)] p-3">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Assigned to this prize</p>
+        <div className="rounded-[12px] bg-[var(--ui-chrome)] p-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Assigned to this prize</p>
           <p className="mt-1 text-lg font-black">{prize.assigned_available ?? 0}</p>
         </div>
-        <div className="rounded-[12px] bg-[var(--ve-shell)] p-3">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Free on reward</p>
+        <div className="rounded-[12px] bg-[var(--ui-chrome)] p-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Free on reward</p>
           <p className="mt-1 text-lg font-black">{prize.source_reward_direct_available ?? 0}</p>
         </div>
-        <div className="rounded-[12px] bg-[var(--ve-shell)] p-3">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Total live on reward</p>
+        <div className="rounded-[12px] bg-[var(--ui-chrome)] p-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Total live on reward</p>
           <p className="mt-1 text-lg font-black">{prize.source_reward_total_available ?? 0}</p>
         </div>
-        <div className="rounded-[12px] bg-[var(--ve-shell)] p-3">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Assigned across perks</p>
+        <div className="rounded-[12px] bg-[var(--ui-chrome)] p-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Assigned across perks</p>
           <p className="mt-1 text-lg font-black">{prize.source_reward_assigned_available ?? 0}</p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <form action={actions.assignPerkPrizeInventory} className="space-y-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
+        <form action={actions.assignPerkPrizeInventory} className="space-y-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
           <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
           <input name="prizeId" type="hidden" value={prize.id} />
           <p className="text-sm font-black">Assign stock to this prize</p>
@@ -217,12 +217,12 @@ export function PrizeAllocationPanel({
               <input className={fieldClasses()} name="reason" placeholder="Reserve stock for this perk prize" />
             </label>
           </div>
-          <button className="rounded-[12px] bg-[var(--ve-green)] px-4 py-3 text-sm font-black text-white" type="submit">
+          <button className="rounded-[12px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
             Assign stock
           </button>
         </form>
 
-        <form action={actions.releasePerkPrizeInventory} className="space-y-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3">
+        <form action={actions.releasePerkPrizeInventory} className="space-y-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3">
           <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
           <input name="prizeId" type="hidden" value={prize.id} />
           <p className="text-sm font-black">Release stock back to direct pool</p>
@@ -236,7 +236,7 @@ export function PrizeAllocationPanel({
               <input className={fieldClasses()} name="reason" placeholder="Return unused stock to the reward" />
             </label>
           </div>
-          <button className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-4 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]" type="submit">
+          <button className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-4 py-3 text-sm font-black text-[var(--ui-on-action-soft)]" type="submit">
             Release stock
           </button>
         </form>
@@ -260,9 +260,9 @@ export function NativeXpPrizeFields({
 }) {
   return (
     <>
-      <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+      <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
         <p className="text-sm font-black">What learner gets</p>
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Set the XP amount first, then give the outcome a short learner-facing label.
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -276,9 +276,9 @@ export function NativeXpPrizeFields({
           </label>
         </div>
       </div>
-      <details className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
+      <details className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
         <summary className={detailSummaryClasses()}>Tile styling</summary>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Only change this if the learner card should use a different icon or color.
         </p>
         <div className="mt-3">
@@ -314,9 +314,9 @@ export function XpBoostPrizeFields({
 }) {
   return (
     <>
-      <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-4">
+      <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-4">
         <p className="text-sm font-black">What learner gets</p>
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Set the boost label, multiplier, duration, and number of uses the learner unlocks.
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-4">
@@ -338,9 +338,9 @@ export function XpBoostPrizeFields({
           </label>
         </div>
       </div>
-      <details className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
+      <details className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
         <summary className={detailSummaryClasses()}>Tile styling</summary>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+        <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
           Only change this if the learner card should use a different icon or color.
         </p>
         <div className="mt-3">
@@ -383,13 +383,13 @@ export function DistributionControls({
   deriveTimingFromAssignedStock?: boolean;
 }) {
   return (
-    <details className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3" open={defaultOpen}>
+    <details className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3" open={defaultOpen}>
       <summary className={detailSummaryClasses()}>Distribution controls</summary>
-      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
         {helperText ?? "Control draw weight, release caps, timing, and whether this prize is currently active."}
       </p>
-      <div className="mt-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
-        <p className="font-black text-[var(--foreground)]">How chance weight works</p>
+      <div className="mt-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
+        <p className="font-black text-[var(--ui-text)]">How chance weight works</p>
         <p className="mt-1">
           Weight is relative chance, not a percentage. A prize with weight 2 is about twice as likely to be drawn as a prize with weight 1, before caps, windows, and stock limits reduce availability.
         </p>
@@ -400,10 +400,10 @@ export function DistributionControls({
           <input className={fieldClasses()} defaultValue={defaultWeight} min={1} name="weight" type="number" />
         </label>
         {typeof derivedAssignedPool === "number" ? (
-          <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3">
+          <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3">
             <p className={labelClasses()}>Assigned pool</p>
-            <p className="mt-2 text-2xl font-black text-[var(--foreground)]">{derivedAssignedPool}</p>
-            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-2xl font-black text-[var(--ui-text)]">{derivedAssignedPool}</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Total wins come from the stock assigned to this prize.
             </p>
           </div>
@@ -424,10 +424,10 @@ export function DistributionControls({
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         {deriveTimingFromAssignedStock ? (
-          <div className="rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] px-3 py-3 md:col-span-2">
+          <div className="rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] px-3 py-3 md:col-span-2">
             <p className={labelClasses()}>Availability window</p>
-            <p className="mt-2 text-sm font-black text-[var(--foreground)]">Follows assigned stock</p>
-            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+            <p className="mt-2 text-sm font-black text-[var(--ui-text)]">Follows assigned stock</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
               Set available from and expiry when assigning stock. Release buckets can still stage that assigned pool further.
             </p>
           </div>
@@ -443,7 +443,7 @@ export function DistributionControls({
             </label>
           </>
         )}
-        <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black">
+        <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black">
           <input defaultChecked={defaultEnabled} name="isEnabled" type="checkbox" />
           Enabled
         </label>
@@ -454,7 +454,7 @@ export function DistributionControls({
 
 export function PendingAllocationNotice({ mode }: { mode: "create" | "edit" }) {
   return (
-    <div className="rounded-[12px] border border-dashed border-[var(--ve-line)] bg-[var(--ve-shell)] px-4 py-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+    <div className="rounded-[12px] border border-dashed border-[var(--ui-border)] bg-[var(--ui-chrome)] px-4 py-4 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
       {mode === "create"
         ? "Save this reward prize first. Then assign stock to it. Chance weight, release caps, and staged buckets only unlock after this prize has an assigned pool."
         : "Assign stock to this prize first. Chance weight, release caps, and staged buckets unlock after this prize has an assigned pool."}
@@ -472,22 +472,22 @@ export function ReleaseBucketsSection({
   prize: AdminPerkPrizeRow;
 }) {
   return (
-    <details className="mt-4 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-3">
+    <details className="mt-4 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-3">
       <summary className={detailSummaryClasses()}>Release buckets</summary>
-      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ve-muted)]">
+      <p className="mt-2 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
         Use buckets only when you need staged release windows beyond the basic daily and total caps.
       </p>
 
       <div className="mt-4 space-y-3">
         {(prize.releaseBuckets ?? []).length === 0 ? (
-          <p className="text-xs font-semibold text-[var(--ve-muted)]">
+          <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
             No release buckets yet. This prize currently relies on the prize-level caps and schedule above.
           </p>
         ) : (
           (prize.releaseBuckets ?? []).map((bucket) => (
             <form
               action={actions.savePerkReleaseBucket}
-              className="space-y-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-shell)] p-3"
+              className="space-y-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-chrome)] p-3"
               key={bucket.id}
             >
               <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
@@ -530,18 +530,18 @@ export function ReleaseBucketsSection({
                   <span className={labelClasses()}>Sort order</span>
                   <input className={fieldClasses()} defaultValue={bucket.sort_order} name="sortOrder" type="number" />
                 </label>
-                <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ve-card)] px-3 py-3 text-sm font-black md:col-span-2">
+                <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ui-surface)] px-3 py-3 text-sm font-black md:col-span-2">
                   <input defaultChecked={bucket.is_enabled} name="isEnabled" type="checkbox" />
                   Enabled
                 </label>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-[12px] bg-[var(--ve-violet)] px-3 py-2 text-xs font-black text-white" type="submit">
+                <button className="rounded-[12px] bg-[var(--ui-action)] px-3 py-2 text-xs font-black text-[var(--ui-on-action)]" type="submit">
                   Save bucket
                 </button>
                 <button
-                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ve-danger-soft)_74%,var(--ve-card))] px-3 py-2 text-xs font-black text-[var(--ve-danger)]"
+                  className="rounded-[12px] bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] px-3 py-2 text-xs font-black text-[var(--ui-danger)]"
                   formAction={actions.deletePerkReleaseBucket}
                   type="submit"
                 >
@@ -553,7 +553,7 @@ export function ReleaseBucketsSection({
         )}
       </div>
 
-      <form action={actions.savePerkReleaseBucket} className="mt-4 space-y-3 rounded-[12px] border border-dashed border-[var(--ve-line)] p-3">
+      <form action={actions.savePerkReleaseBucket} className="mt-4 space-y-3 rounded-[12px] border border-dashed border-[var(--ui-border)] p-3">
         <input name="bundleRewardId" type="hidden" value={bundleRewardId} />
         <input name="prizeId" type="hidden" value={prize.id} />
         <p className="text-sm font-black">Add release bucket</p>
@@ -580,12 +580,12 @@ export function ReleaseBucketsSection({
             <span className={labelClasses()}>Sort order</span>
             <input className={fieldClasses()} defaultValue={0} name="sortOrder" type="number" />
           </label>
-          <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ve-shell)] px-3 py-3 text-sm font-black md:col-span-2">
+          <label className="flex items-center gap-3 rounded-[12px] bg-[var(--ui-chrome)] px-3 py-3 text-sm font-black md:col-span-2">
             <input defaultChecked name="isEnabled" type="checkbox" />
             Enabled
           </label>
         </div>
-        <button className="rounded-[12px] bg-[var(--ve-violet)] px-4 py-3 text-sm font-black text-white" type="submit">
+        <button className="rounded-[12px] bg-[var(--ui-action)] px-4 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
           Add bucket
         </button>
       </form>

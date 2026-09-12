@@ -30,27 +30,27 @@ function TranscriptItemCard({ item }: { item: LearnerTranscriptItem }) {
     <Card className="p-4" variant="quiet">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             {item.kind === "programme" ? "Programme" : "Course"}
           </p>
-          <h2 className="mt-1 text-base font-black leading-snug text-[var(--foreground)]">
+          <h2 className="mt-1 text-base font-black leading-snug text-[var(--ui-text)]">
             {item.title}
           </h2>
         </div>
         <span
           className={
             complete
-              ? "rounded-full bg-[var(--ve-green-soft)] px-3 py-1 text-xs font-black text-[var(--ve-green)]"
-              : "rounded-full bg-[var(--ve-panel)] px-3 py-1 text-xs font-black text-[var(--ve-muted-strong)]"
+              ? "rounded-full bg-[var(--ui-action-soft)] px-3 py-1 text-xs font-black text-[var(--ui-action)]"
+              : "rounded-full bg-[var(--ui-surface-inset)] px-3 py-1 text-xs font-black text-[var(--ui-text-muted)]"
           }
         >
           {complete ? "Completed" : "In progress"}
         </span>
       </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--ve-panel)]">
-        <div className="h-full rounded-full bg-[var(--ve-green)]" style={{ width: `${item.progressPercent}%` }} />
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--ui-surface-inset)]">
+        <div className="h-full rounded-full bg-[var(--ui-success)]" style={{ width: `${item.progressPercent}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-xs font-bold text-[var(--ve-muted)]">
+      <div className="mt-2 flex items-center justify-between text-xs font-bold text-[var(--ui-text-muted)]">
         <span>{item.progressPercent}% complete</span>
         <span>{formatDate(item.completedAt)}</span>
       </div>
@@ -65,7 +65,7 @@ function TranscriptSection({ items, title }: { items: LearnerTranscriptItem[]; t
 
   return (
     <section className="org-transcript-section">
-      <h2 className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--ve-muted-strong)]">
+      <h2 className="text-[0.78rem] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
         {title}
       </h2>
       <div className="mt-3 space-y-3">
@@ -129,10 +129,10 @@ export default async function OrganizationTranscriptPage({
       />
       <section className="learner-page learner-page--standard pb-28">
         <div>
-          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--foreground)]">
+          <h1 className="text-[1.55rem] font-black tracking-[-0.02em] text-[var(--ui-text)]">
             Learning Transcript
           </h1>
-          <p className="mt-1 text-sm font-semibold text-[var(--ve-muted)]">{organizationName}</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--ui-text-muted)]">{organizationName}</p>
         </div>
 
         <div className="mt-4">
@@ -147,7 +147,7 @@ export default async function OrganizationTranscriptPage({
             <TranscriptSection items={transcript.courses} title="Courses" />
           </div>
         ) : (
-          <Card className="mt-6 p-4 text-sm font-semibold leading-6 text-[var(--ve-muted)]" variant="quiet">
+          <Card className="mt-6 p-4 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]" variant="quiet">
             Organisation transcript records will appear here once assigned learning is in progress.
           </Card>
         )}

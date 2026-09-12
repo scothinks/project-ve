@@ -15,9 +15,9 @@ type MessageTone = "success" | "warning";
 function MenuIcon() {
   return (
     <span className="flex flex-col gap-1">
-      <span className="h-0.5 w-4 rounded bg-[var(--foreground)]" />
-      <span className="h-0.5 w-3 rounded bg-[var(--foreground)]" />
-      <span className="h-0.5 w-4 rounded bg-[var(--foreground)]" />
+      <span className="h-0.5 w-4 rounded bg-[var(--ui-text)]" />
+      <span className="h-0.5 w-3 rounded bg-[var(--ui-text)]" />
+      <span className="h-0.5 w-4 rounded bg-[var(--ui-text)]" />
     </span>
   );
 }
@@ -25,8 +25,8 @@ function MenuIcon() {
 function CloseIcon() {
   return (
     <span className="relative block size-4">
-      <span className="absolute left-0 top-1/2 h-0.5 w-4 -translate-y-1/2 rotate-45 rounded bg-[var(--foreground)]" />
-      <span className="absolute left-0 top-1/2 h-0.5 w-4 -translate-y-1/2 -rotate-45 rounded bg-[var(--foreground)]" />
+      <span className="absolute left-0 top-1/2 h-0.5 w-4 -translate-y-1/2 rotate-45 rounded bg-[var(--ui-text)]" />
+      <span className="absolute left-0 top-1/2 h-0.5 w-4 -translate-y-1/2 -rotate-45 rounded bg-[var(--ui-text)]" />
     </span>
   );
 }
@@ -106,18 +106,18 @@ export function LessonMenu({ lesson, courseHref, currentPageNumber }: LessonMenu
           />
           <aside
             aria-label="Lesson menu"
-            className="absolute right-4 top-5 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-[24px] bg-[var(--ve-card)] shadow-[0_24px_60px_rgba(0,0,0,0.18)]"
+            className="absolute right-4 top-5 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-[24px] bg-[var(--ui-surface)] shadow-[0_24px_60px_rgba(var(--ui-shadow-rgb),0.18)]"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[var(--ve-line-soft)] p-5">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--ui-border-subtle)] p-5">
               <div className="min-w-0">
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#008751]">
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text)]">
                   Lesson Menu
                 </p>
                 <h2 className="mt-1 truncate text-lg font-black">{lesson.title}</h2>
               </div>
               <button
                 aria-label="Close menu"
-                className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f3f3f3]"
+                className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--ui-surface-soft)]"
                 onClick={closeMenu}
                 type="button"
               >
@@ -129,8 +129,8 @@ export function LessonMenu({ lesson, courseHref, currentPageNumber }: LessonMenu
               <div
                 className={`mx-5 mt-4 rounded-[16px] px-4 py-3 text-xs font-bold ${
                   message.tone === "success"
-                    ? "bg-[#f0fbf6] text-[#008751]"
-                    : "bg-[#fff0e8] text-[#c94f2e]"
+                    ? "bg-[var(--ui-success-bg)] text-[var(--ui-success)]"
+                    : "bg-[var(--ui-warning-bg)] text-[var(--ui-warning)]"
                 }`}
               >
                 {message.text}
@@ -139,42 +139,42 @@ export function LessonMenu({ lesson, courseHref, currentPageNumber }: LessonMenu
 
             <div className="space-y-2 p-5">
               <Link
-                className="block rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-sm font-black"
+                className="block rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-sm font-black"
                 href={courseHref}
                 onClick={closeMenu}
               >
                 Back to course
-                <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
                   Your reading progress stays saved.
                 </span>
               </Link>
               <Link
-                className="block rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-sm font-black"
+                className="block rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-sm font-black"
                 href="/dashboard"
                 onClick={closeMenu}
               >
                 Dashboard
-                <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
                   Return to your home screen.
                 </span>
               </Link>
               <button
-                className="w-full rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-left text-sm font-black"
+                className="w-full rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-left text-sm font-black"
                 onClick={saveOffline}
                 type="button"
               >
                 Read Offline
-                <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
                   Save this lesson on this device.
                 </span>
               </button>
               <button
-                className="w-full rounded-[18px] bg-[var(--ve-card-muted)] px-4 py-3 text-left text-sm font-black"
+                className="w-full rounded-[18px] bg-[var(--ui-surface-muted)] px-4 py-3 text-left text-sm font-black"
                 onClick={() => void shareLesson()}
                 type="button"
               >
                 Share
-                <span className="mt-1 block text-xs font-semibold text-[var(--ve-muted)]">
+                <span className="mt-1 block text-xs font-semibold text-[var(--ui-text-muted)]">
                   Send this lesson link.
                 </span>
               </button>

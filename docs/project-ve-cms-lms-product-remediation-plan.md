@@ -1,19 +1,26 @@
 # Project Ve CMS and LMS Product Remediation Plan
 
-## Identity adoption foundation, 2026-09-08
+## Identity and connected entry, 2026-09-12
 
-B0 / #96 is implemented and locally verified: a production-source token contract
-is wired into CI, and 24 declarations for 12 proven-dead tokens are removed.
-All 33 before/after visual comparisons passed with exact computed-style parity
-and the documented, bounded edge-antialiasing tolerance. See the
-[G0 source, build and capture evidence](evidence/theme-adoption/g0-results.md).
-The user authorised starting #97 on 2026-09-08 and batched CI/E2E until #102's
-implementation is complete. B1 extracts the root light/dark blocks verbatim into
-`app/styles/theme-legacy.css`; its source contract passes, while build/browser
-qualification remains pending. See the [B1 extraction record](evidence/theme-adoption/b1-extraction.md).
-No independent CI/E2E runs or branch pushes are planned before that integration
-point. The separate #91 entry-flow work and the closed P1.5/P2 boundaries remain.
-No hosted identity release is claimed.
+The user approved the final identity direction and 251-string welcome/account
+copy, then explicitly authorised connecting the journey to real authentication
+and XP before CI, commit and push. This supersedes the earlier standalone-only
+scope and the temporary no-CI/no-commit cadence.
+
+The root now always presents the approved lesson → quiz → XP → account journey.
+The account switch uses the reference's horizontal desktop and vertical mobile
+circle transition. Login, signup, confirmation, recovery and organisation return
+paths use existing auth services. Signed guest receipts are graded on the server;
+an explicit POST claims fixed, lifetime-idempotent sample awards through the
+existing XP ledger for a confirmed account. Rendering remains read-only.
+
+Shared identity B0–B6 and the later visual corrections are included. The static
+scroll-craft prototype is retained as design evidence, separately from the
+connected React application. [Current implementation and qualification evidence](evidence/theme-adoption/entry-integration.md)
+records the checks and release limits. Earlier B6 evidence remains historical
+and applies only to its recorded source. Hosted migration application, auth
+provider configuration and deployment remain release steps; no hosted rollout is
+claimed. Closed P0/P1/P1.5 architecture and the P2 boundary are unchanged.
 
 ## Guided AI course creation, 2026-09-07
 

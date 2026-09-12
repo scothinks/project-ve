@@ -1,0 +1,31 @@
+{
+  "sourceSha": "59ea597af00e0f6a53f3018f18292d410f1be59e",
+  "sourceSha256": "28bb191674462569c21e93347414f5567bef4fbcce5bf379cca346f39b79482d",
+  "buildId": "oxcJLvjD9hgnuqzwBtOlQ",
+  "captureHelperSha256": "99ec165da32833bef763af2b8440e17036c46a91e5249d2e3f589064e4b91215",
+  "fonts": {
+    "requested": [
+      {
+        "path": "/_next/static/media/e2f11327907cb2b5.woff2",
+        "transferBytes": 169924,
+        "encodedBytes": 169624
+      }
+    ],
+    "loaded": [
+      {
+        "family": "bodyFont",
+        "style": "normal",
+        "weight": "200 900"
+      }
+    ],
+    "preloads": []
+  },
+  "name": "welcome-390-light",
+  "viewport": {
+    "width": 390,
+    "height": 900
+  },
+  "browser": "151.0.7922.34",
+  "imageSha256": "34d7a21f305568d4abda398378b00236f90cc545b7661d207a50b00f75155bc7",
+  "stylesSha256": "69cffbed90525d72f42cb832bc35909056600389deb0edfb53f973d759569078"
+}

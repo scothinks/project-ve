@@ -32,7 +32,7 @@ function toDateTimeInput(value: string | null) {
 
 function JsonPreview({ value }: { value: Record<string, unknown> }) {
   return (
-    <pre className="mt-2 overflow-x-auto rounded-[14px] bg-[var(--ve-panel)] p-4 text-xs font-semibold leading-5 text-[var(--ve-muted-strong)]">
+    <pre className="mt-2 overflow-x-auto rounded-[14px] bg-[var(--ui-surface-inset)] p-4 text-xs font-semibold leading-5 text-[var(--ui-text-muted)]">
       {JSON.stringify(value, null, 2)}
     </pre>
   );
@@ -87,11 +87,11 @@ export default async function AdminMissionDetailPage({
           <AdminCard>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                   {mission.catalog_scope === "platform" ? "Platform mission" : "Organisation mission"}
                 </p>
                 <h2 className="mt-2 text-xl font-black">{mission.title}</h2>
-                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   {mission.description}
                 </p>
               </div>
@@ -106,15 +106,15 @@ export default async function AdminMissionDetailPage({
             </div>
             <dl className="mt-5 grid gap-4 text-sm md:grid-cols-3">
               <div>
-                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Mission type</dt>
+                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Mission type</dt>
                 <dd className="mt-1 font-black">{mission.mission_type_key}</dd>
               </div>
               <div>
-                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Reward mode</dt>
+                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Reward mode</dt>
                 <dd className="mt-1 font-black">{mission.reward_mode.replaceAll("_", " ")}</dd>
               </div>
               <div>
-                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">Source</dt>
+                <dt className="text-xs font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">Source</dt>
                 <dd className="mt-1 font-black">{mission.source_mission_id ?? "Organisation private"}</dd>
               </div>
             </dl>
@@ -159,11 +159,11 @@ export default async function AdminMissionDetailPage({
           <AdminCard>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                   {executionLocked ? "Adapted platform mission" : "Organisation-private mission"}
                 </p>
                 <h2 className="mt-2 text-xl font-black">{mission.title}</h2>
-                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
                   {executionLocked
                     ? "Source handler configuration is locked to preserve platform provenance. Programme delivery can still override dates, required state and points."
                     : "Changes are scoped to this organisation and validated by the organisation mission RPC."}

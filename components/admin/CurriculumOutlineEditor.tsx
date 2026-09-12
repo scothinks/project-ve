@@ -65,30 +65,30 @@ function buttonClasses(tone: "primary" | "secondary" | "danger" = "secondary") {
   const base = "inline-flex min-h-10 items-center justify-center rounded-[12px] px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60";
 
   if (tone === "primary") {
-    return cn(base, "bg-[var(--admin-primary-container)] text-white hover:brightness-95");
+    return cn(base, "bg-[var(--ui-action)] text-[var(--ui-on-action)] hover:brightness-95");
   }
 
   if (tone === "danger") {
     return cn(
       base,
-      "bg-[color:color-mix(in_srgb,var(--admin-error-container)_74%,var(--admin-surface-milk))] text-[var(--admin-error)]",
+      "bg-[color:color-mix(in_srgb,var(--ui-danger-bg)_74%,var(--ui-surface))] text-[var(--ui-danger)]",
     );
   }
 
   return cn(
     base,
-    "border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] text-[var(--admin-on-surface-variant)] hover:text-[var(--admin-primary-container)]",
+    "border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] text-[var(--ui-text-muted)] hover:text-[var(--ui-action)]",
   );
 }
 
 function statusPillClasses(status: string) {
   if (status === "published") {
-    return "bg-[#e6f4ea] text-[#0b5a3a]";
+    return "bg-[var(--ui-success-bg)] text-[var(--ui-success)]";
   }
   if (status === "archived") {
-    return "bg-[var(--admin-surface-container-low)] text-[var(--admin-outline)]";
+    return "bg-[var(--ui-surface-soft)] text-[var(--ui-text-muted)]";
   }
-  return "bg-[var(--admin-surface-container)] text-[var(--admin-on-surface-variant)]";
+  return "bg-[var(--ui-surface-muted)] text-[var(--ui-text-muted)]";
 }
 
 function statusLabel(status: string) {
@@ -99,7 +99,7 @@ function statusLabel(status: string) {
 
 
 function iconButtonClasses() {
-  return "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--admin-on-surface-variant)] transition hover:bg-[var(--admin-surface-container-low)] disabled:cursor-not-allowed disabled:opacity-35";
+  return "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--ui-text-muted)] transition hover:bg-[var(--ui-surface-soft)] disabled:cursor-not-allowed disabled:opacity-35";
 }
 
 function LessonThumbButton({
@@ -150,7 +150,7 @@ function LessonThumbButton({
   return (
     <button
       aria-label={`Change cover for ${lesson.title}`}
-      className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[12px] text-sm font-black text-white/90"
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[12px] text-sm font-black text-[var(--ui-text)]"
       onClick={() => {
         void pickCover();
       }}
@@ -201,8 +201,8 @@ function SortableLessonRow({
   return (
     <article
       className={cn(
-        "flex items-center gap-3 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] px-3 py-2.5 transition",
-        isDragging && "border-[color:color-mix(in_srgb,var(--admin-primary-container)_40%,var(--admin-border-warm))] opacity-80 shadow-lg",
+        "flex items-center gap-3 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] px-3 py-2.5 transition",
+        isDragging && "border-[color:color-mix(in_srgb,var(--ui-action)_40%,var(--ui-border-subtle))] opacity-80 shadow-lg",
       )}
       ref={setNodeRef}
       style={style}
@@ -219,8 +219,8 @@ function SortableLessonRow({
         className="min-w-0 flex-1 py-0.5"
         href={`/admin/courses/lessons/${lesson.id}`}
       >
-        <span className="block truncate text-[15px] font-extrabold text-[var(--admin-on-surface)]">{lesson.title}</span>
-        <span className="text-xs font-semibold text-[var(--admin-on-surface-variant)]">
+        <span className="block truncate text-[15px] font-extrabold text-[var(--ui-text)]">{lesson.title}</span>
+        <span className="text-xs font-semibold text-[var(--ui-text-muted)]">
           {lesson.pageCount} pages &middot; {lesson.estimatedMinutes} min
         </span>
       </Link>
@@ -234,12 +234,12 @@ function SortableLessonRow({
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             align="end"
-            className="z-50 min-w-56 rounded-[14px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-2 shadow-xl"
+            className="z-50 min-w-56 rounded-[14px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-2 shadow-xl"
             sideOffset={6}
           >
             <DropdownMenu.Item asChild>
               <button
-                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--admin-surface-container-low)]"
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold outline-none hover:bg-[var(--ui-surface-soft)]"
                 disabled={isPending}
                 onClick={() => onDuplicateLesson(lesson)}
                 type="button"
@@ -247,10 +247,10 @@ function SortableLessonRow({
                 Duplicate lesson
               </button>
             </DropdownMenu.Item>
-            <DropdownMenu.Separator className="my-1 h-px bg-[var(--admin-border-warm)]" />
+            <DropdownMenu.Separator className="my-1 h-px bg-[var(--ui-border-subtle)]" />
             <DropdownMenu.Item asChild>
               <button
-                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--admin-error)] outline-none hover:bg-[var(--admin-surface-container-low)]"
+                className="w-full rounded-[10px] px-3 py-2 text-left text-sm font-bold text-[var(--ui-danger)] outline-none hover:bg-[var(--ui-surface-soft)]"
                 disabled={lesson.status === "archived"}
                 onClick={() => requestArchive(lesson)}
                 type="button"
@@ -427,11 +427,11 @@ export function CurriculumOutlineEditor({
     <div className="space-y-5">
       <section className="space-y-5">
         {message ? (
-          <p className="text-sm font-black text-[var(--admin-on-surface-variant)]">{message}</p>
+          <p className="text-sm font-black text-[var(--ui-text-muted)]">{message}</p>
         ) : null}
 
         {orderedLessons.length === 0 ? (
-          <p className="rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] py-10 text-center text-sm font-bold text-[var(--admin-on-surface-variant)]">
+          <p className="rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] py-10 text-center text-sm font-bold text-[var(--ui-text-muted)]">
             No lessons yet.
           </p>
         ) : (
@@ -466,7 +466,7 @@ export function CurriculumOutlineEditor({
 
         <div className="flex gap-2.5">
           <button
-            className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-border-warm)] p-[18px] text-sm font-extrabold text-[var(--admin-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--ui-border-subtle)] p-[18px] text-sm font-extrabold text-[var(--ui-action)] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || isCreatingLesson}
             onClick={createLesson}
             type="button"
@@ -476,7 +476,7 @@ export function CurriculumOutlineEditor({
           </button>
           {aiSuggestHref ? (
             <Link
-              className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--admin-accent-violet,#8d68f2)] p-[18px] text-sm font-extrabold text-[var(--admin-accent-violet,#8d68f2)]"
+              className="flex flex-1 items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-[var(--ui-info)] p-[18px] text-sm font-extrabold text-[var(--ui-info)]"
               href={aiSuggestHref}
             >
               <SparkleIcon className="h-4 w-4" />
@@ -484,15 +484,15 @@ export function CurriculumOutlineEditor({
             </Link>
           ) : null}
         </div>
-        {aiSuggestUnavailableReason && <p role="status" className="mt-3 text-sm text-[var(--admin-on-surface-variant)]">{aiSuggestUnavailableReason} You can still add lessons manually.</p>}
+        {aiSuggestUnavailableReason && <p role="status" className="mt-3 text-sm text-[var(--ui-text-muted)]">{aiSuggestUnavailableReason} You can still add lessons manually.</p>}
       </section>
 
       <AlertDialog.Root onOpenChange={(open) => !open && setArchiveTarget(null)} open={archiveTarget !== null}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-5 shadow-xl">
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-xl">
             <AlertDialog.Title className="text-lg font-black">Archive lesson?</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--admin-on-surface-variant)]">
+            <AlertDialog.Description className="mt-2 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {archiveTarget ? `${archiveTarget.title} will be removed from the active curriculum sequence for learners.` : null}
             </AlertDialog.Description>
             <div className="mt-5 flex flex-wrap justify-end gap-3">

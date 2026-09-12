@@ -21,16 +21,16 @@ export function LessonReviewSummary({ data, valueCount }: {
     { title: "Quiz", detail: quizIssues[0]?.message ?? (questions.length ? `${questions.length} ${questions.length === 1 ? "question" : "questions"} checked. Answer choices and feedback are complete.` : lesson.quiz_requires_lesson_completion ? "Add a quiz to check understanding." : "No quiz added. You can add one if it suits this lesson."), href: `${base}/quiz`, action: "Edit quiz" },
     { title: "Values", detail: valueCount ? `${valueCount} ${valueCount === 1 ? "value" : "values"} chosen to help learners discover this lesson.` : "No values chosen. This is optional; you can add them later.", href: `${base}/values`, action: "Choose values" },
   ];
-  return <section aria-label="Lesson review" className="space-y-6 rounded-3xl border border-[var(--admin-border-warm)] bg-[var(--admin-surface-milk)] p-6">
+  return <section aria-label="Lesson review" className="space-y-6 rounded-3xl border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-6">
     <div><h1 className="text-2xl font-black">Before you publish</h1><p className="mt-2 text-sm leading-6">Check the pages and try the quiz in preview. Use the links below to finish anything that needs attention.</p></div>
-    <ul className="space-y-4">{checks.map((check) => <li className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--admin-border-warm)] pb-4" key={check.title}><div><h2 className="font-extrabold">{check.title}</h2><p className="mt-1 text-sm">{check.detail}</p></div><Link className="text-sm font-bold text-[var(--admin-primary)]" href={check.href}>{check.action}</Link></li>)}</ul>
+    <ul className="space-y-4">{checks.map((check) => <li className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--ui-border-subtle)] pb-4" key={check.title}><div><h2 className="font-extrabold">{check.title}</h2><p className="mt-1 text-sm">{check.detail}</p></div><Link className="text-sm font-bold text-[var(--ui-action)]" href={check.href}>{check.action}</Link></li>)}</ul>
     {assistantDraft && (needsTextReview || needsMediaReview) ? <form action={reviewAssistanceLesson} className="space-y-3">
       <input name="lessonId" type="hidden" value={lesson.id} /><input name="revision" type="hidden" value={lesson.draft_revision} />
       <label className="flex items-start gap-2 text-sm"><input className="mt-1" name="reviewed" required type="checkbox" />I have reviewed the lesson text, quiz and any media. Optional placeholders can remain empty.</label>
-      <PendingSubmitButton className="rounded-full bg-[var(--admin-primary)] px-4 py-2 text-sm font-extrabold text-[var(--admin-on-primary)]" label="Mark lesson reviewed" pendingLabel="Saving review…" />
+      <PendingSubmitButton className="rounded-full bg-[var(--ui-action)] px-4 py-2 text-sm font-extrabold text-[var(--ui-on-action)]" label="Mark lesson reviewed" pendingLabel="Saving review…" />
     </form> : null}
     {assistantDraft && !needsTextReview && !needsMediaReview ? <p className="text-sm">Lesson review complete.</p> : null}
     <Link className="text-sm font-bold underline" href={`/admin/courses/${lesson.course_id}/media`}>Review earlier media and lesson covers</Link>
-    <p className="text-sm text-[var(--admin-on-surface-variant)]">When you have finished reviewing, return to the editor to publish. Publishing runs the final checks and makes the saved lesson available to learners.</p>
+    <p className="text-sm text-[var(--ui-text-muted)]">When you have finished reviewing, return to the editor to publish. Publishing runs the final checks and makes the saved lesson available to learners.</p>
   </section>;
 }

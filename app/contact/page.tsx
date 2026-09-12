@@ -39,9 +39,9 @@ export default function ContactPage() {
   return (
     <PublicInfoShell title="Contact" wide>
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ve-green)]">Contact</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--ui-text)]">Contact</p>
         <h1 className="mt-2 text-3xl font-black leading-9">Contact Project VE</h1>
-        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ve-muted)]">
+        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
           How can we help you?
         </p>
       </div>
@@ -49,14 +49,14 @@ export default function ContactPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         {pathways.map((pathway) => (
           <div
-            className="flex flex-col rounded-[24px] border border-[var(--ve-line-soft)] bg-[var(--ve-card)] p-5 shadow-sm"
+            className="flex flex-col rounded-[24px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface)] p-5 shadow-sm"
             key={pathway.title}
           >
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[var(--ve-green-soft)] text-[var(--ve-green)]">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[var(--ui-action-soft)] text-[var(--ui-action)]">
               <pathway.icon className="size-5" />
             </span>
             <h2 className="mt-4 text-lg font-black">{pathway.title}</h2>
-            <p className="mt-2 flex-1 text-sm font-semibold leading-6 text-[var(--ve-muted-strong)]">
+            <p className="mt-2 flex-1 text-sm font-semibold leading-6 text-[var(--ui-text-muted)]">
               {pathway.body}
             </p>
             <Button className="mt-5 gap-2" href={pathway.href} variant={pathway.variant}>

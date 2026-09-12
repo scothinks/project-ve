@@ -22,16 +22,23 @@ test('theme baseline covers public, learner, platform and organization scopes wi
       }
       const suffix = `${width}-${mode}`;
       await publicPage.goto(baseURL!);
-      await expect(publicPage.getByRole('button', { name: 'Go to screen 1' }).first()).toBeVisible();
+      await expect(publicPage.getByRole('heading', { name: 'Live what you learn.' })).toBeVisible();
       await captureTheme(publicPage, `welcome-${suffix}`);
       await publicPage.goto(`${baseURL}/login`);
       await publicPage.locator('input[type="email"]').focus();
       await captureTheme(publicPage, `login-focus-${suffix}`);
       await adminPage.goto(`${baseURL}/dashboard`);
       await expect(adminPage.getByRole('heading', { name: 'No Active Learning' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Active Missions', exact: true })).toBeVisible({ timeout: 60_000 });
+      await expect(adminPage.locator('[data-dashboard-secondary-fallback]')).toHaveCount(0, { timeout: 60_000 });
       await captureTheme(adminPage, `dashboard-${suffix}`);
       await adminPage.goto(`${baseURL}/admin/courses/new`);
       await expect(adminPage.locator('input[name="title"]')).toBeVisible();
+      if (process.env.THEME_CANDIDATE_MANIFEST) {
+        const header = adminPage.locator('header').filter({ visible: true }).first();
+        await expect(header.getByRole('img', { name: 'Project VE', exact: true })).toBeVisible();
+        await expect(header.getByRole('img', { name: 'Learning on Project VE', exact: true })).toHaveCount(0);
+      }
       await captureTheme(adminPage, `admin-course-${suffix}`);
       await adminPage.getByRole('combobox').first().focus();
       await adminPage.keyboard.press('Space');

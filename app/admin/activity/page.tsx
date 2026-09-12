@@ -26,11 +26,11 @@ function valueOf(value: string | string[] | undefined) {
 }
 
 function fieldClasses() {
-  return "mt-2 w-full rounded-[14px] border border-[var(--ve-line)] bg-[var(--ve-card)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ve-green)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--ve-green)_10%,transparent)]";
+  return "mt-2 w-full rounded-[14px] border border-[var(--ui-control-border)] bg-[var(--ui-surface)] px-4 py-3 text-sm font-bold outline-none transition focus:border-[var(--ui-focus)] focus:ring-4 focus:ring-[var(--ui-focus)]";
 }
 
 function labelClasses() {
-  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]";
+  return "text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]";
 }
 
 function titleCase(value: string) {
@@ -191,16 +191,16 @@ export default async function AdminActivityPage({
             </label>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button className="rounded-[14px] bg-[var(--ve-green)] px-5 py-3 text-sm font-black text-white" type="submit">
+            <button className="rounded-[14px] bg-[var(--ui-action)] px-5 py-3 text-sm font-black text-[var(--ui-on-action)]" type="submit">
               Apply filters
             </button>
             <Link
-              className="rounded-[14px] bg-[color:color-mix(in_srgb,var(--ve-store-soft)_82%,var(--ve-card))] px-5 py-3 text-sm font-black text-[color:color-mix(in_srgb,var(--ve-store)_62%,var(--foreground))]"
+              className="rounded-[14px] bg-[color:color-mix(in_srgb,var(--ui-action-soft)_82%,var(--ui-surface))] px-5 py-3 text-sm font-black text-[var(--ui-on-action-soft)]"
               href="/admin/activity"
             >
               Reset
             </Link>
-            <p className="text-xs font-semibold text-[var(--ve-muted)]">
+            <p className="text-xs font-semibold text-[var(--ui-text-muted)]">
               Showing {paginatedEvents.startItem}-{paginatedEvents.endItem} of {paginatedEvents.totalItems} matching events{hasFilters ? " for the current filter set" : ""}.
             </p>
           </div>
@@ -222,13 +222,13 @@ export default async function AdminActivityPage({
                   </td>
                   <td className="min-w-[180px] px-4 py-4 align-top">
                     <p className="font-black">{event.organizationName ?? "Unknown organisation"}</p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                       {event.organizationId?.slice(0, 8) ?? "No organisation"}
                     </p>
                   </td>
                   <td className="min-w-[160px] px-4 py-4 align-top">
                     <p className="font-black">{event.actorName}</p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                       {event.actorUserId?.slice(0, 8) ?? "System"}
                     </p>
                   </td>
@@ -239,39 +239,39 @@ export default async function AdminActivityPage({
                   </td>
                   <td className="min-w-[190px] px-4 py-4 align-top">
                     {event.objectHref ? (
-                      <Link className="font-black text-[var(--ve-green)] hover:underline" href={event.objectHref}>
+                      <Link className="font-black text-[var(--ui-action)] hover:underline" href={event.objectHref}>
                         {event.objectLabel}
                       </Link>
                     ) : (
                       <p className="font-black">{event.objectLabel}</p>
                     )}
-                    <p className="mt-1 text-xs font-semibold text-[var(--ve-muted)]">
+                    <p className="mt-1 text-xs font-semibold text-[var(--ui-text-muted)]">
                       {titleCase(event.entityType)}
                     </p>
                   </td>
                   <td className="min-w-[360px] px-4 py-4 align-top">
-                    <p className="font-semibold text-[var(--ve-muted-strong)]">{event.summary}</p>
+                    <p className="font-semibold text-[var(--ui-text-muted)]">{event.summary}</p>
                     {event.details.length ? (
                       <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
                         {event.details.slice(0, 6).map((detail) => (
                           <div key={`${event.id}-${detail.label}`}>
-                            <dt className="font-black uppercase tracking-[0.12em] text-[var(--ve-muted)]">{detail.label}</dt>
-                            <dd className="mt-0.5 font-semibold text-[var(--ve-muted-strong)]">{detail.value}</dd>
+                            <dt className="font-black uppercase tracking-[0.12em] text-[var(--ui-text-muted)]">{detail.label}</dt>
+                            <dd className="mt-0.5 font-semibold text-[var(--ui-text-muted)]">{detail.value}</dd>
                           </div>
                         ))}
                       </dl>
                     ) : null}
                     {event.hasChanges && changes.length ? (
-                      <div className="mt-3 rounded-[12px] border border-[var(--ve-line-soft)] bg-[var(--ve-panel)] p-3">
-                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ve-muted)]">
+                      <div className="mt-3 rounded-[12px] border border-[var(--ui-border-subtle)] bg-[var(--ui-surface-inset)] p-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
                           Before / after
                         </p>
                         <dl className="mt-2 grid gap-2 text-xs">
                           {changes.slice(0, 6).map((change) => (
                             <div className="grid gap-1 sm:grid-cols-[120px_1fr_1fr]" key={`${event.id}-${change.key}`}>
-                              <dt className="font-black text-[var(--ve-muted-strong)]">{titleCase(change.key)}</dt>
-                              <dd className="font-semibold text-[var(--ve-muted)]">{change.before}</dd>
-                              <dd className="font-semibold text-[var(--ve-muted-strong)]">{change.after}</dd>
+                              <dt className="font-black text-[var(--ui-text-muted)]">{titleCase(change.key)}</dt>
+                              <dd className="font-semibold text-[var(--ui-text-muted)]">{change.before}</dd>
+                              <dd className="font-semibold text-[var(--ui-text-muted)]">{change.after}</dd>
                             </div>
                           ))}
                         </dl>

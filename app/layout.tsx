@@ -1,25 +1,18 @@
-import localFont from "next/font/local";
+import { bodyFont } from "./fonts/body";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppInstallPrompt } from "@/components/pwa/AppInstallPrompt";
 import { PwaBootstrap } from "@/components/pwa/PwaBootstrap";
 import { PushEnablePrompt } from "@/components/pwa/PushEnablePrompt";
 
-const geist = localFont({
-  src: [
-    { path: "./fonts/geist/Geist-Regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/geist/Geist-Medium.ttf", weight: "500", style: "normal" },
-    { path: "./fonts/geist/Geist-Bold.ttf", weight: "700", style: "normal" },
-    { path: "./fonts/geist/Geist-Black.ttf", weight: "900", style: "normal" },
-  ],
-  display: "swap",
-  variable: "--font-geist",
-});
-
 export const metadata: Metadata = {
   title: "Project VE",
   description: "A learning and rewards MVP for Project VE.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: { url: "/brand/aperture-a2-32.png", sizes: "32x32", type: "image/png" },
+    apple: { url: "/brand/aperture-a2-180.png", sizes: "180x180", type: "image/png" },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -32,8 +25,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fffdfa" },
-    { media: "(prefers-color-scheme: dark)", color: "#171c19" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ed" },
+    { media: "(prefers-color-scheme: dark)", color: "#201c23" },
   ],
 };
 
@@ -43,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={geist.variable} lang="en">
+    <html className={bodyFont.variable} lang="en">
       <body>
         <PwaBootstrap />
         {children}

@@ -1,9 +1,9 @@
 const coverAccents = [
-  "#2f8f6e, #6fa8ff",
-  "#8d68f2, #2f8f6e",
-  "#6fa8ff, #8d68f2",
-  "#a7391e, #f1bf4f",
-  "#2f8f6e, #8d68f2",
+  "var(--ui-learning-bg), var(--ui-current-bg)",
+  "var(--ui-support-bg), var(--ui-learning-bg)",
+  "var(--ui-learning-bg), var(--ui-support-bg)",
+  "var(--ui-mission-bg), var(--ui-reward-bg)",
+  "var(--ui-current-bg), var(--ui-support-bg)",
 ];
 
 export function coverAccent(id: string) {

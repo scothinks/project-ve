@@ -5,6 +5,22 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { parseSource, scanProduction } from '../../scripts/theme-contract/source.mjs';
 import { checkContract } from '../../scripts/theme-contract/policy.mjs';
+import { contrastRatio, roleContrastResults } from '../../scripts/theme-contract/contrast.mjs';
+
+test('underscores cannot hide literal colours in Tailwind shadows and gradients', () => {
+  const shadow = ['shadow-', '[0_2px_8px_', 'rgba(8,127,91,0.2)]'].join('');
+  const input = parseSource('components/New.tsx', `const c = ${JSON.stringify(shadow)};`);
+  assert.ok(input.entries.some(e => e.value === 'rgba(8,127,91,0.2)'));
+  assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /new unclassified colour/);
+});
+
+test('contrast uses linear-light luminance and rejects the old dark-primary white pair', () => {
+  assert.equal(contrastRatio('#000000', '#ffffff'), 21);
+  assert.equal(contrastRatio('#808080', '#808080'), 1);
+  assert.ok(contrastRatio('#ffffff', '#d6bce2') < 4.5);
+  assert.ok(contrastRatio('#281b2e', '#d6bce2') >= 4.5);
+  assert.ok(roleContrastResults([]).every(pair => !pair.passes));
+});
 
 const scan = css => ({ ...parseSource('app/styles/theme-compat.css', css), hazards: [] });
 function registry(baseline, overrides = {}) {
@@ -35,6 +51,30 @@ test('expired adapters fail even with otherwise valid one-hop definitions', () =
 test('retired names cannot be reintroduced through inline source or CSS', () => {
   const input = parseSource('components/New.tsx', 'const style = { color: "var(--ve-dead)" };');
   assert.match(checkContract(input, registry(input, { retired: ['--ve-dead'] })).join('\n'), /retired token/);
+});
+test('G5 rejects dormant compatibility files, imports and empty-use allowances', () => {
+  const input = { entries: [], hazards: [], files: {}, imports: [] };
+  const closed = registry(input, { gate: 'G5' });
+  assert.deepEqual(checkContract(input, closed), []);
+  for (const field of ['tokens', 'adapters', 'undefinedDefects', 'dynamicUses']) {
+    assert.match(checkContract(input, { ...closed, [field]: [{ token: '--ve-unused' }] }).join('\n'), /empty legacy and temporary exception allowances/);
+  }
+  for (const suffix of ['compat', 'legacy']) {
+    assert.match(checkContract({ ...input, files: { [`app/styles/theme-${suffix}.css`]: 'empty' } }, closed).join('\n'), /forbids compatibility/);
+    assert.match(checkContract({ ...input, imports: [{ specifier: `./styles/theme-${suffix}.css` }] }, closed).join('\n'), /forbids compatibility/);
+  }
+  const renamed = parseSource('app/styles/new-theme.css', ':root { --ve-shell: #ffffff; }');
+  assert.match(checkContract(renamed, closed, { generated: true }).join('\n'), /zero-legacy gate/);
+});
+test('compiled roles accept lossless minification, but reject changed colours, channels and aliases', () => {
+  const input = parseSource('built.css', ':root { --ui-surface: #fff; --ui-shadow-rgb: 37,35,39; --ui-shadow-opacity: .14; } @media(prefers-color-scheme:dark) { :root { --ui-surface: #fff; --ui-shadow-rgb: 37,35,39; --ui-shadow-opacity: .14; } }');
+  const roles = [['--ui-surface', '#ffffff'], ['--ui-shadow-rgb', '37, 35, 39'], ['--ui-shadow-opacity', '0.14']].map(([token, value]) => ({ token, light: value, dark: value, meaning: 'fixture' }));
+  const closed = registry({ entries: [] }, { gate: 'G5', roles });
+  assert.deepEqual(checkContract(input, closed, { generated: true }), []);
+  for (const [from, to] of [['#fff', '#ffe'], ['37,35,39', '37,35,40'], ['.14', '.15'], ['#fff', 'var(--ui-missing)']]) {
+    const changed = { ...input, entries: input.entries.map(e => ({ ...e, expression: e.expression?.replace(from, to) })) };
+    assert.match(checkContract(changed, closed, { generated: true }).join('\n'), /missing (light|dark) definition/);
+  }
 });
 test('AST decodes escaped references, ignores comments and distinguishes BEM classes', () => {
   const input = parseSource('components/New.tsx', '// var(--ve-comment)\nconst css = "var(\\u002d\\u002dve-live) card--compact";');
@@ -80,4 +120,10 @@ test('a registered one-hop adapter with literal values in both modes passes sour
   const policy = registry(input, { gate: 'G2', adapters: [{ token: '--ve-card', target: '--ui-surface', removeBy: 'G5' }], roles: [{ token: '--ui-surface', light: '#fff', dark: '#111', meaning: 'Surface' }] });
   assert.deepEqual(checkContract(input, policy), []);
   assert.deepEqual(checkContract({ ...input, entries: input.entries.map(e => ({ ...e, file: 'compiled.css' })) }, policy, { generated: true }), []);
+});
+
+test('Tailwind underscore separators cannot hide hexadecimal colours', () => {
+  const input = parseSource('components/New.tsx', 'const c = "bg-[color-mix(in_srgb,#6750a4_18%,transparent)]";');
+  assert.ok(input.entries.some(e => e.value === '#6750a4'));
+  assert.match(checkContract(input, registry({ entries: [] })).join('\n'), /new unclassified colour/);
 });
